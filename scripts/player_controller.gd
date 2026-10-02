@@ -675,6 +675,12 @@ func on_attack_connected(target: Node, actual_damage: float, launch_velocity: fl
 func take_hit(damage: float, direction: Vector3, knockback: float) -> void:
     receive_combat_hit(damage, direction, knockback, 0.0, 0.28)
 
+func extend_combo_feedback(extra_time: float) -> void:
+    if combo_hits <= 0:
+        return
+    combo_display_timer = maxf(combo_display_timer, extra_time)
+    combo_timer = maxf(combo_timer, minf(extra_time, combo_reset_time))
+
 func _update_animation_state() -> void:
     if defeated:
         animation_state = "defeat"
@@ -702,6 +708,9 @@ func _update_animation_state() -> void:
 func _defeat() -> void:
     defeated = true
     respawn_timer = 2.5
+    combo_hits = 0
+    combo_damage = 0.0
+    combo_display_timer = 0.0
     is_guarding = false
     is_charging_chakra = false
     attack_active = false
@@ -718,6 +727,9 @@ func _respawn() -> void:
     dodge_cooldown = 0.0
     jutsu_cooldown = 0.0
     invulnerable_timer = 1.0
+    combo_hits = 0
+    combo_damage = 0.0
+    combo_display_timer = 0.0
     defeated = false
 
 func _can_use_movement_action() -> bool:
