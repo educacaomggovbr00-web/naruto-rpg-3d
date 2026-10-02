@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1"]
 [ext_resource path="res://scripts/camera_rig.gd" type="Script" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource path="res://scripts/fighter_visual.gd" type="Script" id="6"]
 [ext_resource path="res://scripts/combat_hitbox.gd" type="Script" id="7"]
 [ext_resource path="res://scripts/combat_hurtbox.gd" type="Script" id="8"]
+[ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="9"]
 
 [sub_resource type="StandardMaterial3D" id="BodyMaterial"]
 albedo_color = Color(0.95, 0.34, 0.07, 1)
@@ -91,6 +92,17 @@ size = Vector2(60, 60)
 [sub_resource type="BoxShape3D" id="BoxShape_ground"]
 size = Vector3(60, 0.2, 60)
 
+[sub_resource type="StandardMaterial3D" id="WallMaterial"]
+albedo_color = Color(0.12, 0.14, 0.16, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="WallMesh"]
+material = SubResource("WallMaterial")
+size = Vector3(60, 3.2, 0.5)
+
+[sub_resource type="BoxShape3D" id="WallShape"]
+size = Vector3(60, 3.2, 0.5)
+
 [node name="Main" type="Node3D"]
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
@@ -98,6 +110,9 @@ rotation_degrees = Vector3(-55, -35, 0)
 light_energy = 1.25
 shadow_enabled = true
 directional_shadow_max_distance = 35.0
+
+[node name="CombatFeedback" type="Node3D" parent="."]
+script = ExtResource("9")
 
 [node name="Ground" type="StaticBody3D" parent="."]
 
@@ -107,6 +122,46 @@ mesh = SubResource("PlaneMesh_ground")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
 position = Vector3(0, -0.1, 0)
 shape = SubResource("BoxShape_ground")
+
+[node name="ArenaWalls" type="Node3D" parent="."]
+
+[node name="North" type="StaticBody3D" parent="ArenaWalls"]
+position = Vector3(0, 1.6, -29.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="ArenaWalls/North"]
+mesh = SubResource("WallMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ArenaWalls/North"]
+shape = SubResource("WallShape")
+
+[node name="South" type="StaticBody3D" parent="ArenaWalls"]
+position = Vector3(0, 1.6, 29.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="ArenaWalls/South"]
+mesh = SubResource("WallMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ArenaWalls/South"]
+shape = SubResource("WallShape")
+
+[node name="West" type="StaticBody3D" parent="ArenaWalls"]
+position = Vector3(-29.5, 1.6, 0)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="ArenaWalls/West"]
+mesh = SubResource("WallMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ArenaWalls/West"]
+shape = SubResource("WallShape")
+
+[node name="East" type="StaticBody3D" parent="ArenaWalls"]
+position = Vector3(29.5, 1.6, 0)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="ArenaWalls/East"]
+mesh = SubResource("WallMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ArenaWalls/East"]
+shape = SubResource("WallShape")
 
 [node name="Player" type="CharacterBody3D" parent="."]
 position = Vector3(0, 1, 4)
@@ -307,7 +362,20 @@ offset_left = 20.0
 offset_top = 208.0
 offset_right = 710.0
 offset_bottom = 236.0
-text = "4º ATK lança | DASH persegue no ar | ATK no ar continua | 4º ATK aéreo derruba"
+text = "4º ATK lança | DASH persegue | slam quica no chão | golpes fortes quicam na parede"
+
+[node name="ComboCounter" type="Label" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -285.0
+offset_top = 96.0
+offset_right = -24.0
+offset_bottom = 170.0
+text = "4 HITS
+41 DANO"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 28
+visible = false
 
 [node name="FPS" type="Label" parent="HUD"]
 anchor_left = 1.0
