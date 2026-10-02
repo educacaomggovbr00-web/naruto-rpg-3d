@@ -36,3 +36,12 @@ O adapter reconhece nomes contendo termos como:
 - defeat / death / ko
 
 Não é obrigatório usar exatamente esses nomes; eles são apenas palavras-chave para associação automática.
+
+
+## Escala automática
+
+Esse GLB mede aproximadamente **178,92 unidades de altura** no arquivo, então em Godot ele pode aparecer gigante se entrar com escala 1.0.
+
+O `RiggedCharacterAdapter` agora mede o AABB dos meshes em runtime e ajusta automaticamente o modelo para **1,75 m**. Para esse arquivo, a escala esperada fica perto de **0,00978**.
+
+O parâmetro `model_scale` funciona apenas como multiplicador fino depois da correção automática. Normalmente deve ficar em `1.0`.
