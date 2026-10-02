@@ -11,6 +11,8 @@ extends CharacterBody3D
 @export var guard_duration: float = 0.65
 @export var recovery_delay: float = 2.5
 @export var knockback_friction: float = 12.0
+@export var ground_bounce_velocity: float = 6.2
+@export var wall_bounce_strength: float = 0.68
 
 var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var health: float = 120.0
@@ -30,12 +32,15 @@ var hit_cycle: int = 0
 var attack_active: bool = false
 var attack_elapsed: float = 0.0
 var attack_hit_triggered: bool = false
+var ground_bounce_pending: bool = false
+var wall_bounce_pending: bool = false
 
 @onready var visual: MeshInstance3D = $Visual
 @onready var lock_label: Label3D = $LockLabel
 @onready var health_label: Label3D = $HealthLabel
 @onready var player: CharacterBody3D = $"../Player"
 @onready var attack_hitbox: Area3D = $AttackHitbox
+@onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func _ready() -> void:
     health = max_health
@@ -52,7 +57,7 @@ func _physics_process(delta: float) -> void:
     if not targetable:
         velocity.x = move_toward(velocity.x, 0.0, knockback_friction * delta)
         velocity.z = move_toward(velocity.z, 0.0, knockback_friction * delta)
-        move_and_slide()
+        _move_and_handle_bounces()
 
         if respawn_timer <= 0.0:
             _respawn()
@@ -60,18 +65,19 @@ func _physics_process(delta: float) -> void:
 
     if not is_instance_valid(player) or bool(player.call("is_defeated")):
         _slow_down(delta)
-        move_and_slide()
+        _move_and_handle_bounces()
         return
 
     if stagger_timer > 0.0:
-        _slow_down(delta)
-        move_and_slide()
+        velocity.x = move_toward(velocity.x, 0.0, knockback_friction * 0.35 * delta)
+        velocity.z = move_toward(velocity.z, 0.0, knockback_friction * 0.35 * delta)
+        _move_and_handle_bounces()
         return
 
     if dodge_timer > 0.0:
         velocity.x = dodge_direction.x * 8.5
         velocity.z = dodge_direction.z * 8.5
-        move_and_slide()
+        _move_and_handle_bounces()
         return
 
     var to_player: Vector3 = player.global_position - global_position
@@ -84,7 +90,7 @@ func _physics_process(delta: float) -> void:
     if guard_timer > 0.0:
         guarding = true
         _slow_down(delta)
-        move_and_slide()
+        _move_and_handle_bounces()
         return
 
     guarding = false
@@ -100,7 +106,7 @@ func _physics_process(delta: float) -> void:
         if attack_cooldown <= 0.0:
             _choose_close_action()
 
-    move_and_slide()
+    _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
     attack_cooldown = maxf(attack_cooldown - delta, 0.0)
@@ -176,6 +182,60 @@ func _face_direction(direction: Vector3, delta: float) -> void:
     var target_yaw: float = atan2(flat.x, flat.z)
     rotation.y = lerp_angle(rotation.y, target_yaw, 10.0 * delta)
 
+func _move_and_handle_bounces() -> void:
+    var was_on_floor: bool = is_on_floor()
+    var pre_move_velocity: Vector3 = velocity
+    move_and_slide()
+
+    if (
+        ground_bounce_pending
+        and not was_on_floor
+        and is_on_floor()
+        and pre_move_velocity.y < -5.0
+    ):
+        ground_bounce_pending = false
+        velocity.y = ground_bounce_velocity
+        stagger_timer = maxf(stagger_timer, 0.34)
+        _trigger_bounce_feedback("ground")
+
+    if wall_bounce_pending and is_on_wall():
+        var horizontal_speed: float = Vector2(pre_move_velocity.x, pre_move_velocity.z).length()
+        if horizontal_speed >= 4.0:
+            _apply_wall_bounce(pre_move_velocity)
+
+func _apply_wall_bounce(pre_move_velocity: Vector3) -> void:
+    var collision_count: int = get_slide_collision_count()
+
+    for index: int in range(collision_count):
+        var collision: KinematicCollision3D = get_slide_collision(index)
+        var normal: Vector3 = collision.get_normal()
+
+        if absf(normal.y) > 0.55:
+            continue
+
+        var reflected: Vector3 = pre_move_velocity.bounce(normal) * wall_bounce_strength
+        velocity.x = reflected.x
+        velocity.z = reflected.z
+        velocity.y = maxf(velocity.y, 2.2)
+        wall_bounce_pending = false
+        stagger_timer = maxf(stagger_timer, 0.38)
+        _trigger_bounce_feedback("wall")
+        return
+
+func _trigger_bounce_feedback(_bounce_kind: String) -> void:
+    if is_instance_valid(combat_feedback):
+        if combat_feedback.has_method("spawn_impact"):
+            combat_feedback.call(
+                "spawn_impact",
+                global_position + Vector3.UP * 0.45,
+                "bounce"
+            )
+        if combat_feedback.has_method("hit_stop"):
+            combat_feedback.call("hit_stop", 0.045, 0.14)
+
+    if is_instance_valid(player) and player.has_method("extend_combo_feedback"):
+        player.call("extend_combo_feedback", 0.85)
+
 func is_targetable() -> bool:
     return targetable
 
@@ -188,9 +248,9 @@ func receive_combat_hit(
     knockback: float,
     launch_velocity: float,
     hitstun: float
-) -> void:
+) -> float:
     if not targetable:
-        return
+        return 0.0
 
     var applied_damage: float = damage
     var applied_knockback: float = knockback
@@ -199,8 +259,12 @@ func receive_combat_hit(
         applied_damage *= 0.22
         applied_knockback *= 0.18
         launch_velocity *= 0.15
+        ground_bounce_pending = false
+        wall_bounce_pending = false
     else:
         stagger_timer = hitstun
+        wall_bounce_pending = applied_knockback >= 4.0
+        ground_bounce_pending = launch_velocity < -2.0
 
     health = maxf(health - applied_damage, 0.0)
 
@@ -222,6 +286,24 @@ func receive_combat_hit(
 
     if health <= 0.0:
         _knock_out()
+
+    return applied_damage
+
+func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float) -> void:
+    var impact_kind: String = "normal"
+    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+        impact_kind = "guard"
+
+    if is_instance_valid(combat_feedback):
+        if combat_feedback.has_method("spawn_impact") and target is Node3D:
+            var target_3d: Node3D = target as Node3D
+            combat_feedback.call(
+                "spawn_impact",
+                target_3d.global_position + Vector3.UP * 0.75,
+                impact_kind
+            )
+        if combat_feedback.has_method("hit_stop"):
+            combat_feedback.call("hit_stop", 0.030, 0.14)
 
 func take_hit(damage: float, knockback: float, direction: Vector3, combo_step: int) -> void:
     var launch_velocity: float = 0.0
@@ -256,6 +338,8 @@ func _knock_out() -> void:
     targetable = false
     guarding = false
     attack_active = false
+    ground_bounce_pending = false
+    wall_bounce_pending = false
     lock_label.visible = false
     health_label.text = "K.O."
     respawn_timer = recovery_delay
@@ -266,8 +350,13 @@ func _respawn() -> void:
     health = max_health
     targetable = true
     guarding = false
+    ground_bounce_pending = false
+    wall_bounce_pending = false
     attack_cooldown = 0.8
     _update_labels()
+
+func get_is_guarding() -> bool:
+    return guarding
 
 func is_airborne() -> bool:
     return not is_on_floor()
