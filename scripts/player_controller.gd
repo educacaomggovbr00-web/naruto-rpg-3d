@@ -88,6 +88,7 @@ var mobile_controls: Node = null
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
+@onready var rig_adapter: Node = get_node_or_null("RiggedCharacterAdapter")
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func _ready() -> void:
@@ -271,6 +272,9 @@ func _open_attack_hitbox() -> void:
         else:
             launch_velocity = launcher_velocity
             hitstun = 0.38
+
+    if is_instance_valid(rig_adapter) and rig_adapter.has_method("snap_attack_hitbox"):
+        rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
 
     attack_hitbox.call(
         "activate",
