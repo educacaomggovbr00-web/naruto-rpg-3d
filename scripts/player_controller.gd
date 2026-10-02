@@ -240,8 +240,8 @@ func _get_move_input() -> Vector2:
 
     if is_instance_valid(mobile_controls):
         var mobile_value: Variant = mobile_controls.call("get_move_vector")
-        if mobile_value is Vector2:
-            input_vector = mobile_value
+        if typeof(mobile_value) == TYPE_VECTOR2:
+            input_vector = Vector2(mobile_value)
 
     if input_vector.length() <= 0.001:
         input_vector = Vector2(
