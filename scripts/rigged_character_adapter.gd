@@ -133,7 +133,7 @@ func _setup_animation_tree() -> void:
         animation_node.animation = StringName(animation_name)
 
         var column: int = index % 4
-        var row: int = index / 4
+        var row: int = floori(float(index) / 4.0)
         state_machine.add_node(
             StringName(state_name),
             animation_node,
@@ -153,7 +153,7 @@ func _setup_animation_tree() -> void:
 func _choose_animation_for_state(state_name: String) -> String:
     var keywords: Array[String] = _keywords_for_state(state_name)
 
-    for animation_value: StringName in available_animations:
+    for animation_value: String in available_animations:
         var animation_name: String = String(animation_value)
         var lower_name: String = animation_name.to_lower()
 
@@ -165,12 +165,12 @@ func _choose_animation_for_state(state_name: String) -> String:
                 return animation_name
 
     if state_name == "idle":
-        for animation_value: StringName in available_animations:
+        for animation_value: String in available_animations:
             var animation_name: String = String(animation_value)
             if animation_name.to_lower() == idle_fallback_animation.to_lower():
                 return animation_name
 
-    for animation_value: StringName in available_animations:
+    for animation_value: String in available_animations:
         var animation_name: String = String(animation_value)
         if animation_name.to_lower() != "reset":
             return animation_name
@@ -228,12 +228,12 @@ func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
     var bone_pose: Transform3D = skeleton.get_bone_global_pose(bone_index)
     var world_pose: Transform3D = skeleton.global_transform * bone_pose
 
-    var reach_direction: Vector3 = world_pose.basis.z.normalized()
+    var reach_direction: Vector3 = player.global_basis.z.normalized()
     if reach_direction.length_squared() <= 0.001:
-        reach_direction = player.global_basis.z.normalized()
+        reach_direction = Vector3.FORWARD
 
     attack_hitbox.global_transform = Transform3D(
-        world_pose.basis,
+        player.global_basis,
         world_pose.origin + reach_direction * 0.16
     )
 
@@ -286,7 +286,7 @@ func get_available_animations_text() -> String:
         return "nenhuma"
 
     var names: Array[String] = []
-    for animation_value: StringName in available_animations:
+    for animation_value: String in available_animations:
         names.append(String(animation_value))
 
     return ", ".join(names)
