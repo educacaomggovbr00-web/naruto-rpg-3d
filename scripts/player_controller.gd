@@ -162,10 +162,11 @@ func _toggle_lock_on() -> void:
         return
 
     var best_target: Node3D = null
-    var best_distance := lock_range
+    var best_distance: float = lock_range
 
-    for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):\n        var candidate: Node3D = candidate_node as Node3D
-        if not (candidate is Node3D):
+    for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):
+        var candidate: Node3D = candidate_node as Node3D
+        if candidate == null:
             continue
         if candidate.has_method("is_targetable") and not candidate.is_targetable():
             continue
@@ -231,7 +232,7 @@ func _try_attack() -> void:
     combo_timer = combo_reset_time
     attack_cooldown = 0.22 if combo_step < 4 else 0.38
 
-    var target := _find_attack_target()
+    var target: Node3D = _find_attack_target()
     if is_instance_valid(target):
         var direction: Vector3 = target.global_position - global_position
         direction.y = 0.0
@@ -261,8 +262,9 @@ func _find_attack_target() -> Node3D:
     var best_target: Node3D = null
     var best_distance := attack_range
 
-    for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):\n        var candidate: Node3D = candidate_node as Node3D
-        if not (candidate is Node3D):
+    for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):
+        var candidate: Node3D = candidate_node as Node3D
+        if candidate == null:
             continue
         if candidate.has_method("is_targetable") and not candidate.is_targetable():
             continue
