@@ -172,6 +172,11 @@ func _choose_animation_for_state(state_name: String) -> String:
 
     for animation_value: String in available_animations:
         var animation_name: String = String(animation_value)
+        if animation_name.to_lower() == "reset":
+            return animation_name
+
+    for animation_value: String in available_animations:
+        var animation_name: String = String(animation_value)
         if animation_name.to_lower() != "reset":
             return animation_name
 
