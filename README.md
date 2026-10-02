@@ -62,7 +62,7 @@ O controlador expõe estados explícitos:
 - `hit`
 - `defeat`
 
-O personagem provisório ainda usa animação procedural leve. Essa máquina de estados foi criada para depois mapear diretamente para `AnimationTree` + `Skeleton3D` quando entrar um modelo rigado, sem reescrever a lógica de combate.
+O projeto agora possui um adapter real para `Skeleton3D + AnimationTree`. Quando existe `res://assets/characters/rigged.glb`, o modelo é instanciado automaticamente, o humanoide procedural é ocultado e os estados do combate passam a controlar uma máquina de estados de animação. Se alguma animação ainda não existir no GLB, o adapter usa uma animação disponível como fallback sem quebrar o combate.
 
 ## Controles mobile
 - **Joystick esquerdo:** mover; perto da borda corre
@@ -117,10 +117,16 @@ Os VFX usam meshes simples criadas em runtime, sem texturas ou sistemas pesados 
 ## Mobile
 O protótipo continua usando primitivas low-poly e efeitos baratos para validar o combate em aparelhos móveis antes de adicionar modelos e VFX pesados.
 
+## Personagem rigado
+O adapter procura `res://assets/characters/rigged.glb`.
+
+O GLB analisado nesta etapa possui rig Mixamo, ossos de mãos/pés compatíveis com o sistema de hitbox e uma animação `happy` de aproximadamente 3 segundos. A hitbox do jogador passa a seguir os ossos `mixamorig:RightHand`, `mixamorig:LeftHand`, `mixamorig:RightFoot` e `mixamorig:LeftFoot` quando o rig está carregado.
+
+O HUD mostra `RIG: OK` quando o asset foi importado corretamente. Sem o arquivo, o boneco procedural continua funcionando como fallback.
+
 ## Próximas melhorias
-- personagem rigado original/licenciado com Skeleton3D
-- AnimationTree usando os estados já existentes
-- hitboxes presas a ossos de mãos/pés
+- pacote completo de animações para o rig: idle, run, jump, ataques, guard, dodge, hit e KO
+- crossfade refinado entre animações reais
 - jutsus com projétil/área e VFX próprios
 - seleção de personagem
 - arena temática maior com obstáculos
