@@ -21,7 +21,7 @@ func _ready() -> void:
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event: InputEvent) -> void:
-    var player = get_parent()
+    var player: Node = get_parent()
 
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         if not is_instance_valid(player.locked_target):
@@ -43,16 +43,16 @@ func _process(delta: float) -> void:
             yaw -= touch_delta.x * touch_sensitivity
             pitch = clamp(pitch - touch_delta.y * touch_sensitivity, min_pitch, max_pitch)
 
-    var follow_position := player.global_position + Vector3.UP * height
+    var follow_position: Vector3 = player.global_position + Vector3.UP * height
 
     if is_instance_valid(player.locked_target):
         var target: Node3D = player.locked_target
-        var to_target := target.global_position - player.global_position
-        var flat := to_target
+        var to_target: Vector3 = target.global_position - player.global_position
+        var flat: Vector3 = to_target
         flat.y = 0.0
 
         if flat.length_squared() > 0.001:
-            var desired_yaw := atan2(-flat.x, -flat.z)
+            var desired_yaw: float = atan2(-flat.x, -flat.z)
             yaw = lerp_angle(yaw, desired_yaw, 1.0 - exp(-lock_smoothing * delta))
 
         pitch = lerp(pitch, lock_pitch, 1.0 - exp(-lock_smoothing * delta))
@@ -61,7 +61,7 @@ func _process(delta: float) -> void:
             0.16
         )
 
-        var desired_length := clamp(5.6 + flat.length() * 0.18, 5.6, 8.0)
+        var desired_length: float = clampf(5.6 + flat.length() * 0.18, 5.6, 8.0)
         spring_arm.spring_length = lerp(
             spring_arm.spring_length,
             desired_length,
@@ -75,7 +75,7 @@ func _process(delta: float) -> void:
         )
 
     shake_strength = move_toward(shake_strength, 0.0, delta * 0.75)
-    var ticks := Time.get_ticks_msec() * 0.001
+    var ticks: float = Time.get_ticks_msec() * 0.001
     spring_arm.position = Vector3(
         sin(ticks * 47.0),
         cos(ticks * 61.0),
