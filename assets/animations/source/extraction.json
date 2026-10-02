@@ -1,0 +1,39 @@
+[
+  {
+    "pack": 1,
+    "original_sha256": "0ff075c7ad6855c5c2c37a171592ee8f0d6ab2f58259e2be77a9b63dd8027765",
+    "original_buffer_sha256": "6e65377d81558333c4093dbb144a48fd19019343d82b1a3a7992a98ec0e0543c",
+    "clips": [
+      "A_TPose",
+      "Death01",
+      "Hit_Chest",
+      "Idle_Loop",
+      "Jog_Fwd_Loop",
+      "Punch_Cross",
+      "Punch_Jab",
+      "Roll",
+      "Spell_Simple_Idle_Loop",
+      "Spell_Simple_Shoot",
+      "Sprint_Loop"
+    ],
+    "extracted_file": "AnimationLibrary_Godot_Standard.gltf"
+  },
+  {
+    "pack": 2,
+    "original_sha256": "8cee20ab1bc55130092447e810e26df22dd2803eccc54f52137a7d54d7ab88a8",
+    "original_buffer_sha256": "5fe61095fbf148c477415c2a2b4ccab619452eece05881c805c34e4561af0854",
+    "clips": [
+      "A_TPose",
+      "Hit_Knockback",
+      "Idle_Shield_Loop",
+      "Melee_Hook",
+      "Melee_Hook_Rec",
+      "NinjaJump_Idle_Loop",
+      "NinjaJump_Land",
+      "NinjaJump_Start",
+      "Sword_Dash",
+      "Sword_Heavy_Combo"
+    ],
+    "extracted_file": "UAL2_Standard.glb"
+  }
+]

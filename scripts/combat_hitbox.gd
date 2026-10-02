@@ -11,6 +11,7 @@ var source_fighter: Node3D = null
 var already_hit: Array[Node] = []
 
 func _ready() -> void:
+    process_physics_priority = 20
     monitoring = true
     monitorable = false
 
@@ -36,14 +37,18 @@ func activate(
     hitstun = new_hitstun
     already_hit.clear()
     remaining_time = active_duration if duration <= 0.0 else duration
-    _check_overlaps()
+
+func deactivate() -> void:
+    remaining_time = 0.0
+    source_fighter = null
+    already_hit.clear()
 
 func _check_overlaps() -> void:
     if not is_instance_valid(source_fighter):
         return
 
     for area: Area3D in get_overlapping_areas():
-        var fighter: Node = area.get_parent()
+        var fighter: Node = area.call("get_fighter") if area.has_method("get_fighter") else area.get_parent()
         if fighter == source_fighter or fighter in already_hit:
             continue
         if not fighter.has_method("receive_combat_hit"):

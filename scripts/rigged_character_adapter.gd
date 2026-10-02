@@ -1,6 +1,7 @@
 extends Node3D
 
-const ProceduralRigAnimationLibrary = preload("res://scripts/procedural_rig_animation_library.gd")
+const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
+const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
 
 @export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
 @export var fallback_visual_path: NodePath = NodePath("../VisualRoot")
@@ -10,7 +11,6 @@ const ProceduralRigAnimationLibrary = preload("res://scripts/procedural_rig_anim
 @export var target_character_height: float = 1.75
 @export var fallback_import_scale: float = 0.01
 @export var model_yaw_degrees: float = 180.0
-@export var idle_fallback_animation: String = "happy"
 @export var follow_hitbox_to_bones: bool = true
 
 var model_instance: Node3D = null
@@ -26,7 +26,13 @@ var current_state: String = ""
 var available_animations: PackedStringArray = PackedStringArray()
 var detected_source_height: float = 0.0
 var applied_model_scale: float = 1.0
-var procedural_animation_count: int = 0
+var real_animation_count: int = 0
+var manifest: Dictionary = {}
+var last_action_id: int = -1
+var landing_timer: float = 0.0
+var was_airborne: bool = false
+var chakra_aura: MeshInstance3D = null
+var aura_base_scale: Vector3 = Vector3.ONE
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -37,14 +43,17 @@ var left_foot_bone: int = -1
 @onready var attack_hitbox: Area3D = $"../AttackHitbox"
 
 func _ready() -> void:
+    process_physics_priority = 10
     fallback_visual = get_node_or_null(fallback_visual_path) as Node3D
     _try_load_rig()
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
     if not rig_loaded:
         return
 
-    _sync_animation_state()
+    _sync_animation_state(delta)
+    animation_tree.advance(delta)
+    _update_chakra_aura(delta)
 
     var state: String = String(player.call("get_animation_state"))
     if follow_hitbox_to_bones and (state == "attack" or state == "air_attack"):
@@ -85,28 +94,35 @@ func _try_load_rig() -> void:
         return
 
     _cache_combat_bones()
-
-    if animation_player != null:
-        procedural_animation_count = int(
-            ProceduralRigAnimationLibrary.install(animation_player, skeleton)
-        )
-
+    if animation_player == null or not _install_combat_library():
+        rig_status = "RIG: biblioteca real incompleta; confira o log"
+        model_instance.queue_free()
+        model_instance = null
+        return
     _setup_animation_tree()
 
     rig_loaded = true
     attack_hitbox.top_level = true
 
     if is_instance_valid(fallback_visual):
+        chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
+        if chakra_aura != null:
+            chakra_aura.reparent(self, true)
+            aura_base_scale = chakra_aura.scale
         fallback_visual.visible = false
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
-    var animation_count: int = available_animations.size()
-    rig_status = "RIG: OK | %.3fx | %d ossos | %d animações (%d proc)" % [
-        applied_model_scale,
-        skeleton.get_bone_count(),
-        animation_count,
-        procedural_animation_count
-    ]
+    rig_status = "RIG: OK | %d clips reais CC0" % real_animation_count
+
+func _update_chakra_aura(delta: float) -> void:
+    if chakra_aura == null:
+        return
+    var state: String = String(player.call("get_animation_state"))
+    chakra_aura.visible = state in ["chakra_dash", "chakra_charge", "jutsu"]
+    if chakra_aura.visible:
+        chakra_aura.rotation.y += delta * 6.0
+        var pulse: float = 1.0 + sin(float(Time.get_ticks_msec()) * 0.025) * 0.06
+        chakra_aura.scale = aura_base_scale * pulse
 
 func _apply_character_scale() -> void:
     detected_source_height = _calculate_model_height()
@@ -168,169 +184,131 @@ func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:
         _collect_mesh_instances(child, output)
 
 func _cache_combat_bones() -> void:
-    right_hand_bone = skeleton.find_bone("mixamorig:RightHand")
-    left_hand_bone = skeleton.find_bone("mixamorig:LeftHand")
-    right_foot_bone = skeleton.find_bone("mixamorig:RightFoot")
-    left_foot_bone = skeleton.find_bone("mixamorig:LeftFoot")
+    right_hand_bone = _find_mixamo_bone("RightHand")
+    left_hand_bone = _find_mixamo_bone("LeftHand")
+    right_foot_bone = _find_mixamo_bone("RightFoot")
+    left_foot_bone = _find_mixamo_bone("LeftFoot")
+
+func _find_mixamo_bone(short_name: String) -> int:
+    var index: int = skeleton.find_bone("mixamorig_" + short_name)
+    if index < 0:
+        index = skeleton.find_bone("mixamorig:" + short_name)
+    return index
+
+func _install_combat_library() -> bool:
+    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
+    if not parsed is Dictionary:
+        return false
+    manifest = parsed
+    var clips: Dictionary = manifest.get("clips", {})
+    var library: AnimationLibrary = COMBAT_LIBRARY.duplicate(true) as AnimationLibrary
+    var animation_root: Node = animation_player.get_node(animation_player.root_node)
+    var skeleton_path: String = String(animation_root.get_path_to(skeleton))
+    for clip_name: StringName in library.get_animation_list():
+        if not clips.has(String(clip_name)):
+            return false
+        var animation: Animation = library.get_animation(clip_name)
+        for track: int in range(animation.get_track_count()):
+            var path: NodePath = animation.track_get_path(track)
+            var bone_name: String = String(path.get_subname(0))
+            var index: int = skeleton.find_bone(bone_name)
+            if index < 0:
+                push_error("Combat clip %s: missing bone %s" % [clip_name, bone_name])
+                return false
+            animation.track_set_path(track, NodePath(skeleton_path + ":" + bone_name))
+    # Original happy remains in the import, but is never selected for combat.
+    var result: Error = animation_player.add_animation_library(&"combat", library)
+    real_animation_count = library.get_animation_list().size()
+    return result == OK and real_animation_count == clips.size()
 
 func _setup_animation_tree() -> void:
-    if animation_player == null:
-        rig_status = "RIG: sem AnimationPlayer; usando pose importada"
-        return
-
     available_animations = animation_player.get_animation_list()
-    if available_animations.is_empty():
-        rig_status = "RIG: sem animações importadas"
-        return
-
+    animation_player.stop()
     animation_tree = AnimationTree.new()
-    animation_tree.name = "RuntimeAnimationTree"
+    animation_tree.name = "CombatAnimationTree"
     add_child(animation_tree)
     animation_tree.anim_player = animation_tree.get_path_to(animation_player)
-
+    # Physics clocks for animation, hit-stop and gameplay are identical.
+    animation_tree.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
     var state_machine: AnimationNodeStateMachine = AnimationNodeStateMachine.new()
-    var states: Array[String] = [
-        "idle",
-        "run",
-        "air",
-        "attack_1",
-        "attack_2",
-        "attack_3",
-        "attack_4",
-        "air_attack_1",
-        "air_attack_2",
-        "air_attack_3",
-        "air_attack_4",
-        "guard",
-        "dodge",
-        "chakra_dash",
-        "chakra_charge",
-        "jutsu",
-        "hit",
-        "defeat"
-    ]
-
-    for index: int in range(states.size()):
-        var state_name: String = states[index]
-        var animation_name: String = _choose_animation_for_state(state_name)
-        var animation_node: AnimationNodeAnimation = AnimationNodeAnimation.new()
-        animation_node.animation = StringName(animation_name)
-
-        var column: int = index % 4
-        var row: int = floori(float(index) / 4.0)
-        state_machine.add_node(
-            StringName(state_name),
-            animation_node,
-            Vector2(float(column) * 190.0, float(row) * 115.0)
-        )
-
+    var clips: Dictionary = manifest["clips"]
+    var index: int = 0
+    for state_name: String in clips:
+        var blend: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
+        var clip: AnimationNodeAnimation = AnimationNodeAnimation.new()
+        clip.animation = StringName("combat/" + state_name)
+        blend.add_node(&"clip", clip, Vector2(0, 0))
+        blend.add_node(&"speed", AnimationNodeTimeScale.new(), Vector2(180, 0))
+        blend.connect_node(&"speed", 0, &"clip")
+        blend.connect_node(&"output", 0, &"speed")
+        state_machine.add_node(StringName(state_name), blend,
+            Vector2(float(index % 4) * 190.0, float(floori(float(index) / 4.0)) * 115.0))
+        index += 1
+    # Explicit directed transitions: travel() now crossfades rather than teleporting
+    # through an unconnected state machine. One-shots always restart at time zero.
+    for from_state: String in clips:
+        for to_state: String in clips:
+            if from_state == to_state:
+                continue
+            var transition: AnimationNodeStateMachineTransition = AnimationNodeStateMachineTransition.new()
+            transition.xfade_time = 0.08
+            if to_state.begins_with("attack_") or to_state.begins_with("air_attack_"):
+                transition.xfade_time = 0.025
+            elif to_state == "hit" or to_state == "dodge":
+                transition.xfade_time = 0.035
+            transition.reset = true
+            state_machine.add_transition(StringName(from_state), StringName(to_state), transition)
     animation_tree.tree_root = state_machine
     animation_tree.active = true
+    playback = animation_tree.get("parameters/playback") as AnimationNodeStateMachinePlayback
+    playback.start(&"idle", true)
+    current_state = "idle"
+    animation_tree.advance(0.0)
 
-    var playback_value: Variant = animation_tree.get("parameters/playback")
-    playback = playback_value as AnimationNodeStateMachinePlayback
-
-    if playback != null:
-        playback.start(StringName("idle"), true)
-        current_state = "idle"
-
-func _choose_animation_for_state(state_name: String) -> String:
-    var keywords: Array[String] = _keywords_for_state(state_name)
-
-    for animation_value: String in available_animations:
-        var animation_name: String = String(animation_value)
-        var lower_name: String = animation_name.to_lower()
-
-        if lower_name == "reset" or lower_name.begins_with("proc/"):
-            continue
-
-        for keyword: String in keywords:
-            if lower_name.contains(keyword):
-                return animation_name
-
-    if state_name == "idle":
-        for animation_value: String in available_animations:
-            var animation_name: String = String(animation_value)
-            if animation_name.to_lower().contains(idle_fallback_animation.to_lower()):
-                return animation_name
-
-    var procedural_name: String = "proc/" + state_name
-    if animation_player != null and animation_player.has_animation(StringName(procedural_name)):
-        return procedural_name
-
-    for animation_value: String in available_animations:
-        var animation_name: String = String(animation_value)
-        if animation_name.to_lower() == "reset":
-            return animation_name
-
-    for animation_value: String in available_animations:
-        var animation_name: String = String(animation_value)
-        if not animation_name.to_lower().begins_with("proc/"):
-            return animation_name
-
-    return String(available_animations[0])
-
-func _keywords_for_state(state_name: String) -> Array[String]:
-    if state_name.begins_with("air_attack_"):
-        return ["air_attack", "aerial", "jump_attack", "air combo"]
-
-    if state_name.begins_with("attack_"):
-        match state_name:
-            "attack_1":
-                return ["attack_1", "jab", "right punch", "punch"]
-            "attack_2":
-                return ["attack_2", "cross", "left punch", "punch"]
-            "attack_3":
-                return ["attack_3", "kick", "roundhouse"]
-            "attack_4":
-                return ["attack_4", "uppercut", "launcher", "heavy attack"]
-
-    match state_name:
-        "idle":
-            return ["idle", "happy", "stand", "breath"]
-        "run":
-            return ["run", "jog", "sprint", "walk"]
-        "air":
-            return ["jump", "fall", "air"]
-        "guard":
-            return ["guard", "block", "defend"]
-        "dodge":
-            return ["dodge", "roll", "evade", "sidestep"]
-        "chakra_dash":
-            return ["chakra_dash", "dash", "rush", "charge_forward"]
-        "chakra_charge":
-            return ["chakra_charge", "charge", "powerup", "power_up"]
-        "jutsu":
-            return ["jutsu", "cast", "skill", "spell"]
-        "hit":
-            return ["hit", "hurt", "damage", "reaction"]
-        "defeat":
-            return ["defeat", "death", "ko", "down"]
-        _:
-            return ["idle"]
-
-func _sync_animation_state() -> void:
+func _sync_animation_state(delta: float) -> void:
     if playback == null:
         return
-
+    var airborne: bool = not player.is_on_floor()
+    landing_timer = maxf(landing_timer - delta, 0.0)
+    if was_airborne and not airborne:
+        landing_timer = 0.18
+    was_airborne = airborne
     var desired_state: String = _runtime_animation_state()
+    var action_id: int = int(player.call("get_animation_action_id"))
     if desired_state == current_state:
-        return
-
-    current_state = desired_state
-    playback.travel(StringName(desired_state), true)
+        if action_id != last_action_id and desired_state in ["hit", "jutsu", "dodge", "chakra_dash", "attack_1", "attack_2", "attack_3", "attack_4", "air_attack_1", "air_attack_2", "air_attack_3", "air_attack_4"]:
+            playback.start(StringName(desired_state), true)
+    else:
+        current_state = desired_state
+        playback.travel(StringName(desired_state), true)
+        # Interrupt an in-progress locomotion fade immediately for combat input.
+        playback.next()
+    last_action_id = action_id
+    if desired_state == "run" or desired_state == "sprint":
+        var speed: float = Vector2(player.velocity.x, player.velocity.z).length()
+        var reference_speed: float = 7.5 if desired_state == "run" else 12.0
+        animation_tree.set("parameters/%s/speed/scale" % desired_state,
+            clampf(speed / reference_speed, 0.35, 1.8))
 
 func _runtime_animation_state() -> String:
     var player_state: String = String(player.call("get_animation_state"))
     var combo_step: int = clampi(int(player.call("get_combo_step")), 1, 4)
-
     if player_state == "attack":
         return "attack_%d" % combo_step
-
     if player_state == "air_attack":
         return "air_attack_%d" % combo_step
-
+    if player_state == "air":
+        return "jump" if player.velocity.y > 0.5 else "fall"
+    if landing_timer > 0.0 and player_state in ["idle", "run"]:
+        return "land"
+    if player_state == "run" and Vector2(player.velocity.x, player.velocity.z).length() > 9.0:
+        return "sprint"
     return player_state
+
+func get_attack_timing(combo_step: int, airborne: bool) -> Dictionary:
+    var state_name: String = ("air_attack_%d" if airborne else "attack_%d") % combo_step
+    var clips: Dictionary = manifest.get("clips", {})
+    return clips.get(state_name, {})
 
 func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
     if not rig_loaded or skeleton == null or not follow_hitbox_to_bones:
@@ -353,20 +331,8 @@ func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
     )
 
 func _choose_strike_bone(combo_step: int, airborne: bool) -> int:
-    if airborne and combo_step >= 4:
-        return right_foot_bone if right_foot_bone >= 0 else left_foot_bone
-
-    match combo_step:
-        1:
-            return right_hand_bone
-        2:
-            return left_hand_bone
-        3:
-            return right_foot_bone if right_foot_bone >= 0 else right_hand_bone
-        4:
-            return left_foot_bone if left_foot_bone >= 0 else right_foot_bone
-        _:
-            return right_hand_bone
+    var timing: Dictionary = get_attack_timing(clampi(combo_step, 1, 4), airborne)
+    return _find_mixamo_bone(String(timing.get("bone", "RightHand")))
 
 func _find_skeleton(root: Node) -> Skeleton3D:
     if root is Skeleton3D:

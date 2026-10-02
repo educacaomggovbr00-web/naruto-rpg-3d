@@ -1,47 +1,15 @@
 # Personagem rigado
 
-O jogo procura o modelo principal neste caminho:
+O arquivo original `rigged.glb` permanece intacto, com sua animação `happy`. O adapter adiciona a biblioteca externa `../animations/combat_mixamo.tres` ao AnimationPlayer, sob o namespace `combat/`. Todos os estados jogáveis usam os clips reais dessa biblioteca.
 
-`res://assets/characters/rigged.glb`
+O Godot 4.7.2 importa os nomes Mixamo substituindo `:` por `_`. O adapter resolve ambos os formatos, descobre o caminho real do Skeleton3D e remapeia os canais da biblioteca; não depende da animação `happy` para descobrir os ossos.
 
-O arquivo analisado nesta etapa possui um rig Mixamo com ossos `mixamorig:*` e a animação `happy`.
+A biblioteca foi bakeada para este GLB específico, usando as matrizes de bind da skin corporal. Sua pose de nó importada é diferente da pose de bind; multiplicar rotações simples pela pose importada não faz retarget adequado.
 
-## Integração automática
+Após substituir o GLB, rode `python tools/bake_combat_animations.py` e os testes descritos no README. O manifest registra SHA-256 do personagem e das fontes usadas.
 
-Quando `rigged.glb` existe nesse caminho:
+A escala automática para aproximadamente 1,75 m e o yaw de 180° foram preservados. Mãos seguem o movimento real: jab esquerdo, cross direito, hook/launcher direito e slam direito. O dummy inimigo continua com sua representação original.
 
-- o humanoide procedural antigo é ocultado;
-- o GLB é instanciado como visual do Player;
-- o `Skeleton3D` e o `AnimationPlayer` são encontrados automaticamente;
-- um `AnimationTree` com os estados do combate é criado em runtime;
-- nomes de animações futuras são associados aos estados por palavras-chave;
-- a hitbox do Player passa a seguir mãos e pés reais do rig.
+Sem GLB ou com uma biblioteca incompatível, o adapter mostra o erro e mantém o visual de primitivas como recurso de emergência. Esse visual não é a solução de animação do personagem rigado.
 
-Se o arquivo não existir ou falhar ao importar, o jogo mantém o boneco procedural como fallback e continua executando.
-
-## Animações esperadas futuramente
-
-O adapter reconhece nomes contendo termos como:
-
-- idle / happy / stand
-- run / jog / sprint
-- jump / fall / air
-- attack / punch / kick / combo
-- guard / block
-- dodge / roll
-- dash / rush
-- charge / powerup
-- jutsu / cast
-- hit / hurt
-- defeat / death / ko
-
-Não é obrigatório usar exatamente esses nomes; eles são apenas palavras-chave para associação automática.
-
-
-## Escala automática
-
-Esse GLB mede aproximadamente **178,92 unidades de altura** no arquivo, então em Godot ele pode aparecer gigante se entrar com escala 1.0.
-
-O `RiggedCharacterAdapter` agora mede o AABB dos meshes em runtime e ajusta automaticamente o modelo para **1,75 m**. Para esse arquivo, a escala esperada fica perto de **0,00978**.
-
-O parâmetro `model_scale` funciona apenas como multiplicador fino depois da correção automática. Normalmente deve ficar em `1.0`.
+A origem/licença do modelo fornecido anteriormente não foi alterada nem reclassificada por esta mudança. A declaração CC0 cobre as novas animações do Quaternius.

@@ -64,7 +64,11 @@ O controlador expõe estados explícitos:
 
 O projeto agora possui um adapter real para `Skeleton3D + AnimationTree`. Quando existe `res://assets/characters/rigged.glb`, o modelo é instanciado automaticamente, o humanoide procedural é ocultado e os estados do combate passam a controlar uma máquina de estados de animação.
 
-Além do clip `happy` que veio no GLB, o jogo gera em runtime uma biblioteca `proc/` diretamente para o esqueleto Mixamo: corrida, pose aérea, ATK 1–4, combo aéreo 1–4, defesa, esquiva, chakra dash, chakra charge, jutsu, reação a hit e derrota. O adapter prefere uma animação externa real quando encontra uma compatível e usa a procedural como fallback.
+O combate usa **22 clips reais retargetados e pré-bakeados**, derivados das Universal Animation Libraries 1 e 2 do Quaternius (CC0). O `happy` permanece no GLB original, mas não participa do combate. Não há geração procedural de animações do rig em runtime.
+
+Inclui idle, jog/sprint, salto, queda, pouso, jab, cross, hook, launcher, quatro golpes aéreos (incluindo slam), guarda, roll/dodge, chakra dash, carregamento, jutsu, hit reaction, knockback e KO. Launcher e variantes aéreas são adaptações de animações do pacote, documentadas em `docs/ANIMATION_SOURCES.md`; não são mocap dedicado nem movimentos extraídos de Storm.
+
+A biblioteca `assets/animations/combat_mixamo.tres` contém movimentos reais em 65 ossos. O AnimationTree tem estados e crossfades explícitos, relógio de física compartilhado com o combate, reinício de ataques repetidos e velocidade de locomoção ajustável. Startup, duração e mão de impacto vêm de `combat_manifest.json`.
 
 ## Controles mobile
 - **Joystick esquerdo:** mover; perto da borda corre
@@ -117,7 +121,7 @@ O feedback de combate agora é disparado pelo acerto real da hitbox. Golpes no v
 Os VFX usam meshes simples criadas em runtime, sem texturas ou sistemas pesados de partículas.
 
 ## Mobile
-O protótipo continua usando primitivas low-poly e efeitos baratos para validar o combate em aparelhos móveis antes de adicionar modelos e VFX pesados.
+O Player usa o GLB rigado; o inimigo ainda usa o dummy original. VFX continuam simples. Clips são pré-bakeados: Android não precisa de Python, Blender, FBX ou download em runtime. As fontes ficam em uma pasta com `.gdignore` e não entram na exportação.
 
 ## Personagem rigado
 O adapter procura `res://assets/characters/rigged.glb`.
@@ -127,9 +131,9 @@ O GLB analisado nesta etapa possui rig Mixamo, ossos de mãos/pés compatíveis 
 O HUD mostra `RIG: OK` quando o asset foi importado corretamente. Sem o arquivo, o boneco procedural continua funcionando como fallback.
 
 ## Próximas melhorias
-- substituir gradualmente os clips procedurais por mocap/animações autorais ou CC0 retargetadas
-- crossfade refinado entre animações reais e procedurais
-- retarget/bake da Universal Animation Library CC0 para o rig Mixamo
+- refinar guarda sem escudo e movimentos autorais específicos de chakra/jutsu
+- adicionar locomoção direcional dedicada para strafe em lock-on
+- avaliar desempenho e aparência em aparelhos Android reais
 - jutsus com projétil/área e VFX próprios
 - seleção de personagem
 - arena temática maior com obstáculos
@@ -140,3 +144,27 @@ O HUD mostra `RIG: OK` quando o asset foi importado corretamente. Sem o arquivo,
 ## Fontes de animação pesquisadas
 
 As decisões de animação e licenciamento estão documentadas em `docs/ANIMATION_SOURCES.md` e `THIRD_PARTY_NOTICES.md`.
+
+## Validação e reprodução do bake
+
+```sh
+godot --headless --path . --editor --import
+godot --headless --path . --script res://tests/animation_contract.gd
+```
+
+O teste verifica os 22 clips, ossos/canais/quaternions, estados exatos, combo terrestre, launcher, combo aéreo/slam, interrupções, reinício de golpes, jutsu e KO/respawn. CI usa Godot **4.7.2**. A validação local foi feita nessa mesma versão, em modo headless; não substitui testes no renderer e em dispositivo Android.
+
+Para regenerar após trocar o personagem ou ajustar os recortes (Python com `numpy` e `scipy`):
+
+```sh
+python tools/bake_combat_animations.py
+```
+
+Para revisar as silhuetas do mesh efetivamente deformado pelas poses avaliadas no AnimationTree (com `Pillow`):
+
+```sh
+godot --headless --path . --script res://tests/animation_contract.gd -- --dump-poses
+python tools/preview_combat_poses.py
+```
+
+O preview é um render diagnóstico por CPU, não uma captura do renderer do jogo. Histórico auditado e limitações estão em `docs/ANIMATION_IMPLEMENTATION.md`.

@@ -1,22 +1,23 @@
 # Third-party notices
 
-## avatar-stage
+## Quaternius — Universal Animation Libraries 1 and 2
 
-Copyright (c) 2026 Jatin Rana
+Author: Quaternius. UAL2 also credits animator Gonzalo Furnier on its official page.
+License: CC0 1.0 Universal (public domain dedication).
 
-License: MIT.
+https://quaternius.itch.io/universal-animation-library
+https://quaternius.itch.io/universal-animation-library-2
+https://creativecommons.org/publicdomain/zero/1.0/
 
-Project: https://github.com/rana-jatin/avatar-stage
+Vendored free Standard animation source files and their retargeted/adapted derivatives are included in this repository. Source license copies: `assets/animations/source/CC0-1.0.txt` and `UAL2-License.txt`. Acquisition revisions, SHA-256 checksums and modifications are documented in `docs/ANIMATION_SOURCES.md` and `assets/animations/combat_manifest.json`.
 
-This project uses avatar-stage as a design/reference source for humanoid rig detection and runtime procedural animation concepts. The Godot/GDScript implementation in this repository was written for this project.
+## avatar-stage (historical reference)
 
-## Quaternius Universal Animation Library
+Copyright (c) 2026 Jatin Rana. MIT.
+https://github.com/rana-jatin/avatar-stage
 
-Universal Animation Library by Quaternius.
+Earlier procedural implementations cited this project for design/reference concepts. The obsolete procedural rig library has been removed; the current animation data is from the CC0 Quaternius sources above.
 
-License: CC0 1.0.
+## Previously supplied character
 
-Reference mirror used during research:
-https://github.com/J-Ponzo/gltf-universal-animation-library
-
-No Quaternius binary animation files are currently vendored into this repository.
+The existing `assets/characters/rigged.glb` is unchanged. These animation licenses do not establish or alter ownership or licensing of that previously supplied model.

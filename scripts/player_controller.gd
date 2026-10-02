@@ -76,6 +76,11 @@ var attack_elapsed: float = 0.0
 var attack_hit_triggered: bool = false
 var attack_is_airborne: bool = false
 var animation_state: String = "idle"
+var animation_action_id: int = 0
+var attack_startup: float = 0.12
+var attack_duration: float = 0.28
+var jutsu_elapsed: float = 0.0
+var jutsu_released: bool = false
 var combo_hits: int = 0
 var combo_damage: float = 0.0
 var combo_display_timer: float = 0.0
@@ -120,6 +125,7 @@ func _physics_process(delta: float) -> void:
     _consume_mobile_actions()
     _update_timers(delta)
     _update_attack_timeline(delta)
+    _update_jutsu_timeline(delta)
 
     if defeated:
         _process_defeated(delta)
@@ -214,8 +220,8 @@ func _refresh_hold_states() -> void:
     var keyboard_guard: bool = Input.is_physical_key_pressed(KEY_R)
     var keyboard_charge: bool = Input.is_physical_key_pressed(KEY_C)
 
-    is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and not attack_active
-    is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and not attack_active and attack_cooldown <= 0.0
+    is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and not attack_active and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0
+    is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and not attack_active and attack_cooldown <= 0.0 and jutsu_timer <= 0.0 and stagger_timer <= 0.0 and dodge_timer <= 0.0 and chakra_dash_timer <= 0.0
 
 func _update_timers(delta: float) -> void:
     combo_timer = maxf(combo_timer - delta, 0.0)
@@ -245,19 +251,29 @@ func _update_attack_timeline(delta: float) -> void:
 
     attack_elapsed += delta
 
-    var startup: float = 0.08
-    var total: float = 0.28
-
-    if combo_step == 4:
-        startup = 0.12
-        total = 0.38
-
-    if not attack_hit_triggered and attack_elapsed >= startup:
+    if not attack_hit_triggered and attack_elapsed >= attack_startup:
         attack_hit_triggered = true
         _open_attack_hitbox()
-
-    if attack_elapsed >= total:
+    if attack_elapsed >= attack_duration:
         attack_active = false
+
+func _cancel_attack() -> void:
+    attack_active = false
+    attack_lunge_timer = 0.0
+    air_float_timer = 0.0
+    attack_hitbox.call("deactivate")
+
+func _cancel_jutsu() -> void:
+    jutsu_timer = 0.0
+    jutsu_released = true
+
+func _update_jutsu_timeline(delta: float) -> void:
+    if jutsu_timer <= 0.0 or jutsu_released:
+        return
+    jutsu_elapsed += delta
+    if jutsu_elapsed >= 0.24:
+        jutsu_released = true
+        _release_jutsu()
 
 func _open_attack_hitbox() -> void:
     var damage_values: Array[float] = [7.0, 8.0, 10.0, 16.0]
@@ -435,6 +451,7 @@ func _start_chakra_dash() -> void:
     is_charging_chakra = false
     is_guarding = false
     chakra -= chakra_dash_cost
+    animation_action_id += 1
     chakra_dash_direction = direction.normalized()
     chakra_dash_timer = chakra_dash_duration
 
@@ -455,6 +472,9 @@ func _start_dodge() -> void:
 
     is_charging_chakra = false
     is_guarding = false
+    _cancel_attack()
+    _cancel_jutsu()
+    animation_action_id += 1
     dodge_direction = direction.normalized()
     dodge_timer = dodge_duration
     dodge_cooldown = dodge_cooldown_time
@@ -464,6 +484,10 @@ func _try_substitution() -> void:
     if defeated or substitutions <= 0 or substitution_cooldown > 0.0:
         return
 
+    _cancel_attack()
+    _cancel_jutsu()
+    dodge_timer = 0.0
+    chakra_dash_timer = 0.0
     var substitution_origin: Vector3 = global_position
 
     substitutions -= 1
@@ -499,7 +523,7 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
-    if defeated or attack_cooldown > 0.0 or chakra_dash_timer > 0.0 or dodge_timer > 0.0:
+    if defeated or attack_active or jutsu_timer > 0.0 or attack_cooldown > 0.0 or chakra_dash_timer > 0.0 or dodge_timer > 0.0:
         return
     if stagger_timer > 0.0 or is_charging_chakra:
         return
@@ -511,13 +535,19 @@ func _try_attack() -> void:
         combo_step = 1
 
     combo_timer = combo_reset_time
-    attack_cooldown = 0.24 if combo_step < 4 else 0.40
+    var timing: Dictionary = {}
+    if is_instance_valid(rig_adapter) and rig_adapter.has_method("get_attack_timing"):
+        timing = rig_adapter.call("get_attack_timing", combo_step, attack_is_airborne)
+    attack_startup = float(timing.get("impact", 0.12 if combo_step < 4 else 0.18))
+    attack_duration = float(timing.get("duration", 0.28 if combo_step < 4 else 0.40))
+    attack_cooldown = attack_duration
+    animation_action_id += 1
     attack_active = true
     attack_elapsed = 0.0
     attack_hit_triggered = false
 
     if attack_is_airborne:
-        air_float_timer = air_float_time
+        air_float_timer = maxf(air_float_time, attack_duration)
         velocity.y = maxf(velocity.y, 0.0)
 
     var target: Node3D = _find_attack_target(attack_range)
@@ -528,11 +558,13 @@ func _try_attack() -> void:
 
         if flat.length_squared() > 0.001:
             attack_lunge_direction = flat.normalized()
-            attack_lunge_timer = 0.12
+            # Do not lunge through the opponent between chained strikes.
+            var approach_distance: float = maxf(flat.length() - 1.15, 0.0)
+            attack_lunge_timer = minf(0.12, approach_distance / maxf(attack_lunge_speed, 0.01))
             _face_direction(flat, 1.0, 100.0)
 
 func _try_jutsu() -> void:
-    if defeated or stagger_timer > 0.0 or jutsu_cooldown > 0.0:
+    if defeated or attack_active or stagger_timer > 0.0 or jutsu_cooldown > 0.0:
         return
     if chakra < jutsu_cost or dodge_timer > 0.0 or chakra_dash_timer > 0.0:
         return
@@ -542,7 +574,12 @@ func _try_jutsu() -> void:
     chakra -= jutsu_cost
     jutsu_cooldown = jutsu_cooldown_time
     jutsu_timer = 0.48
-    attack_cooldown = maxf(attack_cooldown, 0.42)
+    jutsu_elapsed = 0.0
+    jutsu_released = false
+    animation_action_id += 1
+    attack_cooldown = maxf(attack_cooldown, 0.48)
+
+func _release_jutsu() -> void:
 
     var target: Node3D = _find_attack_target(jutsu_range)
     if is_instance_valid(target):
@@ -613,6 +650,9 @@ func receive_combat_hit(
         applied_knockback *= 0.25
         launch_velocity *= 0.15
     else:
+        _cancel_attack()
+        _cancel_jutsu()
+        animation_action_id += 1
         stagger_timer = hitstun
 
     health = maxf(health - applied_damage, 0.0)
@@ -641,6 +681,8 @@ func receive_combat_hit(
     return applied_damage
 
 func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float) -> void:
+    if actual_damage <= 0.001:
+        return
     var target_guarding: bool = (
         target.has_method("get_is_guarding")
         and bool(target.call("get_is_guarding"))
@@ -729,7 +771,10 @@ func _defeat() -> void:
     combo_display_timer = 0.0
     is_guarding = false
     is_charging_chakra = false
-    attack_active = false
+    _cancel_attack()
+    _cancel_jutsu()
+    dodge_timer = 0.0
+    chakra_dash_timer = 0.0
     combo_step = 0
     _set_locked_target(null)
 
@@ -746,6 +791,10 @@ func _respawn() -> void:
     combo_hits = 0
     combo_damage = 0.0
     combo_display_timer = 0.0
+    stagger_timer = 0.0
+    combo_timer = 0.0
+    combo_step = 0
+    attack_cooldown = 0.0
     defeated = false
 
 func _can_use_movement_action() -> bool:
@@ -756,6 +805,7 @@ func _can_use_movement_action() -> bool:
         and chakra_dash_timer <= 0.0
         and not is_charging_chakra
         and not attack_active
+        and jutsu_timer <= 0.0
     )
 
 func get_locked_target() -> Node3D:
@@ -805,6 +855,9 @@ func get_combo_hits() -> int:
 
 func get_combo_damage() -> float:
     return combo_damage
+
+func get_animation_action_id() -> int:
+    return animation_action_id
 
 func get_animation_state() -> String:
     return animation_state

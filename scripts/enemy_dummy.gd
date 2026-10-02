@@ -267,6 +267,8 @@ func receive_combat_hit(
         ground_bounce_pending = false
         wall_bounce_pending = false
     else:
+        attack_active = false
+        attack_hitbox.call("deactivate")
         stagger_timer = hitstun
         wall_bounce_pending = applied_knockback >= 4.0
         ground_bounce_pending = launch_velocity < -2.0
@@ -343,6 +345,7 @@ func _knock_out() -> void:
     targetable = false
     guarding = false
     attack_active = false
+    attack_hitbox.call("deactivate")
     ground_bounce_pending = false
     wall_bounce_pending = false
     lock_label.visible = false
@@ -357,6 +360,11 @@ func _respawn() -> void:
     guarding = false
     ground_bounce_pending = false
     wall_bounce_pending = false
+    attack_active = false
+    attack_hitbox.call("deactivate")
+    stagger_timer = 0.0
+    dodge_timer = 0.0
+    guard_timer = 0.0
     attack_cooldown = 0.8
     _update_labels()
 
