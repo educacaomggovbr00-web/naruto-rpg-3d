@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var chakra_bar: ProgressBar = $ChakraBar
 @onready var status_label: Label = $Status
 @onready var resource_label: Label = $Resources
+@onready var combo_label: Label = $ComboCounter
 @onready var fps_label: Label = $FPS
 
 func _ready() -> void:
@@ -34,5 +35,11 @@ func _process(_delta: float) -> void:
         sub_cd,
         jutsu_cd
     ]
+
+    var combo_hits: int = int(player.call("get_combo_hits"))
+    var combo_damage: float = float(player.call("get_combo_damage"))
+    combo_label.visible = combo_hits > 0
+    if combo_hits > 0:
+        combo_label.text = "%d HITS\n%d DANO" % [combo_hits, int(round(combo_damage))]
 
     fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
