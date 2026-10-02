@@ -637,16 +637,22 @@ func receive_combat_hit(
     return applied_damage
 
 func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float) -> void:
-    combo_hits += 1
-    combo_damage += maxf(actual_damage, 0.0)
-    combo_display_timer = combo_display_reset_time
+    var target_guarding: bool = (
+        target.has_method("get_is_guarding")
+        and bool(target.call("get_is_guarding"))
+    )
+
+    if not target_guarding:
+        combo_hits += 1
+        combo_damage += maxf(actual_damage, 0.0)
+        combo_display_timer = combo_display_reset_time
 
     var impact_kind: String = "normal"
     var hit_stop_duration: float = 0.035
     var shake_strength: float = 0.07
     var zoom_kick: float = 1.2
 
-    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+    if target_guarding:
         impact_kind = "guard"
         hit_stop_duration = 0.025
         shake_strength = 0.045
