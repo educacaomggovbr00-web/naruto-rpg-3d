@@ -21,6 +21,9 @@ extends CharacterBody3D
 @export var substitution_cooldown_time: float = 4.0
 @export var substitution_distance: float = 2.3
 
+@export_group("Combat Polish")
+@export var combo_display_reset_time: float = 1.35
+
 @export_group("Aerial Combat")
 @export var launcher_velocity: float = 8.5
 @export var air_chase_speed: float = 22.0
@@ -73,6 +76,9 @@ var attack_elapsed: float = 0.0
 var attack_hit_triggered: bool = false
 var attack_is_airborne: bool = false
 var animation_state: String = "idle"
+var combo_hits: int = 0
+var combo_damage: float = 0.0
+var combo_display_timer: float = 0.0
 
 var jump_requested: bool = false
 var is_guarding: bool = false
@@ -82,6 +88,7 @@ var mobile_controls: Node = null
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
+@onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func _ready() -> void:
     spawn_position = global_position
@@ -222,9 +229,14 @@ func _update_timers(delta: float) -> void:
     stagger_timer = maxf(stagger_timer - delta, 0.0)
     invulnerable_timer = maxf(invulnerable_timer - delta, 0.0)
     air_float_timer = maxf(air_float_timer - delta, 0.0)
+    combo_display_timer = maxf(combo_display_timer - delta, 0.0)
 
     if combo_timer <= 0.0 and not attack_active:
         combo_step = 0
+
+    if combo_display_timer <= 0.0:
+        combo_hits = 0
+        combo_damage = 0.0
 
 func _update_attack_timeline(delta: float) -> void:
     if not attack_active:
@@ -422,6 +434,9 @@ func _start_chakra_dash() -> void:
     chakra_dash_direction = direction.normalized()
     chakra_dash_timer = chakra_dash_duration
 
+    if is_instance_valid(combat_feedback) and combat_feedback.has_method("spawn_dash_burst"):
+        combat_feedback.call("spawn_dash_burst", global_position)
+
 func _start_dodge() -> void:
     if defeated or stagger_timer > 0.0 or dodge_cooldown > 0.0 or chakra_dash_timer > 0.0:
         return
@@ -444,6 +459,8 @@ func _start_dodge() -> void:
 func _try_substitution() -> void:
     if defeated or substitutions <= 0 or substitution_cooldown > 0.0:
         return
+
+    var substitution_origin: Vector3 = global_position
 
     substitutions -= 1
     substitution_cooldown = substitution_cooldown_time
@@ -468,7 +485,13 @@ func _try_substitution() -> void:
         if escape.length_squared() > 0.001:
             global_position += escape.normalized() * substitution_distance
 
-    if camera_rig.has_method("add_impact_shake"):
+    if is_instance_valid(combat_feedback) and combat_feedback.has_method("spawn_substitution"):
+        combat_feedback.call("spawn_substitution", substitution_origin)
+        combat_feedback.call("spawn_substitution", global_position)
+
+    if camera_rig.has_method("add_combat_impact"):
+        camera_rig.call("add_combat_impact", 0.10, 1.4)
+    elif camera_rig.has_method("add_impact_shake"):
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
@@ -524,10 +547,18 @@ func _try_jutsu() -> void:
         _face_direction(direction, 1.0, 100.0)
 
         if target.has_method("receive_combat_hit"):
-            target.call("receive_combat_hit", jutsu_damage, direction.normalized(), jutsu_knockback, 4.5, 0.45)
-
-    if camera_rig.has_method("add_impact_shake"):
-        camera_rig.call("add_impact_shake", 0.16)
+            var damage_result: Variant = target.call(
+                "receive_combat_hit",
+                jutsu_damage,
+                direction.normalized(),
+                jutsu_knockback,
+                4.5,
+                0.45
+            )
+            var actual_damage: float = jutsu_damage
+            if typeof(damage_result) == TYPE_FLOAT or typeof(damage_result) == TYPE_INT:
+                actual_damage = float(damage_result)
+            on_attack_connected(target, actual_damage, 4.5)
 
 func _find_attack_target(range_limit: float) -> Node3D:
     if is_instance_valid(locked_target):
@@ -566,9 +597,9 @@ func receive_combat_hit(
     knockback: float,
     launch_velocity: float,
     hitstun: float
-) -> void:
+) -> float:
     if defeated or invulnerable_timer > 0.0:
-        return
+        return 0.0
 
     var applied_damage: float = damage
     var applied_knockback: float = knockback
@@ -596,6 +627,50 @@ func receive_combat_hit(
 
     if health <= 0.0:
         _defeat()
+
+    return applied_damage
+
+func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float) -> void:
+    combo_hits += 1
+    combo_damage += maxf(actual_damage, 0.0)
+    combo_display_timer = combo_display_reset_time
+
+    var impact_kind: String = "normal"
+    var hit_stop_duration: float = 0.035
+    var shake_strength: float = 0.07
+    var zoom_kick: float = 1.2
+
+    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+        impact_kind = "guard"
+        hit_stop_duration = 0.025
+        shake_strength = 0.045
+        zoom_kick = 0.7
+    elif launch_velocity > 1.0:
+        impact_kind = "launcher"
+        hit_stop_duration = 0.055
+        shake_strength = 0.13
+        zoom_kick = 2.6
+    elif launch_velocity < -1.0:
+        impact_kind = "slam"
+        hit_stop_duration = 0.070
+        shake_strength = 0.17
+        zoom_kick = 3.8
+
+    if is_instance_valid(combat_feedback):
+        if combat_feedback.has_method("spawn_impact") and target is Node3D:
+            var target_3d: Node3D = target as Node3D
+            combat_feedback.call(
+                "spawn_impact",
+                target_3d.global_position + Vector3.UP * 0.75,
+                impact_kind
+            )
+        if combat_feedback.has_method("hit_stop"):
+            combat_feedback.call("hit_stop", hit_stop_duration, 0.10)
+
+    if camera_rig.has_method("add_combat_impact"):
+        camera_rig.call("add_combat_impact", shake_strength, zoom_kick)
+    elif camera_rig.has_method("add_impact_shake"):
+        camera_rig.call("add_impact_shake", shake_strength)
 
 func take_hit(damage: float, direction: Vector3, knockback: float) -> void:
     receive_combat_hit(damage, direction, knockback, 0.0, 0.28)
@@ -696,6 +771,12 @@ func get_substitution_cooldown() -> float:
 
 func get_jutsu_cooldown() -> float:
     return jutsu_cooldown
+
+func get_combo_hits() -> int:
+    return combo_hits
+
+func get_combo_damage() -> float:
+    return combo_damage
 
 func get_animation_state() -> String:
     return animation_state
