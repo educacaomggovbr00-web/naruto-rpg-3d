@@ -622,7 +622,13 @@ func receive_combat_hit(
     if absf(launch_velocity) > 0.01:
         velocity.y = launch_velocity
 
-    if camera_rig.has_method("add_impact_shake"):
+    if camera_rig.has_method("add_combat_impact"):
+        camera_rig.call(
+            "add_combat_impact",
+            0.05 if is_guarding else 0.11,
+            0.7 if is_guarding else 1.8
+        )
+    elif camera_rig.has_method("add_impact_shake"):
         camera_rig.call("add_impact_shake", 0.05 if is_guarding else 0.11)
 
     if health <= 0.0:
