@@ -1,0 +1,101 @@
+extends Node3D
+
+var hit_stop_end_msec: int = 0
+var normal_time_scale: float = 1.0
+
+func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
+    normal_time_scale = Engine.time_scale
+
+func _process(_delta: float) -> void:
+    if hit_stop_end_msec <= 0:
+        return
+
+    if Time.get_ticks_msec() >= hit_stop_end_msec:
+        Engine.time_scale = normal_time_scale
+        hit_stop_end_msec = 0
+
+func hit_stop(duration: float, slow_scale: float = 0.10) -> void:
+    var duration_msec: int = int(maxf(duration, 0.01) * 1000.0)
+    var requested_end: int = Time.get_ticks_msec() + duration_msec
+    hit_stop_end_msec = maxi(hit_stop_end_msec, requested_end)
+    Engine.time_scale = minf(Engine.time_scale, clampf(slow_scale, 0.03, 1.0))
+
+func spawn_impact(world_position: Vector3, impact_kind: String = "normal") -> void:
+    var scale_value: float = 0.34
+    var color_value: Color = Color(1.0, 0.78, 0.22, 1.0)
+    var lifetime: float = 0.10
+
+    if impact_kind == "guard":
+        scale_value = 0.42
+        color_value = Color(0.35, 0.85, 1.0, 1.0)
+    elif impact_kind == "launcher":
+        scale_value = 0.52
+        color_value = Color(1.0, 0.42, 0.12, 1.0)
+        lifetime = 0.13
+    elif impact_kind == "slam":
+        scale_value = 0.62
+        color_value = Color(1.0, 0.18, 0.08, 1.0)
+        lifetime = 0.15
+    elif impact_kind == "bounce":
+        scale_value = 0.58
+        color_value = Color(1.0, 0.58, 0.15, 1.0)
+        lifetime = 0.14
+
+    _spawn_flash(world_position, scale_value, color_value, lifetime)
+
+func spawn_substitution(world_position: Vector3) -> void:
+    var offsets: Array[Vector3] = [
+        Vector3(-0.42, 0.25, 0.0),
+        Vector3(0.38, 0.35, 0.12),
+        Vector3(0.0, 0.55, -0.25)
+    ]
+
+    for offset: Vector3 in offsets:
+        _spawn_flash(
+            world_position + offset,
+            0.44,
+            Color(0.82, 0.87, 0.92, 1.0),
+            0.22
+        )
+
+func spawn_dash_burst(world_position: Vector3) -> void:
+    _spawn_flash(
+        world_position + Vector3.UP * 0.55,
+        0.48,
+        Color(0.10, 0.55, 1.0, 1.0),
+        0.16
+    )
+
+func _spawn_flash(
+    world_position: Vector3,
+    start_scale: float,
+    flash_color: Color,
+    lifetime: float
+) -> void:
+    var effect: MeshInstance3D = MeshInstance3D.new()
+    var mesh: SphereMesh = SphereMesh.new()
+    var material: StandardMaterial3D = StandardMaterial3D.new()
+
+    mesh.radius = 0.50
+    mesh.height = 1.0
+    mesh.radial_segments = 8
+    mesh.rings = 4
+
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    material.albedo_color = flash_color
+    material.emission_enabled = true
+    material.emission = flash_color
+    material.emission_energy_multiplier = 1.8
+    mesh.material = material
+
+    effect.mesh = mesh
+    effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    add_child(effect)
+    effect.global_position = world_position
+    effect.scale = Vector3.ONE * start_scale
+
+    var tween: Tween = create_tween()
+    tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+    tween.tween_property(effect, "scale", Vector3.ONE * start_scale * 2.35, lifetime)
+    tween.tween_callback(Callable(effect, "queue_free"))
