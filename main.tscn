@@ -189,7 +189,7 @@ mesh = SubResource("CapsuleMesh_enemy")
 [node name="HealthLabel" type="Label3D" parent="EnemyDummy"]
 position = Vector3(0, 1.65, 0)
 billboard = 1
-text = "DUMMY 100 / 100"
+text = "ENEMY 120 / 120"
 font_size = 28
 outline_size = 8
 
@@ -206,39 +206,61 @@ script = ExtResource("4")
 
 [node name="Title" type="Label" parent="HUD"]
 offset_left = 20.0
-offset_top = 16.0
-offset_right = 280.0
-offset_bottom = 44.0
+offset_top = 14.0
+offset_right = 340.0
+offset_bottom = 42.0
 text = "SHINOBI COMBAT — MOBILE"
+
+[node name="HealthText" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 46.0
+offset_right = 150.0
+offset_bottom = 68.0
+text = "VIDA"
+
+[node name="HealthBar" type="ProgressBar" parent="HUD"]
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 310.0
+offset_bottom = 92.0
+value = 100.0
+show_percentage = false
 
 [node name="ChakraText" type="Label" parent="HUD"]
 offset_left = 20.0
-offset_top = 48.0
+offset_top = 98.0
 offset_right = 150.0
-offset_bottom = 72.0
+offset_bottom = 120.0
 text = "CHAKRA"
 
 [node name="ChakraBar" type="ProgressBar" parent="HUD"]
 offset_left = 20.0
-offset_top = 74.0
+offset_top = 122.0
 offset_right = 310.0
-offset_bottom = 98.0
+offset_bottom = 144.0
 value = 100.0
 show_percentage = false
 
 [node name="Status" type="Label" parent="HUD"]
 offset_left = 20.0
-offset_top = 104.0
-offset_right = 430.0
-offset_bottom = 130.0
-text = "LOCK: LIVRE   |   COMBO: 0"
+offset_top = 150.0
+offset_right = 520.0
+offset_bottom = 176.0
+text = "LOCK: LIVRE | COMBO: 0"
+
+[node name="Resources" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 178.0
+offset_right = 560.0
+offset_bottom = 204.0
+text = "SUB: 4 | CD SUB: 0.0 | CD JUTSU: 0.0"
 
 [node name="Controls" type="Label" parent="HUD"]
 offset_left = 20.0
-offset_top = 134.0
-offset_right = 570.0
-offset_bottom = 162.0
-text = "Joystick: mover/correr | lado direito: girar câmera"
+offset_top = 208.0
+offset_right = 620.0
+offset_bottom = 236.0
+text = "CHK segurar | DEF segurar | SUB substituição | ESQ esquiva"
 
 [node name="FPS" type="Label" parent="HUD"]
 anchor_left = 1.0
