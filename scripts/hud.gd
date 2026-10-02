@@ -6,6 +6,8 @@ extends CanvasLayer
 @onready var status_label: Label = $Status
 @onready var resource_label: Label = $Resources
 @onready var combo_label: Label = $ComboCounter
+@onready var rig_label: Label = $RigStatus
+@onready var rig_adapter: Node = $"../Player/RiggedCharacterAdapter"
 @onready var fps_label: Label = $FPS
 
 func _ready() -> void:
@@ -41,5 +43,8 @@ func _process(_delta: float) -> void:
     combo_label.visible = combo_hits > 0
     if combo_hits > 0:
         combo_label.text = "%d HITS\n%d DANO" % [combo_hits, int(round(combo_damage))]
+
+    if is_instance_valid(rig_adapter) and rig_adapter.has_method("get_rig_status"):
+        rig_label.text = String(rig_adapter.call("get_rig_status"))
 
     fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
