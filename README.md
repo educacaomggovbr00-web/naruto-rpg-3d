@@ -62,7 +62,9 @@ O controlador expõe estados explícitos:
 - `hit`
 - `defeat`
 
-O projeto agora possui um adapter real para `Skeleton3D + AnimationTree`. Quando existe `res://assets/characters/rigged.glb`, o modelo é instanciado automaticamente, o humanoide procedural é ocultado e os estados do combate passam a controlar uma máquina de estados de animação. Se alguma animação ainda não existir no GLB, o adapter usa uma animação disponível como fallback sem quebrar o combate.
+O projeto agora possui um adapter real para `Skeleton3D + AnimationTree`. Quando existe `res://assets/characters/rigged.glb`, o modelo é instanciado automaticamente, o humanoide procedural é ocultado e os estados do combate passam a controlar uma máquina de estados de animação.
+
+Além do clip `happy` que veio no GLB, o jogo gera em runtime uma biblioteca `proc/` diretamente para o esqueleto Mixamo: corrida, pose aérea, ATK 1–4, combo aéreo 1–4, defesa, esquiva, chakra dash, chakra charge, jutsu, reação a hit e derrota. O adapter prefere uma animação externa real quando encontra uma compatível e usa a procedural como fallback.
 
 ## Controles mobile
 - **Joystick esquerdo:** mover; perto da borda corre
@@ -125,10 +127,16 @@ O GLB analisado nesta etapa possui rig Mixamo, ossos de mãos/pés compatíveis 
 O HUD mostra `RIG: OK` quando o asset foi importado corretamente. Sem o arquivo, o boneco procedural continua funcionando como fallback.
 
 ## Próximas melhorias
-- pacote completo de animações para o rig: idle, run, jump, ataques, guard, dodge, hit e KO
-- crossfade refinado entre animações reais
+- substituir gradualmente os clips procedurais por mocap/animações autorais ou CC0 retargetadas
+- crossfade refinado entre animações reais e procedurais
+- retarget/bake da Universal Animation Library CC0 para o rig Mixamo
 - jutsus com projétil/área e VFX próprios
 - seleção de personagem
 - arena temática maior com obstáculos
 - áudio de golpes, dash, chakra e jutsu
 - presets de qualidade para celulares fracos/intermediários/fortes
+
+
+## Fontes de animação pesquisadas
+
+As decisões de animação e licenciamento estão documentadas em `docs/ANIMATION_SOURCES.md` e `THIRD_PARTY_NOTICES.md`.
