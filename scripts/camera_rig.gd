@@ -39,7 +39,7 @@ func _process(delta: float) -> void:
     if not is_instance_valid(locked_target) and is_instance_valid(mobile_controls):
         var touch_value: Variant = mobile_controls.call("consume_camera_delta")
         if typeof(touch_value) == TYPE_VECTOR2:
-            var touch_delta: Vector2 = Vector2(touch_value)
+            var touch_delta: Vector2 = touch_value
             if touch_delta.length_squared() > 0.0:
                 yaw -= touch_delta.x * touch_sensitivity
                 pitch = clampf(pitch - touch_delta.y * touch_sensitivity, min_pitch, max_pitch)
