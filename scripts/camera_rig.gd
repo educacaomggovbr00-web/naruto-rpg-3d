@@ -11,6 +11,7 @@ extends Node3D
 var yaw := 0.0
 var pitch := deg_to_rad(-10.0)
 var mobile_controls: Node = null
+var shake_strength := 0.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 
@@ -73,8 +74,19 @@ func _process(delta: float) -> void:
             1.0 - exp(-6.0 * delta)
         )
 
+    shake_strength = move_toward(shake_strength, 0.0, delta * 0.75)
+    var ticks := Time.get_ticks_msec() * 0.001
+    spring_arm.position = Vector3(
+        sin(ticks * 47.0),
+        cos(ticks * 61.0),
+        0.0
+    ) * shake_strength
+
     global_position = follow_position
     global_rotation = Vector3(pitch, yaw, 0.0)
+
+func add_impact_shake(strength: float) -> void:
+    shake_strength = max(shake_strength, strength)
 
 func _is_mobile_runtime() -> bool:
     return (
