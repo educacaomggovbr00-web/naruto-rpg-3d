@@ -10,7 +10,7 @@ static func install(animation_player: AnimationPlayer, skeleton: Skeleton3D) -> 
         animation_player.remove_animation_library(LIBRARY_NAME)
 
     var library: AnimationLibrary = AnimationLibrary.new()
-    var source_paths: Dictionary = _discover_bone_paths(animation_player)
+    var source_paths: Dictionary = _discover_bone_paths(animation_player, skeleton)
 
     _add_clip(library, &"run", _build_run(source_paths))
     _add_clip(library, &"air", _build_air(source_paths))
@@ -43,7 +43,11 @@ static func _add_clip(library: AnimationLibrary, name: StringName, animation: An
         return
     library.add_animation(name, animation)
 
-static func _discover_bone_paths(animation_player: AnimationPlayer) -> Dictionary:
+static func _discover_bone_paths(
+    animation_player: AnimationPlayer,
+    skeleton: Skeleton3D
+) -> Dictionary:
+    var discovered_paths: Dictionary = {}
     var result: Dictionary = {}
     var wanted: Array[String] = [
         "mixamorig:Hips",
@@ -81,10 +85,26 @@ static func _discover_bone_paths(animation_player: AnimationPlayer) -> Dictionar
             var path_text: String = String(track_path)
 
             for bone_name: String in wanted:
-                if result.has(bone_name):
+                if discovered_paths.has(bone_name):
                     continue
                 if path_text.ends_with(bone_name):
-                    result[bone_name] = track_path
+                    discovered_paths[bone_name] = track_path
+
+    for bone_name: String in wanted:
+        if not discovered_paths.has(bone_name):
+            continue
+
+        var bone_index: int = skeleton.find_bone(bone_name)
+        if bone_index < 0:
+            continue
+
+        var rest_transform: Transform3D = skeleton.get_bone_rest(bone_index)
+        var rest_rotation: Quaternion = rest_transform.basis.orthonormalized().get_rotation_quaternion()
+
+        result[bone_name] = {
+            "path": discovered_paths[bone_name],
+            "rest_rotation": rest_rotation
+        }
 
     return result
 
@@ -107,8 +127,12 @@ static func _pose(
     if times.size() != degrees.size():
         return
 
+    var bone_data: Dictionary = paths[bone_name]
+    var track_path: NodePath = bone_data["path"]
+    var rest_rotation: Quaternion = bone_data["rest_rotation"]
+
     var track_index: int = animation.add_track(Animation.TYPE_ROTATION_3D)
-    animation.track_set_path(track_index, paths[bone_name] as NodePath)
+    animation.track_set_path(track_index, track_path)
 
     for index: int in range(times.size()):
         var radians: Vector3 = Vector3(
@@ -116,10 +140,12 @@ static func _pose(
             deg_to_rad(degrees[index].y),
             deg_to_rad(degrees[index].z)
         )
+        var pose_offset: Quaternion = Quaternion.from_euler(radians)
+        var final_rotation: Quaternion = (rest_rotation * pose_offset).normalized()
         animation.rotation_track_insert_key(
             track_index,
             times[index],
-            Quaternion.from_euler(radians)
+            final_rotation
         )
 
 static func _v(x: float, y: float, z: float) -> Vector3:
