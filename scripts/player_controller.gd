@@ -32,12 +32,14 @@ var attack_lunge_direction := Vector3.ZERO
 var chakra_dash_timer := 0.0
 var chakra_dash_direction := Vector3.ZERO
 var jump_requested := false
+var mobile_controls: Node = null
 
 func _ready() -> void:
     chakra = max_chakra
+    mobile_controls = get_node_or_null("../HUD/MobileControls")
 
 func _unhandled_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton:
+    if event is InputEventMouseButton and not _is_mobile_runtime():
         if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
             _try_attack()
     elif event is InputEventKey and event.pressed and not event.echo:
@@ -49,6 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
             jump_requested = true
 
 func _physics_process(delta: float) -> void:
+    _consume_mobile_actions()
     _update_timers(delta)
     _validate_locked_target()
 
@@ -82,6 +85,19 @@ func _physics_process(delta: float) -> void:
 
     move_and_slide()
 
+func _consume_mobile_actions() -> void:
+    if not is_instance_valid(mobile_controls):
+        return
+
+    if mobile_controls.consume_attack():
+        _try_attack()
+    if mobile_controls.consume_lock():
+        _toggle_lock_on()
+    if mobile_controls.consume_chakra_dash():
+        _start_chakra_dash()
+    if mobile_controls.consume_jump():
+        jump_requested = true
+
 func _update_timers(delta: float) -> void:
     combo_timer = max(combo_timer - delta, 0.0)
     attack_cooldown = max(attack_cooldown - delta, 0.0)
@@ -92,10 +108,17 @@ func _update_timers(delta: float) -> void:
         combo_step = 0
 
 func _apply_movement(delta: float) -> void:
-    var input := Vector2(
-        float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
-        float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
-    )
+    var input := Vector2.ZERO
+
+    if is_instance_valid(mobile_controls):
+        input = mobile_controls.get_move_vector()
+
+    if input.length() <= 0.001:
+        input = Vector2(
+            float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
+            float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
+        )
+
     if input.length() > 1.0:
         input = input.normalized()
 
@@ -109,7 +132,11 @@ func _apply_movement(delta: float) -> void:
         right.y = 0.0
         direction = (right.normalized() * input.x + forward.normalized() * -input.y).normalized()
 
-    var target_speed := run_speed if Input.is_physical_key_pressed(KEY_SHIFT) else move_speed
+    var wants_run := Input.is_physical_key_pressed(KEY_SHIFT)
+    if is_instance_valid(mobile_controls):
+        wants_run = wants_run or mobile_controls.is_run_requested()
+
+    var target_speed := run_speed if wants_run else move_speed
     var target_velocity := direction * target_speed
     var accel := acceleration if is_on_floor() else air_control
 
@@ -247,3 +274,11 @@ func _find_attack_target() -> Node3D:
             best_target = candidate
 
     return best_target
+
+func _is_mobile_runtime() -> bool:
+    return (
+        OS.has_feature("android")
+        or OS.has_feature("ios")
+        or OS.has_feature("web_android")
+        or OS.has_feature("web_ios")
+    )
