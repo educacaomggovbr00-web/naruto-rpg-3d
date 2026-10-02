@@ -81,7 +81,7 @@ func _physics_process(delta: float) -> void:
         _apply_movement(delta)
 
     if is_instance_valid(locked_target):
-        var face := locked_target.global_position - global_position
+        var face: Vector3 = locked_target.global_position - global_position
         face.y = 0.0
         _face_direction(face, delta, turn_speed)
 
@@ -110,7 +110,7 @@ func _update_timers(delta: float) -> void:
         combo_step = 0
 
 func _apply_movement(delta: float) -> void:
-    var input := Vector2.ZERO
+    var input: Vector2 = Vector2.ZERO
 
     if is_instance_valid(mobile_controls):
         input = mobile_controls.get_move_vector()
@@ -124,12 +124,12 @@ func _apply_movement(delta: float) -> void:
     if input.length() > 1.0:
         input = input.normalized()
 
-    var camera := get_viewport().get_camera_3d()
-    var direction := Vector3.ZERO
+    var camera: Camera3D = get_viewport().get_camera_3d()
+    var direction: Vector3 = Vector3.ZERO
 
     if camera and input.length() > 0.0:
-        var forward := -camera.global_basis.z
-        var right := camera.global_basis.x
+        var forward: Vector3 = -camera.global_basis.z
+        var right: Vector3 = camera.global_basis.x
         forward.y = 0.0
         right.y = 0.0
         direction = (right.normalized() * input.x + forward.normalized() * -input.y).normalized()
@@ -138,9 +138,9 @@ func _apply_movement(delta: float) -> void:
     if is_instance_valid(mobile_controls):
         wants_run = wants_run or mobile_controls.is_run_requested()
 
-    var target_speed := run_speed if wants_run else move_speed
-    var target_velocity := direction * target_speed
-    var accel := acceleration if is_on_floor() else air_control
+    var target_speed: float = run_speed if wants_run else move_speed
+    var target_velocity: Vector3 = direction * target_speed
+    var accel: float = acceleration if is_on_floor() else air_control
 
     velocity.x = move_toward(velocity.x, target_velocity.x, accel * delta)
     velocity.z = move_toward(velocity.z, target_velocity.z, accel * delta)
@@ -149,11 +149,11 @@ func _apply_movement(delta: float) -> void:
         _face_direction(direction, delta, turn_speed)
 
 func _face_direction(direction: Vector3, delta: float, speed: float) -> void:
-    var flat := direction
+    var flat: Vector3 = direction
     flat.y = 0.0
     if flat.length_squared() <= 0.001:
         return
-    var target_yaw := atan2(flat.x, flat.z)
+    var target_yaw: float = atan2(flat.x, flat.z)
     rotation.y = lerp_angle(rotation.y, target_yaw, speed * delta)
 
 func _toggle_lock_on() -> void:
@@ -164,13 +164,13 @@ func _toggle_lock_on() -> void:
     var best_target: Node3D = null
     var best_distance := lock_range
 
-    for candidate in get_tree().get_nodes_in_group("lock_targets"):
+    for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):\n        var candidate: Node3D = candidate_node as Node3D
         if not (candidate is Node3D):
             continue
         if candidate.has_method("is_targetable") and not candidate.is_targetable():
             continue
 
-        var distance := global_position.distance_to(candidate.global_position)
+        var distance: float = global_position.distance_to(candidate.global_position)
         if distance < best_distance:
             best_distance = distance
             best_target = candidate
@@ -202,11 +202,11 @@ func _start_chakra_dash() -> void:
     if chakra_dash_timer > 0.0 or chakra < chakra_dash_cost:
         return
 
-    var direction := Vector3.ZERO
+    var direction: Vector3 = Vector3.ZERO
     if is_instance_valid(locked_target):
         direction = locked_target.global_position - global_position
     else:
-        var camera := get_viewport().get_camera_3d()
+        var camera: Camera3D = get_viewport().get_camera_3d()
         if camera:
             direction = -camera.global_basis.z
         else:
@@ -233,15 +233,15 @@ func _try_attack() -> void:
 
     var target := _find_attack_target()
     if is_instance_valid(target):
-        var direction := target.global_position - global_position
+        var direction: Vector3 = target.global_position - global_position
         direction.y = 0.0
 
         if direction.length_squared() > 0.001:
             attack_lunge_direction = direction.normalized()
             attack_lunge_timer = 0.10
 
-        var damage_by_step := [8.0, 8.0, 11.0, 18.0]
-        var knockback_by_step := [2.0, 2.5, 3.2, 8.5]
+        var damage_by_step: Array[float] = [8.0, 8.0, 11.0, 18.0]
+        var knockback_by_step: Array[float] = [2.0, 2.5, 3.2, 8.5]
         target.take_hit(
             damage_by_step[combo_step - 1],
             knockback_by_step[combo_step - 1],
@@ -257,19 +257,19 @@ func _find_attack_target() -> Node3D:
         if global_position.distance_to(locked_target.global_position) <= attack_range:
             return locked_target
 
-    var forward := global_basis.z
+    var forward: Vector3 = global_basis.z
     var best_target: Node3D = null
     var best_distance := attack_range
 
-    for candidate in get_tree().get_nodes_in_group("lock_targets"):
+    for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):\n        var candidate: Node3D = candidate_node as Node3D
         if not (candidate is Node3D):
             continue
         if candidate.has_method("is_targetable") and not candidate.is_targetable():
             continue
 
-        var to_target := candidate.global_position - global_position
+        var to_target: Vector3 = candidate.global_position - global_position
         to_target.y = 0.0
-        var distance := to_target.length()
+        var distance: float = to_target.length()
 
         if distance <= 0.001 or distance > best_distance:
             continue
