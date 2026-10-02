@@ -4,6 +4,9 @@ extends Node3D
 @export var fallback_visual_path: NodePath = NodePath("../VisualRoot")
 @export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
 @export var model_scale: float = 1.0
+@export var auto_scale_model: bool = true
+@export var target_character_height: float = 1.75
+@export var fallback_import_scale: float = 0.01
 @export var model_yaw_degrees: float = 180.0
 @export var idle_fallback_animation: String = "happy"
 @export var follow_hitbox_to_bones: bool = true
@@ -19,6 +22,8 @@ var rig_loaded: bool = false
 var rig_status: String = "RIG: aguardando rigged.glb"
 var current_state: String = ""
 var available_animations: PackedStringArray = PackedStringArray()
+var detected_source_height: float = 0.0
+var applied_model_scale: float = 1.0
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -60,9 +65,12 @@ func _try_load_rig() -> void:
         return
 
     add_child(model_instance)
-    model_instance.position = model_offset
+    model_instance.position = Vector3.ZERO
     model_instance.rotation_degrees.y = model_yaw_degrees
-    model_instance.scale = Vector3.ONE * model_scale
+    model_instance.scale = Vector3.ONE
+
+    _apply_character_scale()
+    model_instance.position = model_offset
 
     skeleton = _find_skeleton(model_instance)
     animation_player = _find_animation_player(model_instance)
@@ -84,10 +92,70 @@ func _try_load_rig() -> void:
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
     var animation_count: int = available_animations.size()
-    rig_status = "RIG: OK | %d ossos | %d animação(ões)" % [
+    rig_status = "RIG: OK | %.3fx | %d ossos | %d animação(ões)" % [
+        applied_model_scale,
         skeleton.get_bone_count(),
         animation_count
     ]
+
+func _apply_character_scale() -> void:
+    detected_source_height = _calculate_model_height()
+
+    if auto_scale_model and detected_source_height > 0.001:
+        applied_model_scale = (target_character_height / detected_source_height) * model_scale
+    else:
+        applied_model_scale = fallback_import_scale * model_scale
+
+    applied_model_scale = clampf(applied_model_scale, 0.0001, 10.0)
+    model_instance.scale = Vector3.ONE * applied_model_scale
+
+func _calculate_model_height() -> float:
+    if model_instance == null:
+        return 0.0
+
+    var bounds_min_y: float = INF
+    var bounds_max_y: float = -INF
+    var found_mesh: bool = false
+    var root_inverse: Transform3D = model_instance.global_transform.affine_inverse()
+    var mesh_nodes: Array[MeshInstance3D] = []
+    _collect_mesh_instances(model_instance, mesh_nodes)
+
+    for mesh_instance: MeshInstance3D in mesh_nodes:
+        if mesh_instance.mesh == null:
+            continue
+
+        var aabb: AABB = mesh_instance.get_aabb()
+        var p: Vector3 = aabb.position
+        var s: Vector3 = aabb.size
+        var corners: Array[Vector3] = [
+            p,
+            p + Vector3(s.x, 0.0, 0.0),
+            p + Vector3(0.0, s.y, 0.0),
+            p + Vector3(0.0, 0.0, s.z),
+            p + Vector3(s.x, s.y, 0.0),
+            p + Vector3(s.x, 0.0, s.z),
+            p + Vector3(0.0, s.y, s.z),
+            p + s
+        ]
+
+        for local_point: Vector3 in corners:
+            var world_point: Vector3 = mesh_instance.global_transform * local_point
+            var root_point: Vector3 = root_inverse * world_point
+            bounds_min_y = minf(bounds_min_y, root_point.y)
+            bounds_max_y = maxf(bounds_max_y, root_point.y)
+            found_mesh = true
+
+    if not found_mesh:
+        return 0.0
+
+    return maxf(bounds_max_y - bounds_min_y, 0.0)
+
+func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:
+    if root is MeshInstance3D:
+        output.append(root as MeshInstance3D)
+
+    for child: Node in root.get_children():
+        _collect_mesh_instances(child, output)
 
 func _cache_combat_bones() -> void:
     right_hand_bone = skeleton.find_bone("mixamorig:RightHand")
