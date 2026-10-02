@@ -34,6 +34,8 @@ var chakra_dash_direction := Vector3.ZERO
 var jump_requested := false
 var mobile_controls: Node = null
 
+@onready var camera_rig: Node3D = $CameraRig
+
 func _ready() -> void:
     chakra = max_chakra
     mobile_controls = get_node_or_null("../HUD/MobileControls")
@@ -246,6 +248,9 @@ func _try_attack() -> void:
             direction,
             combo_step
         )
+
+        if camera_rig.has_method("add_impact_shake"):
+            camera_rig.add_impact_shake(0.07 if combo_step < 4 else 0.15)
 
 func _find_attack_target() -> Node3D:
     if is_instance_valid(locked_target):
