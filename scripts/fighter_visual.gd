@@ -16,7 +16,7 @@ func _ready() -> void:
     aura.visible = false
 
 func _process(delta: float) -> void:
-    var horizontal_speed := Vector2(player.velocity.x, player.velocity.z).length()
+    var horizontal_speed: float = Vector2(player.velocity.x, player.velocity.z).length()
     _update_aura(delta)
 
     if player.attack_cooldown > 0.0:
@@ -32,13 +32,13 @@ func _update_aura(delta: float) -> void:
         return
 
     aura.rotation.y += delta * 7.0
-    var pulse := 1.0 + sin(Time.get_ticks_msec() * 0.025) * 0.06
+    var pulse: float = 1.0 + sin(Time.get_ticks_msec() * 0.025) * 0.06
     aura.scale = aura_base_scale * pulse
 
 func _run_pose(delta: float, speed: float) -> void:
     motion_phase += delta * clamp(speed * 1.15, 6.0, 13.0)
-    var stride := sin(motion_phase)
-    var blend := clamp(delta * 14.0, 0.0, 1.0)
+    var stride: float = sin(motion_phase)
+    var blend: float = clampf(delta * 14.0, 0.0, 1.0)
 
     left_leg.rotation.x = lerp_angle(left_leg.rotation.x, stride * 0.72, blend)
     right_leg.rotation.x = lerp_angle(right_leg.rotation.x, -stride * 0.72, blend)
@@ -51,8 +51,8 @@ func _run_pose(delta: float, speed: float) -> void:
 
 func _idle_pose(delta: float) -> void:
     motion_phase += delta * 2.0
-    var blend := clamp(delta * 8.0, 0.0, 1.0)
-    var breathe := sin(motion_phase) * 0.035
+    var blend: float = clampf(delta * 8.0, 0.0, 1.0)
+    var breathe: float = sin(motion_phase) * 0.035
 
     left_leg.rotation.x = lerp_angle(left_leg.rotation.x, 0.0, blend)
     right_leg.rotation.x = lerp_angle(right_leg.rotation.x, 0.0, blend)
@@ -64,11 +64,11 @@ func _idle_pose(delta: float) -> void:
     torso.rotation.z = lerp_angle(torso.rotation.z, 0.0, blend)
 
 func _attack_pose(delta: float) -> void:
-    var blend := clamp(delta * 22.0, 0.0, 1.0)
+    var blend: float = clampf(delta * 22.0, 0.0, 1.0)
     var left_target := Vector3(0.1, 0.0, 0.0)
     var right_target := Vector3(-0.1, 0.0, 0.0)
-    var torso_y := 0.0
-    var torso_z := 0.0
+    var torso_y: float = 0.0
+    var torso_z: float = 0.0
 
     match player.combo_step:
         1:
