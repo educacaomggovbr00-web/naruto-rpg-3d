@@ -35,6 +35,15 @@ Protótipo mobile de RPG de ação 3D inspirado no ritmo, mobilidade e câmera d
 - ataques da IA também usam janela de hitbox
 - K.O. e respawn do inimigo
 - HUD de vida, chakra, substituições, cooldowns, estado de animação e FPS
+- contador de combo com HITS e dano acumulado
+- hit-stop curto apenas quando o golpe conecta
+- VFX leves para impacto normal, defesa, launcher, slam e bounce
+- zoom de impacto e camera shake por intensidade do golpe
+- ground bounce depois de slam
+- wall bounce em golpes fortes contra as paredes da arena
+- efeito visual leve de chakra dash
+- efeito de fumaça na substituição
+- arena fechada com quatro paredes físicas
 - controles multi-touch
 
 ## Máquina de estados de animação
@@ -93,6 +102,18 @@ O personagem provisório ainda usa animação procedural leve. Essa máquina de 
 ## Arquitetura de hitbox/hurtbox
 O jogador e o inimigo usam `Area3D` separadas para ataque e dano. A hitbox só processa acertos durante uma janela curta aberta pelo golpe. Cada alvo só pode ser acertado uma vez por janela. Isso prepara o projeto para no futuro anexar hitboxes a mãos, pés, armas e ossos específicos.
 
+## Combat Polish
+O feedback de combate agora é disparado pelo acerto real da hitbox. Golpes no vazio não aumentam o contador nem acionam hit-stop.
+
+- golpes normais: impacto curto
+- defesa: impacto mais leve
+- launcher: impacto e zoom maiores
+- slam: impacto forte e ground bounce
+- golpes fortes próximos da borda: wall bounce
+- bounces prolongam brevemente a janela visual do combo
+
+Os VFX usam meshes simples criadas em runtime, sem texturas ou sistemas pesados de partículas.
+
 ## Mobile
 O protótipo continua usando primitivas low-poly e efeitos baratos para validar o combate em aparelhos móveis antes de adicionar modelos e VFX pesados.
 
@@ -100,10 +121,8 @@ O protótipo continua usando primitivas low-poly e efeitos baratos para validar 
 - personagem rigado original/licenciado com Skeleton3D
 - AnimationTree usando os estados já existentes
 - hitboxes presas a ossos de mãos/pés
-- hit pause curto e efeitos de impacto
-- parede/ground bounce
 - jutsus com projétil/área e VFX próprios
-- efeitos de substituição mais claros
 - seleção de personagem
-- arena maior com paredes/obstáculos
+- arena temática maior com obstáculos
+- áudio de golpes, dash, chakra e jutsu
 - presets de qualidade para celulares fracos/intermediários/fortes
