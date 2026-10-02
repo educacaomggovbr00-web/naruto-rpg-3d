@@ -1,5 +1,7 @@
 extends Node3D
 
+const ProceduralRigAnimationLibrary = preload("res://scripts/procedural_rig_animation_library.gd")
+
 @export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
 @export var fallback_visual_path: NodePath = NodePath("../VisualRoot")
 @export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
@@ -24,6 +26,7 @@ var current_state: String = ""
 var available_animations: PackedStringArray = PackedStringArray()
 var detected_source_height: float = 0.0
 var applied_model_scale: float = 1.0
+var procedural_animation_count: int = 0
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -82,6 +85,12 @@ func _try_load_rig() -> void:
         return
 
     _cache_combat_bones()
+
+    if animation_player != null:
+        procedural_animation_count = int(
+            ProceduralRigAnimationLibrary.install(animation_player, skeleton)
+        )
+
     _setup_animation_tree()
 
     rig_loaded = true
@@ -92,10 +101,11 @@ func _try_load_rig() -> void:
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
     var animation_count: int = available_animations.size()
-    rig_status = "RIG: OK | %.3fx | %d ossos | %d animação(ões)" % [
+    rig_status = "RIG: OK | %.3fx | %d ossos | %d animações (%d proc)" % [
         applied_model_scale,
         skeleton.get_bone_count(),
-        animation_count
+        animation_count,
+        procedural_animation_count
     ]
 
 func _apply_character_scale() -> void:
@@ -183,8 +193,14 @@ func _setup_animation_tree() -> void:
         "idle",
         "run",
         "air",
-        "attack",
-        "air_attack",
+        "attack_1",
+        "attack_2",
+        "attack_3",
+        "attack_4",
+        "air_attack_1",
+        "air_attack_2",
+        "air_attack_3",
+        "air_attack_4",
         "guard",
         "dodge",
         "chakra_dash",
@@ -225,7 +241,7 @@ func _choose_animation_for_state(state_name: String) -> String:
         var animation_name: String = String(animation_value)
         var lower_name: String = animation_name.to_lower()
 
-        if lower_name == "reset":
+        if lower_name == "reset" or lower_name.begins_with("proc/"):
             continue
 
         for keyword: String in keywords:
@@ -235,8 +251,12 @@ func _choose_animation_for_state(state_name: String) -> String:
     if state_name == "idle":
         for animation_value: String in available_animations:
             var animation_name: String = String(animation_value)
-            if animation_name.to_lower() == idle_fallback_animation.to_lower():
+            if animation_name.to_lower().contains(idle_fallback_animation.to_lower()):
                 return animation_name
+
+    var procedural_name: String = "proc/" + state_name
+    if animation_player != null and animation_player.has_animation(StringName(procedural_name)):
+        return procedural_name
 
     for animation_value: String in available_animations:
         var animation_name: String = String(animation_value)
@@ -245,12 +265,26 @@ func _choose_animation_for_state(state_name: String) -> String:
 
     for animation_value: String in available_animations:
         var animation_name: String = String(animation_value)
-        if animation_name.to_lower() != "reset":
+        if not animation_name.to_lower().begins_with("proc/"):
             return animation_name
 
     return String(available_animations[0])
 
 func _keywords_for_state(state_name: String) -> Array[String]:
+    if state_name.begins_with("air_attack_"):
+        return ["air_attack", "aerial", "jump_attack", "air combo"]
+
+    if state_name.begins_with("attack_"):
+        match state_name:
+            "attack_1":
+                return ["attack_1", "jab", "right punch", "punch"]
+            "attack_2":
+                return ["attack_2", "cross", "left punch", "punch"]
+            "attack_3":
+                return ["attack_3", "kick", "roundhouse"]
+            "attack_4":
+                return ["attack_4", "uppercut", "launcher", "heavy attack"]
+
     match state_name:
         "idle":
             return ["idle", "happy", "stand", "breath"]
@@ -258,18 +292,14 @@ func _keywords_for_state(state_name: String) -> Array[String]:
             return ["run", "jog", "sprint", "walk"]
         "air":
             return ["jump", "fall", "air"]
-        "attack":
-            return ["attack", "punch", "kick", "combo", "melee"]
-        "air_attack":
-            return ["air_attack", "aerial", "jump_attack"]
         "guard":
             return ["guard", "block", "defend"]
         "dodge":
             return ["dodge", "roll", "evade", "sidestep"]
         "chakra_dash":
-            return ["dash", "rush", "charge_forward"]
+            return ["chakra_dash", "dash", "rush", "charge_forward"]
         "chakra_charge":
-            return ["charge", "powerup", "power_up"]
+            return ["chakra_charge", "charge", "powerup", "power_up"]
         "jutsu":
             return ["jutsu", "cast", "skill", "spell"]
         "hit":
@@ -283,12 +313,24 @@ func _sync_animation_state() -> void:
     if playback == null:
         return
 
-    var desired_state: String = String(player.call("get_animation_state"))
+    var desired_state: String = _runtime_animation_state()
     if desired_state == current_state:
         return
 
     current_state = desired_state
     playback.travel(StringName(desired_state), true)
+
+func _runtime_animation_state() -> String:
+    var player_state: String = String(player.call("get_animation_state"))
+    var combo_step: int = clampi(int(player.call("get_combo_step")), 1, 4)
+
+    if player_state == "attack":
+        return "attack_%d" % combo_step
+
+    if player_state == "air_attack":
+        return "air_attack_%d" % combo_step
+
+    return player_state
 
 func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
     if not rig_loaded or skeleton == null or not follow_hitbox_to_bones:
