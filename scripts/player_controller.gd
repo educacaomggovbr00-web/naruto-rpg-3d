@@ -10,9 +10,9 @@ extends CharacterBody3D
 @export_group("Combat")
 @export var max_health: float = 100.0
 @export var lock_range: float = 28.0
-@export var attack_range: float = 2.8
-@export var combo_reset_time: float = 0.75
-@export var attack_lunge_speed: float = 5.5
+@export var attack_range: float = 3.0
+@export var combo_reset_time: float = 0.82
+@export var attack_lunge_speed: float = 6.5
 @export var guard_damage_multiplier: float = 0.25
 @export var dodge_speed: float = 17.0
 @export var dodge_duration: float = 0.24
@@ -20,6 +20,12 @@ extends CharacterBody3D
 @export var max_substitutions: int = 4
 @export var substitution_cooldown_time: float = 4.0
 @export var substitution_distance: float = 2.3
+
+@export_group("Aerial Combat")
+@export var launcher_velocity: float = 8.5
+@export var air_chase_speed: float = 22.0
+@export var air_float_time: float = 0.18
+@export var air_slam_velocity: float = -13.0
 
 @export_group("Chakra")
 @export var max_chakra: float = 100.0
@@ -60,6 +66,13 @@ var jutsu_timer: float = 0.0
 var stagger_timer: float = 0.0
 var invulnerable_timer: float = 0.0
 var respawn_timer: float = 0.0
+var air_float_timer: float = 0.0
+
+var attack_active: bool = false
+var attack_elapsed: float = 0.0
+var attack_hit_triggered: bool = false
+var attack_is_airborne: bool = false
+var animation_state: String = "idle"
 
 var jump_requested: bool = false
 var is_guarding: bool = false
@@ -68,6 +81,7 @@ var defeated: bool = false
 var mobile_controls: Node = null
 
 @onready var camera_rig: Node3D = $CameraRig
+@onready var attack_hitbox: Area3D = $AttackHitbox
 
 func _ready() -> void:
     spawn_position = global_position
@@ -97,9 +111,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
     _consume_mobile_actions()
     _update_timers(delta)
+    _update_attack_timeline(delta)
 
     if defeated:
         _process_defeated(delta)
+        _update_animation_state()
         return
 
     _validate_locked_target()
@@ -110,8 +126,10 @@ func _physics_process(delta: float) -> void:
     elif chakra_dash_timer <= 0.0:
         chakra = minf(max_chakra, chakra + chakra_passive_regen * delta)
 
-    if not is_on_floor():
+    if not is_on_floor() and air_float_timer <= 0.0:
         velocity.y -= gravity * delta
+    elif air_float_timer > 0.0 and velocity.y < 0.0:
+        velocity.y = move_toward(velocity.y, 0.0, gravity * delta)
 
     if jump_requested and is_on_floor() and _can_use_movement_action():
         velocity.y = jump_velocity
@@ -121,6 +139,7 @@ func _physics_process(delta: float) -> void:
         velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
         velocity.z = move_toward(velocity.z, 0.0, acceleration * delta)
         move_and_slide()
+        _update_animation_state()
         return
 
     if dodge_timer > 0.0:
@@ -128,13 +147,16 @@ func _physics_process(delta: float) -> void:
         velocity.z = dodge_direction.z * dodge_speed
         _face_direction(dodge_direction, delta, 24.0)
         move_and_slide()
+        _update_animation_state()
         return
 
     if chakra_dash_timer > 0.0:
         velocity.x = chakra_dash_direction.x * chakra_dash_speed
         velocity.z = chakra_dash_direction.z * chakra_dash_speed
+        velocity.y = chakra_dash_direction.y * air_chase_speed
         _face_direction(chakra_dash_direction, delta, 24.0)
         move_and_slide()
+        _update_animation_state()
         return
 
     if is_charging_chakra:
@@ -152,6 +174,7 @@ func _physics_process(delta: float) -> void:
         _face_direction(face, delta, turn_speed)
 
     move_and_slide()
+    _update_animation_state()
 
 func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
@@ -183,8 +206,8 @@ func _refresh_hold_states() -> void:
     var keyboard_guard: bool = Input.is_physical_key_pressed(KEY_R)
     var keyboard_charge: bool = Input.is_physical_key_pressed(KEY_C)
 
-    is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0
-    is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and attack_cooldown <= 0.0
+    is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and not attack_active
+    is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and not attack_active and attack_cooldown <= 0.0
 
 func _update_timers(delta: float) -> void:
     combo_timer = maxf(combo_timer - delta, 0.0)
@@ -198,9 +221,54 @@ func _update_timers(delta: float) -> void:
     jutsu_timer = maxf(jutsu_timer - delta, 0.0)
     stagger_timer = maxf(stagger_timer - delta, 0.0)
     invulnerable_timer = maxf(invulnerable_timer - delta, 0.0)
+    air_float_timer = maxf(air_float_timer - delta, 0.0)
 
-    if combo_timer <= 0.0:
+    if combo_timer <= 0.0 and not attack_active:
         combo_step = 0
+
+func _update_attack_timeline(delta: float) -> void:
+    if not attack_active:
+        return
+
+    attack_elapsed += delta
+
+    var startup: float = 0.08
+    var total: float = 0.28
+
+    if combo_step == 4:
+        startup = 0.12
+        total = 0.38
+
+    if not attack_hit_triggered and attack_elapsed >= startup:
+        attack_hit_triggered = true
+        _open_attack_hitbox()
+
+    if attack_elapsed >= total:
+        attack_active = false
+
+func _open_attack_hitbox() -> void:
+    var damage_values: Array[float] = [7.0, 8.0, 10.0, 16.0]
+    var knockback_values: Array[float] = [1.8, 2.4, 3.0, 5.0]
+    var launch_velocity: float = 0.0
+    var hitstun: float = 0.18
+
+    if combo_step == 4:
+        if attack_is_airborne:
+            launch_velocity = air_slam_velocity
+            hitstun = 0.42
+        else:
+            launch_velocity = launcher_velocity
+            hitstun = 0.38
+
+    attack_hitbox.call(
+        "activate",
+        self,
+        damage_values[combo_step - 1],
+        knockback_values[combo_step - 1],
+        launch_velocity,
+        hitstun,
+        0.09
+    )
 
 func _process_defeated(delta: float) -> void:
     if not is_on_floor():
@@ -241,7 +309,7 @@ func _get_move_input() -> Vector2:
     if is_instance_valid(mobile_controls):
         var mobile_value: Variant = mobile_controls.call("get_move_vector")
         if typeof(mobile_value) == TYPE_VECTOR2:
-            input_vector = Vector2(mobile_value)
+            input_vector = mobile_value
 
     if input_vector.length() <= 0.001:
         input_vector = Vector2(
@@ -329,16 +397,22 @@ func _start_chakra_dash() -> void:
         return
 
     var direction: Vector3 = Vector3.ZERO
+    var target_is_airborne: bool = false
+
     if is_instance_valid(locked_target):
         direction = locked_target.global_position - global_position
+        if locked_target.has_method("is_airborne"):
+            target_is_airborne = bool(locked_target.call("is_airborne"))
+        if not target_is_airborne and absf(direction.y) < 1.2:
+            direction.y = 0.0
     else:
         var camera: Camera3D = get_viewport().get_camera_3d()
         if camera != null:
             direction = -camera.global_basis.z
         else:
             direction = global_basis.z
+        direction.y = 0.0
 
-    direction.y = 0.0
     if direction.length_squared() <= 0.001:
         return
 
@@ -354,10 +428,7 @@ func _start_dodge() -> void:
 
     var direction: Vector3 = _camera_relative_direction(_get_move_input())
     if direction.length_squared() <= 0.001:
-        if is_instance_valid(locked_target):
-            direction = global_basis.x
-        else:
-            direction = -global_basis.z
+        direction = global_basis.x if is_instance_valid(locked_target) else -global_basis.z
 
     direction.y = 0.0
     if direction.length_squared() <= 0.001:
@@ -387,6 +458,7 @@ func _try_substitution() -> void:
         behind.y = 0.0
         if behind.length_squared() <= 0.001:
             behind = Vector3.BACK
+
         global_position = locked_target.global_position + behind.normalized() * substitution_distance
         var face: Vector3 = locked_target.global_position - global_position
         _face_direction(face, 1.0, 100.0)
@@ -406,36 +478,31 @@ func _try_attack() -> void:
         return
 
     is_guarding = false
+    attack_is_airborne = not is_on_floor()
     combo_step = combo_step + 1 if combo_timer > 0.0 else 1
     if combo_step > 4:
         combo_step = 1
 
     combo_timer = combo_reset_time
-    attack_cooldown = 0.22 if combo_step < 4 else 0.38
+    attack_cooldown = 0.24 if combo_step < 4 else 0.40
+    attack_active = true
+    attack_elapsed = 0.0
+    attack_hit_triggered = false
+
+    if attack_is_airborne:
+        air_float_timer = air_float_time
+        velocity.y = maxf(velocity.y, 0.0)
 
     var target: Node3D = _find_attack_target(attack_range)
     if is_instance_valid(target):
         var direction: Vector3 = target.global_position - global_position
-        direction.y = 0.0
+        var flat: Vector3 = direction
+        flat.y = 0.0
 
-        if direction.length_squared() > 0.001:
-            attack_lunge_direction = direction.normalized()
-            attack_lunge_timer = 0.10
-
-        var damage_by_step: Array[float] = [8.0, 8.0, 11.0, 18.0]
-        var knockback_by_step: Array[float] = [2.0, 2.5, 3.2, 8.5]
-
-        if target.has_method("take_hit"):
-            target.call(
-                "take_hit",
-                damage_by_step[combo_step - 1],
-                knockback_by_step[combo_step - 1],
-                direction,
-                combo_step
-            )
-
-        if camera_rig.has_method("add_impact_shake"):
-            camera_rig.call("add_impact_shake", 0.07 if combo_step < 4 else 0.15)
+        if flat.length_squared() > 0.001:
+            attack_lunge_direction = flat.normalized()
+            attack_lunge_timer = 0.12
+            _face_direction(flat, 1.0, 100.0)
 
 func _try_jutsu() -> void:
     if defeated or stagger_timer > 0.0 or jutsu_cooldown > 0.0:
@@ -456,8 +523,8 @@ func _try_jutsu() -> void:
         direction.y = 0.0
         _face_direction(direction, 1.0, 100.0)
 
-        if target.has_method("take_hit"):
-            target.call("take_hit", jutsu_damage, jutsu_knockback, direction, 4)
+        if target.has_method("receive_combat_hit"):
+            target.call("receive_combat_hit", jutsu_damage, direction.normalized(), jutsu_knockback, 4.5, 0.45)
 
     if camera_rig.has_method("add_impact_shake"):
         camera_rig.call("add_impact_shake", 0.16)
@@ -479,19 +546,27 @@ func _find_attack_target(range_limit: float) -> Node3D:
             continue
 
         var to_target: Vector3 = candidate.global_position - global_position
-        to_target.y = 0.0
         var distance: float = to_target.length()
+        var flat: Vector3 = to_target
+        flat.y = 0.0
 
         if distance <= 0.001 or distance > best_distance:
             continue
+        if flat.length_squared() > 0.001 and forward.normalized().dot(flat.normalized()) <= -0.15:
+            continue
 
-        if forward.normalized().dot(to_target.normalized()) > -0.15:
-            best_distance = distance
-            best_target = candidate
+        best_distance = distance
+        best_target = candidate
 
     return best_target
 
-func take_hit(damage: float, direction: Vector3, knockback: float) -> void:
+func receive_combat_hit(
+    damage: float,
+    direction: Vector3,
+    knockback: float,
+    launch_velocity: float,
+    hitstun: float
+) -> void:
     if defeated or invulnerable_timer > 0.0:
         return
 
@@ -501,8 +576,9 @@ func take_hit(damage: float, direction: Vector3, knockback: float) -> void:
     if is_guarding:
         applied_damage *= guard_damage_multiplier
         applied_knockback *= 0.25
+        launch_velocity *= 0.15
     else:
-        stagger_timer = 0.28
+        stagger_timer = hitstun
 
     health = maxf(health - applied_damage, 0.0)
 
@@ -512,17 +588,48 @@ func take_hit(damage: float, direction: Vector3, knockback: float) -> void:
         velocity.x = push.normalized().x * applied_knockback
         velocity.z = push.normalized().z * applied_knockback
 
+    if absf(launch_velocity) > 0.01:
+        velocity.y = launch_velocity
+
     if camera_rig.has_method("add_impact_shake"):
         camera_rig.call("add_impact_shake", 0.05 if is_guarding else 0.11)
 
     if health <= 0.0:
         _defeat()
 
+func take_hit(damage: float, direction: Vector3, knockback: float) -> void:
+    receive_combat_hit(damage, direction, knockback, 0.0, 0.28)
+
+func _update_animation_state() -> void:
+    if defeated:
+        animation_state = "defeat"
+    elif stagger_timer > 0.0:
+        animation_state = "hit"
+    elif dodge_timer > 0.0:
+        animation_state = "dodge"
+    elif chakra_dash_timer > 0.0:
+        animation_state = "chakra_dash"
+    elif is_charging_chakra:
+        animation_state = "chakra_charge"
+    elif is_guarding:
+        animation_state = "guard"
+    elif jutsu_timer > 0.0:
+        animation_state = "jutsu"
+    elif attack_active:
+        animation_state = "air_attack" if attack_is_airborne else "attack"
+    elif not is_on_floor():
+        animation_state = "air"
+    elif Vector2(velocity.x, velocity.z).length() > 0.5:
+        animation_state = "run"
+    else:
+        animation_state = "idle"
+
 func _defeat() -> void:
     defeated = true
     respawn_timer = 2.5
     is_guarding = false
     is_charging_chakra = false
+    attack_active = false
     combo_step = 0
     _set_locked_target(null)
 
@@ -545,6 +652,7 @@ func _can_use_movement_action() -> bool:
         and dodge_timer <= 0.0
         and chakra_dash_timer <= 0.0
         and not is_charging_chakra
+        and not attack_active
     )
 
 func get_locked_target() -> Node3D:
@@ -589,8 +697,14 @@ func get_substitution_cooldown() -> float:
 func get_jutsu_cooldown() -> float:
     return jutsu_cooldown
 
+func get_animation_state() -> String:
+    return animation_state
+
 func is_defeated() -> bool:
     return defeated
+
+func is_airborne() -> bool:
+    return not is_on_floor()
 
 func _is_mobile_runtime() -> bool:
     return (
