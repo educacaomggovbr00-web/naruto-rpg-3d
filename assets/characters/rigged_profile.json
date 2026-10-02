@@ -1,0 +1,26 @@
+{
+  "expected_path": "res://assets/characters/rigged.glb",
+  "source_file_size_bytes": 20388448,
+  "gltf_version": "2.0",
+  "generator": "Khronos glTF Blender I/O v1.7.33",
+  "scene_root": "Armature.001",
+  "node_count": 106,
+  "mesh_count": 3,
+  "skin_count": 2,
+  "material_count": 14,
+  "embedded_texture_count": 14,
+  "animation_count": 1,
+  "animations": [
+    {
+      "name": "happy",
+      "duration_seconds": 2.9666666667
+    }
+  ],
+  "combat_bones": [
+    "mixamorig:RightHand",
+    "mixamorig:LeftHand",
+    "mixamorig:RightFoot",
+    "mixamorig:LeftFoot"
+  ],
+  "notes": "O adapter usa a animação happy como fallback até entrar um pacote completo de animações de combate."
+}
