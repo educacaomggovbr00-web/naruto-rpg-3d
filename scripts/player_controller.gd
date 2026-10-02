@@ -31,6 +31,7 @@ var attack_lunge_timer := 0.0
 var attack_lunge_direction := Vector3.ZERO
 var chakra_dash_timer := 0.0
 var chakra_dash_direction := Vector3.ZERO
+var jump_requested := false
 
 func _ready() -> void:
     chakra = max_chakra
@@ -44,6 +45,8 @@ func _unhandled_input(event: InputEvent) -> void:
             _toggle_lock_on()
         elif event.physical_keycode == KEY_Q:
             _start_chakra_dash()
+        elif event.physical_keycode == KEY_SPACE:
+            jump_requested = true
 
 func _physics_process(delta: float) -> void:
     _update_timers(delta)
@@ -55,8 +58,9 @@ func _physics_process(delta: float) -> void:
     if not is_on_floor():
         velocity.y -= gravity * delta
 
-    if Input.is_action_just_pressed("jump") and is_on_floor() and chakra_dash_timer <= 0.0:
+    if jump_requested and is_on_floor() and chakra_dash_timer <= 0.0:
         velocity.y = jump_velocity
+    jump_requested = false
 
     if chakra_dash_timer > 0.0:
         velocity.x = chakra_dash_direction.x * chakra_dash_speed
@@ -88,7 +92,13 @@ func _update_timers(delta: float) -> void:
         combo_step = 0
 
 func _apply_movement(delta: float) -> void:
-    var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+    var input := Vector2(
+        float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
+        float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
+    )
+    if input.length() > 1.0:
+        input = input.normalized()
+
     var camera := get_viewport().get_camera_3d()
     var direction := Vector3.ZERO
 
@@ -99,7 +109,7 @@ func _apply_movement(delta: float) -> void:
         right.y = 0.0
         direction = (right.normalized() * input.x + forward.normalized() * -input.y).normalized()
 
-    var target_speed := run_speed if Input.is_action_pressed("dash") else move_speed
+    var target_speed := run_speed if Input.is_physical_key_pressed(KEY_SHIFT) else move_speed
     var target_velocity := direction * target_speed
     var accel := acceleration if is_on_floor() else air_control
 
@@ -126,7 +136,7 @@ func _toggle_lock_on() -> void:
     var best_distance := lock_range
 
     for candidate in get_tree().get_nodes_in_group("lock_targets"):
-        if not candidate is Node3D:
+        if not (candidate is Node3D):
             continue
         if candidate.has_method("is_targetable") and not candidate.is_targetable():
             continue
@@ -171,7 +181,7 @@ func _start_chakra_dash() -> void:
         if camera:
             direction = -camera.global_basis.z
         else:
-            direction = -global_basis.z
+            direction = global_basis.z
 
     direction.y = 0.0
     if direction.length_squared() <= 0.001:
@@ -220,7 +230,7 @@ func _find_attack_target() -> Node3D:
     var best_distance := attack_range
 
     for candidate in get_tree().get_nodes_in_group("lock_targets"):
-        if not candidate is Node3D:
+        if not (candidate is Node3D):
             continue
         if candidate.has_method("is_targetable") and not candidate.is_targetable():
             continue
