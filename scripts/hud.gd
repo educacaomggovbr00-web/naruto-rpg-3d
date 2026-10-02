@@ -20,16 +20,11 @@ func _process(_delta: float) -> void:
     if is_instance_valid(locked_target):
         lock_text = locked_target.name
 
-    var state_text: String = ""
-    if bool(player.call("get_is_charging")):
-        state_text = " | CARREGANDO"
-    elif bool(player.call("get_is_guarding")):
-        state_text = " | DEFESA"
-
-    status_label.text = "LOCK: %s | COMBO: %d%s" % [
+    var animation_state: String = String(player.call("get_animation_state"))
+    status_label.text = "LOCK: %s | COMBO: %d | ESTADO: %s" % [
         lock_text,
         int(player.call("get_combo_step")),
-        state_text
+        animation_state
     ]
 
     var sub_cd: float = float(player.call("get_substitution_cooldown"))
