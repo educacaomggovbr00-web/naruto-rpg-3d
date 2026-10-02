@@ -1,0 +1,50 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource path="res://scripts/player_controller.gd" type="Script" id="1"]
+[ext_resource path="res://scripts/camera_rig.gd" type="Script" id="2"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_player"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
+radius = 0.45
+height = 1.8
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -35, 0)
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = PlaneMesh.new()
+scale = Vector3(30, 1, 30)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = BoxShape3D.new()
+position = Vector3(0, -0.1, 0)
+scale = Vector3(30, 0.1, 30)
+
+[node name="Player" type="CharacterBody3D" parent="."]
+script = ExtResource("1")
+position = Vector3(0, 1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape_player")
+
+[node name="Visual" type="MeshInstance3D" parent="Player"]
+mesh = SubResource("CapsuleMesh_player")
+
+[node name="CameraRig" type="Node3D" parent="Player"]
+script = ExtResource("2")
+top_level = true
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
+spring_length = 5.5
+collision_mask = 1
+
+[node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
+current = true
