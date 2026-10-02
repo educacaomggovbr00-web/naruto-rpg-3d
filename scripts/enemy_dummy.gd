@@ -117,6 +117,11 @@ func _update_timers(delta: float) -> void:
     if not targetable:
         respawn_timer = maxf(respawn_timer - delta, 0.0)
 
+    if stagger_timer <= 0.0 and is_on_floor():
+        wall_bounce_pending = false
+        if velocity.y >= -0.1:
+            ground_bounce_pending = false
+
 func _update_attack_timeline(delta: float) -> void:
     if not attack_active:
         return
