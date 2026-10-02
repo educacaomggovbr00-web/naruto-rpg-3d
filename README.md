@@ -5,39 +5,42 @@ Protótipo mobile de RPG de ação 3D inspirado no ritmo, mobilidade e câmera d
 > Projeto independente/fan prototype. Não inclui assets, áudio ou código proprietários de Naruto/Storm.
 
 ## Engine e alvo
-- Godot 4.x
+- Godot 4.7.x
 - mobile-first
 - orientação horizontal (landscape)
 - alvo de 60 FPS
-- renderer `gl_compatibility` para ampliar compatibilidade em aparelhos móveis
+- renderer `gl_compatibility`
 
-## Estado atual — combate vertical slice
-- movimentação 3D responsiva
-- câmera orbital em terceira pessoa
-- corrida e pulo
-- lock-on com movimento de strafe
+## Combate atual
+- movimentação 3D e corrida
+- pulo
+- lock-on e strafe
 - câmera automática de combate
-- dummy com vida, hit reaction, knockback, K.O. e respawn
-- chakra com regeneração
-- chakra dash direcionado ao alvo
-- combo básico de 4 golpes com finalizador
-- HUD de chakra, lock, combo e FPS
-- controles mobile multi-touch
-- humanoide shinobi low-poly provisório
-- animação procedural de idle, corrida e quatro poses de ataque
-- aura de chakra leve durante o dash
-- camera shake curto nos impactos
+- combo de 4 golpes
+- chakra dash
+- carregamento manual de chakra
+- defesa segurando botão
+- esquiva com invulnerabilidade curta
+- substituição com 4 cargas e cooldown
+- primeiro jutsu com custo de chakra, dano e knockback
+- vida do jogador, stagger, derrota e respawn
+- inimigo com IA de perseguição, ataque, defesa e reação/esquiva
+- K.O. e respawn do inimigo
+- HUD de vida, chakra, substituições, cooldowns e FPS
+- controles multi-touch
 
 ## Controles mobile
-- **Joystick esquerdo:** mover
-- **Joystick perto da borda:** correr automaticamente
-- **Arrastar no lado direito:** girar câmera quando estiver sem lock-on
-- **ATK:** ataque / combo
+- **Joystick esquerdo:** mover; perto da borda corre
+- **Arrastar lado direito:** girar câmera sem lock
+- **ATK:** combo
+- **JUTSU:** usar jutsu
 - **DASH:** chakra dash
 - **PULO:** pular
+- **ESQ:** esquiva
+- **SUB:** substituição
+- **CHK (segurar):** carregar chakra
+- **DEF (segurar):** defender
 - **LOCK:** ativar/desativar lock-on
-
-Os controles aceitam múltiplos dedos ao mesmo tempo, então é possível mover e atacar/dar dash simultaneamente.
 
 ## Controles de teste no PC
 - WASD: mover
@@ -45,27 +48,26 @@ Os controles aceitam múltiplos dedos ao mesmo tempo, então é possível mover 
 - Tab: lock-on
 - Clique esquerdo: ataque
 - Q: chakra dash
+- E: jutsu
+- F: substituição
+- Alt: esquiva
+- C segurado: carregar chakra
+- R segurado: defender
 - Shift: correr
 - Espaço: pular
 
-## Teste rápido
-1. Abra a pasta na Godot 4.x.
-2. Rode `main.tscn`.
-3. No celular, toque em **LOCK** para travar no dummy vermelho.
-4. Use **DASH** para avançar consumindo chakra e ver a aura.
-5. Use **ATK** quatro vezes para completar o combo e sentir o impacto de câmera.
-6. Observe o contador de FPS no canto superior direito.
+## Comportamento da IA
+O inimigo detecta o jogador, persegue até alcance de ataque, alterna ataques com períodos de defesa, recebe stagger e knockback e executa uma esquiva reativa depois de alguns impactos.
 
-## Direção técnica mobile
-A UI usa posições relativas ao viewport e multi-touch por índice de dedo. A câmera aceita swipe no lado direito e o movimento continua baseado na direção da câmera. O projeto limita o FPS a 60, mantém o renderer de compatibilidade e usa um humanoide feito de primitivas low-poly para validar gameplay sem carregar assets pesados.
+## Mobile
+O protótipo continua usando primitivas low-poly e efeitos baratos. O objetivo desta fase é validar sensação de combate sem comprometer celulares modestos.
 
-## Próximas camadas
-- substituir o boneco provisório por personagem 3D original/licenciado com Skeleton3D
-- state machine de animação/combate
-- hitboxes sincronizadas com animações
-- VFX leves de impacto
-- substituição
-- carregamento de chakra
-- jutsus
-- IA de combate
+## Próximas melhorias
+- trocar o humanoide provisório por personagem original/licenciado com Skeleton3D
+- animações reais por AnimationTree
+- hitboxes sincronizadas por frame de animação
+- jutsus com projétil/área e VFX próprios
+- efeitos de substituição mais claros
+- seleção de personagem
+- arena maior e paredes/obstáculos
 - presets de qualidade para celulares fracos/intermediários/fortes
