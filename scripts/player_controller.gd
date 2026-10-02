@@ -1,21 +1,93 @@
 extends CharacterBody3D
 
 @export var move_speed := 7.5
-@export var dash_speed := 13.0
+@export var run_speed := 12.0
 @export var acceleration := 28.0
 @export var air_control := 8.0
 @export var jump_velocity := 7.0
 @export var turn_speed := 14.0
 
+@export_group("Combat")
+@export var lock_range := 28.0
+@export var attack_range := 2.8
+@export var combo_reset_time := 0.75
+@export var attack_lunge_speed := 5.5
+
+@export_group("Chakra")
+@export var max_chakra := 100.0
+@export var chakra_regen_per_second := 12.0
+@export var chakra_dash_cost := 20.0
+@export var chakra_dash_speed := 24.0
+@export var chakra_dash_duration := 0.30
+
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var locked_target: Node3D = null
+var chakra := 100.0
+var combo_step := 0
+
+var combo_timer := 0.0
+var attack_cooldown := 0.0
+var attack_lunge_timer := 0.0
+var attack_lunge_direction := Vector3.ZERO
+var chakra_dash_timer := 0.0
+var chakra_dash_direction := Vector3.ZERO
+
+func _ready() -> void:
+    chakra = max_chakra
+
+func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventMouseButton:
+        if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+            _try_attack()
+    elif event is InputEventKey and event.pressed and not event.echo:
+        if event.physical_keycode == KEY_TAB:
+            _toggle_lock_on()
+        elif event.physical_keycode == KEY_Q:
+            _start_chakra_dash()
 
 func _physics_process(delta: float) -> void:
+    _update_timers(delta)
+    _validate_locked_target()
+
+    if chakra_dash_timer <= 0.0:
+        chakra = min(max_chakra, chakra + chakra_regen_per_second * delta)
+
     if not is_on_floor():
         velocity.y -= gravity * delta
 
-    if Input.is_action_just_pressed("jump") and is_on_floor():
+    if Input.is_action_just_pressed("jump") and is_on_floor() and chakra_dash_timer <= 0.0:
         velocity.y = jump_velocity
 
+    if chakra_dash_timer > 0.0:
+        velocity.x = chakra_dash_direction.x * chakra_dash_speed
+        velocity.z = chakra_dash_direction.z * chakra_dash_speed
+        _face_direction(chakra_dash_direction, delta, 24.0)
+        move_and_slide()
+        return
+
+    if attack_lunge_timer > 0.0:
+        velocity.x = attack_lunge_direction.x * attack_lunge_speed
+        velocity.z = attack_lunge_direction.z * attack_lunge_speed
+    else:
+        _apply_movement(delta)
+
+    if is_instance_valid(locked_target):
+        var face := locked_target.global_position - global_position
+        face.y = 0.0
+        _face_direction(face, delta, turn_speed)
+
+    move_and_slide()
+
+func _update_timers(delta: float) -> void:
+    combo_timer = max(combo_timer - delta, 0.0)
+    attack_cooldown = max(attack_cooldown - delta, 0.0)
+    attack_lunge_timer = max(attack_lunge_timer - delta, 0.0)
+    chakra_dash_timer = max(chakra_dash_timer - delta, 0.0)
+
+    if combo_timer <= 0.0:
+        combo_step = 0
+
+func _apply_movement(delta: float) -> void:
     var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
     var camera := get_viewport().get_camera_3d()
     var direction := Vector3.ZERO
@@ -27,15 +99,141 @@ func _physics_process(delta: float) -> void:
         right.y = 0.0
         direction = (right.normalized() * input.x + forward.normalized() * -input.y).normalized()
 
-    var target_speed := dash_speed if Input.is_action_pressed("dash") else move_speed
-    var target := direction * target_speed
+    var target_speed := run_speed if Input.is_action_pressed("dash") else move_speed
+    var target_velocity := direction * target_speed
     var accel := acceleration if is_on_floor() else air_control
 
-    velocity.x = move_toward(velocity.x, target.x, accel * delta)
-    velocity.z = move_toward(velocity.z, target.z, accel * delta)
+    velocity.x = move_toward(velocity.x, target_velocity.x, accel * delta)
+    velocity.z = move_toward(velocity.z, target_velocity.z, accel * delta)
 
-    if direction.length_squared() > 0.01:
-        var target_yaw := atan2(direction.x, direction.z)
-        rotation.y = lerp_angle(rotation.y, target_yaw, turn_speed * delta)
+    if not is_instance_valid(locked_target) and direction.length_squared() > 0.01:
+        _face_direction(direction, delta, turn_speed)
 
-    move_and_slide()
+func _face_direction(direction: Vector3, delta: float, speed: float) -> void:
+    var flat := direction
+    flat.y = 0.0
+    if flat.length_squared() <= 0.001:
+        return
+    var target_yaw := atan2(flat.x, flat.z)
+    rotation.y = lerp_angle(rotation.y, target_yaw, speed * delta)
+
+func _toggle_lock_on() -> void:
+    if is_instance_valid(locked_target):
+        _set_locked_target(null)
+        return
+
+    var best_target: Node3D = null
+    var best_distance := lock_range
+
+    for candidate in get_tree().get_nodes_in_group("lock_targets"):
+        if not candidate is Node3D:
+            continue
+        if candidate.has_method("is_targetable") and not candidate.is_targetable():
+            continue
+
+        var distance := global_position.distance_to(candidate.global_position)
+        if distance < best_distance:
+            best_distance = distance
+            best_target = candidate
+
+    _set_locked_target(best_target)
+
+func _set_locked_target(target: Node3D) -> void:
+    if is_instance_valid(locked_target) and locked_target.has_method("set_locked"):
+        locked_target.set_locked(false)
+
+    locked_target = target
+
+    if is_instance_valid(locked_target) and locked_target.has_method("set_locked"):
+        locked_target.set_locked(true)
+
+func _validate_locked_target() -> void:
+    if not is_instance_valid(locked_target):
+        locked_target = null
+        return
+
+    if global_position.distance_to(locked_target.global_position) > lock_range * 1.35:
+        _set_locked_target(null)
+        return
+
+    if locked_target.has_method("is_targetable") and not locked_target.is_targetable():
+        _set_locked_target(null)
+
+func _start_chakra_dash() -> void:
+    if chakra_dash_timer > 0.0 or chakra < chakra_dash_cost:
+        return
+
+    var direction := Vector3.ZERO
+    if is_instance_valid(locked_target):
+        direction = locked_target.global_position - global_position
+    else:
+        var camera := get_viewport().get_camera_3d()
+        if camera:
+            direction = -camera.global_basis.z
+        else:
+            direction = -global_basis.z
+
+    direction.y = 0.0
+    if direction.length_squared() <= 0.001:
+        return
+
+    chakra -= chakra_dash_cost
+    chakra_dash_direction = direction.normalized()
+    chakra_dash_timer = chakra_dash_duration
+
+func _try_attack() -> void:
+    if attack_cooldown > 0.0 or chakra_dash_timer > 0.0:
+        return
+
+    combo_step = combo_step + 1 if combo_timer > 0.0 else 1
+    if combo_step > 4:
+        combo_step = 1
+
+    combo_timer = combo_reset_time
+    attack_cooldown = 0.22 if combo_step < 4 else 0.38
+
+    var target := _find_attack_target()
+    if is_instance_valid(target):
+        var direction := target.global_position - global_position
+        direction.y = 0.0
+
+        if direction.length_squared() > 0.001:
+            attack_lunge_direction = direction.normalized()
+            attack_lunge_timer = 0.10
+
+        var damage_by_step := [8.0, 8.0, 11.0, 18.0]
+        var knockback_by_step := [2.0, 2.5, 3.2, 8.5]
+        target.take_hit(
+            damage_by_step[combo_step - 1],
+            knockback_by_step[combo_step - 1],
+            direction,
+            combo_step
+        )
+
+func _find_attack_target() -> Node3D:
+    if is_instance_valid(locked_target):
+        if global_position.distance_to(locked_target.global_position) <= attack_range:
+            return locked_target
+
+    var forward := global_basis.z
+    var best_target: Node3D = null
+    var best_distance := attack_range
+
+    for candidate in get_tree().get_nodes_in_group("lock_targets"):
+        if not candidate is Node3D:
+            continue
+        if candidate.has_method("is_targetable") and not candidate.is_targetable():
+            continue
+
+        var to_target := candidate.global_position - global_position
+        to_target.y = 0.0
+        var distance := to_target.length()
+
+        if distance <= 0.001 or distance > best_distance:
+            continue
+
+        if forward.normalized().dot(to_target.normalized()) > 0.15:
+            best_distance = distance
+            best_target = candidate
+
+    return best_target
