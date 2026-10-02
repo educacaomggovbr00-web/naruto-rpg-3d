@@ -23,6 +23,10 @@ Protótipo mobile de RPG de ação 3D inspirado no ritmo, mobilidade e câmera d
 - combo básico de 4 golpes com finalizador
 - HUD de chakra, lock, combo e FPS
 - controles mobile multi-touch
+- humanoide shinobi low-poly provisório
+- animação procedural de idle, corrida e quatro poses de ataque
+- aura de chakra leve durante o dash
+- camera shake curto nos impactos
 
 ## Controles mobile
 - **Joystick esquerdo:** mover
@@ -48,18 +52,18 @@ Os controles aceitam múltiplos dedos ao mesmo tempo, então é possível mover 
 1. Abra a pasta na Godot 4.x.
 2. Rode `main.tscn`.
 3. No celular, toque em **LOCK** para travar no dummy vermelho.
-4. Use **DASH** para avançar consumindo chakra.
-5. Use **ATK** quatro vezes para completar o combo e aplicar o finalizador.
+4. Use **DASH** para avançar consumindo chakra e ver a aura.
+5. Use **ATK** quatro vezes para completar o combo e sentir o impacto de câmera.
 6. Observe o contador de FPS no canto superior direito.
 
 ## Direção técnica mobile
-A UI usa posições relativas ao viewport e multi-touch por índice de dedo. A câmera aceita swipe no lado direito e o movimento continua baseado na direção da câmera. O projeto limita o FPS a 60 e mantém o renderer de compatibilidade.
+A UI usa posições relativas ao viewport e multi-touch por índice de dedo. A câmera aceita swipe no lado direito e o movimento continua baseado na direção da câmera. O projeto limita o FPS a 60, mantém o renderer de compatibilidade e usa um humanoide feito de primitivas low-poly para validar gameplay sem carregar assets pesados.
 
 ## Próximas camadas
-- personagem humanoide animado
+- substituir o boneco provisório por personagem 3D original/licenciado com Skeleton3D
 - state machine de animação/combate
 - hitboxes sincronizadas com animações
-- VFX leves de chakra e impacto
+- VFX leves de impacto
 - substituição
 - carregamento de chakra
 - jutsus
