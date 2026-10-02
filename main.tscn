@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1"]
 [ext_resource path="res://scripts/camera_rig.gd" type="Script" id="2"]
@@ -11,26 +11,30 @@ height = 1.8
 radius = 0.45
 height = 1.8
 
-[node name="Main" type="Node3D"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(60, 60)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[sub_resource type="BoxShape3D" id="BoxShape_ground"]
+size = Vector3(60, 0.2, 60)
+
+[node name="Main" type="Node3D"]
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-55, -35, 0)
 shadow_enabled = true
 
 [node name="Ground" type="StaticBody3D" parent="."]
+
 [node name="Mesh" type="MeshInstance3D" parent="Ground"]
-mesh = PlaneMesh.new()
-scale = Vector3(30, 1, 30)
+mesh = SubResource("PlaneMesh_ground")
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
-shape = BoxShape3D.new()
 position = Vector3(0, -0.1, 0)
-scale = Vector3(30, 0.1, 30)
+shape = SubResource("BoxShape_ground")
 
 [node name="Player" type="CharacterBody3D" parent="."]
-script = ExtResource("1")
 position = Vector3(0, 1, 0)
+script = ExtResource("1")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
 shape = SubResource("CapsuleShape_player")
@@ -39,8 +43,8 @@ shape = SubResource("CapsuleShape_player")
 mesh = SubResource("CapsuleMesh_player")
 
 [node name="CameraRig" type="Node3D" parent="Player"]
-script = ExtResource("2")
 top_level = true
+script = ExtResource("2")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
 spring_length = 5.5
