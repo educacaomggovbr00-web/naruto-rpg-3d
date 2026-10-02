@@ -12,12 +12,16 @@ var yaw: float = 0.0
 var pitch: float = deg_to_rad(-10.0)
 var mobile_controls: Node = null
 var shake_strength: float = 0.0
+var fov_kick: float = 0.0
+var base_fov: float = 68.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
+@onready var camera: Camera3D = $SpringArm3D/Camera3D
 @onready var player: CharacterBody3D = get_parent() as CharacterBody3D
 
 func _ready() -> void:
     mobile_controls = get_node_or_null("../../HUD/MobileControls")
+    base_fov = camera.fov
     if not _is_mobile_runtime():
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -74,7 +78,10 @@ func _process(delta: float) -> void:
             1.0 - exp(-6.0 * delta)
         )
 
-    shake_strength = move_toward(shake_strength, 0.0, delta * 0.75)
+    shake_strength = move_toward(shake_strength, 0.0, delta * 0.85)
+    fov_kick = move_toward(fov_kick, 0.0, delta * 18.0)
+    camera.fov = base_fov + fov_kick
+
     var ticks: float = float(Time.get_ticks_msec()) * 0.001
     spring_arm.position = Vector3(
         sin(ticks * 47.0),
@@ -84,6 +91,10 @@ func _process(delta: float) -> void:
 
     global_position = follow_position
     global_rotation = Vector3(pitch, yaw, 0.0)
+
+func add_combat_impact(strength: float, zoom_amount: float) -> void:
+    shake_strength = maxf(shake_strength, strength)
+    fov_kick = minf(fov_kick, -absf(zoom_amount))
 
 func add_impact_shake(strength: float) -> void:
     shake_strength = maxf(shake_strength, strength)
