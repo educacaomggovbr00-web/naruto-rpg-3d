@@ -1,0 +1,4 @@
+# 3D assets are binary. Avoid text diffs/corruption.
+*.glb binary
+*.gltf text
+*.bin binary
