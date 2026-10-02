@@ -22,7 +22,7 @@ func _unhandled_input(event: InputEvent) -> void:
         if not is_instance_valid(player.locked_target):
             yaw -= event.relative.x * mouse_sensitivity
             pitch = clamp(pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
-    elif event.is_action_pressed("ui_cancel"):
+    elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     elif event is InputEventMouseButton and event.pressed:
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
