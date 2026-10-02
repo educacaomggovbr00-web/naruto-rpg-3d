@@ -27,10 +27,15 @@ var dodge_direction: Vector3 = Vector3.ZERO
 var attack_cycle: int = 0
 var hit_cycle: int = 0
 
+var attack_active: bool = false
+var attack_elapsed: float = 0.0
+var attack_hit_triggered: bool = false
+
 @onready var visual: MeshInstance3D = $Visual
 @onready var lock_label: Label3D = $LockLabel
 @onready var health_label: Label3D = $HealthLabel
 @onready var player: CharacterBody3D = $"../Player"
+@onready var attack_hitbox: Area3D = $AttackHitbox
 
 func _ready() -> void:
     health = max_health
@@ -42,6 +47,7 @@ func _physics_process(delta: float) -> void:
         velocity.y -= gravity * delta
 
     _update_timers(delta)
+    _update_attack_timeline(delta)
 
     if not targetable:
         velocity.x = move_toward(velocity.x, 0.0, knockback_friction * delta)
@@ -83,7 +89,9 @@ func _physics_process(delta: float) -> void:
 
     guarding = false
 
-    if distance > detection_range:
+    if attack_active:
+        _slow_down(delta)
+    elif distance > detection_range:
         _slow_down(delta)
     elif distance > attack_range:
         _chase_player(to_player, delta)
@@ -102,6 +110,27 @@ func _update_timers(delta: float) -> void:
 
     if not targetable:
         respawn_timer = maxf(respawn_timer - delta, 0.0)
+
+func _update_attack_timeline(delta: float) -> void:
+    if not attack_active:
+        return
+
+    attack_elapsed += delta
+
+    if not attack_hit_triggered and attack_elapsed >= 0.18:
+        attack_hit_triggered = true
+        attack_hitbox.call(
+            "activate",
+            self,
+            attack_damage,
+            attack_knockback,
+            0.0,
+            0.30,
+            0.10
+        )
+
+    if attack_elapsed >= 0.48:
+        attack_active = false
 
 func _slow_down(delta: float) -> void:
     velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
@@ -125,20 +154,13 @@ func _choose_close_action() -> void:
         _update_labels()
         return
 
-    _attack_player()
+    _start_attack()
 
-func _attack_player() -> void:
-    if not is_instance_valid(player):
-        return
-
-    var direction: Vector3 = player.global_position - global_position
-    direction.y = 0.0
-
-    if direction.length_squared() <= 0.001:
-        return
-
+func _start_attack() -> void:
     attack_cooldown = attack_cooldown_time
-    player.call("take_hit", attack_damage, direction.normalized(), attack_knockback)
+    attack_active = true
+    attack_elapsed = 0.0
+    attack_hit_triggered = false
 
     visual.scale = Vector3(1.05, 0.92, 1.15)
     var tween: Tween = create_tween()
@@ -160,7 +182,13 @@ func is_targetable() -> bool:
 func set_locked(value: bool) -> void:
     lock_label.visible = value and targetable
 
-func take_hit(damage: float, knockback: float, direction: Vector3, combo_step: int) -> void:
+func receive_combat_hit(
+    damage: float,
+    direction: Vector3,
+    knockback: float,
+    launch_velocity: float,
+    hitstun: float
+) -> void:
     if not targetable:
         return
 
@@ -170,8 +198,9 @@ func take_hit(damage: float, knockback: float, direction: Vector3, combo_step: i
     if guarding:
         applied_damage *= 0.22
         applied_knockback *= 0.18
+        launch_velocity *= 0.15
     else:
-        stagger_timer = 0.22
+        stagger_timer = hitstun
 
     health = maxf(health - applied_damage, 0.0)
 
@@ -181,11 +210,11 @@ func take_hit(damage: float, knockback: float, direction: Vector3, combo_step: i
         velocity.x = push.normalized().x * applied_knockback
         velocity.z = push.normalized().z * applied_knockback
 
-    if combo_step >= 4 and not guarding:
-        velocity.y = 4.5
+    if absf(launch_velocity) > 0.01:
+        velocity.y = launch_velocity
 
     hit_cycle += 1
-    if hit_cycle % 4 == 0 and health > 0.0 and not guarding:
+    if hit_cycle % 4 == 0 and health > 0.0 and not guarding and is_on_floor():
         _start_reaction_dodge(direction)
 
     _flash_hit()
@@ -193,6 +222,12 @@ func take_hit(damage: float, knockback: float, direction: Vector3, combo_step: i
 
     if health <= 0.0:
         _knock_out()
+
+func take_hit(damage: float, knockback: float, direction: Vector3, combo_step: int) -> void:
+    var launch_velocity: float = 0.0
+    if combo_step >= 4:
+        launch_velocity = 8.5
+    receive_combat_hit(damage, direction, knockback, launch_velocity, 0.28)
 
 func _start_reaction_dodge(incoming_direction: Vector3) -> void:
     var side: Vector3 = Vector3(-incoming_direction.z, 0.0, incoming_direction.x)
@@ -212,12 +247,15 @@ func _update_labels() -> void:
     var state: String = ""
     if guarding:
         state = "  [DEF]"
+    elif not is_on_floor():
+        state = "  [AR]"
 
     health_label.text = "ENEMY  %d / %d%s" % [int(health), int(max_health), state]
 
 func _knock_out() -> void:
     targetable = false
     guarding = false
+    attack_active = false
     lock_label.visible = false
     health_label.text = "K.O."
     respawn_timer = recovery_delay
@@ -230,3 +268,6 @@ func _respawn() -> void:
     guarding = false
     attack_cooldown = 0.8
     _update_labels()
+
+func is_airborne() -> bool:
+    return not is_on_floor()
