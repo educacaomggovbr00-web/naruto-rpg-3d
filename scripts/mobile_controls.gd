@@ -1,31 +1,46 @@
 extends Control
 
-@export var joystick_radius := 92.0
-@export var joystick_deadzone := 0.12
-@export var camera_sensitivity := 0.006
+@export var joystick_radius: float = 92.0
+@export var joystick_deadzone: float = 0.12
 
-var move_vector := Vector2.ZERO
-var joystick_touch := -1
-var camera_touch := -1
-var camera_last_position := Vector2.ZERO
-var camera_delta := Vector2.ZERO
+var move_vector: Vector2 = Vector2.ZERO
+var joystick_touch: int = -1
+var camera_touch: int = -1
+var charge_touch: int = -1
+var guard_touch: int = -1
 
-var attack_queue := 0
-var jump_queue := 0
-var chakra_dash_queue := 0
-var lock_queue := 0
+var camera_last_position: Vector2 = Vector2.ZERO
+var camera_delta: Vector2 = Vector2.ZERO
 
-var joystick_center := Vector2.ZERO
-var joystick_knob := Vector2.ZERO
-var attack_center := Vector2.ZERO
-var jump_center := Vector2.ZERO
-var chakra_center := Vector2.ZERO
-var lock_center := Vector2.ZERO
+var attack_queue: int = 0
+var jump_queue: int = 0
+var chakra_dash_queue: int = 0
+var lock_queue: int = 0
+var jutsu_queue: int = 0
+var substitution_queue: int = 0
+var dodge_queue: int = 0
 
-var attack_radius := 70.0
-var jump_radius := 54.0
-var chakra_radius := 60.0
-var lock_radius := 48.0
+var joystick_center: Vector2 = Vector2.ZERO
+var joystick_knob: Vector2 = Vector2.ZERO
+var attack_center: Vector2 = Vector2.ZERO
+var jump_center: Vector2 = Vector2.ZERO
+var dash_center: Vector2 = Vector2.ZERO
+var lock_center: Vector2 = Vector2.ZERO
+var jutsu_center: Vector2 = Vector2.ZERO
+var substitution_center: Vector2 = Vector2.ZERO
+var dodge_center: Vector2 = Vector2.ZERO
+var charge_center: Vector2 = Vector2.ZERO
+var guard_center: Vector2 = Vector2.ZERO
+
+var attack_radius: float = 62.0
+var jump_radius: float = 44.0
+var dash_radius: float = 48.0
+var lock_radius: float = 42.0
+var jutsu_radius: float = 50.0
+var substitution_radius: float = 43.0
+var dodge_radius: float = 43.0
+var charge_radius: float = 46.0
+var guard_radius: float = 46.0
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -34,17 +49,23 @@ func _ready() -> void:
     set_process_input(true)
 
 func _update_layout() -> void:
-    var w := size.x
-    var h := size.y
+    var w: float = size.x
+    var h: float = size.y
 
     joystick_center = Vector2(145.0, h - 140.0)
     if joystick_touch == -1:
         joystick_knob = joystick_center
 
-    attack_center = Vector2(w - 125.0, h - 140.0)
-    jump_center = Vector2(w - 285.0, h - 92.0)
-    chakra_center = Vector2(w - 270.0, h - 225.0)
-    lock_center = Vector2(w - 92.0, 92.0)
+    attack_center = Vector2(w - 105.0, h - 125.0)
+    jump_center = Vector2(w - 110.0, h - 260.0)
+    jutsu_center = Vector2(w - 235.0, h - 118.0)
+    dash_center = Vector2(w - 235.0, h - 245.0)
+    dodge_center = Vector2(w - 355.0, h - 112.0)
+    substitution_center = Vector2(w - 355.0, h - 220.0)
+    charge_center = Vector2(w - 475.0, h - 112.0)
+    guard_center = Vector2(w - 475.0, h - 220.0)
+    lock_center = Vector2(w - 82.0, 82.0)
+
     queue_redraw()
 
 func _input(event: InputEvent) -> void:
@@ -60,25 +81,39 @@ func _touch_pressed(touch_id: int, position: Vector2) -> void:
     if _inside_circle(position, attack_center, attack_radius):
         attack_queue += 1
         return
-
     if _inside_circle(position, jump_center, jump_radius):
         jump_queue += 1
         return
-
-    if _inside_circle(position, chakra_center, chakra_radius):
+    if _inside_circle(position, dash_center, dash_radius):
         chakra_dash_queue += 1
         return
-
     if _inside_circle(position, lock_center, lock_radius):
         lock_queue += 1
         return
+    if _inside_circle(position, jutsu_center, jutsu_radius):
+        jutsu_queue += 1
+        return
+    if _inside_circle(position, substitution_center, substitution_radius):
+        substitution_queue += 1
+        return
+    if _inside_circle(position, dodge_center, dodge_radius):
+        dodge_queue += 1
+        return
+    if _inside_circle(position, charge_center, charge_radius) and charge_touch == -1:
+        charge_touch = touch_id
+        queue_redraw()
+        return
+    if _inside_circle(position, guard_center, guard_radius) and guard_touch == -1:
+        guard_touch = touch_id
+        queue_redraw()
+        return
 
-    if joystick_touch == -1 and position.x < size.x * 0.46 and position.y > size.y * 0.42:
+    if joystick_touch == -1 and position.x < size.x * 0.40 and position.y > size.y * 0.40:
         joystick_touch = touch_id
         _update_joystick(position)
         return
 
-    if camera_touch == -1 and position.x >= size.x * 0.40:
+    if camera_touch == -1 and position.x >= size.x * 0.38:
         camera_touch = touch_id
         camera_last_position = position
 
@@ -87,11 +122,18 @@ func _touch_released(touch_id: int) -> void:
         joystick_touch = -1
         move_vector = Vector2.ZERO
         joystick_knob = joystick_center
-        queue_redraw()
 
     if touch_id == camera_touch:
         camera_touch = -1
         camera_delta = Vector2.ZERO
+
+    if touch_id == charge_touch:
+        charge_touch = -1
+
+    if touch_id == guard_touch:
+        guard_touch = -1
+
+    queue_redraw()
 
 func _touch_dragged(touch_id: int, position: Vector2) -> void:
     if touch_id == joystick_touch:
@@ -103,7 +145,7 @@ func _touch_dragged(touch_id: int, position: Vector2) -> void:
         camera_last_position = position
 
 func _update_joystick(position: Vector2) -> void:
-    var offset := position - joystick_center
+    var offset: Vector2 = position - joystick_center
     if offset.length() > joystick_radius:
         offset = offset.normalized() * joystick_radius
 
@@ -124,65 +166,105 @@ func get_move_vector() -> Vector2:
 func is_run_requested() -> bool:
     return move_vector.length() >= 0.82
 
+func is_charge_held() -> bool:
+    return charge_touch != -1
+
+func is_guard_held() -> bool:
+    return guard_touch != -1
+
 func consume_camera_delta() -> Vector2:
-    var result := camera_delta
+    var result: Vector2 = camera_delta
     camera_delta = Vector2.ZERO
     return result
 
 func consume_attack() -> bool:
-    if attack_queue <= 0:
-        return false
-    attack_queue -= 1
-    return true
+    return _consume_queue("attack")
 
 func consume_jump() -> bool:
-    if jump_queue <= 0:
-        return false
-    jump_queue -= 1
-    return true
+    return _consume_queue("jump")
 
 func consume_chakra_dash() -> bool:
-    if chakra_dash_queue <= 0:
-        return false
-    chakra_dash_queue -= 1
-    return true
+    return _consume_queue("dash")
 
 func consume_lock() -> bool:
-    if lock_queue <= 0:
-        return false
-    lock_queue -= 1
-    return true
+    return _consume_queue("lock")
 
-func is_mobile_runtime() -> bool:
-    return (
-        OS.has_feature("android")
-        or OS.has_feature("ios")
-        or OS.has_feature("web_android")
-        or OS.has_feature("web_ios")
-    )
+func consume_jutsu() -> bool:
+    return _consume_queue("jutsu")
+
+func consume_substitution() -> bool:
+    return _consume_queue("substitution")
+
+func consume_dodge() -> bool:
+    return _consume_queue("dodge")
+
+func _consume_queue(queue_name: String) -> bool:
+    match queue_name:
+        "attack":
+            if attack_queue > 0:
+                attack_queue -= 1
+                return true
+        "jump":
+            if jump_queue > 0:
+                jump_queue -= 1
+                return true
+        "dash":
+            if chakra_dash_queue > 0:
+                chakra_dash_queue -= 1
+                return true
+        "lock":
+            if lock_queue > 0:
+                lock_queue -= 1
+                return true
+        "jutsu":
+            if jutsu_queue > 0:
+                jutsu_queue -= 1
+                return true
+        "substitution":
+            if substitution_queue > 0:
+                substitution_queue -= 1
+                return true
+        "dodge":
+            if dodge_queue > 0:
+                dodge_queue -= 1
+                return true
+
+    return false
 
 func _draw() -> void:
-    var base_fill := Color(0.03, 0.06, 0.10, 0.34)
-    var base_line := Color(1.0, 1.0, 1.0, 0.44)
-    var accent_fill := Color(0.08, 0.42, 0.95, 0.44)
-    var attack_fill := Color(0.92, 0.20, 0.14, 0.46)
-    var text_color := Color(1.0, 1.0, 1.0, 0.92)
+    var base_fill: Color = Color(0.03, 0.06, 0.10, 0.34)
+    var base_line: Color = Color(1.0, 1.0, 1.0, 0.44)
+    var blue_fill: Color = Color(0.08, 0.42, 0.95, 0.44)
+    var attack_fill: Color = Color(0.92, 0.20, 0.14, 0.48)
+    var jutsu_fill: Color = Color(0.46, 0.18, 0.96, 0.48)
+    var defense_fill: Color = Color(0.12, 0.72, 0.58, 0.42)
+    var text_color: Color = Color(1.0, 1.0, 1.0, 0.94)
 
     draw_circle(joystick_center, joystick_radius, base_fill)
     draw_arc(joystick_center, joystick_radius, 0.0, TAU, 48, base_line, 3.0, true)
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
-    _draw_button(attack_center, attack_radius, attack_fill, "ATK", 27, text_color)
-    _draw_button(chakra_center, chakra_radius, accent_fill, "DASH", 21, text_color)
-    _draw_button(jump_center, jump_radius, base_fill, "PULO", 19, text_color)
-    _draw_button(lock_center, lock_radius, base_fill, "LOCK", 17, text_color)
+    _draw_button(attack_center, attack_radius, attack_fill, "ATK", 25, text_color)
+    _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color)
+    _draw_button(dash_center, dash_radius, blue_fill, "DASH", 17, text_color)
+    _draw_button(jump_center, jump_radius, base_fill, "PULO", 16, text_color)
+    _draw_button(dodge_center, dodge_radius, base_fill, "ESQ", 16, text_color)
+    _draw_button(substitution_center, substitution_radius, defense_fill, "SUB", 16, text_color)
+    _draw_button(charge_center, charge_radius, blue_fill, "CHK", 16, text_color)
+    _draw_button(guard_center, guard_radius, defense_fill, "DEF", 16, text_color)
+    _draw_button(lock_center, lock_radius, base_fill, "LOCK", 15, text_color)
+
+    if charge_touch != -1:
+        draw_arc(charge_center, charge_radius + 7.0, 0.0, TAU, 40, text_color, 4.0, true)
+    if guard_touch != -1:
+        draw_arc(guard_center, guard_radius + 7.0, 0.0, TAU, 40, text_color, 4.0, true)
 
 func _draw_button(center: Vector2, radius: float, fill: Color, label: String, font_size: int, text_color: Color) -> void:
     draw_circle(center, radius, fill)
     draw_arc(center, radius, 0.0, TAU, 40, Color(1.0, 1.0, 1.0, 0.48), 3.0, true)
 
-    var width := radius * 1.7
-    var baseline := center + Vector2(-width * 0.5, font_size * 0.34)
+    var width: float = radius * 1.8
+    var baseline: Vector2 = center + Vector2(-width * 0.5, float(font_size) * 0.34)
     draw_string(
         ThemeDB.fallback_font,
         baseline,
