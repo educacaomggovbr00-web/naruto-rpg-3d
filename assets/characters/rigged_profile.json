@@ -16,11 +16,18 @@
       "duration_seconds": 2.9666666667
     }
   ],
+  "measured_scene_bounds": {
+    "height_source_units": 178.92071254,
+    "width_source_units": 27.61687825,
+    "depth_source_units": 27.46236287
+  },
+  "runtime_target_height_meters": 1.75,
+  "expected_auto_scale": 0.009780869,
   "combat_bones": [
     "mixamorig:RightHand",
     "mixamorig:LeftHand",
     "mixamorig:RightFoot",
     "mixamorig:LeftFoot"
   ],
-  "notes": "O adapter usa a animação happy como fallback até entrar um pacote completo de animações de combate."
+  "notes": "O GLB está em escala próxima de centímetros. O adapter mede os meshes em runtime e reduz automaticamente para cerca de 1,75 m."
 }
