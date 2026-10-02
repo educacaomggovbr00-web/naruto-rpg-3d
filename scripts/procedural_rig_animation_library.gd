@@ -12,6 +12,7 @@ static func install(animation_player: AnimationPlayer, skeleton: Skeleton3D) -> 
     var library: AnimationLibrary = AnimationLibrary.new()
     var source_paths: Dictionary = _discover_bone_paths(animation_player, skeleton)
 
+    _add_clip(library, &"idle", _build_idle(source_paths))
     _add_clip(library, &"run", _build_run(source_paths))
     _add_clip(library, &"air", _build_air(source_paths))
     _add_clip(library, &"attack_1", _build_attack_1(source_paths))
@@ -150,6 +151,24 @@ static func _pose(
 
 static func _v(x: float, y: float, z: float) -> Vector3:
     return Vector3(x, y, z)
+
+static func _build_idle(paths: Dictionary) -> Animation:
+    var a: Animation = _animation(1.60, true)
+    var t: Array[float] = [0.0, 0.40, 0.80, 1.20, 1.60]
+
+    _pose(a, paths, "mixamorig:Spine", t, [
+        _v(0, 0, 0), _v(-2, 1, 0), _v(-4, 0, 0), _v(-2, -1, 0), _v(0, 0, 0)
+    ])
+    _pose(a, paths, "mixamorig:Head", t, [
+        _v(0, 0, 0), _v(1, -1, 0), _v(2, 0, 0), _v(1, 1, 0), _v(0, 0, 0)
+    ])
+    _pose(a, paths, "mixamorig:LeftArm", t, [
+        _v(0, 0, -4), _v(0, 0, -6), _v(0, 0, -5), _v(0, 0, -6), _v(0, 0, -4)
+    ])
+    _pose(a, paths, "mixamorig:RightArm", t, [
+        _v(0, 0, 4), _v(0, 0, 6), _v(0, 0, 5), _v(0, 0, 6), _v(0, 0, 4)
+    ])
+    return a
 
 static func _build_run(paths: Dictionary) -> Animation:
     var a: Animation = _animation(0.56, true)
