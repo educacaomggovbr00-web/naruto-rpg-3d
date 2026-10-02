@@ -27,6 +27,7 @@ O projeto gera sua própria biblioteca `proc/` em GDScript no carregamento do pe
 
 Clips atuais:
 
+- `proc/idle`
 - `proc/run`
 - `proc/air`
 - `proc/attack_1`
