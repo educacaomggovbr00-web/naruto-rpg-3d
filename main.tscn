@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1"]
 [ext_resource path="res://scripts/camera_rig.gd" type="Script" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource path="res://scripts/combat_hitbox.gd" type="Script" id="7"]
 [ext_resource path="res://scripts/combat_hurtbox.gd" type="Script" id="8"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="9"]
+[ext_resource path="res://scripts/rigged_character_adapter.gd" type="Script" id="10"]
 
 [sub_resource type="StandardMaterial3D" id="BodyMaterial"]
 albedo_color = Color(0.95, 0.34, 0.07, 1)
@@ -196,6 +197,14 @@ shape = SubResource("AttackShape")
 [node name="VisualRoot" type="Node3D" parent="Player"]
 script = ExtResource("6")
 
+[node name="RiggedCharacterAdapter" type="Node3D" parent="Player"]
+script = ExtResource("10")
+model_path = "res://assets/characters/rigged.glb"
+fallback_visual_path = NodePath("../VisualRoot")
+model_offset = Vector3(0, -0.95, 0)
+model_scale = 1.0
+model_yaw_degrees = 180.0
+
 [node name="Torso" type="MeshInstance3D" parent="Player/VisualRoot"]
 position = Vector3(0, 0.20, 0)
 mesh = SubResource("TorsoMesh")
@@ -375,6 +384,17 @@ text = "4 HITS\n41 DANO"
 horizontal_alignment = 2
 theme_override_font_sizes/font_size = 28
 visible = false
+
+[node name="RigStatus" type="Label" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -420.0
+offset_top = 50.0
+offset_right = -18.0
+offset_bottom = 78.0
+text = "RIG: aguardando rigged.glb"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 14
 
 [node name="FPS" type="Label" parent="HUD"]
 anchor_left = 1.0
