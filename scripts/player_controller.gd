@@ -260,7 +260,7 @@ func _find_attack_target() -> Node3D:
 
     var forward: Vector3 = global_basis.z
     var best_target: Node3D = null
-    var best_distance := attack_range
+    var best_distance: float = attack_range
 
     for candidate_node: Node in get_tree().get_nodes_in_group("lock_targets"):
         var candidate: Node3D = candidate_node as Node3D
