@@ -83,6 +83,9 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/world_flow_contract.gd 2>&1 | tee /tmp/world-flow-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/world-flow-contract.log
           grep -F 'WORLD FLOW CONTRACT: PASS' /tmp/world-flow-contract.log
+      - name: Validate Storm research bridges
+        run: |
+          python -m unittest discover -s tests -p 'test_storm1_research_tools.py'
       - name: Validate release provenance gate
         run: |
           python tools/validate_release_assets.py
