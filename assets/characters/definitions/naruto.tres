@@ -1,6 +1,12 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=9 format=3]
 [ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
 [ext_resource type="Resource" path="res://assets/combat/naruto_moveset.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/jutsu_definition.gd" id="jutsu_script"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/demon.tres" id="j_demon"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/rasengan.tres" id="j_rasengan"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/clones.tres" id="j_clones"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/whirlwind.tres" id="j_whirlwind"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/barrage.tres" id="j_barrage"]
 [resource]
 script = ExtResource("1")
 character_id = "naruto"
@@ -10,3 +16,4 @@ visual_status = "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL"
 stylized_material = true
 summary = "Rasengan, Demon Wind, clones, Barrage, Ultimate e base Nine-Tails. Modelo próprio estilizado; coreografias e aparência ainda em evolução."
 moveset = ExtResource("2")
+jutsu_definitions = Array[ExtResource("jutsu_script")]([ExtResource("j_demon"), ExtResource("j_rasengan"), ExtResource("j_clones"), ExtResource("j_whirlwind"), ExtResource("j_barrage")])

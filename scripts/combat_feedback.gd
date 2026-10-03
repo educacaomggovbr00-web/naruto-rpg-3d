@@ -49,7 +49,7 @@ func _process(delta: float) -> void:
         trail_timer = trail_interval
         for title: String in ["Player", "EnemyDummy"]:
             var actor: Node3D = get_node_or_null("../" + title) as Node3D
-            if actor != null and (float(actor.get("chakra_dash_timer")) > 0.06 or (actor.get("specials") != null and actor.specials.current in ["rasengan", "chidori"])):
+            if actor != null and (float(actor.get("chakra_dash_timer")) > 0.06 or (actor.get("specials") != null and actor.specials.current in ["rasengan", "chidori", "raikiri"])):
                 _spawn_flash(actor.global_position - actor.global_basis.z * 0.4 + Vector3.UP * 0.55, 0.35, Color(0.1, 0.55, 1.0), 0.16)
     if hit_stop_end_msec <= 0:
         return

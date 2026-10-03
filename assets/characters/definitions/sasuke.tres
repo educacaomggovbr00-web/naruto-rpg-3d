@@ -1,6 +1,9 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=6 format=3]
 [ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
 [ext_resource type="Resource" path="res://assets/combat/sasuke_moveset.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/jutsu_definition.gd" id="jutsu_script"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/fireball.tres" id="j_fireball"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/chidori.tres" id="j_chidori"]
 [resource]
 script = ExtResource("1")
 character_id = "sasuke"
@@ -16,3 +19,4 @@ sprint_speed = 12.5
 has_ultimate = false
 has_awakening = false
 energy_color = Color(0.4, 0.7, 1.0, 1)
+jutsu_definitions = Array[ExtResource("jutsu_script")]([ExtResource("j_fireball"), ExtResource("j_chidori")])

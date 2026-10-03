@@ -166,7 +166,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
-      "sha256": "12aa4ec670794165bde1ad96e2805e11081459aed5141455ca0a8ffa3ecbfc25"
+      "sha256": "e64d7d50c0aeadda714b267d633d42de8198f3028ce2212d4c4e37fd6ce767f1"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -175,7 +175,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
-      "sha256": "087abde9b25f2513916c2600130127d6c229f7c8d4a8a7f8c555dfe142d9e67f"
+      "sha256": "dc7d6a95672ed8644312e6feb29fb36297b4a7b4e4dcada4af98440155ada1f7"
     },
     {
       "path": "assets/combat/sasuke_moveset.tres",
@@ -291,7 +291,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "f6b530a2842ca0215f783c6146532abfeb81f48019934de2ce6d6739a6716ff0"
+      "sha256": "2ea1307f898b06b71bfadff44bb261b2147d6c77ba24eb3a6f289955c99668f3"
     },
     {
       "path": "assets/characters/definitions/kakashi.tres",
@@ -300,7 +300,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "a8ef2aef494dcac491e0821f78d9aaaadfe01761d956c32b82c5efe1f6d60251"
+      "sha256": "91c292f40f4442fab43251a2a174fe2b5acb1f326651f6d39fa054339a6ab9b6"
     },
     {
       "path": "assets/combat/sakura_moveset.tres",
@@ -373,6 +373,87 @@
       "license": "Original project content; character likeness and supplied skeleton not cleared for public release",
       "modifications": "Offline original stylized geometry bound to 65 supplied Mixamo joints; no imported game meshes/textures",
       "sha256": "634d3628f31b722dffab5a9146e10879ea1d52fc67a861d3fc778dec019443ed"
+    },
+    {
+      "path": "assets/combat/jutsus/barrage.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "544c209df2b170474667cbbb9c48b9231a0a20e45cf10f0010ca48dc838a1170"
+    },
+    {
+      "path": "assets/combat/jutsus/rasengan.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "bd89ad1b2c32e14d32d5aaede198be85865a37799736dc5fe8f1e07ec4252171"
+    },
+    {
+      "path": "assets/combat/jutsus/booby_trap.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "588bb3a33d3dddbeac606995eaed064d334a9e09e975e5994c1087e11d132195"
+    },
+    {
+      "path": "assets/combat/jutsus/chidori.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "416948e688a1249a124dc42e4a7ff7814c329ced7a6a14d594013f1890170a11"
+    },
+    {
+      "path": "assets/combat/jutsus/whirlwind.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "bc12a000bd00ba5f6796ae84cadb70b7f676558848b31f943718f8c769304159"
+    },
+    {
+      "path": "assets/combat/jutsus/fireball.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "ae72a0c6693f786ac4543c0b2227db03736421042cf9db8c903200f3def4ab5f"
+    },
+    {
+      "path": "assets/combat/jutsus/raikiri.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "0581b01ee76e4bd7ef6dc8797f340e27a834545fe9bbcd22fd5bbd954f676bb9"
+    },
+    {
+      "path": "assets/combat/jutsus/demon.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "0a46c57e5efb8b4b877dead9ec8e0e38758935d1ffde54283fe89fbe1b46722d"
+    },
+    {
+      "path": "assets/combat/jutsus/clones.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Project contributors",
+      "source": "Original Godot implementation; behavior researched publicly",
+      "license": "Project source license; no imported proprietary assets",
+      "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
+      "sha256": "f255c5df3a176db4e82d06d16c3a91c606bf9fcce0fceb3d1c543b571fcf4031"
     }
   ]
 }

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="JutsuDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/jutsu_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+jutsu_id = "barrage"
+display_name = "Naruto Uzumaki Barrage"
+strategy = "barrage"
+animation_name = "attack_1"
+source_url = "https://gamefaqs.gamespot.com/ps3/943434-naruto-ultimate-ninja-storm/faqs/54852"
+cooldown = 4.0

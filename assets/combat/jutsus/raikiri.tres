@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="JutsuDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/jutsu_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+jutsu_id = "raikiri"
+display_name = "Lightning Blade / Raikiri"
+strategy = "hand"
+animation_name = "rasengan"
+source_url = "https://gamefaqs.gamespot.com/ps3/943434-naruto-ultimate-ninja-storm/faqs/54852"
+effect = "lightning"
+movement_speed = 15.0
+tracking_strength = 5.5
+damage = 24.0
+knockback = 9.0
+launch_force = 2.0
+hitstun = 0.55

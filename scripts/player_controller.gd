@@ -315,7 +315,7 @@ func _consume_mobile_actions() -> void:
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
         specials.call("cycle_selection")
-        mobile_controls.special_label = {"": "—", "rasengan": "RAS", "demon": "DWB", "fireball": "FIRE", "chidori": "CHID", "clones": "CLONE", "whirlwind": "AIR", "barrage": "BARR"}.get(specials.selected, "JUT")
+        mobile_controls.special_label = {"": "—", "rasengan": "RAS", "demon": "DWB", "fireball": "FIRE", "chidori": "CHID", "raikiri": "RAI", "booby_trap": "TRAP", "clones": "CLONE", "whirlwind": "AIR", "barrage": "BARR"}.get(specials.selected, "JUT")
         mobile_controls.queue_redraw()
     if mobile_controls.clone_queue > 0:
         mobile_controls.clone_queue = 0

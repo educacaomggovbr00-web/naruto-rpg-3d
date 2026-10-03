@@ -1,6 +1,8 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=5 format=3]
 [ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
 [ext_resource type="Resource" path="res://assets/combat/sakura_moveset.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/jutsu_definition.gd" id="jutsu_script"]
+[ext_resource type="Resource" path="res://assets/combat/jutsus/booby_trap.tres" id="j_booby_trap"]
 [resource]
 script = ExtResource("1")
 character_id = "sakura"
@@ -8,11 +10,12 @@ display_name = "Sakura (base)"
 model_path = "res://assets/characters/stylized/sakura.glb"
 visual_status = "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL"
 stylized_material = true
-summary = "Base de combate corpo a corpo com finalizador pesado. Modelo próprio estilizado. Jutsu, Ultimate e coreografia do Storm ainda pendentes."
+summary = "Base de combate corpo a corpo com finalizador pesado. Modelo próprio estilizado. Booby Trap com fio e bola de ferro física. Ultimate e coreografias próprias ainda pendentes."
 moveset = ExtResource("2")
-jutsus = PackedStringArray()
+jutsus = PackedStringArray("booby_trap")
 movement_speed = 7.2
 sprint_speed = 11.5
 has_ultimate = false
 has_awakening = false
 energy_color = Color(0.9, 0.35, 0.55, 1)
+jutsu_definitions = Array[ExtResource("jutsu_script")]([ExtResource("j_booby_trap")])

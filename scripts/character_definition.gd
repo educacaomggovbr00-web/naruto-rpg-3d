@@ -9,6 +9,7 @@ extends Resource
 @export var stylized_material: bool = false
 @export var moveset: MovesetDefinition
 @export var jutsus: PackedStringArray = PackedStringArray(["demon", "rasengan", "clones", "whirlwind", "barrage"])
+@export var jutsu_definitions: Array[JutsuDefinition] = []
 @export var movement_speed: float = 7.5
 @export var sprint_speed: float = 12.0
 @export var max_health: float = 100.0
@@ -16,3 +17,9 @@ extends Resource
 @export var has_ultimate: bool = true
 @export var has_awakening: bool = true
 @export var energy_color: Color = Color(0.08, 0.55, 1.0)
+
+func find_jutsu(id: String) -> JutsuDefinition:
+    for definition: JutsuDefinition in jutsu_definitions:
+        if definition.jutsu_id == id:
+            return definition
+    return null

@@ -376,5 +376,5 @@ func configure_character(definition: CharacterDefinition) -> void:
     ultimate_enabled = definition.has_ultimate
     awakening_enabled = definition.has_awakening
     clones_enabled = "clones" in definition.jutsus
-    special_label = "—" if definition.jutsus.is_empty() else "CHID" if definition.character_id == "kakashi" else "FIRE" if definition.character_id == "sasuke" else "DWB"
+    special_label = "—" if definition.jutsus.is_empty() else "TRAP" if definition.character_id == "sakura" else "RAI" if definition.character_id == "kakashi" else "FIRE" if definition.character_id == "sasuke" else "DWB"
     queue_redraw()
