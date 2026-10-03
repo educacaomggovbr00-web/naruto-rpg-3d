@@ -33,6 +33,11 @@ func run() -> void:
         push_error("Development export lost rig/manifest or pools")
         quit(1)
         return
+    var cpu: Node = game.get_node("EnemyDummy")
+    if not cpu.rig_adapter.rig_loaded or fighter.moveset != cpu.moveset or fighter.moveset.neutral_finisher.launch_force != 0.0 or fighter.specials.projectiles[0].definition.speed != 19.0:
+        push_error("Development export lost shared moveset, CPU rig or projectile definition")
+        quit(1)
+        return
     if not ResourceLoader.exists("res://assets/vfx/chakra_core.gdshader") or not ResourceLoader.exists("res://assets/combat/naruto_handbook.tres"):
         push_error("Development export lost Naruto resources")
         quit(1)

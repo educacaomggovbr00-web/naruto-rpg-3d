@@ -85,13 +85,15 @@ func _run() -> void:
     await frames(4)
     for step: int in range(1, 5):
         player.invulnerable_timer = 2.0
+        game.get_node("HUD/MobileControls").move_vector = Vector2(0, -1) if step == 3 else Vector2.ZERO
         player.call("_try_attack")
+        game.get_node("HUD/MobileControls").move_vector = Vector2.ZERO
         check(player.combo_step == step, "Combo step must progress")
         await frames(2)
         check(adapter.playback.get_current_node() == StringName("attack_%d" % step), "Tree must select exact attack")
         await frames(30)
     check(enemy.health < 100.0, "Real animated strikes must hit through bone hitboxes")
-    check(enemy.velocity.y > 0.0, "Fourth strike must launch enemy")
+    check(enemy.velocity.y > 0.0, "Up-branch fourth strike must launch enemy")
     # Air combo selection and slam must also follow the actual strike hand.
     player.global_position = Vector3(0, 3.0, 0)
     player.combo_timer = 0.0
