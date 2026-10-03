@@ -4,8 +4,8 @@
 
 ## Resultado implementado
 
-- Boot → seleção real Naruto/Sasuke/Sakura/Kakashi base, preview 3D e CPU com qualquer um dos quatro e arena → combate existente → resultado → revanche/seleção. Dois presets reutilizam geometria da arena atual e diferem na paleta/luz. Não são dois mapas finais de Storm. Treino da aldeia mantém sua recompensa/save e volta ao mundo.
-- CharacterDefinition configura modelo, stats, moveset, jutsus e capabilities. Sasuke usa Fireball/Chidori e kick real no terceiro golpe; Naruto mantém seu arsenal. Capabilities desabilitam ULT/AWK/CLONE/BARR indisponíveis no touchscreen. Sakura tem melee pesado e Booby Trap (fio e bola de ferro); Kakashi usa Raikiri com parâmetros próprios e Fireball. Ambos são bases explicitamente incompletas, sem Ultimate/Awakening emprestados de Naruto. Gaara fica indisponível.
+- Boot → seleção com os **25 lutadores jogáveis do Storm 1**, preview 3D e CPU com qualquer slot do elenco → combate existente → resultado → revanche/seleção. Naruto/Sasuke/Sakura/Kakashi têm perfis visuais próprios; os outros 21 usam temporariamente o rig e combo-base compartilhados. Dois presets reutilizam geometria da arena atual e diferem na paleta/luz. Não são dois mapas finais de Storm. Treino da aldeia mantém sua recompensa/save e volta ao mundo.
+- CharacterDefinition configura modelo, stats, moveset, jutsus e capabilities. Sasuke usa Fireball/Chidori e kick real no terceiro golpe; Naruto mantém seu arsenal. Capabilities desabilitam ULT/AWK/CLONE/BARR indisponíveis no touchscreen. Sakura tem melee pesado e Booby Trap (fio e bola de ferro); Kakashi usa Raikiri com parâmetros próprios e Fireball. Os 21 slots restantes entram sem jutsu/Ultimate/Awakening até receberem kits próprios; Gaara agora está selecionável como slot de desenvolvimento.
 - CPU usa CombatSpecials, Ultimate, Awakening e NinjaTools compartilhados. Chakra/custo/recovery, dash com startup/accel/tracking/Area/recoil e perseguição aérea; charge; probabilidades com decisão atrasada, sem input reading. Jutsu/clones/Ultimate usam máscara do time. Clean entry inicia cinematic, block/miss não; ATK defende clash contra CPU; SUB e watchdog restauram câmera/controle. KO/revanche limpam pools e restauram hit-stop.
 - OGG CC0: impactos, bloqueio, passos, energia/carga, dash e fumaça. Pool oito vozes SFX e um loop de carga, rate-limit, mute persistido, cleanup/pausa. Música/ambiente/vozes/coreografia sonora final ainda pendentes. Headless mantém banco/pool mas não toca stream em driver dummy; som real precisa teste no telefone.
 - Elétrico autoral Chidori: 16 segmentos MultiMesh em uma draw, sem transparência. Fireball: shader de fluxo de fogo opaco + orb/trail existente; sem bloom obrigatório. LOW remove shell aditiva via orçamento existente; qualidade aplicada também aos efeitos CPU/projéteis existentes no setup.
@@ -18,7 +18,7 @@ Não há medição de GPU/thermal/RAM/FPS Android nesta execução, nem AAB/APK 
 
 ## Não concluído
 
-Polimento final dos quatro modelos próprios; modelo de Gaara; coreografias exclusivas e sand system; variantes/costumes; Ultimate/Awakening Sasuke; sprites/áudio final; landmarks/interiores/NPCs/missões adicionais e wall-run na aldeia. A seleção mostra dois modelos 3D animados e identifica explicitamente as bases incompletas. O model_path está preparado para GLBs compatíveis fornecidos/autorizados; modelos extraídos de Storm não foram adquiridos.
+Polimento final dos quatro modelos próprios; modelos e movesets próprios para os outros 21 slots; coreografias exclusivas e sand system do Gaara; variantes/costumes; Ultimates/Awakenings individuais; sprites/áudio final; landmarks/interiores/NPCs/missões adicionais e wall-run na aldeia. A seleção identifica explicitamente os slots que ainda usam o rig compartilhado. O model_path está preparado para GLBs compatíveis fornecidos/autorizados; modelos extraídos de Storm não foram adquiridos.
 
 ## Validação
 
