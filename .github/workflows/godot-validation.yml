@@ -43,3 +43,29 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/storm_slice_contract.gd 2>&1 | tee /tmp/storm-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/storm-contract.log
           grep -F 'STORM SLICE CONTRACT: PASS' /tmp/storm-contract.log
+
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/naruto_phase1_contract.gd 2>&1 | tee /tmp/naruto-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/naruto-contract.log
+          grep -F 'NARUTO PHASE 1 CONTRACT: PASS' /tmp/naruto-contract.log
+      - name: Validate release provenance gate
+        run: |
+          python tools/validate_release_assets.py
+          python -m unittest discover -s tests -p 'test_release_assets.py'
+      - name: Verify isolated Android payload and public gate
+        shell: bash
+        run: |
+          set -o pipefail
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --export-pack Android /tmp/android-phase1.pck 2>&1 | tee /tmp/dev-export.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/dev-export.log
+          # Backends may still write an empty container on export error. Verify contents.
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --export-pack 'Android (Play Store)' /tmp/blocked-public.pck 2>&1 | tee /tmp/public-export.log
+          grep -F 'Export público bloqueado; payload excluído.' /tmp/public-export.log
+          ! grep -F 'SCRIPT ERROR:' /tmp/public-export.log
+          cp tests/export_payload_contract.gd /tmp/export_payload_contract.gd
+          cd /tmp
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/android-phase1.pck --script /tmp/export_payload_contract.gd 2>&1 | tee /tmp/pack-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/pack-contract.log
+          grep -F 'ANDROID PHASE 1 PACK: PASS' /tmp/pack-contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/blocked-public.pck --script /tmp/export_payload_contract.gd -- --public 2>&1 | tee /tmp/public-pack-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/public-pack-contract.log
+          grep -F 'PUBLIC PAYLOAD GATE: PASS' /tmp/public-pack-contract.log

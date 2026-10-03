@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STATUSES = {'SAFE_FOR_RELEASE', 'NEEDS_ATTRIBUTION', 'DEVELOPMENT_ONLY', 'UNKNOWN_LICENSE'}
-EXTENSIONS = {'.glb', '.gltf', '.fbx', '.tres', '.png', '.jpg', '.webp', '.ogg', '.wav', '.mp3', '.gdshader'}
+EXTENSIONS = {'.glb', '.gltf', '.fbx', '.tres', '.png', '.jpg', '.webp', '.ogg', '.wav', '.mp3', '.gdshader', '.obj', '.dae', '.blend', '.res', '.tscn', '.scn', '.anim', '.jpeg', '.svg', '.bmp', '.tga', '.hdr', '.exr', '.flac', '.ogv', '.webm'}
 
 
 def validate(root=ROOT, release=False):

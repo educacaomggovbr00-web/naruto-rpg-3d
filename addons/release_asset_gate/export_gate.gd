@@ -60,5 +60,5 @@ func _check_unregistered(folder: String, registered: Dictionary, errors: Array[S
         _check_unregistered(folder.path_join(subfolder), registered, errors)
     for file: String in directory.get_files():
         var path: String = folder.path_join(file)
-        if file.get_extension().to_lower() in ["glb", "gltf", "fbx", "tres", "png", "jpg", "webp", "ogg", "wav", "mp3", "gdshader"] and not registered.has(path):
+        if file.get_extension().to_lower() in ["glb", "gltf", "fbx", "tres", "png", "jpg", "webp", "ogg", "wav", "mp3", "gdshader", "obj", "dae", "blend", "res", "tscn", "scn", "anim", "jpeg", "svg", "bmp", "tga", "hdr", "exr", "flac", "ogv", "webm"] and not registered.has(path):
             errors.append("Asset não registrado: " + path)

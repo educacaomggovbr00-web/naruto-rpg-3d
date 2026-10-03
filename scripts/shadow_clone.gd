@@ -136,7 +136,7 @@ func on_attack_connected(victim: Node, dealt: float, lift: float) -> void:
     source.call("on_attack_connected", victim, dealt, lift)
 
 func recycle() -> void:
-    if active and is_instance_valid(source):
+    if active and is_inside_tree() and is_instance_valid(source) and is_instance_valid(source.combat_feedback) and source.combat_feedback.is_inside_tree():
         source.combat_feedback.call("spawn_substitution", global_position)
     active = false
     visible = false

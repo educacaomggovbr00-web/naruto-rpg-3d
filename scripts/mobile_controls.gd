@@ -333,3 +333,30 @@ func _draw_button(center: Vector2, radius: float, fill: Color, label: String, fo
         font_size,
         text_color
     )
+
+func _notification(what: int) -> void:
+    if what not in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED]:
+        return
+    joystick_touch = -1
+    camera_touch = -1
+    charge_touch = -1
+    guard_touch = -1
+    move_vector = Vector2.ZERO
+    camera_delta = Vector2.ZERO
+    joystick_knob = joystick_center
+    attack_queue = 0
+    jump_queue = 0
+    chakra_dash_queue = 0
+    lock_queue = 0
+    jutsu_queue = 0
+    substitution_queue = 0
+    dodge_queue = 0
+    special_queue = 0
+    clone_queue = 0
+    barrage_queue = 0
+    ultimate_queue = 0
+    awakening_queue = 0
+    tool_select_queue = 0
+    tool_use_queue = 0
+    quality_queue = 0
+    queue_redraw()
