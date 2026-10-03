@@ -165,8 +165,8 @@
       "author": "Projeto naruto-rpg-3d",
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
-      "modifications": "Resource de gameplay original atualizado para usar o modelo pré-Shippuden rigado fornecido pelo usuário.",
-      "sha256": "526a25d3566b34bc68f5315109032ec44a5de1e371081d9ede7662c67ff4460e"
+      "modifications": "Resource de gameplay original atualizado para usar o modelo pré-Shippuden rigado fornecido pelo usuário. Autoescala e alinhamento dos pés à cápsula física.",
+      "sha256": "a4256837d14033744a793ea4da17a7b878762aee42bb94c7165b776760277e84"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -354,8 +354,8 @@
       "source": "https://sketchfab.com/3d-models/naruto-uzumaki-pre-shippuden-3d-model-2714a1005f21454197f39890caf74766",
       "license": "CC-BY-4.0",
       "credit": "Rida.Sidi.Ben.Ali via Sketchfab — CC BY 4.0",
-      "modifications": "Arquivo fornecido pelo usuário; malha/texturas preservadas e adaptadas ao esqueleto Mixamo de 65 bones para as animações do projeto.",
-      "sha256": "dab4ff302f100211540ab60e46041b21757fa24f79ac81a6ce0ce00240e57b71",
+      "modifications": "Arquivo fornecido pelo usuário; malha/texturas preservadas e adaptadas ao esqueleto Mixamo de 65 bones para as animações do projeto. Normalização POSITION ×100 e colunas lineares dos inverseBindMatrices ×0.01: skinning equivalente, bounds em centímetros; autoescala 1.75 m e apoio na cápsula física.",
+      "sha256": "bae0bfbad5545ad54007bcab87fbc9a9a25f28e3f1a9eaecd3c82481a2def974",
       "embedded_images": [
         {
           "path": "assets/characters/stylized/naruto_pre_shippuden_0.png",

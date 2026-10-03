@@ -78,11 +78,16 @@ func run() -> void:
                         if anime != null and original != null:
                             check(anime.albedo_texture == original.albedo_texture, "Anime lighting preserves each original Naruto texture")
                             check(anime.albedo_color == original.albedo_color, "Anime lighting preserves each original Naruto tint")
-                check(not definition.model_auto_scale and absf(adapter.applied_model_scale - 0.01) < 0.0001, "Naruto rig keeps the centimeter-scale Mixamo transform")
+                check(definition.model_auto_scale and absf(adapter.detected_source_height - 175.0) < 0.01, "Naruto mesh bounds use the same centimeter units as its skeleton")
+                check(absf(adapter.applied_model_scale * adapter.detected_source_height - 1.75) < 0.001, "Naruto normalizes to the other fighters' physical height")
+                var collision: CollisionShape3D = actor.get_node("CollisionShape3D")
+                check(absf(adapter.model_instance.position.y + adapter.detected_source_min_y * adapter.applied_model_scale - (collision.position.y - collision.shape.height * 0.5)) < 0.001, "Naruto soles align with each actor's physical capsule bottom")
+                check(is_equal_approx(adapter.model_instance.rotation_degrees.y, 180.0), "Naruto faces the same combat axis as the other fighters")
             else:
                 check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "Original authored fighter keeps one opaque skinned surface")
                 check(meshes[0].material_override == adapter.TOON_MATERIAL, "Original authored fighters keep the project toon material")
             var library: AnimationLibrary = adapter.animation_player.get_animation_library(&"combat")
+            check(library == cpu.rig_adapter.animation_player.get_animation_library(&"combat"), "Identical profiles share immutable prepared clips across teams")
             if definition.character_id != "naruto":
                 if shared_stylized_library == null:
                     shared_stylized_library = library

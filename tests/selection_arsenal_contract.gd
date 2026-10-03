@@ -94,6 +94,10 @@ func run() -> void:
     check(cpu.specials.clones.size() == 3 and cpu.specials.clones[0].hitbox.collision_mask == 8, "CPU Naruto creates bounded pooled clones with correct team mask")
     cpu.global_position = Vector3(0, 0.96, -3.0)
     cpu.rotation.y = 0.0
+    # Physics is disabled in this fixture; refresh floor contact after teleporting.
+    cpu.velocity = Vector3.DOWN * 60.0
+    cpu.move_and_slide()
+    cpu.velocity = Vector3.ZERO
     fighter.global_position = Vector3(0, 0.96, 0)
     fighter.stagger_timer = 0.0
     check(cpu.ultimate.start() and cpu.chakra == 20.0, "CPU Ultimate must use the shared startup/resource gate")
@@ -116,6 +120,9 @@ func run() -> void:
     check(cpu.ultimate.phase.is_empty() and fighter.cinematic_owner == null and fighter.camera_rig.cinematic_remaining == 0.0, "Substitution restores control/camera during CPU Ultimate")
     cpu._respawn()
     cpu.health = cpu.max_health * 0.25
+    cpu.velocity = Vector3.DOWN * 60.0
+    cpu.move_and_slide()
+    cpu.velocity = Vector3.ZERO
     cpu.chakra = cpu.max_chakra
     cpu.stagger_timer = 0.0
     check(cpu.awakening.start(), "CPU can enter Naruto Awakening with matching condition")

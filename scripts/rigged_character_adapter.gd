@@ -13,6 +13,7 @@ const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
 @export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
 @export var model_scale: float = 1.0
 @export var auto_scale_model: bool = true
+@export var ground_to_collision: bool = false
 @export var target_character_height: float = 1.75
 @export var fallback_import_scale: float = 0.01
 @export var model_yaw_degrees: float = 180.0
@@ -30,6 +31,7 @@ var rig_status: String = "RIG: aguardando rigged.glb"
 var current_state: String = ""
 var available_animations: PackedStringArray = PackedStringArray()
 var detected_source_height: float = 0.0
+var detected_source_min_y: float = 0.0
 var applied_model_scale: float = 1.0
 var real_animation_count: int = 0
 var manifest: Dictionary = {}
@@ -55,6 +57,7 @@ func _ready() -> void:
         if definition != null:
             model_path = definition.model_path
             auto_scale_model = definition.model_auto_scale
+            ground_to_collision = definition.model_ground_to_collision
             model_scale = definition.model_scale_multiplier
             model_offset = definition.model_offset
             model_yaw_degrees = definition.model_yaw_degrees
@@ -97,6 +100,11 @@ func _try_load_rig() -> void:
 
     _apply_character_scale()
     model_instance.position = model_offset
+    if ground_to_collision:
+        var collision: CollisionShape3D = player.get_node_or_null("CollisionShape3D") as CollisionShape3D
+        if collision != null and collision.shape is CapsuleShape3D:
+            # Keep the visual sole at the physical capsule's bottom for both teams.
+            model_instance.position.y = collision.position.y - collision.shape.height * 0.5 - detected_source_min_y * applied_model_scale
 
     skeleton = _find_skeleton(model_instance)
     animation_player = _find_animation_player(model_instance)
@@ -189,6 +197,7 @@ func _calculate_model_height() -> float:
     if not found_mesh:
         return 0.0
 
+    detected_source_min_y = bounds_min_y
     return maxf(bounds_max_y - bounds_min_y, 0.0)
 
 func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:

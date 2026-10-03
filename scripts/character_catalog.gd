@@ -6,7 +6,8 @@ const SASUKE: CharacterDefinition = preload("res://assets/characters/definitions
 const SAKURA: CharacterDefinition = preload("res://assets/characters/definitions/sakura.tres")
 const KAKASHI: CharacterDefinition = preload("res://assets/characters/definitions/kakashi.tres")
 
-# These four already have dedicated project-authored visual/profile Resources.
+# Dedicated visuals: supplied textured Naruto and three project-authored meshes.
+# Download research/status is recorded in docs/CHARACTER_MODEL_DOWNLOAD_AUDIT.md.
 const AUTHORED_VISUALS: Array[CharacterDefinition] = [NARUTO, SASUKE, SAKURA, KAKASHI]
 
 # Storm 1 has 25 playable fighters. The remaining entries are activated as
