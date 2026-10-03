@@ -1,5 +1,6 @@
 extends Node3D
 
+var clones: Array[CharacterBody3D] = []
 var projectiles: Array[Node3D] = []
 var selected: String = "demon"
 var current: String = ""
@@ -14,6 +15,7 @@ var owner_fighter: CharacterBody3D
 
 func _ready() -> void:
     owner_fighter = get_parent() as CharacterBody3D
+    call_deferred("warm_clone_pool")
     process_physics_priority = 15
     rasengan_hitbox = Area3D.new()
     rasengan_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
@@ -58,6 +60,22 @@ func _ready() -> void:
         projectile.set_script(preload("res://scripts/chakra_projectile.gd"))
         owner_fighter.get_parent().add_child.call_deferred(projectile)
         projectiles.append(projectile)
+
+func warm_clone_pool() -> void:
+    for i: int in range(3):
+        var clone: CharacterBody3D = CharacterBody3D.new()
+        clone.set_script(preload("res://scripts/shadow_clone.gd"))
+        owner_fighter.get_parent().add_child(clone)
+        clone.call("prepare", owner_fighter)
+        clones.append(clone)
+
+func summon_clone(target: Node3D, offset: Vector3, delay: float, clip: String, lift: float = 0.0, damage: float = 6.0) -> bool:
+    for clone: CharacterBody3D in clones:
+        if not clone.active:
+            var origin: Vector3 = owner_fighter.global_position + owner_fighter.global_basis.x * (1.2 if offset.x >= 0.0 else -1.2)
+            clone.call("summon", target, origin, offset, delay, clip, lift, damage)
+            return true
+    return false
 
 func start(kind: String = "") -> bool:
     var move: String = selected if kind.is_empty() else kind
@@ -113,10 +131,15 @@ func cancel() -> void:
     rasengan_hitbox.call("deactivate")
     owner_fighter.jutsu_timer = 0.0
 
-func demon_confirm(_target: Node) -> void:
-    pass # Clone follow-through added after the reusable clone pool.
+func demon_confirm(target: Node) -> void:
+    var victim: Node3D = target as Node3D
+    summon_clone(victim, Vector3(-0.5, 0, -1.0), 0.12, "attack_2", 0.0, 8.0)
+    summon_clone(victim, Vector3(0.5, 0, -1.0), 0.32, "attack_3", 3.0, 8.0)
 
 func _exit_tree() -> void:
+    for clone: CharacterBody3D in clones:
+        if is_instance_valid(clone):
+            clone.queue_free()
     for projectile: Node3D in projectiles:
         if is_instance_valid(projectile):
             projectile.queue_free()
