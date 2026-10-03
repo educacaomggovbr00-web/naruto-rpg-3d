@@ -109,7 +109,7 @@ func _physics_process(delta: float) -> void:
     animation_player.advance(delta)
     var manifest: Dictionary = source.rig_adapter.manifest["clips"][clip_name]
     var attack_time: float = elapsed - attack_delay
-    if attack_started and not hit_open and attack_time >= float(manifest.get("impact", 0.14)):
+    if damage > 0.0 and attack_started and not hit_open and attack_time >= float(manifest.get("impact", 0.14)):
         hit_open = true
         hitbox.call("activate", self, damage, 2.0 if absf(launch) < 1.0 else 5.0, launch, 0.5, 0.09)
     var bone_name: String = "mixamorig_" + String(manifest.get("bone", "RightHand"))

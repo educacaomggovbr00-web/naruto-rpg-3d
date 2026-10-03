@@ -148,6 +148,10 @@ func _unhandled_input(event: InputEvent) -> void:
             specials.selected = "demon"
         elif event.physical_keycode == KEY_2:
             specials.selected = "rasengan"
+        elif event.physical_keycode == KEY_3:
+            specials.call("start", "clones" if is_on_floor() else "whirlwind")
+        elif event.physical_keycode == KEY_4:
+            specials.call("start", "barrage")
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
@@ -220,6 +224,9 @@ func _physics_process(delta: float) -> void:
         var special_velocity: Vector3 = specials.call("movement_velocity", delta)
         velocity.x = special_velocity.x
         velocity.z = special_velocity.z
+        if specials.current == "barrage" and is_instance_valid(specials.confirmed_target):
+            velocity.y = special_velocity.y
+            air_float_timer = 0.12
     elif is_charging_chakra:
         velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
         velocity.z = move_toward(velocity.z, 0.0, acceleration * delta)
@@ -552,6 +559,7 @@ func _start_chakra_dash() -> void:
         combat_feedback.call("spawn_dash_burst", global_position)
 
 func on_attack_contact(target: Node, _damage: float) -> void:
+    specials.call("contact", target, _damage)
     if chakra_dash_timer <= 0.0:
         return
     chakra_dash_timer = 0.0
@@ -985,4 +993,4 @@ func _is_mobile_runtime() -> bool:
     )
 
 func get_special_animation() -> String:
-    return "rasengan" if specials.current == "rasengan" else "jutsu"
+    return String(specials.call("animation_clip"))
