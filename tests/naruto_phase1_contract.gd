@@ -74,11 +74,11 @@ func run() -> void:
     check(is_instance_valid(enemy.cinematic_owner), "Confirmed target must be temporarily controlled")
     check(enemy.health < enemy.max_health, "Entry collision must deal actual damage")
     # The touch ATK button must drive the QTE, not buffered normal attacks.
-    for i: int in range(4):
+    for i: int in range(8):
         ultimate.last_press_msec = -1000
         controls.attack_queue += 1
         await frames(4)
-    check(ultimate.presses >= 4 and not fighter.attack_active, "Multitouch ATK must count QTE presses")
+    check(ultimate.presses >= 8 and not fighter.attack_active, "Multitouch ATK must count QTE presses")
     await frames(220)
     check(ultimate.phase.is_empty(), "Successful Ultimate must return to gameplay")
     check(enemy.health <= enemy.max_health - 30.0, "Intermediate and final strikes must connect physically")
@@ -130,6 +130,44 @@ func run() -> void:
     check(ultimate.last_result == "scenery", "Scenery impact must clean up entry")
     wall.queue_free()
     await frames(3)
+    # Identical CPU rhythm with different player scores proves no input reading.
+    ultimate.clash_rng.seed = 1234
+    ultimate.cpu_press_timer = 0.1
+    ultimate.cpu_presses = 0
+    ultimate.presses = 0
+    ultimate.call("_advance_cpu_clash", 0.8)
+    var independent_score: int = ultimate.cpu_presses
+    ultimate.clash_rng.seed = 1234
+    ultimate.cpu_press_timer = 0.1
+    ultimate.cpu_presses = 0
+    ultimate.presses = 99
+    ultimate.call("_advance_cpu_clash", 0.8)
+    check(independent_score > 0 and ultimate.cpu_presses == independent_score, "CPU QTE rhythm must not read player presses")
+    reset(3.0)
+    await frames(3)
+    ultimate.start()
+    await await_clash()
+    check(ultimate.presses == 0 and ultimate.cpu_presses == 0, "New clash must reset both scores")
+    ultimate.last_press_msec = -1000
+    ultimate.press_attack()
+    ultimate.press_attack()
+    check(ultimate.presses == 1, "Duplicate same-frame ATK must not inflate QTE score")
+    ultimate.presses = 4
+    ultimate.cpu_presses = 4
+    ultimate.cpu_press_timer = 10.0
+    var tied_hp: float = enemy.health
+    await frames(65)
+    check(ultimate.last_result == "clash_lost" and enemy.health == tied_hp, "Tie cannot start follow-up despite reaching minimum presses")
+    check(enemy.cinematic_owner == null and fighter.camera_rig.cinematic_target == null, "Lost race must release camera and control")
+    reset(3.0)
+    await frames(3)
+    ultimate.start()
+    await await_clash()
+    ultimate.presses = 4
+    ultimate.cpu_presses = 6
+    ultimate.cpu_press_timer = 10.0
+    await frames(65)
+    check(ultimate.last_result == "clash_lost", "Minimum presses must still lose to faster CPU")
     # Lost QTE and substitution restore everything without follow-up damage.
     reset(3.0)
     await frames(3)
@@ -282,7 +320,7 @@ func run() -> void:
     await frames(3)
     ultimate.start()
     await await_clash()
-    ultimate.presses = 4
+    ultimate.presses = 8
     await frames(65)
     check(ultimate.phase == "dogpile", "Scene cleanup must be exercised during active clone sequence")
     var pool_count: int = tools.projectiles.size()

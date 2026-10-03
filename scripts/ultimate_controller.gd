@@ -10,6 +10,9 @@ var phase: String = ""
 var elapsed: float = 0.0
 var cooldown: float = 0.0
 var presses: int = 0
+var cpu_presses: int = 0
+var cpu_press_timer: float = 0.0
+var clash_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var opened: bool = false
 var cinematic_started: bool = false
 var last_result: String = ""
@@ -19,6 +22,7 @@ var last_press_msec: int = -1000
 
 func _ready() -> void:
     fighter = get_parent() as CharacterBody3D
+    clash_rng.randomize()
     process_physics_priority = 15
     entry_box = Area3D.new()
     entry_box.set_script(preload("res://scripts/combat_hitbox.gd"))
@@ -59,6 +63,11 @@ func _enter(next: String) -> void:
     fighter.is_guarding = false
     fighter.is_charging_chakra = false
     fighter.jutsu_timer = 0.2
+    if phase == "clash":
+        presses = 0
+        cpu_presses = 0
+        last_press_msec = -1000
+        cpu_press_timer = _cpu_delay(definition.cpu_clash_reaction_min, definition.cpu_clash_reaction_max)
     if is_instance_valid(target):
         fighter.camera_rig.call("set_sequence_shot", phase)
 
@@ -105,8 +114,10 @@ func _physics_process(delta: float) -> void:
         if phase == "entry" and elapsed >= 1.15:
             cancel("miss_or_block")
     elif phase == "clash":
+        # Only advance within the QTE window, even if the last frame overshoots.
+        _advance_cpu_clash(minf(delta, maxf(definition.clash_duration - (elapsed - delta), 0.0)))
         if elapsed >= definition.clash_duration:
-            if presses < definition.clash_presses:
+            if presses < definition.clash_presses or presses <= cpu_presses:
                 cancel("clash_lost")
             else:
                 _enter("dogpile")
@@ -160,6 +171,16 @@ func press_attack() -> void:
     if phase == "clash" and now - last_press_msec >= 50:
         presses += 1
         last_press_msec = now
+
+func _cpu_delay(minimum: float, maximum: float) -> float:
+    return clash_rng.randf_range(maxf(minimum, 0.05), maxf(maximum, maxf(minimum, 0.05)))
+
+func _advance_cpu_clash(delta: float) -> void:
+    # CPU never inspects the player's presses, input queues or touch events.
+    cpu_press_timer -= delta
+    while cpu_press_timer <= 0.0:
+        cpu_presses += 1
+        cpu_press_timer += _cpu_delay(definition.cpu_clash_interval_min, definition.cpu_clash_interval_max)
 
 func animation_clip() -> String:
     if phase == "entry":

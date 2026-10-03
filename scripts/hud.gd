@@ -40,7 +40,7 @@ func _process(_delta: float) -> void:
 
     resource_label.text += " | GUARDA: %d | %s" % [int(player.guard_meter), "RASENGAN" if player.specials.selected == "rasengan" else "DEMON WIND"]
     if player.ultimate.phase == "clash":
-        resource_label.text = "ULTIMATE — TOQUE ATK: %d / %d" % [player.ultimate.presses, player.ultimate.definition.clash_presses]
+        resource_label.text = "ULT — TOQUE ATK! VOCÊ %d : CPU %d | %.1fs | mínimo %d" % [player.ultimate.presses, player.ultimate.cpu_presses, maxf(player.ultimate.definition.clash_duration - player.ultimate.elapsed, 0.0), player.ultimate.definition.clash_presses]
     else:
         resource_label.text += "\nULT: %.1fs | AWK: %s" % [player.ultimate.cooldown, "%.1fs" % player.awakening.remaining if player.awakening.active else "CARREGUE CHK" if player.awakening.eligible() else "VIDA BAIXA + CHK CHEIO"]
     var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]

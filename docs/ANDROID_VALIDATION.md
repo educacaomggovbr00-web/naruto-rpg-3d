@@ -34,7 +34,7 @@ Rig/modelo existente preservado. Golpes da mão substituem provisoriamente chute
 
 | Ação | O que observar |
 |---|---|
-| ULT a média distância e ATK 4 vezes | Clone lançado conecta antes da cinematic; QTE legível; dogpile/corrente/finalizador; controle e câmera voltam. Repetir errando, contra DEF, usando SUB e perto da parede |
+| ULT a média distância e ATK repetidamente | Clone lançado conecta antes da cinematic; QTE mostra VOCÊ/CPU/tempo: vencer exige mínimo 4 e mais toques que CPU, empate perde; dogpile/corrente/finalizador; controle e câmera voltam. Repetir errando, contra DEF, usando SUB e perto da parede |
 | Vida ≤30%, encher CHK e continuar segurando / AWK | Transição interrompível, aura deixa modelo visível, uma cauda, velocidade/dano maiores, Rasengan vermelho; após 18 s volta ao normal sem buff acumulado |
 | ITEM → botão do item: SHUR/RAMEN/PILL/KUNAI/BOMB | Quantidades/CD, shuriken/projéteis bloqueados por cenário, bomba atinge apenas seu volume; ramen repõe chakra, buff expira |
 | LOW → MED → HIGH com Rasengan/clones | Touch continua nítido/na posição; LOW reduz sombras/camada externa; comparar FPS/temperatura. HUD não deve cobrir QTE ou botões |
