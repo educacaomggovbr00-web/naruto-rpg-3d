@@ -284,9 +284,9 @@ func _sync_animation_state(delta: float) -> void:
         # Interrupt an in-progress locomotion fade immediately for combat input.
         playback.next()
     last_action_id = action_id
-    if desired_state == "run" or desired_state == "sprint":
+    if desired_state in ["run", "sprint", "strafe_left", "strafe_right", "back_run"]:
         var speed: float = Vector2(player.velocity.x, player.velocity.z).length()
-        var reference_speed: float = 7.5 if desired_state == "run" else 12.0
+        var reference_speed: float = 12.0 if desired_state == "sprint" else 7.5
         animation_tree.set("parameters/%s/speed/scale" % desired_state,
             clampf(speed / reference_speed, 0.35, 1.8))
 

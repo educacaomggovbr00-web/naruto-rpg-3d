@@ -21,6 +21,11 @@ def validate(root=ROOT, release=False):
             errors.append(f'invalid or duplicate path: {relative}')
             continue
         registered.add(relative)
+        for image in entry.get('embedded_images', []):
+            registered.add(image['path'])
+            extracted = root / image['path']
+            if extracted.exists() and hashlib.sha256(extracted.read_bytes()).hexdigest() != image['sha256']:
+                errors.append(f'changed embedded image: {image["path"]}')
         if entry.get('status') not in STATUSES or not path.is_file():
             errors.append(f'invalid status or missing file: {relative}')
             continue

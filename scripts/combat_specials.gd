@@ -11,7 +11,6 @@ var duration: float = 0.0
 var released: bool = false
 var rasengan_hitbox: Area3D
 var sphere_visual: MeshInstance3D
-var sphere_rings: Array[MeshInstance3D] = []
 var active_opened: bool = false
 var confirmed_target: Node3D = null
 var sequence_elapsed: float = 0.0
@@ -35,31 +34,8 @@ func _ready() -> void:
     add_child(rasengan_hitbox)
     rasengan_hitbox.top_level = true
     sphere_visual = MeshInstance3D.new()
-    var orb: SphereMesh = SphereMesh.new()
-    orb.radius = 0.22
-    orb.height = 0.44
-    orb.radial_segments = 12
-    orb.rings = 6
-    var energy: StandardMaterial3D = StandardMaterial3D.new()
-    energy.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    energy.albedo_color = Color(0.1, 0.6, 1.0)
-    orb.material = energy
-    sphere_visual.mesh = orb
-    sphere_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    sphere_visual.set_script(preload("res://scripts/chakra_orb.gd"))
     rasengan_hitbox.add_child(sphere_visual)
-    for i: int in range(2):
-        var ring: MeshInstance3D = MeshInstance3D.new()
-        var torus: TorusMesh = TorusMesh.new()
-        torus.inner_radius = 0.24
-        torus.outer_radius = 0.27
-        torus.rings = 12
-        torus.ring_segments = 6
-        torus.material = energy
-        ring.mesh = torus
-        ring.rotation.x = float(i) * PI * 0.5
-        ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-        sphere_visual.add_child(ring)
-        sphere_rings.append(ring)
     sphere_visual.visible = false
     barrage_hitbox = Area3D.new()
     barrage_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
@@ -138,8 +114,6 @@ func _physics_process(delta: float) -> void:
         rasengan_hitbox.global_position = hand + owner_fighter.global_basis.z * 0.12
         sphere_visual.visible = elapsed > 0.12 and elapsed < 0.84
         sphere_visual.scale = Vector3.ONE * minf(1.0, elapsed * 5.0)
-        for ring: MeshInstance3D in sphere_rings:
-            ring.rotation.z += delta * 15.0
         if elapsed >= 0.38 and not active_opened:
             active_opened = true
             rasengan_hitbox.call("activate", owner_fighter, 26.0, 11.0, 4.5, 0.6, 0.30)
