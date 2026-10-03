@@ -317,6 +317,13 @@ func _process_defeated(delta: float) -> void:
 func _apply_movement(delta: float) -> void:
     var input_vector: Vector2 = _get_move_input()
     var direction: Vector3 = _camera_relative_direction(input_vector)
+    if is_instance_valid(locked_target):
+        var radial: Vector3 = locked_target.global_position - global_position
+        radial.y = 0.0
+        if radial.length_squared() > 0.001:
+            radial = radial.normalized()
+            var tangent: Vector3 = Vector3(-radial.z, 0.0, radial.x)
+            direction = (tangent * input_vector.x - radial * input_vector.y).limit_length(1.0)
 
     var wants_run: bool = Input.is_physical_key_pressed(KEY_SHIFT)
     if is_instance_valid(mobile_controls):
@@ -367,7 +374,7 @@ func _camera_relative_direction(input_vector: Vector2) -> Vector3:
     forward.y = 0.0
     right.y = 0.0
 
-    return (right.normalized() * input_vector.x + forward.normalized() * -input_vector.y).normalized()
+    return (right.normalized() * input_vector.x + forward.normalized() * -input_vector.y).limit_length(1.0)
 
 func _face_direction(direction: Vector3, delta: float, speed: float) -> void:
     var flat: Vector3 = direction
@@ -376,7 +383,7 @@ func _face_direction(direction: Vector3, delta: float, speed: float) -> void:
         return
 
     var target_yaw: float = atan2(flat.x, flat.z)
-    rotation.y = lerp_angle(rotation.y, target_yaw, speed * delta)
+    rotation.y = lerp_angle(rotation.y, target_yaw, 1.0 - exp(-speed * delta))
 
 func _toggle_lock_on() -> void:
     if defeated:

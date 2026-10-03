@@ -14,6 +14,9 @@ var mobile_controls: Node = null
 var shake_strength: float = 0.0
 var fov_kick: float = 0.0
 var base_fov: float = 68.0
+var smoothed_focus: Vector3 = Vector3.ZERO
+var cinematic_target: Node3D = null
+var cinematic_remaining: float = 0.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -22,6 +25,12 @@ var base_fov: float = 68.0
 func _ready() -> void:
     mobile_controls = get_node_or_null("../../HUD/MobileControls")
     base_fov = camera.fov
+    smoothed_focus = player.global_position + Vector3.UP * height
+    var camera_shape: SphereShape3D = SphereShape3D.new()
+    camera_shape.radius = 0.28
+    spring_arm.shape = camera_shape
+    spring_arm.margin = 0.15
+    spring_arm.add_excluded_object(player.get_rid())
     if not _is_mobile_runtime():
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -62,10 +71,10 @@ func _process(delta: float) -> void:
         pitch = lerp(pitch, lock_pitch, 1.0 - exp(-lock_smoothing * delta))
         follow_position = follow_position.lerp(
             locked_target.global_position + Vector3.UP * 1.0,
-            0.16
+            0.42
         )
 
-        var desired_length: float = clampf(5.6 + flat.length() * 0.18, 5.6, 8.0)
+        var desired_length: float = clampf(5.6 + flat.length() * 0.48 + absf(to_target.y) * 0.25, 5.6, 18.0)
         spring_arm.spring_length = lerp(
             spring_arm.spring_length,
             desired_length,
@@ -80,7 +89,16 @@ func _process(delta: float) -> void:
 
     shake_strength = move_toward(shake_strength, 0.0, delta * 0.85)
     fov_kick = move_toward(fov_kick, 0.0, delta * 18.0)
-    camera.fov = base_fov + fov_kick
+    var separation: float = player.global_position.distance_to(locked_target.global_position) if is_instance_valid(locked_target) else 0.0
+    var dash_fov: float = 5.0 if float(player.call("get_chakra_dash_timer")) > 0.0 else 0.0
+    var desired_fov: float = clampf(base_fov + separation * 0.35 + dash_fov + fov_kick, 56.0, 82.0)
+    camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-8.0 * delta))
+    cinematic_remaining = maxf(cinematic_remaining - delta, 0.0)
+    if cinematic_remaining > 0.0 and is_instance_valid(cinematic_target):
+        follow_position = (player.global_position + cinematic_target.global_position) * 0.5 + Vector3.UP
+        spring_arm.spring_length = maxf(spring_arm.spring_length, 6.0)
+    else:
+        cinematic_target = null
 
     var ticks: float = float(Time.get_ticks_msec()) * 0.001
     spring_arm.position = Vector3(
@@ -89,7 +107,8 @@ func _process(delta: float) -> void:
         0.0
     ) * shake_strength
 
-    global_position = follow_position
+    smoothed_focus = smoothed_focus.lerp(follow_position, 1.0 - exp(-12.0 * delta))
+    global_position = smoothed_focus
     global_rotation = Vector3(pitch, yaw, 0.0)
 
 func add_combat_impact(strength: float, zoom_amount: float) -> void:
@@ -106,3 +125,11 @@ func _is_mobile_runtime() -> bool:
         or OS.has_feature("web_android")
         or OS.has_feature("web_ios")
     )
+
+func begin_sequence(target: Node3D, duration: float) -> void:
+    cinematic_target = target
+    cinematic_remaining = duration
+
+func end_sequence() -> void:
+    cinematic_remaining = 0.0
+    cinematic_target = null
