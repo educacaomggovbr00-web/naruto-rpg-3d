@@ -38,6 +38,10 @@ func _process(_delta: float) -> void:
         jutsu_cd
     ]
 
+    resource_label.text += " | GUARDA: %d | %s" % [int(player.guard_meter), "RASENGAN" if player.specials.selected == "rasengan" else "DEMON WIND"]
+    var cpu: Node = get_node("../EnemyDummy")
+    status_label.text += " | CPU: %d" % int(cpu.health)
+
     var combo_hits: int = int(player.call("get_combo_hits"))
     var combo_damage: float = float(player.call("get_combo_damage"))
     combo_label.visible = combo_hits > 0

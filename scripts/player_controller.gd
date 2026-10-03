@@ -248,6 +248,17 @@ func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
         return
 
+    if mobile_controls.special_queue > 0:
+        mobile_controls.special_queue = 0
+        specials.selected = "rasengan" if specials.selected == "demon" else "demon"
+        mobile_controls.special_label = "RAS" if specials.selected == "rasengan" else "DWB"
+        mobile_controls.queue_redraw()
+    if mobile_controls.clone_queue > 0:
+        mobile_controls.clone_queue = 0
+        specials.call("start", "clones" if is_on_floor() else "whirlwind")
+    if mobile_controls.barrage_queue > 0:
+        mobile_controls.barrage_queue = 0
+        specials.call("start", "barrage")
     if bool(mobile_controls.call("consume_attack")):
         _try_attack()
     if bool(mobile_controls.call("consume_lock")):
@@ -514,7 +525,8 @@ func _validate_locked_target() -> void:
         _set_locked_target(null)
 
 func _start_chakra_dash() -> void:
-    var can_cancel: bool = attack_active and attack_confirmed and attack_elapsed >= attack_startup + 0.09 and combo_step < 4
+    var cancel_timing: Dictionary = rig_adapter.call("get_attack_timing", maxi(combo_step, 1), attack_is_airborne)
+    var can_cancel: bool = attack_active and attack_confirmed and attack_elapsed >= float(cancel_timing.get("cancel_open", attack_startup + 0.09)) and attack_elapsed <= float(cancel_timing.get("cancel_close", attack_duration)) and combo_step < 4
     if (not _can_use_movement_action() and not can_cancel) or chakra < chakra_dash_cost:
         return
     if not is_on_floor() and air_dash_count >= 2:
@@ -652,7 +664,7 @@ func _try_attack() -> void:
         return
     if attack_active:
         if attack_elapsed >= attack_startup and combo_step < 4:
-            attack_buffer = 0.22
+            attack_buffer = maxf(0.22, attack_duration - attack_elapsed + 0.12)
         return
     if defeated or attack_active or jutsu_timer > 0.0 or attack_cooldown > 0.0 or chakra_dash_timer > 0.0 or dodge_timer > 0.0:
         return

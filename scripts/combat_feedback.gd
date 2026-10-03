@@ -1,13 +1,53 @@
 extends Node3D
 
+@export var hit_stop_enabled: bool = true
+
+var flashes: Array[MeshInstance3D] = []
+var lifetimes: Array[float] = []
+var durations: Array[float] = []
+var sizes: Array[float] = []
+var pool_cursor: int = 0
+var trail_timer: float = 0.0
+
 var hit_stop_end_msec: int = 0
 var normal_time_scale: float = 1.0
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
     normal_time_scale = Engine.time_scale
+    for i: int in range(32):
+        var effect: MeshInstance3D = MeshInstance3D.new()
+        var mesh: SphereMesh = SphereMesh.new()
+        mesh.radius = 0.5
+        mesh.height = 1.0
+        mesh.radial_segments = 8
+        mesh.rings = 4
+        var material: StandardMaterial3D = StandardMaterial3D.new()
+        material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        mesh.material = material
+        effect.mesh = mesh
+        effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+        effect.visible = false
+        add_child(effect)
+        flashes.append(effect)
+        lifetimes.append(0.0)
+        durations.append(0.0)
+        sizes.append(0.0)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+    for i: int in range(flashes.size()):
+        if lifetimes[i] <= 0.0:
+            continue
+        lifetimes[i] = maxf(lifetimes[i] - delta, 0.0)
+        var phase: float = 1.0 - lifetimes[i] / durations[i]
+        flashes[i].scale = Vector3.ONE * sizes[i] * (1.0 + phase) * (1.0 - phase * phase)
+        flashes[i].visible = lifetimes[i] > 0.0
+    trail_timer -= delta
+    var actor: Node3D = get_node_or_null("../Player") as Node3D
+    if trail_timer <= 0.0 and actor != null:
+        trail_timer = 0.06
+        if float(actor.get("chakra_dash_timer")) > 0.06 or (actor.get("specials") != null and actor.specials.current == "rasengan"):
+            spawn_dash_burst(actor.global_position - actor.global_basis.z * 0.4)
     if hit_stop_end_msec <= 0:
         return
 
@@ -16,6 +56,8 @@ func _process(_delta: float) -> void:
         hit_stop_end_msec = 0
 
 func hit_stop(duration: float, slow_scale: float = 0.10) -> void:
+    if not hit_stop_enabled:
+        return
     var duration_msec: int = int(maxf(duration, 0.01) * 1000.0)
     var requested_end: int = Time.get_ticks_msec() + duration_msec
     hit_stop_end_msec = maxi(hit_stop_end_msec, requested_end)
@@ -73,29 +115,17 @@ func _spawn_flash(
     flash_color: Color,
     lifetime: float
 ) -> void:
-    var effect: MeshInstance3D = MeshInstance3D.new()
-    var mesh: SphereMesh = SphereMesh.new()
-    var material: StandardMaterial3D = StandardMaterial3D.new()
-
-    mesh.radius = 0.50
-    mesh.height = 1.0
-    mesh.radial_segments = 8
-    mesh.rings = 4
-
-    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    var index: int = pool_cursor
+    pool_cursor = (pool_cursor + 1) % flashes.size()
+    var effect: MeshInstance3D = flashes[index]
+    var material: StandardMaterial3D = effect.mesh.material as StandardMaterial3D
     material.albedo_color = flash_color
-    material.emission_enabled = true
-    material.emission = flash_color
-    material.emission_energy_multiplier = 1.8
-    mesh.material = material
-
-    effect.mesh = mesh
-    effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-    add_child(effect)
     effect.global_position = world_position
+    effect.visible = true
     effect.scale = Vector3.ONE * start_scale
+    sizes[index] = start_scale
+    durations[index] = lifetime
+    lifetimes[index] = lifetime
 
-    var tween: Tween = create_tween()
-    tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-    tween.tween_property(effect, "scale", Vector3.ONE * start_scale * 2.35, lifetime)
-    tween.tween_callback(Callable(effect, "queue_free"))
+func _exit_tree() -> void:
+    Engine.time_scale = normal_time_scale

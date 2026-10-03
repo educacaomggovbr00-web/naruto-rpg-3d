@@ -12,6 +12,13 @@ var guard_touch: int = -1
 var camera_last_position: Vector2 = Vector2.ZERO
 var camera_delta: Vector2 = Vector2.ZERO
 
+var special_queue: int = 0
+var clone_queue: int = 0
+var barrage_queue: int = 0
+var special_center: Vector2 = Vector2.ZERO
+var clone_center: Vector2 = Vector2.ZERO
+var barrage_center: Vector2 = Vector2.ZERO
+var special_label: String = "DWB"
 var attack_queue: int = 0
 var jump_queue: int = 0
 var chakra_dash_queue: int = 0
@@ -65,6 +72,9 @@ func _update_layout() -> void:
     charge_center = Vector2(w - 475.0, h - 112.0)
     guard_center = Vector2(w - 475.0, h - 220.0)
     lock_center = Vector2(w - 82.0, 82.0)
+    special_center = Vector2(w - 235.0, h - 350.0)
+    clone_center = Vector2(w - 355.0, h - 350.0)
+    barrage_center = Vector2(w - 475.0, h - 350.0)
 
     queue_redraw()
 
@@ -78,6 +88,15 @@ func _input(event: InputEvent) -> void:
         _touch_dragged(event.index, event.position)
 
 func _touch_pressed(touch_id: int, position: Vector2) -> void:
+    if _inside_circle(position, special_center, 43.0):
+        special_queue += 1
+        return
+    if _inside_circle(position, clone_center, 43.0):
+        clone_queue += 1
+        return
+    if _inside_circle(position, barrage_center, 43.0):
+        barrage_queue += 1
+        return
     if _inside_circle(position, attack_center, attack_radius):
         attack_queue += 1
         return
@@ -244,6 +263,9 @@ func _draw() -> void:
     draw_arc(joystick_center, joystick_radius, 0.0, TAU, 48, base_line, 3.0, true)
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
+    _draw_button(special_center, 43.0, blue_fill, special_label, 14, text_color)
+    _draw_button(clone_center, 43.0, blue_fill, "CLONE", 13, text_color)
+    _draw_button(barrage_center, 43.0, attack_fill, "BARR", 14, text_color)
     _draw_button(attack_center, attack_radius, attack_fill, "ATK", 25, text_color)
     _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color)
     _draw_button(dash_center, dash_radius, blue_fill, "DASH", 17, text_color)
