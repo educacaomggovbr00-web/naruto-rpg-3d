@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+[resource]
+vertex_color_use_as_albedo = true
+diffuse_mode = 3
+specular_mode = 2
+roughness = 0.55
+rim_enabled = true
+rim = 0.18
+rim_tint = 0.5

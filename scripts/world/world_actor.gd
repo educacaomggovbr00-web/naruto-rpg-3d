@@ -26,6 +26,8 @@ func _ready() -> void:
     rig_adapter = Node3D.new()
     rig_adapter.name = "RiggedCharacterAdapter"
     rig_adapter.set_script(preload("res://scripts/rigged_character_adapter.gd"))
+    if player_controlled:
+        rig_adapter.model_path = CharacterCatalog.NARUTO.model_path
     rig_adapter.follow_hitbox_to_bones = false
     add_child(rig_adapter)
     if player_controlled:

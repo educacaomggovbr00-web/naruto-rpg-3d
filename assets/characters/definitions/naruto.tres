@@ -5,4 +5,8 @@
 script = ExtResource("1")
 character_id = "naruto"
 display_name = "Naruto"
+model_path = "res://assets/characters/stylized/naruto.glb"
+visual_status = "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL"
+stylized_material = true
+summary = "Rasengan, Demon Wind, clones, Barrage, Ultimate e base Nine-Tails. Modelo próprio estilizado; coreografias e aparência ainda em evolução."
 moveset = ExtResource("2")

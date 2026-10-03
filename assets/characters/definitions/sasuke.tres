@@ -5,6 +5,10 @@
 script = ExtResource("1")
 character_id = "sasuke"
 display_name = "Sasuke (base)"
+model_path = "res://assets/characters/stylized/sasuke.glb"
+visual_status = "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL"
+stylized_material = true
+summary = "Fireball, Chidori e combo com chute. Modelo próprio estilizado; Ultimate, transformação e coreografias exclusivas ainda pendentes."
 moveset = ExtResource("2")
 jutsus = PackedStringArray("fireball", "chidori")
 movement_speed = 8.0

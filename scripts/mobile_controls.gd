@@ -34,6 +34,7 @@ var special_center: Vector2 = Vector2.ZERO
 var clone_center: Vector2 = Vector2.ZERO
 var barrage_center: Vector2 = Vector2.ZERO
 var special_label: String = "DWB"
+var jutsu_enabled: bool = true
 var attack_queue: int = 0
 var jump_queue: int = 0
 var chakra_dash_queue: int = 0
@@ -126,7 +127,8 @@ func _touch_pressed(touch_id: int, position: Vector2) -> void:
             awakening_queue += 1
         return
     if _inside_circle(position, special_center, 43.0):
-        special_queue += 1
+        if jutsu_enabled:
+            special_queue += 1
         return
     if _inside_circle(position, clone_center, 43.0):
         if clones_enabled:
@@ -149,7 +151,8 @@ func _touch_pressed(touch_id: int, position: Vector2) -> void:
         lock_queue += 1
         return
     if _inside_circle(position, jutsu_center, jutsu_radius):
-        jutsu_queue += 1
+        if jutsu_enabled:
+            jutsu_queue += 1
         return
     if _inside_circle(position, substitution_center, substitution_radius):
         substitution_queue += 1
@@ -369,8 +372,9 @@ func _notification(what: int) -> void:
     queue_redraw()
 
 func configure_character(definition: CharacterDefinition) -> void:
+    jutsu_enabled = not definition.jutsus.is_empty()
     ultimate_enabled = definition.has_ultimate
     awakening_enabled = definition.has_awakening
     clones_enabled = "clones" in definition.jutsus
-    special_label = "FIRE" if definition.character_id == "sasuke" else "DWB"
+    special_label = "—" if definition.jutsus.is_empty() else "CHID" if definition.character_id == "kakashi" else "FIRE" if definition.character_id == "sasuke" else "DWB"
     queue_redraw()

@@ -22,7 +22,8 @@ var owner_fighter: CharacterBody3D
 
 func _ready() -> void:
     owner_fighter = get_parent() as CharacterBody3D
-    selected = owner_fighter.character_definition.jutsus[0]
+    var choices: PackedStringArray = owner_fighter.character_definition.jutsus
+    selected = choices[0] if not choices.is_empty() else ""
     if not owner_fighter.has_method("is_cpu_controlled"):
         call_deferred("warm_clone_pool")
     process_physics_priority = 15
@@ -55,7 +56,8 @@ func _ready() -> void:
     barrage_hitbox.add_child(barrage_shape)
     add_child(barrage_hitbox)
     barrage_hitbox.top_level = true
-    for i: int in range(3):
+    var projectile_count: int = 3 if "demon" in choices or "fireball" in choices else 0
+    for i: int in range(projectile_count):
         var projectile: Node3D = Node3D.new()
         projectile.set_script(preload("res://scripts/fireball_projectile.gd") if selected == "fireball" else preload("res://scripts/chakra_projectile.gd"))
         owner_fighter.get_parent().add_child.call_deferred(projectile)
@@ -81,6 +83,8 @@ func summon_clone(target: Node3D, offset: Vector3, delay: float, clip: String, l
 
 func cycle_selection() -> void:
     var choices: PackedStringArray = owner_fighter.character_definition.jutsus
+    if choices.is_empty():
+        return
     var index: int = choices.find(selected)
     selected = choices[(index + 1) % choices.size()]
 

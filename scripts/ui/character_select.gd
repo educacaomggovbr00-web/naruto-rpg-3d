@@ -4,6 +4,7 @@ var cpu_pick: OptionButton
 var arena_pick: OptionButton
 var description: Label
 var start_button: Button
+var preview: SubViewportContainer
 
 func _ready() -> void:
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -41,12 +42,16 @@ func _ready() -> void:
     arena_pick.add_item("Campo de treino")
     arena_pick.add_item("Pátio ao entardecer")
     stage.add_child(arena_pick)
+    preview = SubViewportContainer.new()
+    preview.set_script(preload("res://scripts/ui/fighter_preview.gd"))
+    column.add_child(preview)
     description = Label.new()
     description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     description.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    description.add_theme_font_size_override("font_size", 22)
+    description.add_theme_font_size_override("font_size", 18)
     column.add_child(description)
     player_pick.item_selected.connect(_describe)
+    cpu_pick.item_selected.connect(_describe)
     _describe(0)
     var actions: HBoxContainer = HBoxContainer.new()
     actions.add_theme_constant_override("separation", 24)
@@ -81,7 +86,8 @@ func _fighter_choice(row: HBoxContainer, title: String) -> OptionButton:
 
 func _describe(_index: int) -> void:
     var character: CharacterDefinition = CharacterCatalog.READY[player_pick.selected]
-    description.text = ("Naruto: Rasengan, Demon Wind, clones, Barrage, Ultimate e base Nine-Tails." if character.character_id == "naruto" else "Sasuke: Chidori e Fireball. Ultimate e transformação ainda em desenvolvimento.") + "\n\nOs dois usam o visual rigado de desenvolvimento; modelos finais e coreografias próprias estão pendentes."
+    description.text = character.summary + "\n\nQuatro modelos 3D próprios, com animações reais compartilhadas. Esta é uma primeira versão visual; o moveset completo de cada personagem ainda está em desenvolvimento."
+    preview.call("show_fighters", character, CharacterCatalog.READY[cpu_pick.selected])
 
 func _start() -> void:
     if GameFlow.busy:

@@ -1,6 +1,7 @@
 extends Node3D
 
 const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
+const TOON_MATERIAL: StandardMaterial3D = preload("res://assets/characters/stylized/toon.tres")
 # Track paths are immutable after installation; playback stays per fighter.
 static var library_cache: Dictionary = {}
 
@@ -99,6 +100,7 @@ func _try_load_rig() -> void:
         return
 
     _cache_combat_bones()
+    apply_visual_material(model_instance)
     if animation_player == null or not _install_combat_library():
         rig_status = "RIG: biblioteca real incompleta; confira o log"
         model_instance.queue_free()
@@ -188,6 +190,17 @@ func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:
     for child: Node in root.get_children():
         _collect_mesh_instances(child, output)
 
+func apply_visual_material(root: Node) -> void:
+    var use_toon: bool = model_path.begins_with("res://assets/characters/stylized/")
+    if player.has_method("get_character_definition"):
+        use_toon = bool(player.call("get_character_definition").stylized_material)
+    if not use_toon:
+        return
+    var meshes: Array[MeshInstance3D] = []
+    _collect_mesh_instances(root, meshes)
+    for mesh: MeshInstance3D in meshes:
+        mesh.material_override = TOON_MATERIAL
+
 func _cache_combat_bones() -> void:
     right_hand_bone = _find_mixamo_bone("RightHand")
     left_hand_bone = _find_mixamo_bone("LeftHand")
@@ -211,7 +224,12 @@ func _install_combat_library() -> bool:
     var bone_names: PackedStringArray = []
     for index: int in range(skeleton.get_bone_count()):
         bone_names.append(String(skeleton.get_bone_name(index)))
-    var cache_key: String = model_path + "|" + skeleton_path + "|" + ",".join(bone_names)
+    # Same rest rig can drive different original meshes. Different rigs must
+    # never accidentally share retargeted transforms just because names match.
+    var rest_signature: String = ""
+    for index: int in range(skeleton.get_bone_count()):
+        rest_signature += str(skeleton.get_bone_rest(index))
+    var cache_key: String = skeleton_path + "|" + ",".join(bone_names) + "|" + rest_signature.sha256_text()
     var library: AnimationLibrary = library_cache.get(cache_key) as AnimationLibrary
     if library == null:
         library = COMBAT_LIBRARY.duplicate(true) as AnimationLibrary

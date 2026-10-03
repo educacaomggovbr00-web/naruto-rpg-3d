@@ -769,7 +769,7 @@ func _decide_arsenal(distance: float) -> bool:
     if distance > 3.0 and distance < 10.0 and chakra >= 80.0 and character_definition.has_ultimate and roll < 0.12:
         specials.call("warm_clone_pool")
         return ultimate.call("start")
-    if distance > 2.0 and distance < 12.0 and roll < 0.48:
+    if distance > 2.0 and distance < 12.0 and roll < 0.48 and not character_definition.jutsus.is_empty():
         var choice: String = character_definition.jutsus[decision_rng.randi_range(0, character_definition.jutsus.size() - 1)]
         return specials.call("start", choice)
     if distance > 4.0 and roll < 0.78:

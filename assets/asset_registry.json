@@ -166,7 +166,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
-      "sha256": "e78cba6dc55f82a5c66b75a67a6bfc0c1a9bfb81bec9303194372f2042788fc0"
+      "sha256": "12aa4ec670794165bde1ad96e2805e11081459aed5141455ca0a8ffa3ecbfc25"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -175,7 +175,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
-      "sha256": "70fd0b35ef03b806ef859ca0ec52af78ae38a58894e7f0e53817a7b26fe1d2bd"
+      "sha256": "087abde9b25f2513916c2600130127d6c229f7c8d4a8a7f8c555dfe142d9e67f"
     },
     {
       "path": "assets/combat/sasuke_moveset.tres",
@@ -283,6 +283,87 @@
       "credit": "Kenney.nl — impact-sounds",
       "modifications": "Arquivo original; mixagem/volume/loop ajustados no runtime",
       "sha256": "d7267e183067757c92c169de2a379abea592cfca6b39bb2e8feea15221ad79fe"
+    },
+    {
+      "path": "assets/characters/definitions/sakura.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content",
+      "modifications": "Original authored presentation/profile data",
+      "sha256": "f6b530a2842ca0215f783c6146532abfeb81f48019934de2ce6d6739a6716ff0"
+    },
+    {
+      "path": "assets/characters/definitions/kakashi.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content",
+      "modifications": "Original authored presentation/profile data",
+      "sha256": "a8ef2aef494dcac491e0821f78d9aaaadfe01761d956c32b82c5efe1f6d60251"
+    },
+    {
+      "path": "assets/combat/sakura_moveset.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content",
+      "modifications": "Original authored presentation/profile data",
+      "sha256": "2c2449e9759f886acd04deb833f109893b7faded0d87e959f43b29bc4ce3b48d"
+    },
+    {
+      "path": "assets/combat/kakashi_moveset.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content",
+      "modifications": "Original authored presentation/profile data",
+      "sha256": "4656668bc7bb51af7d72d0beae858a22b10bb4adf01fbb6e0ee8be5de31a9ea8"
+    },
+    {
+      "path": "assets/characters/stylized/toon.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content",
+      "modifications": "Original authored presentation/profile data",
+      "sha256": "cdf4a6308b72276d67240232e977da22f5c449aa654588e6760ea4d581d7f7dd"
+    },
+    {
+      "path": "assets/characters/stylized/naruto.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content; character likeness and supplied skeleton not cleared for public release",
+      "modifications": "Offline original stylized geometry bound to 65 supplied Mixamo joints; no imported game meshes/textures",
+      "sha256": "f9df9d9d1aedd12d74d6a1e9211ec525616fc3d317a2f91859fce486278a1117"
+    },
+    {
+      "path": "assets/characters/stylized/sasuke.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content; character likeness and supplied skeleton not cleared for public release",
+      "modifications": "Offline original stylized geometry bound to 65 supplied Mixamo joints; no imported game meshes/textures",
+      "sha256": "20e0faa6976bd1dc91fd2e7617e198f6df55f4b8679ad2a8974cc7a41128fd29"
+    },
+    {
+      "path": "assets/characters/stylized/sakura.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content; character likeness and supplied skeleton not cleared for public release",
+      "modifications": "Offline original stylized geometry bound to 65 supplied Mixamo joints; no imported game meshes/textures",
+      "sha256": "be773f104b479d594819e88ec5c40580c4aa8fb54a4f51d29cec5ad3a055ba53"
+    },
+    {
+      "path": "assets/characters/stylized/kakashi.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content; character likeness and supplied skeleton not cleared for public release",
+      "modifications": "Offline original stylized geometry bound to 65 supplied Mixamo joints; no imported game meshes/textures",
+      "sha256": "634d3628f31b722dffab5a9146e10879ea1d52fc67a861d3fc778dec019443ed"
     }
   ]
 }

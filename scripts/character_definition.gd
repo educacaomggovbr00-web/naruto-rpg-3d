@@ -5,6 +5,8 @@ extends Resource
 @export var display_name: String = "Naruto"
 @export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
 @export var visual_status: String = "DEVELOPMENT_ONLY_SHARED_RIG"
+@export_multiline var summary: String = "Base de combate em desenvolvimento."
+@export var stylized_material: bool = false
 @export var moveset: MovesetDefinition
 @export var jutsus: PackedStringArray = PackedStringArray(["demon", "rasengan", "clones", "whirlwind", "barrage"])
 @export var movement_speed: float = 7.5

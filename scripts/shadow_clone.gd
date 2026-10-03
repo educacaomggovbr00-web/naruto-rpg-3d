@@ -62,6 +62,7 @@ func prepare(actor: CharacterBody3D) -> void:
     model.position = adapter.model_offset
     model.rotation_degrees.y = adapter.model_yaw_degrees
     model.scale = Vector3.ONE * adapter.applied_model_scale
+    adapter.call("apply_visual_material", model)
     var meshes: Array[MeshInstance3D] = []
     adapter.call("_collect_mesh_instances", model, meshes)
     for mesh: MeshInstance3D in meshes:
