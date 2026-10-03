@@ -492,6 +492,15 @@
       "license": "Original project content",
       "modifications": "Iluminação anime original em passagem opaca única, sem assets de Genshin Impact",
       "sha256": "6844bdd41c554d8424afb82e807e2853064d0a18c2f0cd575297e71226d2b442"
+    },
+    {
+      "path": "assets/characters/sprites/naruto_part1/battle_atlas.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Naruto Online / direitos dos respectivos titulares; arquivo fornecido pelo usuário",
+      "source": "The Spriters Resource — Browser Games / Naruto Online / Recruitable Characters / Naruto Uzumaki (Part 1)",
+      "license": "UNKNOWN / asset de jogo proprietário; não liberado para redistribuição pública",
+      "modifications": "16 poses de batalha selecionadas do ZIP fornecido pelo usuário, alinhadas em células 192x192 e empacotadas em atlas 4x4 para protótipo 2.5D.",
+      "sha256": "8640a3a315271b99a90b552db2624be372107e3708afd9ce800952a90ca62dc6"
     }
   ]
 }
