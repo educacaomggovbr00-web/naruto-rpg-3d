@@ -3,7 +3,7 @@ extends CharacterBody3D
 @export var max_health: float = 120.0
 @export var move_speed: float = 5.0
 @export var acceleration: float = 18.0
-@export var attack_range: float = 2.25
+@export var attack_range: float = 1.35
 @export var detection_range: float = 18.0
 @export var attack_damage: float = 10.0
 @export var attack_knockback: float = 5.5
@@ -41,6 +41,13 @@ var juggle_hits: int = 0
 var juggle_timer: float = 0.0
 @export var reactive_substitution: bool = true
 
+@export var decision_interval_min: float = 0.18
+@export var decision_interval_max: float = 0.32
+var decision_timer: float = 0.20
+var neutral_motion: String = "approach"
+var orbit_side: float = 1.0
+var decision_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
 var locked_target: CharacterBody3D = null
 var combo_step: int = 1
 var animation_action_id: int = 0
@@ -63,6 +70,7 @@ var wall_bounce_pending: bool = false
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func _ready() -> void:
+    decision_rng.randomize()
     locked_target = player
     health = max_health
     spawn_position = global_position
@@ -123,15 +131,26 @@ func _physics_process(delta: float) -> void:
 
     guarding = false
 
+    decision_timer = maxf(decision_timer - delta, 0.0)
+    if not attack_active and decision_timer <= 0.0:
+        _decide_neutral(distance)
+
     if attack_active:
-        _slow_down(delta)
+        if distance > 1.05 and attack_elapsed < float(attack_timing.get("startup", 0.12)):
+            _chase_player(to_player, delta)
+        else:
+            _slow_down(delta)
     elif distance > detection_range:
         _slow_down(delta)
+    elif neutral_motion == "retreat" and distance < 6.0:
+        _chase_player(-to_player, delta)
+    elif neutral_motion == "strafe" and distance > attack_range:
+        _chase_player(Vector3(-to_player.z, 0.0, to_player.x) * orbit_side, delta)
     elif distance > attack_range:
         _chase_player(to_player, delta)
     else:
         _slow_down(delta)
-        if attack_cooldown <= 0.0:
+        if attack_cooldown <= 0.0 and decision_timer <= decision_interval_min:
             _choose_close_action()
 
     _move_and_handle_bounces()
@@ -230,10 +249,35 @@ func _chase_player(to_player: Vector3, delta: float) -> void:
     velocity.x = move_toward(velocity.x, direction.x * move_speed, acceleration * delta)
     velocity.z = move_toward(velocity.z, direction.z * move_speed, acceleration * delta)
 
+func _decide_neutral(distance: float) -> void:
+    decision_timer = decision_rng.randf_range(decision_interval_min, decision_interval_max)
+    if guard_meter < 25.0 and distance < 6.0:
+        neutral_motion = "retreat"
+    elif distance > attack_range and distance < 5.0 and decision_rng.randf() < 0.30:
+        neutral_motion = "strafe"
+        orbit_side = -1.0 if decision_rng.randf() < 0.5 else 1.0
+    else:
+        neutral_motion = "approach"
+
+func get_cpu_state() -> String:
+    if not targetable:
+        return "ko"
+    if is_instance_valid(cinematic_owner):
+        return "cinematic"
+    if stagger_timer > 0.0:
+        return "recover"
+    if dodge_timer > 0.0:
+        return "dodge"
+    if guarding:
+        return "guard"
+    if attack_active:
+        return "combo" if combo_step > 1 else "attack"
+    return neutral_motion
+
 func _choose_close_action() -> void:
     attack_cycle += 1
 
-    if attack_cycle % 3 == 0:
+    if guard_meter > 25.0 and decision_rng.randf() < 0.25:
         guarding = true
         guard_timer = guard_duration
         attack_cooldown = attack_cooldown_time * 0.80
@@ -467,6 +511,8 @@ func _respawn() -> void:
     dodge_timer = 0.0
     guard_timer = 0.0
     attack_cooldown = 0.8
+    neutral_motion = "approach"
+    decision_timer = 0.20
     _update_labels()
 
 func get_is_guarding() -> bool:

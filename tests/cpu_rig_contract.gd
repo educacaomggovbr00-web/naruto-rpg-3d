@@ -20,12 +20,20 @@ func run() -> void:
     var rig: Node3D = cpu.rig_adapter
     cpu.set_physics_process(false)
     fighter.set_physics_process(false)
-    arena.get_node("CombatFeedback").set_process(false)
+    arena.get_node("CombatFeedback").hit_stop_enabled = false
     check(rig.rig_loaded and rig.real_animation_count == 27, "CPU needs the real shared 27-clip rig")
     check(not cpu.visual.visible, "Capsule must be hidden after rig loading")
     check(rig.animation_tree != fighter.rig_adapter.animation_tree, "Fighters need independent AnimationTree playback")
     check(cpu.attack_hitbox.collision_mask == 8, "CPU strike must target player hurtboxes")
+    cpu.guard_meter = 10.0
+    cpu._decide_neutral(4.0)
+    check(cpu.neutral_motion == "retreat", "Low guard resource triggers spacing without reading inputs")
+    check(cpu.decision_timer >= cpu.decision_interval_min and cpu.decision_timer <= cpu.decision_interval_max, "CPU decisions need bounded delay")
+    cpu.guard_meter = 100.0
+    cpu._decide_neutral(12.0)
+    check(cpu.neutral_motion == "approach", "Distant target should be approached")
     cpu._start_attack()
+    check(cpu.get_cpu_state() == "attack", "AI exposes real attack state")
     check(cpu.attack_timing == rig.get_attack_timing(1, false), "CPU timing must come from the manifest")
     cpu._update_attack_timeline(0.10)
     check(not cpu.attack_hit_triggered, "No hitbox during startup")
@@ -51,6 +59,17 @@ func run() -> void:
     check(cpu.get_animation_state() == "defeat", "KO must play defeat clip")
     cpu._respawn()
     check(cpu.targetable and not cpu.attack_active, "Respawn restores CPU safely")
+    cpu.global_position = Vector3(0, 0.96, -3.0)
+    fighter._respawn()
+    fighter.global_position = Vector3(0, 0.91, 0)
+    fighter.invulnerable_timer = 0.0
+    cpu.decision_rng.seed = 42
+    cpu.reactive_substitution = false
+    arena.get_node("CombatFeedback").hit_stop_enabled = false
+    cpu.set_physics_process(true)
+    Engine.time_scale = 1.0
+    await frames(180)
+    check(fighter.health < fighter.max_health, "Running CPU must approach and damage through actual bone-area overlap")
     arena.queue_free()
     await frames(4)
     check(root.get_child_count() == 1, "CPU rig must clean up with arena")
