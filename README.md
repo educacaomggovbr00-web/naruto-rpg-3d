@@ -220,7 +220,7 @@ Toque **ALDEIA** no topo do combate (**F10** no PC). O personagem rigado explora
 - Save versionado em `user://world_save.json`: progresso, ryō, coletas, pacotes e posição. Saves futuros/inválidos são preservados; posição ocupada recupera no portão.
 - LOW/MED/HIGH: distância de setores/NPCs, atualização de rig distante, resolução e sombras. Sem downloads runtime.
 
-Geometria e colocação são originais do projeto: **não é o mapa comercial extraído, nem Konoha final 100% igual**. O modelo fornecido e a CPU anterior foram preservados; não há novos modelos finais de Naruto, Sasuke, Sakura ou Kakashi. Naruto Cannon/wall run, história e missões completas, interiores, streaming/LOD avançados e acabamento dos landmarks continuam pendentes.
+Geometria e colocação são originais do projeto: **não é o mapa comercial extraído, nem Konoha final 100% igual**. O modelo fornecido foi preservado e a CPU agora usa uma instância independente do mesmo rig com 27 clips; não há novos modelos finais de Naruto, Sasuke, Sakura ou Kakashi. Naruto Cannon/wall run, história e missões completas, interiores, streaming/LOD avançados e acabamento dos landmarks continuam pendentes.
 
 ```sh
 godot --headless --path . --script res://tests/world_contract.gd
@@ -228,3 +228,11 @@ godot --headless --path . --script res://tests/world_flow_contract.gd
 ```
 
 O [roteiro Android](docs/ANDROID_VALIDATION.md) detalha testes de toque, travessia, save e retorno. A [referência do mundo](docs/STORM1_WORLD_REFERENCE.md) separa evidências de Storm, implementação e lacunas.
+
+### CPU humanoide: primeiro incremento
+
+A CPU usa agora o modelo existente com AnimationTree independente, locomoção, guarda, dodge, hit/knockback e KO reais. Seu combo terrestre de quatro golpes usa startup/active/recovery do mesmo manifesto e hitboxes nas mãos/pés. Apenas contato sem bloqueio permite continuar dentro da janela de cancel; erro/bloqueio terminam em recovery, e hit/substituição/KO interrompem o ataque.
+
+Decisões de aproximação, strafe e recuo têm atraso de 0,18–0,32 s e aleatoriedade própria. Guarda baixa incentiva recuo; guarda não segue mais a regra determinística de cada terceiro ataque. Esses valores são ajustes do projeto, não medidas oficiais do Storm. O alcance foi ajustado para haver contato físico, sem dano por distância.
+
+Ainda não é a CPU Fighter completa: chakra, chakra dash, launcher/pursuit deliberados, jutsus, Ultimate, Awakening e perfis por personagem continuam pendentes. O visual usa o modelo fornecido, sem alegar ser um Naruto final. A validação inclui uma CPU ativa aproximando e acertando via sobreposição real, além dos contratos existentes.

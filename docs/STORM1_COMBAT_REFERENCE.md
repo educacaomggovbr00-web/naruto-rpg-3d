@@ -34,7 +34,7 @@ Pesquisa: 2026-10-02/03. Escopo atual: Naruto, base de Ultimate/Awakening/ferram
 | Ultimate | Naruto's Ninja Handbook; hit abre sequência/QTE, chakra alto | Clone lançado confirma QTE mash disputado com a CPU; dogpile/corrente/finalizador adaptados, cleanup por token/watchdog. Não confundir com 2K Barrage de jogos posteriores |
 | Awakening | Vida baixa habilita indicador; carregar chakra até máximo transforma | Uma cauda temporária, Vermillion, wind wave/imunidade a ferramentas; limiar/duração próprios. Sealed Power ainda não implementado |
 | Impactos | Lançamento, queda, pancada forte, parede; alguns palcos permitem combate na parede | Preserva bounce existente; não implementa troca do plano de combate |
-| CPU | Quatro dificuldades; fontes não expõem algoritmo interno | IA atual preservada; guarda/sub probabilísticas com atraso. Não lê input do jogador |
+| CPU | Quatro dificuldades; fontes não expõem algoritmo interno | CPU no rig compartilhado, combos confirmados por colisão; aproxima/strafe/recua com decisões espaçadas e guarda/sub probabilísticas. Não lê input do jogador; sem jutsus/dash próprios ainda |
 
 ## Valores aproximados, sem frame data oficial
 

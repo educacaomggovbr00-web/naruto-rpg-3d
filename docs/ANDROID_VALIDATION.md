@@ -27,7 +27,7 @@ Registrar modelo do aparelho, FPS mínimo durante 3 clones/Rasengan/trails, atra
 
 ## Limitações deliberadas desta fase
 
-Rig/modelo existente preservado. Golpes da mão substituem provisoriamente chutes específicos; Rasengan usa cross adaptado; guarda/shield e spell gestures ainda precisam de acabamento. CPU original continua sendo cápsula nesta fase, com defesa/sub melhoradas; CPU Fighter rigada está na etapa posterior solicitada. A base de ferramentas/Ultimate/Awakening está implementada, com as limitações abaixo; áudio/outros personagens/CPU rigada permanecem pendentes.
+Rig/modelo existente preservado. Golpes da mão substituem provisoriamente chutes específicos; Rasengan usa cross adaptado; guarda/shield e spell gestures ainda precisam de acabamento. A CPU já usa o rig existente e clips reais; chakra/dash/jutsus/Ultimate próprios ainda estão pendentes. A base de ferramentas/Ultimate/Awakening está implementada, com as limitações abaixo; áudio/outros personagens e moveset completo da CPU permanecem pendentes.
 
 
 ## Novos testes no aparelho
@@ -52,3 +52,11 @@ Não houve inspeção do shader em GPU Android nem medição de FPS nesta sessã
 6. Alterne **LOW/MED/HIGH**, percorra do portão à academia e rode a câmera perto das fachadas. Observar FPS mínimo, aquecimento, tempo de entrada/saída, pop-in dos setores/NPCs e câmera atravessando paredes.
 
 Registrar aparelho, perfil gráfico, FPS mínimo, tempo de transição e vídeo de travas/interseções. Não foi executada GPU Android, AAB/APK nem captura de performance nesta sessão. O mapa é um primeiro trecho autoral, NPCs usam o modelo existente e a CPU ainda não é o lutador humanoide final.
+
+## CPU humanoide: validar no aparelho
+
+- Confirmar os dois modelos animados ao entrar na arena e no treino pela aldeia.
+- Parado perto da CPU, observar aproximação e golpes com contato; afastado, não perder HP por distância.
+- Defender o primeiro golpe: a CPU deve encerrar a sequência; deixar acertar: ela pode continuar os quatro golpes.
+- Interromper com golpe/SUB, aplicar launcher/slam e KO: verificar reação, fechamento das hitboxes e reinício.
+- Medir FPS com dois rigs, clones e Rasengan nos perfis LOW/MEDIUM/HIGH; enviar vídeo se houver pé deslizando ou golpes sem contato aparente.
