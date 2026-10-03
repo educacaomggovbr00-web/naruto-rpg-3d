@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://assets/combat/sasuke_moveset.tres" id="2"]
+[resource]
+script = ExtResource("1")
+character_id = "sasuke"
+display_name = "Sasuke (base)"
+moveset = ExtResource("2")
+jutsus = PackedStringArray("fireball", "chidori")
+movement_speed = 8.0
+sprint_speed = 12.5
+has_ultimate = false
+has_awakening = false
+energy_color = Color(0.4, 0.7, 1.0, 1)

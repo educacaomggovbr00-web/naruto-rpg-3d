@@ -158,6 +158,42 @@
       "license": "Original project content",
       "modifications": "Dados próprios de gameplay, sem importar PRM/Skill/ANM comerciais",
       "sha256": "a304577ad674cbc9b29b85f99cafbe3ef09dcf524ca6129537ea9dca40fef536"
+    },
+    {
+      "path": "assets/characters/definitions/naruto.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Criado no projeto; comportamento aproximado de referência pública",
+      "license": "Original project content; no third-party game asset copied",
+      "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
+      "sha256": "e78cba6dc55f82a5c66b75a67a6bfc0c1a9bfb81bec9303194372f2042788fc0"
+    },
+    {
+      "path": "assets/characters/definitions/sasuke.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Criado no projeto; comportamento aproximado de referência pública",
+      "license": "Original project content; no third-party game asset copied",
+      "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
+      "sha256": "70fd0b35ef03b806ef859ca0ec52af78ae38a58894e7f0e53817a7b26fe1d2bd"
+    },
+    {
+      "path": "assets/combat/sasuke_moveset.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Criado no projeto; comportamento aproximado de referência pública",
+      "license": "Original project content; no third-party game asset copied",
+      "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
+      "sha256": "4550a32904633dceac948703887519fbb340b7a7d0334da806f9204042354a1e"
+    },
+    {
+      "path": "assets/combat/fireball_projectile.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Criado no projeto; comportamento aproximado de referência pública",
+      "license": "Original project content; no third-party game asset copied",
+      "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
+      "sha256": "4228d44a495645fc7edfac963327c5d3301cb0336e1c8c27d2d974cf62925217"
     }
   ]
 }
