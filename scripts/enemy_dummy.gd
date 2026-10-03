@@ -35,6 +35,8 @@ var substitution_regen: float = 0.0
 var substitution_cooldown: float = 0.0
 var invulnerable_timer: float = 0.0
 var reaction_timer: float = 0.0
+var juggle_hits: int = 0
+var juggle_timer: float = 0.0
 @export var reactive_substitution: bool = true
 
 var attack_active: bool = false
@@ -117,6 +119,9 @@ func _physics_process(delta: float) -> void:
     _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
+    juggle_timer = maxf(juggle_timer - delta, 0.0)
+    if juggle_timer <= 0.0:
+        juggle_hits = 0
     invulnerable_timer = maxf(invulnerable_timer - delta, 0.0)
     substitution_cooldown = maxf(substitution_cooldown - delta, 0.0)
     guard_regen_delay = maxf(guard_regen_delay - delta, 0.0)
@@ -279,6 +284,15 @@ func receive_combat_hit(
     if not targetable or invulnerable_timer > 0.0:
         return 0.0
 
+    if not guarding:
+        juggle_timer = 1.5
+        juggle_hits += 1
+        if juggle_hits > 12:
+            juggle_hits = 0
+            invulnerable_timer = 0.65
+            stagger_timer = 0.0
+            velocity.y = -5.0
+            return 0.0
     var applied_damage: float = damage
     var applied_knockback: float = knockback
 

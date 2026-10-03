@@ -58,6 +58,10 @@ func prepare(actor: CharacterBody3D) -> void:
     model.position = adapter.model_offset
     model.rotation_degrees.y = adapter.model_yaw_degrees
     model.scale = Vector3.ONE * adapter.applied_model_scale
+    var meshes: Array[MeshInstance3D] = []
+    adapter.call("_collect_mesh_instances", model, meshes)
+    for mesh: MeshInstance3D in meshes:
+        mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     skeleton = adapter.call("_find_skeleton", model)
     animation_player = adapter.call("_find_animation_player", model)
     # Same imported hierarchy/root paths, shared immutable baked clip data.

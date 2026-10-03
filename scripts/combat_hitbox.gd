@@ -47,19 +47,20 @@ func _check_overlaps() -> void:
     if not is_instance_valid(source_fighter):
         return
 
+    var source: Node3D = source_fighter
     for area: Area3D in get_overlapping_areas():
         var fighter: Node = area.call("get_fighter") if area.has_method("get_fighter") else area.get_parent()
-        if fighter == source_fighter or fighter in already_hit:
+        if fighter == source or fighter in already_hit:
             continue
         if not fighter.has_method("receive_combat_hit"):
             continue
 
         already_hit.append(fighter)
 
-        var direction: Vector3 = fighter.global_position - source_fighter.global_position
+        var direction: Vector3 = fighter.global_position - source.global_position
         direction.y = 0.0
         if direction.length_squared() <= 0.001:
-            direction = source_fighter.global_basis.z
+            direction = source.global_basis.z
 
         var damage_result: Variant = fighter.call(
             "receive_combat_hit",
@@ -74,11 +75,11 @@ func _check_overlaps() -> void:
         if typeof(damage_result) == TYPE_FLOAT or typeof(damage_result) == TYPE_INT:
             actual_damage = float(damage_result)
 
-        if source_fighter.has_method("on_attack_contact"):
-            source_fighter.call("on_attack_contact", fighter, actual_damage)
+        if source.has_method("on_attack_contact"):
+            source.call("on_attack_contact", fighter, actual_damage)
 
-        if actual_damage > 0.001 and source_fighter.has_method("on_attack_connected"):
-            source_fighter.call(
+        if actual_damage > 0.001 and source.has_method("on_attack_connected"):
+            source.call(
                 "on_attack_connected",
                 fighter,
                 actual_damage,

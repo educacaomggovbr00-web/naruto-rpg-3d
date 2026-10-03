@@ -96,10 +96,12 @@ func start(kind: String = "") -> bool:
     var move: String = selected if kind.is_empty() else kind
     if not current.is_empty() or owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.attack_active or owner_fighter.dodge_timer > 0.0 or owner_fighter.chakra_dash_timer > 0.0 or owner_fighter.jutsu_cooldown > 0.0:
         return false
+    if move not in ["demon", "rasengan", "clones", "whirlwind", "barrage"]:
+        return false
     if owner_fighter.chakra < 32.0:
         return false
     owner_fighter.chakra -= 32.0
-    owner_fighter.jutsu_cooldown = 1.5
+    owner_fighter.jutsu_cooldown = 4.0 if move == "barrage" else 1.5
     owner_fighter.jutsu_timer = 0.65
     owner_fighter.is_guarding = false
     owner_fighter.is_charging_chakra = false
@@ -158,7 +160,8 @@ func cancel() -> void:
     rasengan_hitbox.call("deactivate")
     barrage_hitbox.call("deactivate")
     confirmed_target = null
-    owner_fighter.camera_rig.call("end_sequence")
+    if is_instance_valid(owner_fighter.camera_rig):
+        owner_fighter.camera_rig.call("end_sequence")
     owner_fighter.jutsu_timer = 0.0
 
 func demon_confirm(target: Node) -> void:
