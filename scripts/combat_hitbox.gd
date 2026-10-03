@@ -74,6 +74,9 @@ func _check_overlaps() -> void:
         if typeof(damage_result) == TYPE_FLOAT or typeof(damage_result) == TYPE_INT:
             actual_damage = float(damage_result)
 
+        if source_fighter.has_method("on_attack_contact"):
+            source_fighter.call("on_attack_contact", fighter, actual_damage)
+
         if actual_damage > 0.001 and source_fighter.has_method("on_attack_connected"):
             source_fighter.call(
                 "on_attack_connected",

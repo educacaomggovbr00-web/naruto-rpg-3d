@@ -84,6 +84,7 @@ var jutsu_released: bool = false
 var attack_buffer: float = 0.0
 var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
+var dash_hitbox: Area3D = null
 var dash_elapsed: float = 0.0
 var dash_speed_now: float = 0.0
 var air_dash_count: int = 0
@@ -113,6 +114,17 @@ func _ready() -> void:
     chakra = max_chakra
     substitutions = max_substitutions
     mobile_controls = get_node_or_null("../HUD/MobileControls")
+    dash_hitbox = Area3D.new()
+    dash_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
+    dash_hitbox.collision_layer = 0
+    dash_hitbox.collision_mask = 16
+    var shape_node: CollisionShape3D = CollisionShape3D.new()
+    var sphere: SphereShape3D = SphereShape3D.new()
+    sphere.radius = 0.85
+    shape_node.shape = sphere
+    dash_hitbox.add_child(shape_node)
+    add_child(dash_hitbox)
+    dash_hitbox.position = Vector3(0, 0, 0.45)
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and not _is_mobile_runtime():
@@ -182,16 +194,10 @@ func _physics_process(delta: float) -> void:
         dash_elapsed += delta
         if is_instance_valid(locked_target):
             var pursuit: Vector3 = locked_target.global_position - global_position
-            if pursuit.length() < 1.25 and dash_elapsed >= 0.06:
-                chakra_dash_timer = 0.0
-                attack_cooldown = 0.0
-                if bool(locked_target.call("get_is_guarding")):
-                    stagger_timer = 0.22
-                    velocity = -chakra_dash_direction * 5.0
-                else:
-                    attack_buffer = maxf(attack_buffer, 0.16)
             if pursuit.length_squared() > 0.001:
                 chakra_dash_direction = chakra_dash_direction.slerp(pursuit.normalized(), minf(delta * 9.0, 1.0)).normalized()
+        if dash_elapsed >= 0.06 and dash_hitbox.remaining_time <= 0.0:
+            dash_hitbox.call("activate", self, 0.0, 0.0, 0.0, 0.16, 0.5)
         dash_speed_now = move_toward(dash_speed_now, chakra_dash_speed, delta * 100.0) if dash_elapsed > 0.06 else 0.0
         velocity.x = chakra_dash_direction.x * dash_speed_now
         velocity.z = chakra_dash_direction.z * dash_speed_now
@@ -271,6 +277,8 @@ func _update_timers(delta: float) -> void:
     attack_cooldown = maxf(attack_cooldown - delta, 0.0)
     attack_lunge_timer = maxf(attack_lunge_timer - delta, 0.0)
     chakra_dash_timer = maxf(chakra_dash_timer - delta, 0.0)
+    if chakra_dash_timer <= 0.0 and dash_hitbox != null:
+        dash_hitbox.call("deactivate")
     dodge_timer = maxf(dodge_timer - delta, 0.0)
     dodge_cooldown = maxf(dodge_cooldown - delta, 0.0)
     substitution_cooldown = maxf(substitution_cooldown - delta, 0.0)
@@ -528,6 +536,20 @@ func _start_chakra_dash() -> void:
     if is_instance_valid(combat_feedback) and combat_feedback.has_method("spawn_dash_burst"):
         combat_feedback.call("spawn_dash_burst", global_position)
 
+func on_attack_contact(target: Node, _damage: float) -> void:
+    if chakra_dash_timer <= 0.0:
+        return
+    chakra_dash_timer = 0.0
+    dash_hitbox.call("deactivate")
+    velocity = Vector3.ZERO
+    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+        stagger_timer = 0.22
+        velocity = -chakra_dash_direction * 5.0
+    else:
+        attack_cooldown = 0.0
+        if attack_buffer > 0.0:
+            _try_attack()
+
 func _start_dodge() -> void:
     if defeated or stagger_timer > 0.0 or dodge_cooldown > 0.0 or chakra_dash_timer > 0.0:
         return
@@ -602,6 +624,9 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
+    if chakra_dash_timer > 0.0:
+        attack_buffer = 0.25
+        return
     if attack_active:
         if attack_elapsed >= attack_startup and combo_step < 4:
             attack_buffer = 0.22
