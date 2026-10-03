@@ -22,6 +22,7 @@ var return_message: String = ""
 var result_layer: CanvasLayer = null
 
 func _ready() -> void:
+    CharacterCatalog.initialize()
     get_tree().scene_changed.connect(_scene_ready)
     load_progress()
 
