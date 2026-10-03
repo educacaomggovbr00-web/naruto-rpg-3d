@@ -315,10 +315,11 @@ func _runtime_animation_state() -> String:
         return "sprint"
     return player_state
 
-func get_hand_world_position() -> Vector3:
-    if skeleton == null or right_hand_bone < 0:
+func get_hand_world_position(short_name: String = "RightHand") -> Vector3:
+    var hand_bone: int = _find_mixamo_bone(short_name) if skeleton != null else -1
+    if skeleton == null or hand_bone < 0:
         return player.global_position + Vector3.UP * 0.3 + player.global_basis.z * 0.6
-    return (skeleton.global_transform * skeleton.get_bone_global_pose(right_hand_bone)).origin
+    return (skeleton.global_transform * skeleton.get_bone_global_pose(hand_bone)).origin
 
 func get_attack_timing(combo_step: int, airborne: bool) -> Dictionary:
     var state_name: String = ("air_attack_%d" if airborne else "attack_%d") % combo_step

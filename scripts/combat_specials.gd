@@ -223,7 +223,7 @@ func contact(target: Node, dealt: float) -> void:
     summon_clone(confirmed_target, -owner_fighter.global_basis.z * 1.0, 0.08, "attack_4", 8.5, 5.0)
 
 func _barrage_timeline(delta: float) -> void:
-    barrage_hitbox.global_position = owner_fighter.rig_adapter.call("get_hand_world_position")
+    barrage_hitbox.global_position = owner_fighter.rig_adapter.call("get_hand_world_position", "RightHand" if sequence_stage >= 2 else "LeftHand")
     barrage_hitbox.global_position += owner_fighter.global_basis.z * 0.16
     if not is_instance_valid(confirmed_target):
         if not active_opened and elapsed >= 0.12:

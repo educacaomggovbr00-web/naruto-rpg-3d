@@ -109,12 +109,12 @@ func _physics_process(delta: float) -> void:
     var facing: Vector3 = target.global_position - global_position
     if Vector2(facing.x, facing.z).length() > 0.01:
         rotation.y = atan2(facing.x, facing.z)
-    if not attack_started:
+    if not attack_started or not hit_open:
         velocity = aim.limit_length(1.0) * 16.0
         if not clip_name.begins_with("air_"):
             velocity.y = 0.0
         move_and_slide()
-        if elapsed >= attack_delay:
+        if not attack_started and elapsed >= attack_delay:
             attack_started = true
             animation_player.play(StringName("combat/" + clip_name))
     animation_player.advance(delta)
