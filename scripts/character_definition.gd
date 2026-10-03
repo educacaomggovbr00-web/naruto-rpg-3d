@@ -7,6 +7,11 @@ extends Resource
 @export var visual_status: String = "DEVELOPMENT_ONLY_SHARED_RIG"
 @export_multiline var summary: String = "Base de combate em desenvolvimento."
 @export var stylized_material: bool = false
+@export var model_auto_scale: bool = true
+@export var model_scale_multiplier: float = 1.0
+@export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
+@export var model_yaw_degrees: float = 180.0
+@export var model_fallback_import_scale: float = 0.01
 @export var moveset: MovesetDefinition
 @export var jutsus: PackedStringArray = PackedStringArray(["demon", "rasengan", "clones", "whirlwind", "barrage"])
 @export var jutsu_definitions: Array[JutsuDefinition] = []
