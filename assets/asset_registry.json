@@ -321,6 +321,15 @@
       "sha256": "4656668bc7bb51af7d72d0beae858a22b10bb4adf01fbb6e0ee8be5de31a9ea8"
     },
     {
+      "path": "assets/vfx/arena_ground.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto / Codex",
+      "source": "Original geometry and code authored in this repository",
+      "license": "Original project content",
+      "modifications": "Original authored presentation/profile data",
+      "sha256": "fb2e58589e448c92890fbabd2b28eccefc31af43fd49a9ed28aed72c7c73bca9"
+    },
+    {
       "path": "assets/characters/stylized/toon.tres",
       "status": "SAFE_FOR_RELEASE",
       "author": "Projeto / Codex",

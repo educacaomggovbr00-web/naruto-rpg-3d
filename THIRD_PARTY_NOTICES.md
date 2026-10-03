@@ -42,3 +42,7 @@ Storm Character Manager, UNSME, NSC Toolbox/ModManager, UNSG V2, Road to Connect
 ## Kenney — SFX integrados
 
 Autor: Kenney (https://kenney.nl). Impact Sounds e Sci-fi Sounds, CC0 1.0 Universal. Oito arquivos OGG em assets/audio/kenney; arquivos de licença originais LICENSE_impact.txt e LICENSE_scifi.txt preservados. Fontes/nomes/hashes e uso estão em docs/ASSET_SOURCES.md e assets/asset_registry.json. Arquivos inalterados; volume e loop ajustados no runtime. Nenhum som ou música do Storm foi importado.
+
+## Original stylized development characters
+
+Four meshes in `assets/characters/stylized` were authored in this project, not imported from the games. They reuse only the supplied body skeleton transforms to preserve animation compatibility. They depict Naruto/Sasuke/Sakura/Kakashi and remain DEVELOPMENT_ONLY until character presentation and skeleton distribution are cleared. Existing CC0 animation/audio credits remain applicable. The original user model is preserved unchanged. The new toon material, ground shader and arena geometry are original project content.

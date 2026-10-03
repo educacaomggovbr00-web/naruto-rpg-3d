@@ -13,9 +13,9 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 
 ## Seleção e batalha
 
-O jogo abre em seleção de jogador, CPU e arena. Naruto e **Sasuke (base em desenvolvimento)** possuem perfis Resources separados; ambos ainda usam o rig fornecido, não modelos finais de Naruto/Sasuke. Sakura, Kakashi e Gaara estão desabilitados até seus movesets/visuais próprios existirem. As arenas são duas variantes da arena atual (treino/pátio com luz de entardecer), não mapas extraídos do Storm.
+O jogo abre em seleção de jogador, CPU e arena, com preview 3D. **Naruto, Sasuke, Sakura e Kakashi** possuem modelos próprios estilizados e perfis Resources separados. São bases em desenvolvimento: as animações reais ainda são compartilhadas e não equivalem às coreografias completas do Storm. Gaara segue desabilitado. As duas variantes da arena têm cenário autoral de treino/pátio com luz de entardecer; nenhum mapa de Storm foi importado. Veja [modelos e apresentação](docs/STYLIZED_PRESENTATION.md).
 
-Sasuke tem Fireball com sweep e Chidori preso à mão, com VFX elétrico próprio; coreografias exclusivas, Ultimate e transformação dele estão pendentes. Naruto conserva seu arsenal. A CPU usa os mesmos módulos de chakra/dash/jutsu/clones/Ultimate/Awakening/tools, com decisões atrasadas e probabilísticas. KO em versus abre vitória/derrota, seleção e revanche. A aldeia/treino e o save existente continuam disponíveis.
+Sasuke tem Fireball com sweep e Chidori preso à mão, com VFX elétrico próprio; Sakura tem base de melee pesado e Kakashi base de relâmpago compartilhada com Chidori; coreografias exclusivas, Ultimate e transformação dele estão pendentes. Naruto conserva seu arsenal. A CPU usa os mesmos módulos de chakra/dash/jutsu/clones/Ultimate/Awakening/tools, com decisões atrasadas e probabilísticas. KO em versus abre vitória/derrota, seleção e revanche. A aldeia/treino e o save existente continuam disponíveis.
 
 Áudio CC0 Kenney, oito vozes SFX + um canal de carga; SOM ON/OFF salva a preferência. LOW/MED/HIGH mantém regras de colisão/timing iguais. FPS/DC ajudam a comparar no Moto G22; não houve medição real de FPS/GPU Android nesta sessão. Ver [validação e pendências](docs/SELECTABLE_FIGHTERS.md).
 

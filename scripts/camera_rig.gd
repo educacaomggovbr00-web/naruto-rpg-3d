@@ -31,6 +31,7 @@ func _ready() -> void:
     camera_shape.radius = 0.28
     spring_arm.shape = camera_shape
     spring_arm.margin = 0.15
+    spring_arm.collision_mask = 33
     spring_arm.add_excluded_object(player.get_rid())
     if not _is_mobile_runtime():
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED

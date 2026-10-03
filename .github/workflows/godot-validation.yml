@@ -63,6 +63,9 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/cpu_threat_contract.gd 2>&1 | tee /tmp/threat-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/threat-contract.log
           grep -F 'CPU THREAT CONTRACT: PASS' /tmp/threat-contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/stylized_fighters_contract.gd 2>&1 | tee /tmp/stylized-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/stylized-contract.log
+          grep -F 'STYLIZED FIGHTERS CONTRACT: PASS' /tmp/stylized-contract.log
       - name: Validate world traversal and mission lifecycle
         shell: bash
         run: |

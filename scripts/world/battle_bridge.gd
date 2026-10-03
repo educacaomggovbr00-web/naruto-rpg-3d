@@ -22,12 +22,6 @@ func _ready() -> void:
     versus.custom_minimum_size = Vector2(140, 46)
     versus.pressed.connect(GameFlow.enter_selection)
     layer.add_child(versus)
-    if GameFlow.arena_id == "courtyard":
-        var floor_mesh: MeshInstance3D = get_parent().get_node("Ground/Mesh")
-        var material: StandardMaterial3D = StandardMaterial3D.new()
-        material.albedo_color = Color(0.36, 0.38, 0.42)
-        floor_mesh.material_override = material
-        get_parent().get_node("Sun").light_color = Color(1, 0.85, 0.65)
     if not GameFlow.pending_battle.is_empty() and int(GameFlow.progress.supplies) > 0:
         var fighter: Node = get_parent().get_node("Player")
         fighter.ninja_tools.stock.bomb += 1

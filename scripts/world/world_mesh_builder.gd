@@ -239,6 +239,8 @@ func build() -> void:
     var material: StandardMaterial3D = StandardMaterial3D.new()
     material.vertex_color_use_as_albedo = true
     material.roughness = 1.0
+    material.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+    material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
     material.cull_mode = BaseMaterial3D.CULL_DISABLED
     for key: Vector2i in batches:
         var surface: SurfaceTool = batches[key] as SurfaceTool

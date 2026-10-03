@@ -42,3 +42,11 @@ As ferramentas/formatos listados em `STORM_MOVES_DATA.md` foram referências de 
 - [Naruto por RodrigoXP](https://blendswap.com/blend/17083): candidato fan art CC-BY (Blender 2.7), não importado; comentários públicos indicam ausência de bones/rig, e o arquivo não foi obtido/validado tecnicamente. CC-BY anunciado por uploader não resolve automaticamente direitos da personagem.
 - Resultados [Asif20 Naruto 2942](https://blendswap.com/blend/2942), [2945](https://blendswap.com/blend/2945), [Sasuke 2946](https://blendswap.com/blend/2946) são armas (kunai/shuriken/fūma), não GLBs dos personagens. Não foram usados como falsos substitutos.
 - Nenhum novo GLB/retrato comercial foi baixado. O rig fornecido segue preservado e UNKNOWN_LICENSE; perfis usam model_path configurável e o mesmo adaptador Mixamo. Conversão/rigging de modelos futuros deve ocorrer no pipeline de desenvolvimento, nunca no Android.
+
+## Quatro meshes próprias estilizadas — 2026-10-03
+
+`assets/characters/stylized/{naruto,sasuke,sakura,kakashi}.glb` são geometria original gerada offline por `tools/create_stylized_fighters.py`: corpo, rosto, olhos, cabelo e roupa em uma superfície opaca com vertex colors. Nenhuma geometria/textura/animação de Storm foi baixada. Apenas os 65 transforms/joints de corpo do rig fornecido foram preservados para o retarget existente. O rig original não foi modificado. Licença da apresentação dos personagens e origem do skeleton não estão liberadas para publicação: arquivos classificados **DEVELOPMENT_ONLY**, com SHA no registry. Não confundir com modelos oficiais ou qualidade final.
+
+Pesquisa adicional: Sasuke fanart rigado https://blendswap.com/blend/17887; Kakashi fanart https://blendswap.com/blend/29331; Naruto/Sasuke low poly https://sketchfab.com/3d-models/naruto-sasuke-low-poly-rig-texture-b650b60a7bbd4f11b05a435e65116168. Candidatos não importados: download/rig/proveniência não foram verificados em conjunto. Não tratamos licença de fanart ou rótulo “free” como autorização para distribuir assets extraídos de jogos.
+
+Toon usa o material nativo do Godot, sem código externo copiado: https://docs.godotengine.org/en/4.7/tutorials/shaders/shader_reference/spatial_shader.html. Arena/piso/sky e material são autorais; detalhes completos em STYLIZED_PRESENTATION.md.

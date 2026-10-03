@@ -64,12 +64,13 @@ func run() -> void:
         quit(1)
         return
     print("SELECTABLE FIGHTERS ANDROID PACK: PASS")
-    for definition: CharacterDefinition in CharacterCatalog.READY:
+    var catalog: Script = load("res://scripts/character_catalog.gd")
+    for definition: Resource in catalog.READY:
         if not ResourceLoader.exists(definition.model_path) or definition.visual_status != "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL":
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-    if CharacterCatalog.READY.size() != 4 or not CharacterCatalog.SAKURA.jutsus.is_empty() or CharacterCatalog.KAKASHI.jutsus != PackedStringArray(["chidori"]):
+    if catalog.READY.size() != 4 or not catalog.SAKURA.jutsus.is_empty() or catalog.KAKASHI.jutsus != PackedStringArray(["chidori"]):
         push_error("Export lost four-profile ability restrictions")
         quit(1)
         return
