@@ -11,6 +11,10 @@ func run() -> void:
                 push_error("Development-only fan model leaked into public payload")
                 quit(1)
                 return
+        if ResourceLoader.exists("res://assets/characters/stylized/naruto_pre_shippuden.glb"):
+            push_error("Pre-Shippuden Naruto development presentation leaked into public payload")
+            quit(1)
+            return
         if ProjectSettings.has_setting("autoload/GameFlow"):
             push_error("Rejected public container retained a resource-dependent autoload")
             quit(1)
@@ -73,7 +77,7 @@ func run() -> void:
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-        if definition.visual_status == "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL":
+        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED"]:
             authored_visuals += 1
         elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
             roster_placeholders += 1
