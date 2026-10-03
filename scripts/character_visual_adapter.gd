@@ -88,7 +88,7 @@ func _setup_sprite(definition: CharacterDefinition) -> void:
         var frame: AtlasTexture = AtlasTexture.new()
         frame.atlas = atlas_source
         var column: int = index % 4
-        var row: int = index / 4
+        var row: int = floori(float(index) / 4.0)
         frame.region = Rect2(
             Vector2(float(column * cell.x), float(row * cell.y)),
             Vector2(float(cell.x), float(cell.y))
