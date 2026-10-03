@@ -210,7 +210,9 @@ func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:
 func apply_visual_material(root: Node) -> void:
     var use_toon: bool = model_path.begins_with("res://assets/characters/stylized/")
     if player.has_method("get_character_definition"):
-        use_toon = bool(player.call("get_character_definition").stylized_material)
+        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+        if definition != null:
+            use_toon = definition.stylized_material
     var meshes: Array[MeshInstance3D] = []
     _collect_mesh_instances(root, meshes)
     for mesh: MeshInstance3D in meshes:

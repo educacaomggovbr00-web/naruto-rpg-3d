@@ -25,7 +25,7 @@ func _ready() -> void:
     add_child(hitbox)
     rig_adapter = Node3D.new()
     rig_adapter.name = "RiggedCharacterAdapter"
-    rig_adapter.set_script(preload("res://scripts/rigged_character_adapter.gd"))
+    rig_adapter.set_script(preload("res://scripts/character_visual_adapter.gd"))
     if player_controlled:
         rig_adapter.model_path = CharacterCatalog.NARUTO.model_path
     rig_adapter.follow_hitbox_to_bones = false
@@ -89,3 +89,6 @@ func get_animation_action_id() -> int:
 
 func get_combo_step() -> int:
     return 1
+
+func get_character_definition() -> CharacterDefinition:
+    return CharacterCatalog.NARUTO if player_controlled else null

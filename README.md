@@ -279,3 +279,10 @@ python -m unittest discover -s tests -p 'test_storm1_research_tools.py'
 ```
 
 Arquivos brutos ficam em `external/storm1_raw/` e são ignorados pelo Git. O primeiro alvo é transformar dados verificáveis de Naruto em Resources já existentes, sem aplicar números desconhecidos como se fossem frame data oficial.
+
+
+### Naruto com sprites 2.5D
+
+Abra `project.godot` no Godot 4.7.2 e execute com F6 em `main.tscn` para ir direto à arena, ou F5 para selecionar personagens e entrar no mundo. Naruto usa 16 poses completas do ZIP fornecido na seleção, arena, exploração e clones. As poses mudam conforme o estado do personagem; ainda não são sequências quadro a quadro de todas as 139 imagens de batalha. O rig invisível conserva os tempos, ossos e colisões dos golpes existentes. Os outros personagens continuam em 3D.
+
+Para reconstruir o atlas: `python tools/build_naruto_sprite_atlas.py "/caminho/para/Naruto.zip"` (requer Pillow). A ferramenta valida o PNG e registra as dimensões e os hashes de origem em `source_manifest.json`. O teste `tests/sprite_visual_contract.gd` verifica importação, recortes, pés no chão, orientação e clones; o teste de exportação confere que as texturas entram no pacote Android.

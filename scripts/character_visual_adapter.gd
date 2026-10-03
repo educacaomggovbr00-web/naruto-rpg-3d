@@ -1,7 +1,6 @@
-extends Node3D
+extends "res://scripts/rigged_character_adapter.gd"
+## Keep the rig API, clips and bone hitboxes for combat; replace only its visible mesh.
 
-const RIG_ADAPTER_SCRIPT: Script = preload("res://scripts/rigged_character_adapter.gd")
-const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
 const SPRITE_LAYOUT: Array[String] = [
     "idle", "run", "sprint", "back_run",
     "guard", "attack_1", "attack_2", "attack_3",
@@ -9,68 +8,23 @@ const SPRITE_LAYOUT: Array[String] = [
     "defeat", "chakra_charge", "chakra_dash", "jutsu"
 ]
 
-@export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
-@export var fallback_visual_path: NodePath = NodePath("../VisualRoot")
-@export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
-@export var model_scale: float = 1.0
-@export var auto_scale_model: bool = true
-@export var ground_to_collision: bool = false
-@export var target_character_height: float = 1.75
-@export var fallback_import_scale: float = 0.01
-@export var model_yaw_degrees: float = 180.0
-@export var follow_hitbox_to_bones: bool = true
-
-var manifest: Dictionary = {}
-var player: CharacterBody3D = null
-var rig_impl: Node3D = null
 var sprite_visual: Sprite3D = null
 var sprite_mode: bool = false
-var sprite_status: String = "VISUAL: aguardando"
+var sprite_status: String = "SPRITE 2.5D: aguardando"
 var sprite_frames: Dictionary = {}
 var sprite_last_key: String = ""
 
 func _ready() -> void:
-    player = get_parent() as CharacterBody3D
-    _load_manifest()
-    if player == null:
-        sprite_status = "VISUAL: parent não é CharacterBody3D"
-        return
-
-    var definition: CharacterDefinition = null
+    super._ready()
     if player.has_method("get_character_definition"):
-        definition = player.call("get_character_definition") as CharacterDefinition
+        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+        if definition != null and definition.visual_mode == "sprite_2_5d":
+            _setup_sprite(definition)
 
-    if definition != null and definition.visual_mode == "sprite_2_5d":
-        _setup_sprite(definition)
-    else:
-        _setup_rig()
-
-func _physics_process(_delta: float) -> void:
-    if rig_impl != null:
-        rig_impl.visible = visible
+func _physics_process(delta: float) -> void:
+    super._physics_process(delta)
     if sprite_mode and sprite_visual != null:
         _sync_sprite_state()
-
-func _load_manifest() -> void:
-    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
-    if parsed is Dictionary:
-        manifest = parsed
-
-func _setup_rig() -> void:
-    rig_impl = Node3D.new()
-    rig_impl.name = "RiggedCharacterAdapter3D"
-    rig_impl.set_script(RIG_ADAPTER_SCRIPT)
-    rig_impl.set("model_path", model_path)
-    rig_impl.set("fallback_visual_path", fallback_visual_path)
-    rig_impl.set("model_offset", model_offset)
-    rig_impl.set("model_scale", model_scale)
-    rig_impl.set("auto_scale_model", auto_scale_model)
-    rig_impl.set("ground_to_collision", ground_to_collision)
-    rig_impl.set("target_character_height", target_character_height)
-    rig_impl.set("fallback_import_scale", fallback_import_scale)
-    rig_impl.set("model_yaw_degrees", model_yaw_degrees)
-    rig_impl.set("follow_hitbox_to_bones", follow_hitbox_to_bones)
-    player.add_child(rig_impl)
 
 func _setup_sprite(definition: CharacterDefinition) -> void:
     if definition.sprite_atlas_path.is_empty() or not ResourceLoader.exists(definition.sprite_atlas_path):
@@ -83,6 +37,9 @@ func _setup_sprite(definition: CharacterDefinition) -> void:
         return
 
     var cell: Vector2i = definition.sprite_cell_size
+    if cell.x <= 0 or cell.y <= 0 or atlas_source.get_width() < cell.x * 4 or atlas_source.get_height() < cell.y * 4:
+        sprite_status = "SPRITE 2.5D: dimensões inválidas; usando modelo 3D"
+        return
     for index: int in range(SPRITE_LAYOUT.size()):
         var key: String = SPRITE_LAYOUT[index]
         var frame: AtlasTexture = AtlasTexture.new()
@@ -100,7 +57,13 @@ func _setup_sprite(definition: CharacterDefinition) -> void:
     sprite_visual.texture = sprite_frames["idle"]
     sprite_visual.pixel_size = definition.sprite_pixel_size
     sprite_visual.position = definition.sprite_offset
-    sprite_visual.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+    # Keep the pixel baseline on the floor even when the camera looks down.
+    var collision: CollisionShape3D = player.get_node_or_null("CollisionShape3D") as CollisionShape3D
+    var floor_y: float = -0.95
+    if collision != null and collision.shape is CapsuleShape3D:
+        floor_y = collision.position.y - collision.shape.height * 0.5
+    sprite_visual.position.y = floor_y + (float(cell.y) * 0.5 - 8.0) * definition.sprite_pixel_size
+    sprite_visual.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
     sprite_visual.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
     sprite_visual.shaded = false
     add_child(sprite_visual)
@@ -110,11 +73,19 @@ func _setup_sprite(definition: CharacterDefinition) -> void:
         fallback.visible = false
         fallback.process_mode = Node.PROCESS_MODE_DISABLED
 
+    if model_instance != null:
+        model_instance.visible = false
     sprite_mode = true
     sprite_status = "SPRITE 2.5D: OK | %d poses" % sprite_frames.size()
     _sync_sprite_state()
 
 func _sync_sprite_state() -> void:
+    # Update facing even while the current pose stays the same.
+    var camera: Camera3D = get_viewport().get_camera_3d()
+    if camera != null:
+        var screen_facing: float = player.global_basis.z.dot(camera.global_basis.x)
+        if absf(screen_facing) > 0.1:
+            sprite_visual.flip_h = screen_facing < 0.0
     var key: String = _sprite_key()
     if key == sprite_last_key:
         return
@@ -154,46 +125,8 @@ func _sprite_key() -> String:
         _:
             return "idle"
 
-func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
-    if rig_impl != null and rig_impl.has_method("snap_attack_hitbox"):
-        rig_impl.call("snap_attack_hitbox", combo_step, airborne)
-
-func get_attack_timing(combo_step: int, airborne: bool) -> Dictionary:
-    if rig_impl != null and rig_impl.has_method("get_attack_timing"):
-        var result: Variant = rig_impl.call("get_attack_timing", combo_step, airborne)
-        if result is Dictionary:
-            return result
-    var state_name: String = ("air_attack_%d" if airborne else "attack_%d") % combo_step
-    return manifest.get("clips", {}).get(state_name, {})
-
-func get_hand_world_position(short_name: String = "RightHand") -> Vector3:
-    if rig_impl != null and rig_impl.has_method("get_hand_world_position"):
-        var result: Variant = rig_impl.call("get_hand_world_position", short_name)
-        if result is Vector3:
-            return result
-    if player == null:
-        return global_position
-    var side: float = -0.22 if short_name == "LeftHand" else 0.22
-    return player.global_position + Vector3.UP * 0.25 + player.global_basis.z * 0.55 + player.global_basis.x * side
-
 func get_rig_status() -> String:
-    if sprite_mode or rig_impl == null:
-        return sprite_status
-    if rig_impl.has_method("get_rig_status"):
-        return String(rig_impl.call("get_rig_status"))
-    return "RIG: carregando"
-
-func is_rig_loaded() -> bool:
-    if sprite_mode:
-        return true
-    return rig_impl != null and rig_impl.has_method("is_rig_loaded") and bool(rig_impl.call("is_rig_loaded"))
+    return sprite_status if sprite_mode else super.get_rig_status()
 
 func get_available_animations_text() -> String:
-    if sprite_mode:
-        var names: PackedStringArray = PackedStringArray()
-        for key: String in SPRITE_LAYOUT:
-            names.append(key)
-        return ", ".join(names)
-    if rig_impl != null and rig_impl.has_method("get_available_animations_text"):
-        return String(rig_impl.call("get_available_animations_text"))
-    return "nenhuma"
+    return ", ".join(SPRITE_LAYOUT) if sprite_mode else super.get_available_animations_text()

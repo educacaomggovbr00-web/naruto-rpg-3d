@@ -4,7 +4,7 @@
   "source_game": "Naruto Online",
   "source_group": "Recruitable Characters / Naruto Uzumaki (Part 1) / Battle",
   "status": "DEVELOPMENT_ONLY",
-  "note": "16 poses selected from the user-supplied archive, normalized to 192x192 cells and packed into a 4x4 atlas for the 2.5D prototype. Public redistribution rights are not established.",
+  "note": "16 complete battle poses in 192x192 cells, at original pixel scale with a shared foot baseline. Rebuild with tools/build_naruto_sprite_atlas.py. Public redistribution rights are not established.",
   "cell_size": [
     192,
     192
@@ -13,67 +13,181 @@
   "frames": {
     "idle": {
       "index": 0,
-      "source": "133_Asset_63.png"
+      "source": "133_Asset_63.png",
+      "source_sha256": "7526faa873315eb40a1b9c7322e4907f7985e2b2cbbb9fffcfd4c0ae4557b676",
+      "bounds": [
+        61,
+        61,
+        70,
+        123
+      ]
     },
     "run": {
       "index": 1,
-      "source": "70_Asset_131.png"
+      "source": "70_Asset_131.png",
+      "source_sha256": "7bf6faa434d4738b6249ccabca52ab60d27baced8fd8318c143a108779b9610b",
+      "bounds": [
+        43,
+        84,
+        105,
+        100
+      ]
     },
     "sprint": {
       "index": 2,
-      "source": "54_Asset_9.png"
+      "source": "54_Asset_9.png",
+      "source_sha256": "38571c070166d8eeb0837d7319163faf9befd2ad9dee656d7fda9cbe3e5eea18",
+      "bounds": [
+        32,
+        77,
+        127,
+        107
+      ]
     },
     "back_run": {
       "index": 3,
-      "source": "50_Asset_30.png"
+      "source": "50_Asset_30.png",
+      "source_sha256": "69507b241c5651e1ec26acae1fee565f8873e6723a25d18b203a832dc4193f8a",
+      "bounds": [
+        58,
+        36,
+        76,
+        148
+      ]
     },
     "guard": {
       "index": 4,
-      "source": "135_Asset_101.png"
+      "source": "135_Asset_101.png",
+      "source_sha256": "93e22679ca2ce885ad5931cfee5290f72472961ef1ffa21ef56ad810bab64875",
+      "bounds": [
+        59,
+        57,
+        74,
+        127
+      ]
     },
     "attack_1": {
       "index": 5,
-      "source": "48_Asset_18.png"
+      "source": "48_Asset_18.png",
+      "source_sha256": "18ba6ea2eaa113dbd887ad22f68e41e831efd7ff4eace8e3ca76ad9c8ddbe7d9",
+      "bounds": [
+        31,
+        71,
+        130,
+        113
+      ]
     },
     "attack_2": {
       "index": 6,
-      "source": "129_Asset_19.png"
+      "source": "129_Asset_19.png",
+      "source_sha256": "4dc5463abcfbed2a0e100e3031057d9a66a3f442c36350b48441b9467c7f5e21",
+      "bounds": [
+        31,
+        67,
+        130,
+        117
+      ]
     },
     "attack_3": {
       "index": 7,
-      "source": "139_Asset_85.png"
+      "source": "139_Asset_85.png",
+      "source_sha256": "3fb033ddac0d9625202e39230ff2acf27b16297d95bcb23c3bc234a622625a1f",
+      "bounds": [
+        63,
+        63,
+        65,
+        121
+      ]
     },
     "attack_4": {
       "index": 8,
-      "source": "1_Asset_15.png"
+      "source": "1_Asset_15.png",
+      "source_sha256": "72801173aef3493e6b4a6cfac980c3fd55059c22decbbd4e0af2ad43696b6c1a",
+      "bounds": [
+        59,
+        33,
+        73,
+        151
+      ]
     },
     "air": {
       "index": 9,
-      "source": "86_Asset_28.png"
+      "source": "86_Asset_28.png",
+      "source_sha256": "7f55ebaa66cdf77931ca27b36cba27ebf2fa368d1832d3ba6fdba1593686a2d5",
+      "bounds": [
+        72,
+        27,
+        48,
+        157
+      ]
     },
     "dodge": {
       "index": 10,
-      "source": "78_Asset_134.png"
+      "source": "78_Asset_134.png",
+      "source_sha256": "43f9959b785d8b0324bb303f75f4401cd8dca522699a4a7699fb9acd862b604a",
+      "bounds": [
+        42,
+        76,
+        107,
+        108
+      ]
     },
     "hit": {
       "index": 11,
-      "source": "117_Asset_110.png"
+      "source": "117_Asset_110.png",
+      "source_sha256": "ca0796c6c3cf1068663866d9584eb2745996c8ae3034bfb97d60e98e9926d503",
+      "bounds": [
+        49,
+        94,
+        94,
+        90
+      ]
     },
     "defeat": {
       "index": 12,
-      "source": "81_Asset_57.png"
+      "source": "81_Asset_57.png",
+      "source_sha256": "eb7e9697452a228fb9ca8a2ae6ccdd46d9849f763934f43463ec3decdbfc751c",
+      "bounds": [
+        23,
+        132,
+        145,
+        52
+      ]
     },
     "chakra_charge": {
       "index": 13,
-      "source": "45_Asset_42.png"
+      "source": "45_Asset_42.png",
+      "source_sha256": "9b6fb3f0c13bed4ae3af7b88ba02d82790417edc36a9d130a45e9845563e0063",
+      "bounds": [
+        61,
+        94,
+        70,
+        90
+      ]
     },
     "chakra_dash": {
       "index": 14,
-      "source": "65_Asset_59.png"
+      "source": "65_Asset_59.png",
+      "source_sha256": "69786f97c3f1f699799b1896d402c4cebaf87b39404cc3f6c66b5ddd61aaf93b",
+      "bounds": [
+        8,
+        94,
+        176,
+        90
+      ]
     },
     "jutsu": {
       "index": 15,
-      "source": "101_Asset_32.png"
+      "source": "101_Asset_32.png",
+      "source_sha256": "065e6985afd6c0bd57591b16a33068c24e75420c2c1e556d12129cac8c0ce6bd",
+      "bounds": [
+        47,
+        50,
+        98,
+        134
+      ]
     }
-  }
+  },
+  "baseline": 184,
+  "atlas_sha256": "ec1c0e0865baaa23d7352072bfa60cd893d54f5f7d2a204a130d2b8212da207a"
 }

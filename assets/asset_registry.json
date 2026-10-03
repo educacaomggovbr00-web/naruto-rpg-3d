@@ -165,8 +165,8 @@
       "author": "Projeto naruto-rpg-3d",
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
-      "modifications": "Resource de gameplay original atualizado para usar o modelo pré-Shippuden rigado fornecido pelo usuário. Autoescala e alinhamento dos pés à cápsula física.",
-      "sha256": "a4256837d14033744a793ea4da17a7b878762aee42bb94c7165b776760277e84"
+      "modifications": "Resource de gameplay original com sprites 2.5D do ZIP fornecido pelo usuário; o modelo pré-Shippuden continua disponível para ossos, colisões e fallback.",
+      "sha256": "7f87c3c34674f863676ee89fb3d804633a35176d1381a9116ef5afab68342a15"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -499,8 +499,8 @@
       "author": "Naruto Online / direitos dos respectivos titulares; arquivo fornecido pelo usuário",
       "source": "The Spriters Resource — Browser Games / Naruto Online / Recruitable Characters / Naruto Uzumaki (Part 1)",
       "license": "UNKNOWN / asset de jogo proprietário; não liberado para redistribuição pública",
-      "modifications": "16 poses de batalha selecionadas do ZIP fornecido pelo usuário, alinhadas em células 192x192 e empacotadas em atlas 4x4 para protótipo 2.5D.",
-      "sha256": "8640a3a315271b99a90b552db2624be372107e3708afd9ce800952a90ca62dc6"
+      "modifications": "16 complete battle poses rebuilt from the user ZIP, with transparent padding, common baseline and lossless PNG encoding; tools/build_naruto_sprite_atlas.py records each source hash.",
+      "sha256": "ec1c0e0865baaa23d7352072bfa60cd893d54f5f7d2a204a130d2b8212da207a"
     }
   ]
 }

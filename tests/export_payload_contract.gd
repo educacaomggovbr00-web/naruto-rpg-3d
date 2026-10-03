@@ -42,6 +42,10 @@ func run() -> void:
         push_error("Development export lost rig/manifest or pools")
         quit(1)
         return
+    if not fighter.rig_adapter.sprite_mode or fighter.rig_adapter.sprite_frames.size() != 16 or fighter.specials.clones[0].sprite_visual == null:
+        push_error("Development export lost Naruto sprite textures or clone visuals")
+        quit(1)
+        return
     var cpu: Node = game.get_node("EnemyDummy")
     if not cpu.rig_adapter.rig_loaded or fighter.moveset != cpu.moveset or fighter.moveset.neutral_finisher.launch_force != 0.0 or fighter.specials.projectiles[0].definition.speed != 19.0:
         push_error("Development export lost shared moveset, CPU rig or projectile definition")
@@ -77,7 +81,7 @@ func run() -> void:
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED"]:
+        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_2_5D_SPRITES"]:
             authored_visuals += 1
         elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
             roster_placeholders += 1
