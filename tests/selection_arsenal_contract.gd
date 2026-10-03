@@ -19,9 +19,9 @@ func run() -> void:
     await frames(8)
     var menu: Control = current_scene
     check(menu.scene_file_path == "res://selection.tscn", "Game must expose a real selection scene")
-    check(menu.player_pick.item_count == 5 and menu.player_pick.is_item_disabled(4) and not menu.player_pick.is_item_disabled(2), "Four base fighters selectable; unimplemented Gaara remains disabled")
+    check(menu.player_pick.item_count == 25 and not menu.player_pick.is_item_disabled(12), "All 25 original Storm 1 playable fighters must be selectable; Gaara is slot 13")
     check(menu.start_button.get_global_rect().end.y <= 720.0, "Start button must fit landscape viewport")
-    check(flow.start_versus("gaara", "naruto", "training") == ERR_INVALID_PARAMETER, "Unavailable character cannot enter battle")
+    check(flow.start_versus("not_in_storm1", "naruto", "training") == ERR_INVALID_PARAMETER, "Unknown character cannot enter battle")
     check(flow.start_versus("naruto", "naruto", "unknown") == ERR_INVALID_PARAMETER, "Unavailable arena cannot enter battle")
     menu.player_pick.select(1)
     menu.cpu_pick.select(0)
