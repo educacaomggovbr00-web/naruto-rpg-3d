@@ -41,9 +41,16 @@ func run() -> void:
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     var flow: Node = root.get_node("GameFlow")
+    CharacterCatalog.initialize()
+    check(CharacterCatalog.READY.size() == 25, "Storm 1 selection must expose all 25 playable fighters")
+    var placeholder_count: int = 0
+    for definition: CharacterDefinition in CharacterCatalog.READY:
+        if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+            placeholder_count += 1
+    check(placeholder_count == 21, "Twenty-one roster slots should use the temporary shared rig until their visuals are authored")
     var model_paths: Dictionary = {}
     var shared_library: AnimationLibrary
-    for definition: CharacterDefinition in CharacterCatalog.READY:
+    for definition: CharacterDefinition in CharacterCatalog.AUTHORED_VISUALS:
         check(not model_paths.has(definition.model_path), "Each selected fighter needs its own mesh")
         model_paths[definition.model_path] = true
         check(flow.start_versus(definition.character_id, definition.character_id, "training") == OK, "Every base profile can enter versus")
@@ -56,7 +63,7 @@ func run() -> void:
         cpu.enable_arsenal = false
         for actor: CharacterBody3D in [player, cpu]:
             var adapter: Node3D = actor.rig_adapter
-            check(adapter.rig_loaded and adapter.real_animation_count == 27, "All four profiles/CPU use 27 real clips")
+            check(adapter.rig_loaded and adapter.real_animation_count == 27, "Authored profiles/CPU use 27 real clips")
             check(adapter.skeleton.get_bone_count() == 65, "Author mesh retains 65 Mixamo body bones")
             var meshes: Array[MeshInstance3D] = []
             adapter._collect_mesh_instances(adapter.model_instance, meshes)
@@ -65,7 +72,7 @@ func run() -> void:
             var library: AnimationLibrary = adapter.animation_player.get_animation_library(&"combat")
             if shared_library == null:
                 shared_library = library
-            check(library == shared_library, "Four compatible models share immutable clip data")
+            check(library == shared_library, "Compatible authored models share immutable clip data")
             adapter.set_physics_process(false)
             adapter.animation_tree.active = false
             adapter.animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
