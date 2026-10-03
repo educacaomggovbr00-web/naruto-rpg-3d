@@ -228,7 +228,13 @@ func run() -> void:
     tools.selected = 3
     tools.use()
     check(tools.stock.kunai_rain == 1, "Kunai rain must consume finite stock")
-    await frames(45)
+    await frames(18)
+    var knives: int = 0
+    for projectile: Node3D in tools.projectiles:
+        if projectile.active and projectile.kunai.visible and not projectile.shuriken.visible:
+            knives += 1
+    check(knives == 3, "Kunai rain must use knife silhouettes instead of shuriken meshes")
+    await frames(30)
     check(enemy.health <= enemy.max_health - 6.0, "Kunai rain must fire separate physical projectiles")
     reset(4.0)
     await frames(3)
@@ -251,14 +257,14 @@ func run() -> void:
     fighter.chakra = 30.0
     tools.selected = 1
     tools.use()
-    await frames(15)
+    await frames(20)
     check(fighter.chakra >= 60.0 and tools.stock.ramen == 0, "Ramen must restore chakra and consume stock")
     tools.cooldown = 0.0
     fighter.jutsu_timer = 0.0
     check(not tools.use(), "Empty inventory cannot be used")
     tools.selected = 2
     tools.use()
-    await frames(15)
+    await frames(20)
     check(tools.buff_remaining > 19.0 and is_equal_approx(fighter.get_damage_multiplier(), 1.2), "Food pill must grant finite attack buff")
     tools.buff_remaining = 0.01
     await frames(2)

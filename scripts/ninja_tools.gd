@@ -41,7 +41,7 @@ func use() -> bool:
     if item != "shuriken":
         stock[item] = int(stock[item]) - 1
     pending = item
-    startup_remaining = 0.20
+    startup_remaining = float(fighter.rig_adapter.manifest["clips"]["jutsu"].get("impact", 0.24))
     cooldown = 0.6
     fighter.jutsu_timer = 0.45
     fighter.animation_action_id += 1

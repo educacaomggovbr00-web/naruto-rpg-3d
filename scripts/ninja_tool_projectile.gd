@@ -8,6 +8,7 @@ var heading: Vector3 = Vector3.BACK
 var remaining: float = 0.0
 var sweep_shape: SphereShape3D
 var shuriken: Node3D
+var kunai: Node3D
 var bomb: MeshInstance3D
 var wave: MeshInstance3D
 var hit_targets: Array[Node] = []
@@ -31,6 +32,40 @@ func _ready() -> void:
         blade.position = Vector3(sin(blade.rotation.y), 0, cos(blade.rotation.y)) * 0.10
         blade.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
         shuriken.add_child(blade)
+    kunai = Node3D.new()
+    add_child(kunai)
+    var point: MeshInstance3D = MeshInstance3D.new()
+    var blade_mesh: PrismMesh = PrismMesh.new()
+    blade_mesh.size = Vector3(0.085, 0.26, 0.045)
+    blade_mesh.material = metal
+    point.mesh = blade_mesh
+    point.rotation.x = PI * 0.5
+    point.position.z = 0.08
+    point.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    kunai.add_child(point)
+    var grip: MeshInstance3D = MeshInstance3D.new()
+    var grip_mesh: CylinderMesh = CylinderMesh.new()
+    grip_mesh.top_radius = 0.025
+    grip_mesh.bottom_radius = 0.025
+    grip_mesh.height = 0.15
+    grip_mesh.radial_segments = 6
+    grip_mesh.material = metal
+    grip.mesh = grip_mesh
+    grip.rotation.x = PI * 0.5
+    grip.position.z = -0.13
+    grip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    kunai.add_child(grip)
+    var handle: MeshInstance3D = MeshInstance3D.new()
+    var ring: TorusMesh = TorusMesh.new()
+    ring.inner_radius = 0.025
+    ring.outer_radius = 0.045
+    ring.rings = 8
+    ring.ring_segments = 4
+    ring.material = metal
+    handle.mesh = ring
+    handle.position.z = -0.24
+    handle.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    kunai.add_child(handle)
     bomb = MeshInstance3D.new()
     var ball: SphereMesh = SphereMesh.new()
     ball.radius = 0.17
@@ -49,7 +84,10 @@ func _ready() -> void:
     arc.outer_radius = 0.37
     arc.rings = 12
     arc.ring_segments = 4
-    arc.material = metal
+    var chakra: StandardMaterial3D = StandardMaterial3D.new()
+    chakra.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    chakra.albedo_color = Color(1.0, 0.12, 0.03)
+    arc.material = chakra
     wave.mesh = arc
     wave.rotation.x = PI * 0.5
     wave.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -66,7 +104,8 @@ func launch(fighter: CharacterBody3D, victim: Node3D, origin: Vector3, direction
     hit_targets.clear()
     active = true
     visible = true
-    shuriken.visible = kind in ["shuriken", "kunai"]
+    shuriken.visible = kind == "shuriken"
+    kunai.visible = kind == "kunai"
     bomb.visible = kind == "bomb"
     wave.visible = kind == "wind"
     sweep_shape.radius = 0.40 if kind == "wind" else 0.18
@@ -110,6 +149,9 @@ func _physics_process(delta: float) -> void:
                 _strike(collider.call("get_fighter"))
         recycle()
     shuriken.rotation.y += delta * 28.0
+    if kind == "kunai":
+        var up_hint: Vector3 = Vector3.RIGHT if absf(heading.dot(Vector3.UP)) > 0.95 else Vector3.UP
+        kunai.basis = Basis.looking_at(-heading, up_hint)
 
 func _strike(victim: Node) -> void:
     if victim == source or victim in hit_targets or not victim.has_method("receive_combat_hit"):
