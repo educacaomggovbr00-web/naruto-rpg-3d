@@ -4,6 +4,7 @@ const SECTOR_SIZE: float = 24.0
 var batches: Dictionary = {}
 var sectors: Array[MeshInstance3D] = []
 var triangles: int = 0
+var footprints: Array[Dictionary] = []
 var collision_count: int = 0
 var plaster: Color = Color("e9d5a6")
 var timber: Color = Color("624736")
@@ -24,8 +25,8 @@ func _batch(center: Vector3) -> SurfaceTool:
 
 func triangle(center: Vector3, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
     var surface: SurfaceTool = _batch(center)
-    var normal: Vector3 = (b - a).cross(c - a).normalized()
-    for vertex: Vector3 in [a, b, c]:
+    var normal: Vector3 = (c - a).cross(b - a).normalized()
+    for vertex: Vector3 in [a, c, b]:
         surface.set_color(color)
         surface.set_normal(normal)
         var key: Vector2i = Vector2i(floori(center.x / SECTOR_SIZE), floori(center.z / SECTOR_SIZE))
@@ -61,6 +62,19 @@ func collider(center: Vector3, size: Vector3) -> void:
     add_child(body)
     collision_count += 1
 
+func convex_collider(origin: Vector3, points: PackedVector3Array) -> void:
+    var body: StaticBody3D = StaticBody3D.new()
+    body.position = origin
+    body.collision_layer = 1
+    body.collision_mask = 0
+    var collision: CollisionShape3D = CollisionShape3D.new()
+    var shape: ConvexPolygonShape3D = ConvexPolygonShape3D.new()
+    shape.points = points
+    collision.shape = shape
+    body.add_child(collision)
+    add_child(body)
+    collision_count += 1
+
 func cylinder(center: Vector3, radius: float, height: float, color: Color, segments: int = 16, top_radius: float = -1.0) -> void:
     var upper_radius: float = radius if top_radius < 0.0 else top_radius
     var low: Vector3 = center - Vector3.UP * height * 0.5
@@ -80,6 +94,9 @@ func roof(origin: Vector3, width: float, depth: float, height: float, color: Col
     var inner: Vector2 = Vector2(width, depth) * 0.40
     var lower: Array[Vector3] = [Vector3(-outer.x, 0, -outer.y), Vector3(outer.x, 0, -outer.y), Vector3(outer.x, 0, outer.y), Vector3(-outer.x, 0, outer.y)]
     var upper: Array[Vector3] = [Vector3(-inner.x, height, -inner.y), Vector3(inner.x, height, -inner.y), Vector3(inner.x, height, inner.y), Vector3(-inner.x, height, inner.y)]
+    var slope_points: PackedVector3Array = PackedVector3Array(lower)
+    slope_points.append_array(PackedVector3Array(upper))
+    convex_collider(origin, slope_points)
     for i: int in range(4):
         var j: int = (i + 1) % 4
         quad(origin, origin + lower[i], origin + lower[j], origin + upper[j], origin + upper[i], color)
@@ -93,6 +110,7 @@ func roof(origin: Vector3, width: float, depth: float, height: float, color: Col
     box(origin + Vector3.UP * (height - 0.06), Vector3(inner.x * 2, 0.12, inner.y * 2), color, true)
 
 func building(origin: Vector3, width: float, depth: float, height: float, tint: Color, roof_tint: Color) -> void:
+    footprints.append({"center": origin, "size": Vector3(width, 0, depth), "color": roof_tint})
     box(origin + Vector3.UP * height * 0.5, Vector3(width, height, depth), tint, true)
     box(origin + Vector3.UP * 0.25, Vector3(width + 0.1, 0.5, depth + 0.1), Color("947860"))
     roof(origin + Vector3.UP * height, width, depth, 0.65, roof_tint)
@@ -117,7 +135,13 @@ func stairs(origin: Vector3, width: float, height: float, length: float) -> void
     for i: int in range(count):
         var step_height: float = height * float(i + 1) / float(count)
         var z: float = origin.z - length * float(i + 0.5) / float(count)
-        box(Vector3(origin.x, origin.y + step_height * 0.5, z), Vector3(width, step_height, length / float(count) + 0.02), Color("c9b997"), true)
+        box(Vector3(origin.x, origin.y + step_height * 0.5, z), Vector3(width, step_height, length / float(count) + 0.02), Color("c9b997"))
+    # One continuous ramp under visible treads prevents CharacterBody riser stalls.
+    convex_collider(origin, PackedVector3Array([
+        Vector3(-width * 0.5, 0, 0), Vector3(width * 0.5, 0, 0),
+        Vector3(-width * 0.5, 0, -length), Vector3(width * 0.5, 0, -length),
+        Vector3(-width * 0.5, height, -length), Vector3(width * 0.5, height, -length)
+    ]))
 
 func tree(origin: Vector3, radius: float = 2.2) -> void:
     cylinder(origin + Vector3.UP * 1.4, 0.24, 2.8, timber, 7)
@@ -164,17 +188,17 @@ func build() -> void:
         for z: float in [-20.0, 0.0, 31.0]:
             if (x == -25.0 and z == 0.0) or (x == 18.0 and z == 0.0):
                 continue
-            var tall: float = 3.2 + float(number % 3) * 1.4
+            var tall: float = 3.2 if x == -25.0 and z == 31.0 else 3.2 + float(number % 3) * 1.4
             building(Vector3(x, 0, z), 8.0, 8.0, tall, palette[number % palette.size()], tile if number % 2 == 0 else red)
             number += 1
     # A connected staircase and roof walkway make verticality reachable by touch.
-    stairs(Vector3(-30, 0, 33), 2.0, 3.85, 12.0)
-    box(Vector3(-28, 3.72, 20), Vector3(6, 0.26, 3), timber, true)
+    stairs(Vector3(-31, 0, 48), 2.0, 3.85, 12.0)
+    box(Vector3(-29, 3.72, 34.3), Vector3(8, 0.26, 3), timber, true)
     box(Vector3(-25, 3.72, 9), Vector3(2.2, 0.26, 20), timber, true)
     building(Vector3(-21, 0, -41), 17, 12, 6, plaster, red)
     signpost(Vector3(-21, 3.5, -34.85), "ACADEMIA")
-    stairs(Vector3(-33, 0, -32), 2.0, 6.65, 18.0)
-    box(Vector3(-30.5, 6.52, -50), Vector3(7, 0.26, 3), timber, true)
+    stairs(Vector3(-33, 0, -23), 2.0, 6.65, 18.0)
+    box(Vector3(-30.5, 6.52, -42.7), Vector3(7, 0.26, 3), timber, true)
     # Original cylindrical administrative landmark and carved cliff silhouettes.
     cylinder(Vector3(0, 5, -46), 8, 10, Color("c06b53"), 24)
     collider(Vector3(0, 5, -46), Vector3(13, 10, 13))

@@ -27,10 +27,32 @@ normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-8)
 light = np.array([.3, .8, .4]); light /= np.linalg.norm(light)
 colors = np.clip(colors * (.65+.35*np.abs(normals @ light))[:, None]*255, 0, 255).astype(np.uint8)
 canvas = Image.new('RGB', (w, h), '#adcbd0')
+pixels = np.array(canvas)
+zbuffer = np.full((h, w), np.inf)
+# Depth buffering avoids large street/floor triangles hiding nearby roofs.
+for i in range(len(tri)):
+    if np.any(view[i, :, 2] <= 0):
+        continue
+    p = points[i]
+    lo = np.maximum(np.floor(p.min(axis=0)).astype(int), [0, 0])
+    hi = np.minimum(np.ceil(p.max(axis=0)).astype(int), [w-1, h-1])
+    if np.any(hi < lo):
+        continue
+    xx, yy = np.meshgrid(np.arange(lo[0], hi[0]+1)+.5, np.arange(lo[1], hi[1]+1)+.5)
+    divisor = (p[1,1]-p[2,1])*(p[0,0]-p[2,0])+(p[2,0]-p[1,0])*(p[0,1]-p[2,1])
+    if abs(divisor) < 1e-8:
+        continue
+    a = ((p[1,1]-p[2,1])*(xx-p[2,0])+(p[2,0]-p[1,0])*(yy-p[2,1]))/divisor
+    b = ((p[2,1]-p[0,1])*(xx-p[2,0])+(p[0,0]-p[2,0])*(yy-p[2,1]))/divisor
+    c = 1-a-b
+    reciprocal = a/view[i,0,2]+b/view[i,1,2]+c/view[i,2,2]
+    depth = 1 / np.maximum(reciprocal, 1e-9)
+    region = zbuffer[lo[1]:hi[1]+1, lo[0]:hi[0]+1]
+    mask = (a >= 0) & (b >= 0) & (c >= 0) & (depth < region)
+    region[mask] = depth[mask]
+    pixels[lo[1]:hi[1]+1, lo[0]:hi[0]+1][mask] = colors[i]
+canvas = Image.fromarray(pixels)
 draw = ImageDraw.Draw(canvas)
-for i in np.argsort(-view[:, :, 2].mean(axis=1)):
-    if np.all(view[i, :, 2] > 0):
-        draw.polygon([tuple(x) for x in points[i]], fill=tuple(colors[i]))
 draw.rectangle((0, 0, w, 36), fill='#243a40')
 draw.text((16, 12), 'ORIGINAL VILLAGE GEOMETRY - CPU LAYOUT DIAGNOSTIC / NOT ANDROID GPU CAPTURE', fill='#fff1ce')
 canvas.save(args.output)

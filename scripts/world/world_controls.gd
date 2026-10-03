@@ -48,6 +48,9 @@ func _input(event: InputEvent) -> void:
                 map_queue += 1
             elif sprint_touch == -1 and _inside(event.position, sprint_center, button_radius):
                 sprint_touch = event.index
+            elif event.position.y < 110.0:
+                # Let header Buttons receive GUI touch before reserving a camera finger.
+                return
             elif camera_touch == -1 and event.position.x > size.x * 0.38:
                 camera_touch = event.index
             else:

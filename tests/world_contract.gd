@@ -50,6 +50,17 @@ func run() -> void:
     check(actor.air_jumps == 1 and controls.jump_queue == 0, "Repeated touch cannot create infinite jumps")
     await frames(90)
     check(actor.is_on_floor() and actor.air_jumps == 0, "Landing must restore exploration jump budget")
+    # Walk the full access ramp; visual stairs must not trap a capsule on risers.
+    actor.global_position = Vector3(-31, 0.95, 49)
+    actor.velocity = Vector3.ZERO
+    actor.camera_rig.yaw = 0.0
+    await frames(4)
+    controls.move_vector = Vector2(0, -0.8)
+    await frames(150)
+    controls.move_vector = Vector2.ZERO
+    await frames(8)
+    check(actor.global_position.y > 4.2 and actor.is_on_floor(), "Touch movement must climb stairs onto the south roof access")
+    check(actor.global_position.z < 36.6, "Roof access cannot stall against visible step risers")
     # Roof collision exists at the documented collection terrace.
     var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(Vector3(-25, 12, 31), Vector3(-25, 0, 31), 1)
     var roof: Dictionary = village.get_world_3d().direct_space_state.intersect_ray(query)

@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 [ext_resource type="Script" path="res://scripts/world/world_mesh_builder.gd" id="mesh"]
 [ext_resource type="Script" path="res://scripts/world/world_actor.gd" id="actor"]
 [ext_resource type="Script" path="res://scripts/world/world_camera.gd" id="camera"]
 [ext_resource type="Script" path="res://scripts/world/world_controls.gd" id="controls"]
+[ext_resource type="Script" path="res://scripts/world/world_manager.gd" id="manager"]
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.40
 height = 1.8
@@ -21,6 +22,7 @@ ambient_light_energy = 0.65
 [sub_resource type="SphereShape3D" id="camera_shape"]
 radius = 0.25
 [node name="Village" type="Node3D"]
+script = ExtResource("manager")
 [node name="Environment" type="WorldEnvironment" parent="."]
 environment = SubResource("environment")
 [node name="Sun" type="DirectionalLight3D" parent="."]
