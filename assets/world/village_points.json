@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "provenance": "Original placement; not surveyed Storm coordinates",
+  "points": [
+    {"id":"academy_guide","kind":"quest","label":"Instrutor","position":[-21,0.95,-32],"mission":"roof_scrolls"},
+    {"id":"training_guide","kind":"battle","label":"Treinador","position":[8,0.95,1],"mission":"training"},
+    {"id":"ramen_host","kind":"talk","label":"Ramen","position":[-12,0.95,19],"text":"A academia fica ao norte. Fale com o instrutor e procure os pergaminhos nos telhados. O mapa mostra os objetivos."},
+    {"id":"tool_vendor","kind":"shop","label":"Ferramentas","position":[18,0.95,14],"text":"Suprimento: 40 ryō. Acrescenta uma bomba e uma food pill ao próximo treino.","price":40},
+    {"id":"roof_south","kind":"scroll","label":"Pergaminho sul","position":[-25,4.3,31],"mission":"roof_scrolls"},
+    {"id":"roof_academy","kind":"scroll","label":"Pergaminho academia","position":[-21,7.1,-41],"mission":"roof_scrolls"},
+    {"id":"roof_east","kind":"scroll","label":"Pergaminho leste","position":[48,4.3,31],"mission":"roof_scrolls"}
+  ]
+}

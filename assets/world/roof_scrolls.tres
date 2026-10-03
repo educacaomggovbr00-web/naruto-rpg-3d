@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="WorldMissionDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/world/world_mission_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+mission_id = "roof_scrolls"
+title = "Percurso dos telhados"
+kind = "collect"
+required_collectibles = PackedStringArray("roof_south", "roof_academy", "roof_east")
+reward_ryo = 150

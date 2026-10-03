@@ -113,6 +113,33 @@
       "source": "Código original neste repositório",
       "license": "Conteúdo original do projeto",
       "modifications": "Shader original para cauda de chakra; não anima o esqueleto Mixamo"
+    },
+    {
+      "path": "assets/world/roof_scrolls.tres",
+      "sha256": "86ac013a9f8d1a5fc498bd210313561a4cd310092dbc51b8c81192d1ea426101",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Dados originais neste repositório",
+      "license": "Conteúdo original do projeto",
+      "modifications": "Missões e posicionamento autoral; não extraídos do Storm"
+    },
+    {
+      "path": "assets/world/training.tres",
+      "sha256": "a3ed89af4f60abeeecb26f3b4530589b9273d7de091a253dd5cd125a552ac7c5",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Dados originais neste repositório",
+      "license": "Conteúdo original do projeto",
+      "modifications": "Missões e posicionamento autoral; não extraídos do Storm"
+    },
+    {
+      "path": "assets/world/village_points.json",
+      "sha256": "d5907c39455a93d8adf2deaf14baf9834d64a13976f26f03e4b5488bc58dd7a9",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Dados originais neste repositório",
+      "license": "Conteúdo original do projeto",
+      "modifications": "Missões e posicionamento autoral; não extraídos do Storm"
     }
   ]
 }
