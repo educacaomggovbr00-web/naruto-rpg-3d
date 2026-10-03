@@ -49,3 +49,10 @@ Four meshes in `assets/characters/stylized` were authored in this project, not i
 
 
 A geometria runtime da Booby Trap e configurações JutsuDefinition foram criadas para este projeto; não contêm modelos/texturas/animações extraídos de Storm. Os clips continuam sendo os bakes CC0 já creditados acima.
+
+
+## Naruto Online sprite atlas — protótipo 2.5D
+
+O atlas `assets/characters/sprites/naruto_part1/battle_atlas.png` foi criado a partir do ZIP fornecido pelo usuário, identificado como conteúdo de **The Spriters Resource** para **Naruto Online / Recruitable Characters / Naruto Uzumaki (Part 1)**. Foram selecionadas 16 poses de batalha e normalizadas em células 192×192 para teste de personagem `Sprite3D`/2.5D.
+
+A licença de redistribuição pública desses sprites **não foi estabelecida**. Por isso o atlas está marcado como `DEVELOPMENT_ONLY` em `assets/asset_registry.json` e não deve ser tratado como asset liberado para uma build pública. O mapeamento para os arquivos originais do ZIP está em `assets/characters/sprites/naruto_part1/source_manifest.json`.
