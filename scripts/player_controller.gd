@@ -178,9 +178,11 @@ func _unhandled_input(event: InputEvent) -> void:
         elif event.physical_keycode == KEY_E:
             _try_jutsu()
         elif event.physical_keycode == KEY_1:
-            specials.selected = character_definition.jutsus[0]
+            if not character_definition.jutsus.is_empty():
+                specials.selected = character_definition.jutsus[0]
         elif event.physical_keycode == KEY_2:
-            specials.selected = character_definition.jutsus[1] if character_definition.jutsus.size() > 1 else character_definition.jutsus[0]
+            if not character_definition.jutsus.is_empty():
+                specials.selected = character_definition.jutsus[1] if character_definition.jutsus.size() > 1 else character_definition.jutsus[0]
         elif event.physical_keycode == KEY_3:
             specials.call("start", "clones" if is_on_floor() else "whirlwind")
         elif event.physical_keycode == KEY_4:
