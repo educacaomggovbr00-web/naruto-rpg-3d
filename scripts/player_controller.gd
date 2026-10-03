@@ -301,7 +301,7 @@ func _update_timers(delta: float) -> void:
             sub_regen_timer = 0.0
     substitution_hidden = maxf(substitution_hidden - delta, 0.0)
     if is_instance_valid(rig_adapter):
-        rig_adapter.visible = substitution_hidden <= 0.0
+        rig_adapter.visible = substitution_hidden <= 0.0 and (specials == null or not specials.transformed)
     if is_on_floor():
         air_dash_count = 0
     combo_timer = maxf(combo_timer - delta, 0.0)

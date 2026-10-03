@@ -1,5 +1,6 @@
 extends CharacterBody3D
 
+var support_pose: bool = false
 var active: bool = false
 var source: CharacterBody3D
 var target: Node3D
@@ -71,6 +72,7 @@ func prepare(actor: CharacterBody3D) -> void:
 func summon(victim: Node3D, origin: Vector3, approach_offset: Vector3, delay: float, clip: String, lift: float = 0.0, power: float = 6.0) -> void:
     if model == null:
         return
+    support_pose = false
     target = victim
     global_position = origin
     offset = approach_offset
@@ -95,6 +97,11 @@ func _physics_process(delta: float) -> void:
         return
     elapsed += delta
     lifetime -= delta
+    if support_pose:
+        animation_player.advance(delta)
+        if lifetime <= 0.0 or source.defeated:
+            recycle()
+        return
     if lifetime <= 0.0 or not is_instance_valid(source) or source.defeated or not is_instance_valid(target) or not bool(target.call("is_targetable")):
         recycle()
         return
@@ -137,3 +144,16 @@ func recycle() -> void:
     hitbox.call("deactivate")
     target = null
     animation_player.stop()
+
+func present(origin: Vector3, heading: float, lifetime_seconds: float) -> void:
+    support_pose = true
+    active = true
+    visible = true
+    global_position = origin
+    rotation.y = heading
+    lifetime = lifetime_seconds
+    elapsed = 0.0
+    hurtbox.collision_layer = 8
+    hitbox.call("deactivate")
+    animation_player.play(&"combat/jutsu")
+    source.combat_feedback.call("spawn_substitution", global_position)

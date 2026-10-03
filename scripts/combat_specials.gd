@@ -2,6 +2,8 @@ extends Node3D
 
 var clones: Array[CharacterBody3D] = []
 var projectiles: Array[Node3D] = []
+var demon_projectile: Node3D = null
+var transformed: bool = false
 var selected: String = "demon"
 var current: String = ""
 var elapsed: float = 0.0
@@ -108,13 +110,18 @@ func start(kind: String = "") -> bool:
     owner_fighter.animation_action_id += 1
     current = move
     elapsed = 0.0
-    duration = 0.95 if move == "rasengan" else 0.45 if move == "barrage" else 0.65
+    duration = 0.95 if move == "rasengan" else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     confirmed_target = null
     sequence_stage = 0
     sequence_elapsed = 0.0
     owner_fighter.jutsu_timer = duration
     active_opened = false
     released = false
+    if move == "demon":
+        for clone: CharacterBody3D in clones:
+            if not clone.active:
+                clone.call("present", owner_fighter.global_position - owner_fighter.global_basis.z * 0.8, owner_fighter.rotation.y, 0.65)
+                break
     return true
 
 func _physics_process(delta: float) -> void:
@@ -149,6 +156,8 @@ func _physics_process(delta: float) -> void:
             return
         for projectile: Node3D in projectiles:
             if projectile.is_inside_tree() and not projectile.active:
+                demon_projectile = projectile
+                transformed = true
                 projectile.call("launch", owner_fighter, owner_fighter.locked_target, owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8, owner_fighter.global_basis.z)
                 break
     if elapsed >= duration:
@@ -156,6 +165,10 @@ func _physics_process(delta: float) -> void:
 
 func cancel() -> void:
     current = ""
+    transformed = false
+    if is_instance_valid(demon_projectile) and demon_projectile.active:
+        demon_projectile.call("recycle")
+    demon_projectile = null
     sphere_visual.visible = false
     rasengan_hitbox.call("deactivate")
     barrage_hitbox.call("deactivate")
@@ -165,6 +178,9 @@ func cancel() -> void:
     owner_fighter.jutsu_timer = 0.0
 
 func demon_confirm(target: Node) -> void:
+    transformed = false
+    owner_fighter.jutsu_timer = 0.45
+    duration = elapsed + 0.45
     var victim: Node3D = target as Node3D
     summon_clone(victim, Vector3(-0.5, 0, -1.0), 0.12, "attack_2", 0.0, 8.0)
     summon_clone(victim, Vector3(0.5, 0, -1.0), 0.32, "attack_3", 3.0, 8.0)
@@ -236,3 +252,9 @@ func animation_clip() -> String:
     if current == "barrage":
         return "air_attack_4" if sequence_stage >= 2 else "attack_1"
     return "jutsu"
+
+func projectile_finished() -> void:
+    transformed = false
+    if current == "demon" and not released:
+        return
+    duration = minf(duration, elapsed + 0.45)

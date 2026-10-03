@@ -62,6 +62,7 @@ func _physics_process(delta: float) -> void:
     var fractions: PackedFloat32Array = space.cast_motion(query)
     var fraction: float = fractions[0] if fractions.size() == 2 else 1.0
     global_position += travel * fraction
+    owner_fighter.global_position = global_position - Vector3.UP * 0.25
     query.motion = Vector3.ZERO
     query.transform.origin = global_position + travel.normalized() * 0.02
     var contacts: Array[Dictionary] = space.intersect_shape(query, 8)
@@ -84,7 +85,10 @@ func _physics_process(delta: float) -> void:
     spin.rotation.y += delta * 30.0
 
 func recycle() -> void:
+    var previous_owner: Node3D = owner_fighter
     active = false
     visible = false
     owner_fighter = null
     target = null
+    if is_instance_valid(previous_owner) and previous_owner.is_inside_tree():
+        previous_owner.get_node("CombatSpecials").call("projectile_finished")
