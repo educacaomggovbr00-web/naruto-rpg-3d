@@ -53,3 +53,11 @@ Toon usa o material nativo do Godot, sem código externo copiado: https://docs.g
 
 
 Booby Trap (2026-10-03): geometria de duas kunai, fio, bola e espinhos criada em `scripts/booby_trap.gd` com meshes nativos Godot. Nenhum asset externo/rip. JutsuDefinition `.tres` são configurações autorais; comportamentos referenciados em STORM_MOVES_DATA e números OUR_APPROXIMATION.
+
+## Ferramentas Storm 1 pesquisadas — 2026-10-03
+
+- [roqols/NUNSMOD](https://github.com/roqols/NUNSMOD): raiz Apache-2.0; pesquisado para CPK/XFBIN, `nuccChunkBinary` e `CommandChartData.xfbin`. Não vendorizado. O projeto informa que sua cópia de `xfbin_lib`/PyBinaryReader é MIT.
+- [Lyingcake77/NUNS_Meshswap_tool](https://github.com/Lyingcake77/NUNS_Meshswap_tool): ferramenta antiga de mesh swap que procura seções `NDP3`; somente referência técnica, não integrada ao runtime.
+- [AkikoKumagara/Naruto-STORM-1-PS-Icons](https://github.com/AkikoKumagara/Naruto-STORM-1-PS-Icons): usado apenas para confirmar a organização pública `data_win32/interface`; nenhuma textura foi incorporada.
+
+Foram adicionados somente scripts autorais de **inventário/normalização de metadados**. Eles não contêm assets, textos extraídos do jogo nem código copiado das ferramentas acima. Arquivos brutos fornecidos pelo usuário ficam fora do Git em `external/storm1_raw/`.
