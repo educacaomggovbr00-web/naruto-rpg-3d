@@ -95,6 +95,15 @@
       "source": "Código original neste repositório",
       "license": "Conteúdo original do projeto",
       "modifications": "Shader trigonométrico de energia para Compatibility"
+    },
+    {
+      "path": "assets/combat/naruto_handbook.tres",
+      "sha256": "6c60681b1f53cf0179edee87e8b2f20ccc65e4aec5c211e30c081e6d13efce03",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Configuração original neste repositório",
+      "license": "Conteúdo original do projeto",
+      "modifications": "Parâmetros próprios do framework de Ultimate; não é asset extraído"
     }
   ]
 }

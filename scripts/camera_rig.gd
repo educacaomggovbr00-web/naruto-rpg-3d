@@ -17,6 +17,7 @@ var base_fov: float = 68.0
 var smoothed_focus: Vector3 = Vector3.ZERO
 var cinematic_target: Node3D = null
 var cinematic_remaining: float = 0.0
+var sequence_shot: String = ""
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -96,9 +97,16 @@ func _process(delta: float) -> void:
     cinematic_remaining = maxf(cinematic_remaining - delta, 0.0)
     if cinematic_remaining > 0.0 and is_instance_valid(cinematic_target):
         follow_position = (player.global_position + cinematic_target.global_position) * 0.5 + Vector3.UP
-        spring_arm.spring_length = maxf(spring_arm.spring_length, 6.0)
+        var shot_distance: float = 8.0 if sequence_shot == "chain" else 5.2 if sequence_shot == "clash" else 6.4
+        spring_arm.spring_length = lerpf(spring_arm.spring_length, shot_distance, 1.0 - exp(-6.0 * delta))
+        if not sequence_shot.is_empty():
+            var axis: Vector3 = cinematic_target.global_position - player.global_position
+            var shot_yaw: float = atan2(-axis.x, -axis.z) + 0.55
+            yaw = lerp_angle(yaw, shot_yaw, 1.0 - exp(-5.0 * delta))
+            camera.fov = lerpf(camera.fov, 60.0, 1.0 - exp(-6.0 * delta))
     else:
         cinematic_target = null
+        sequence_shot = ""
 
     var ticks: float = float(Time.get_ticks_msec()) * 0.001
     spring_arm.position = Vector3(
@@ -130,6 +138,10 @@ func begin_sequence(target: Node3D, duration: float) -> void:
     cinematic_target = target
     cinematic_remaining = duration
 
+func set_sequence_shot(shot: String) -> void:
+    sequence_shot = shot
+
 func end_sequence() -> void:
+    sequence_shot = ""
     cinematic_remaining = 0.0
     cinematic_target = null

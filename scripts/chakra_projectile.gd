@@ -71,9 +71,10 @@ func _physics_process(delta: float) -> void:
         if collider is Area3D and collider.has_method("get_fighter"):
             var fighter: Node = collider.call("get_fighter")
             if fighter != owner_fighter and fighter.has_method("receive_combat_hit"):
-                var dealt: float = float(fighter.call("receive_combat_hit", 10.0, direction, 2.0, 1.0, 0.65))
+                var blocked: bool = bool(fighter.call("get_is_guarding"))
+                var dealt: float = float(fighter.call("receive_combat_hit", 10.0 * float(owner_fighter.call("get_damage_multiplier")), direction, 2.0, 1.0, 0.65))
                 owner_fighter.call("on_attack_connected", fighter, dealt, 1.0)
-                if dealt > 0.0 and not bool(fighter.call("get_is_guarding")):
+                if dealt > 0.0 and not blocked:
                     owner_fighter.get_node("CombatSpecials").call("demon_confirm", fighter)
                 recycle()
                 return

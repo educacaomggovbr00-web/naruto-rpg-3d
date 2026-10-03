@@ -72,7 +72,7 @@ func summon_clone(target: Node3D, offset: Vector3, delay: float, clip: String, l
 
 func start(kind: String = "") -> bool:
     var move: String = selected if kind.is_empty() else kind
-    if not current.is_empty() or owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.attack_active or owner_fighter.dodge_timer > 0.0 or owner_fighter.chakra_dash_timer > 0.0 or owner_fighter.jutsu_cooldown > 0.0:
+    if not current.is_empty() or owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.jutsu_timer > 0.0 or owner_fighter.attack_active or owner_fighter.dodge_timer > 0.0 or owner_fighter.chakra_dash_timer > 0.0 or owner_fighter.jutsu_cooldown > 0.0:
         return false
     if move not in ["demon", "rasengan", "clones", "whirlwind", "barrage"]:
         return false
@@ -183,8 +183,8 @@ func movement_velocity(delta: float) -> Vector3:
         forward = owner_fighter.global_basis.z
     return forward * 13.0
 
-func contact(target: Node, dealt: float) -> void:
-    if current != "barrage" or is_instance_valid(confirmed_target) or dealt <= 0.0:
+func contact(target: Node, dealt: float, blocked: bool = false) -> void:
+    if current != "barrage" or is_instance_valid(confirmed_target) or dealt <= 0.0 or blocked:
         return
     if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
         return

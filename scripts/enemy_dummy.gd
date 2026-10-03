@@ -17,6 +17,8 @@ extends CharacterBody3D
 var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var health: float = 120.0
 var targetable: bool = true
+var cinematic_owner: Node = null
+var cinematic_watchdog: float = 0.0
 var guarding: bool = false
 var spawn_position: Vector3 = Vector3.ZERO
 
@@ -58,6 +60,13 @@ func _ready() -> void:
     _update_labels()
 
 func _physics_process(delta: float) -> void:
+    if is_instance_valid(cinematic_owner):
+        cinematic_watchdog -= delta
+        _update_timers(delta)
+        if cinematic_watchdog > 0.0 and targetable:
+            velocity = Vector3.ZERO
+            return
+        cinematic_owner = null
     if not is_on_floor():
         velocity.y -= gravity * delta
 
@@ -398,6 +407,7 @@ func _knock_out() -> void:
     respawn_timer = recovery_delay
 
 func _respawn() -> void:
+    cinematic_owner = null
     global_position = spawn_position
     velocity = Vector3.ZERO
     health = max_health
@@ -439,3 +449,26 @@ func _substitute() -> void:
     global_position.x = clampf(global_position.x, -27.5, 27.5)
     global_position.z = clampf(global_position.z, -27.5, 27.5)
     combat_feedback.call("spawn_substitution", global_position)
+
+func begin_cinematic_lock(requester: Node) -> bool:
+    if not targetable or (is_instance_valid(cinematic_owner) and cinematic_owner != requester):
+        return false
+    cinematic_owner = requester
+    cinematic_watchdog = 0.5
+    attack_active = false
+    attack_hitbox.call("deactivate")
+    guarding = false
+    guard_timer = 0.0
+    velocity = Vector3.ZERO
+    return true
+
+func refresh_cinematic_lock(requester: Node) -> bool:
+    if cinematic_owner != requester or not targetable:
+        return false
+    cinematic_watchdog = 0.5
+    return true
+
+func end_cinematic_lock(requester: Node) -> void:
+    if cinematic_owner == requester:
+        cinematic_owner = null
+        cinematic_watchdog = 0.0

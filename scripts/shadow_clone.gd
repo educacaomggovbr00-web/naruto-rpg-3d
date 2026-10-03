@@ -145,7 +145,7 @@ func recycle() -> void:
     target = null
     animation_player.stop()
 
-func present(origin: Vector3, heading: float, lifetime_seconds: float) -> void:
+func present(origin: Vector3, heading: float, lifetime_seconds: float, clip: String = "jutsu") -> void:
     support_pose = true
     active = true
     visible = true
@@ -155,5 +155,8 @@ func present(origin: Vector3, heading: float, lifetime_seconds: float) -> void:
     elapsed = 0.0
     hurtbox.collision_layer = 8
     hitbox.call("deactivate")
-    animation_player.play(&"combat/jutsu")
+    animation_player.play(StringName("combat/" + clip))
     source.combat_feedback.call("spawn_substitution", global_position)
+
+func get_damage_multiplier() -> float:
+    return source.call("get_damage_multiplier")

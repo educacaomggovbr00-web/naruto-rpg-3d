@@ -39,6 +39,10 @@ func _process(_delta: float) -> void:
     ]
 
     resource_label.text += " | GUARDA: %d | %s" % [int(player.guard_meter), "RASENGAN" if player.specials.selected == "rasengan" else "DEMON WIND"]
+    if player.ultimate.phase == "clash":
+        resource_label.text = "ULTIMATE — TOQUE ATK: %d / %d" % [player.ultimate.presses, player.ultimate.definition.clash_presses]
+    else:
+        resource_label.text += " | ULT: %.1fs" % player.ultimate.cooldown
     var cpu: Node = get_node("../EnemyDummy")
     status_label.text += " | CPU: %d" % int(cpu.health)
 

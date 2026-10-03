@@ -47,41 +47,48 @@ func _check_overlaps() -> void:
     if not is_instance_valid(source_fighter):
         return
 
-    var source: Node3D = source_fighter
     for area: Area3D in get_overlapping_areas():
         var fighter: Node = area.call("get_fighter") if area.has_method("get_fighter") else area.get_parent()
-        if fighter == source or fighter in already_hit:
-            continue
-        if not fighter.has_method("receive_combat_hit"):
-            continue
+        try_hit(fighter)
 
-        already_hit.append(fighter)
+func try_hit(fighter: Node) -> void:
+    if remaining_time <= 0.0 or not is_instance_valid(source_fighter) or not is_instance_valid(fighter):
+        return
+    var source: Node3D = source_fighter
+    if fighter == source or fighter in already_hit or not fighter.has_method("receive_combat_hit"):
+        return
+    already_hit.append(fighter)
 
-        var direction: Vector3 = fighter.global_position - source.global_position
-        direction.y = 0.0
-        if direction.length_squared() <= 0.001:
-            direction = source.global_basis.z
+    var direction: Vector3 = fighter.global_position - source.global_position
+    direction.y = 0.0
+    if direction.length_squared() <= 0.001:
+        direction = source.global_basis.z
 
-        var damage_result: Variant = fighter.call(
-            "receive_combat_hit",
-            damage,
-            direction.normalized(),
-            knockback,
-            launch_velocity,
-            hitstun
+    var was_blocked: bool = fighter.has_method("get_is_guarding") and bool(fighter.call("get_is_guarding"))
+    var scaled_damage: float = damage * (float(source.call("get_damage_multiplier")) if source.has_method("get_damage_multiplier") else 1.0)
+    var damage_result: Variant = fighter.call(
+        "receive_combat_hit",
+        scaled_damage,
+        direction.normalized(),
+        knockback,
+        launch_velocity,
+        hitstun
+    )
+
+    var actual_damage: float = damage
+    if typeof(damage_result) == TYPE_FLOAT or typeof(damage_result) == TYPE_INT:
+        actual_damage = float(damage_result)
+
+    if source.has_method("on_hitbox_contact"):
+        source.call("on_hitbox_contact", self, fighter, actual_damage, was_blocked)
+
+    if source.has_method("on_attack_contact"):
+        source.call("on_attack_contact", fighter, actual_damage)
+
+    if actual_damage > 0.001 and source.has_method("on_attack_connected"):
+        source.call(
+            "on_attack_connected",
+            fighter,
+            actual_damage,
+            launch_velocity
         )
-
-        var actual_damage: float = damage
-        if typeof(damage_result) == TYPE_FLOAT or typeof(damage_result) == TYPE_INT:
-            actual_damage = float(damage_result)
-
-        if source.has_method("on_attack_contact"):
-            source.call("on_attack_contact", fighter, actual_damage)
-
-        if actual_damage > 0.001 and source.has_method("on_attack_connected"):
-            source.call(
-                "on_attack_connected",
-                fighter,
-                actual_damage,
-                launch_velocity
-            )

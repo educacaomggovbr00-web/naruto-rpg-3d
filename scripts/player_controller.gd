@@ -84,6 +84,7 @@ var jutsu_released: bool = false
 var attack_buffer: float = 0.0
 var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
+var ultimate: Node3D = null
 var specials: Node3D = null
 var dash_hitbox: Area3D = null
 var dash_elapsed: float = 0.0
@@ -114,6 +115,10 @@ func _ready() -> void:
     specials.name = "CombatSpecials"
     specials.set_script(preload("res://scripts/combat_specials.gd"))
     add_child(specials)
+    ultimate = Node3D.new()
+    ultimate.name = "Ultimate"
+    ultimate.set_script(preload("res://scripts/ultimate_controller.gd"))
+    add_child(ultimate)
     spawn_position = global_position
     health = max_health
     chakra = max_chakra
@@ -152,6 +157,8 @@ func _unhandled_input(event: InputEvent) -> void:
             specials.call("start", "clones" if is_on_floor() else "whirlwind")
         elif event.physical_keycode == KEY_4:
             specials.call("start", "barrage")
+        elif event.physical_keycode == KEY_5:
+            ultimate.call("start")
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
@@ -221,7 +228,7 @@ func _physics_process(delta: float) -> void:
         return
 
     if jutsu_timer > 0.0:
-        var special_velocity: Vector3 = specials.call("movement_velocity", delta)
+        var special_velocity: Vector3 = ultimate.call("movement_velocity", delta) if not ultimate.phase.is_empty() else specials.call("movement_velocity", delta)
         velocity.x = special_velocity.x
         velocity.z = special_velocity.z
         if specials.current == "barrage" and is_instance_valid(specials.confirmed_target):
@@ -248,6 +255,9 @@ func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
         return
 
+    if mobile_controls.ultimate_queue > 0:
+        mobile_controls.ultimate_queue = 0
+        ultimate.call("start")
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
         specials.selected = "rasengan" if specials.selected == "demon" else "demon"
@@ -351,6 +361,8 @@ func _cancel_jutsu() -> void:
     jutsu_released = true
     if is_instance_valid(specials):
         specials.call("cancel")
+    if is_instance_valid(ultimate):
+        ultimate.call("cancel")
 
 func _update_jutsu_timeline(delta: float) -> void:
     if jutsu_timer <= 0.0 or jutsu_released:
@@ -420,7 +432,7 @@ func _apply_movement(delta: float) -> void:
     if is_instance_valid(mobile_controls):
         wants_run = wants_run or bool(mobile_controls.call("is_run_requested"))
 
-    var target_speed: float = run_speed if wants_run else move_speed
+    var target_speed: float = (run_speed if wants_run else move_speed)
     if is_guarding:
         target_speed *= 0.50
 
@@ -571,7 +583,6 @@ func _start_chakra_dash() -> void:
         combat_feedback.call("spawn_dash_burst", global_position)
 
 func on_attack_contact(target: Node, _damage: float) -> void:
-    specials.call("contact", target, _damage)
     if chakra_dash_timer <= 0.0:
         return
     chakra_dash_timer = 0.0
@@ -659,6 +670,9 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
+    if not ultimate.phase.is_empty():
+        ultimate.call("press_attack")
+        return
     if chakra_dash_timer > 0.0:
         attack_buffer = 0.25
         return
@@ -904,6 +918,8 @@ func _defeat() -> void:
     _set_locked_target(null)
 
 func _respawn() -> void:
+    _cancel_jutsu()
+    ultimate.cooldown = 0.0
     global_position = spawn_position
     velocity = Vector3.ZERO
     health = max_health
@@ -1005,4 +1021,12 @@ func _is_mobile_runtime() -> bool:
     )
 
 func get_special_animation() -> String:
+    if not ultimate.phase.is_empty():
+        return ultimate.call("animation_clip")
     return String(specials.call("animation_clip"))
+
+func get_damage_multiplier() -> float:
+    return 1.0
+
+func on_hitbox_contact(_box: Area3D, target: Node, dealt: float, blocked: bool) -> void:
+    specials.call("contact", target, dealt, blocked)
