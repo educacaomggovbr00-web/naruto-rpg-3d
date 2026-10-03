@@ -70,10 +70,21 @@ func run() -> void:
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-    if catalog.READY.size() != 4 or not catalog.SAKURA.jutsus.is_empty() or catalog.KAKASHI.jutsus != PackedStringArray(["chidori"]):
+    if catalog.READY.size() != 4 or catalog.SAKURA.jutsus != PackedStringArray(["booby_trap"]) or catalog.KAKASHI.jutsus != PackedStringArray(["raikiri", "fireball"]):
         push_error("Export lost four-profile ability restrictions")
         quit(1)
         return
+    for definition: Resource in catalog.READY:
+        for id: String in definition.jutsus:
+            if definition.find_jutsu(id) == null:
+                push_error("Export lost jutsu Resource: " + id)
+                quit(1)
+                return
+    if not ResourceLoader.exists("res://scripts/booby_trap.gd"):
+        push_error("Export lost physical trap strategy")
+        quit(1)
+        return
+    print("CHARACTER JUTSU DATA ANDROID PACK: PASS")
     print("FOUR STYLIZED MODELS ANDROID PACK: PASS")
     menu.queue_free()
     await process_frame

@@ -66,6 +66,13 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/stylized_fighters_contract.gd 2>&1 | tee /tmp/stylized-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/stylized-contract.log
           grep -F 'STYLIZED FIGHTERS CONTRACT: PASS' /tmp/stylized-contract.log
+      - name: Validate character jutsu data and physical Sakura traps
+        shell: bash
+        run: |
+          set -o pipefail
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/character_jutsus_contract.gd 2>&1 | tee /tmp/character-jutsus.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/character-jutsus.log
+          grep -F 'CHARACTER JUTSUS CONTRACT: PASS' /tmp/character-jutsus.log
       - name: Validate world traversal and mission lifecycle
         shell: bash
         run: |
@@ -95,6 +102,7 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/android-phase1.pck --script /tmp/export_payload_contract.gd 2>&1 | tee /tmp/pack-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/pack-contract.log
           grep -F 'ANDROID PHASE 1 PACK: PASS' /tmp/pack-contract.log
+          grep -F 'CHARACTER JUTSU DATA ANDROID PACK: PASS' /tmp/pack-contract.log
           grep -F 'WORLD ANDROID PACK: PASS' /tmp/pack-contract.log
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/blocked-public.pck --script /tmp/export_payload_contract.gd -- --public 2>&1 | tee /tmp/public-pack-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/public-pack-contract.log

@@ -56,7 +56,7 @@ Todos os números abaixo são `OUR_APPROXIMATION`; timings vieram do bake CC0, n
 | Air 4 | manifesto `air_attack_4` | 16 | 5 | −13 | .42 |
 | Demon Wind | startup do jutsu .24 | 10 | 2 | 1 | .65 |
 
-Demon: velocidade 19 m/s, raio .45 m, vida 1.6 s, tracking 1.8/s. Custos de chakra/cooldown continuam em CombatSpecials, não foram atribuídos falsamente ao formato original. Cancel windows ficam no manifesto e exigem confirmação; anti-infinito/pursuit budget existentes foram preservados.
+Demon: velocidade 19 m/s, raio .45 m, vida 1.6 s, tracking 1.8/s. Custos de chakra/cooldown foram migrados a JutsuDefinition; não são atribuídos ao formato original. Cancel windows ficam no manifesto e exigem confirmação; anti-infinito/pursuit budget existentes foram preservados.
 
 ## Separar as versões dos jogos
 
@@ -80,3 +80,16 @@ Implementação OUR_APPROXIMATION: perfil de desenvolvimento reúne Fireball/Chi
 Diferenças implementadas: CharacterDefinition seleciona stats/moveset/jutsus/model_path; terceiro golpe Sasuke usa kick real air_attack_2, com bone/timing do clip escolhido. Ultimate/Awakening Naruto são bloqueados no perfil Sasuke. Fireball não transporta o corpo nem cria clones como Demon Wind. Elétrico usa MultiMesh autoral de 16 segmentos opacos; Fireball usa shader opaco de fogo, sem exigir bloom.
 
 CPU: os módulos reais dos jutsus, Ultimate, Awakening e tools foram compartilhados. Máscaras de time passam a depender do source. CPU atacante no clash gera seus próprios comandos por RNG/tempo; ATK do jogador alimenta somente a defesa e SUB pode escapar. Decisões não leem filas/input do jogador; valores de chance e reação são OUR_APPROXIMATION.
+
+
+## Sakura e Kakashi — jutsus próprios (2026-10-03)
+
+COMMUNITY_RESEARCH: o [guia de Ashurii, Storm 1 PS3](https://gamefaqs.gamespot.com/ps3/943434-naruto-ultimate-ninja-storm/faqs/54852) identifica Booby Trap como jutsu padrão de Sakura; Kakashi tem Lightning Blade e Fireball como alternativa desbloqueável. A [observação pública contemporânea de Booby Trap](https://gamefaqs.gamespot.com/boards/943434-naruto-ultimate-ninja-storm/46035411) descreve fio no chão seguido de bola com espinhos. Os nomes não confirmam números runtime.
+
+Implementado: Sakura solta fio entre duas kunai após impacto do clip `jutsu` (0.24 s); interseção de hurtbox ativa uma bola que cai de posição fixa, com sweep contra cenário/hurtboxes. Não há dano por distância. Guarda aplica chip/guard damage; invulnerabilidade/sub e esquiva podem evitar contato. Três traps reutilizados por lutador, expiração e cleanup em KO/saída. OUR_APPROXIMATION: custo 24, cooldown 1.5 s, vida 10 s, fio 2.4 m, queda 22 m/s, raio 0.65, dano 16, knockback 3, slam -8, stun .65 s, aviso .12 s. A bola/kunai são geometria autoral temporária; clip é CC0 adaptado, não coreografia final.
+
+Kakashi Raikiri: Resource distinto do Chidori de Sasuke, embora ambos ainda utilizem o mesmo clip CC0 real disponível. Startup .38 s, active .30 s, recovery .27 s vêm do manifesto do bake. OUR_APPROXIMATION: custo 32, cooldown 1.5 s, velocidade 15 m/s, tracking 5.5/s, dano 24, knockback 9, lift 2, stun .55 s. Mantém hitbox na mão e elétrico MultiMesh. Fireball reutiliza o módulo físico e dados já testados, sem abrir clones ou Demon Wind.
+
+Arquivos: `scripts/jutsu_definition.gd`, `assets/combat/jutsus/*.tres`, `CharacterDefinition.find_jutsu`, `scripts/combat_specials.gd`, `scripts/booby_trap.gd`. Todos os IDs dos quatro perfis possuem dados; states/pools/timers permanecem separados por lutador. Naruto/Sasuke mantêm parâmetros anteriores. Ultimates/Awakenings de Sakura/Sasuke/Kakashi continuam desabilitados: não emprestar golpes de Naruto.
+
+Validação: `tests/character_jutsus_contract.gd` exercita release/interrupção, contato real, miss, guarda/invulnerabilidade, pool cheio, expiração, parede, KO, Resource/máscara CPU e Fireball alternativo. Android: testar Sakura JUT, tocar fio com CPU, esquivar da queda, guardar, repetir três vezes; Kakashi alternar RAI/FIRE; comparar FPS LOW com traps + dois rigs. Sem medição física de FPS nesta sessão.

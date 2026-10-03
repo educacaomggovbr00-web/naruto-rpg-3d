@@ -250,3 +250,6 @@ Ainda não é a CPU Fighter completa: chakra, chakra dash, launcher/pursuit deli
 Combos/projétil Demon Wind agora usam Resources compartilháveis, preservando o manifesto de timing e os 27 clips reais. A direção do combo é escolhida após os dois golpes iniciais: neutro afasta, cima lança, baixo derruba e lateral repele. O buffer touch conserva a direção escolhida; quebra de guarda continua classificada como bloqueio para cancel. Impactos do jogador usam eventos de câmera configuráveis.
 
 Referências e aproximações: [STORM_MOVES_DATA](docs/STORM_MOVES_DATA.md) e [matriz de personagens](docs/CHARACTER_IMPLEMENTATION_MATRIX.md). Este incremento não adiciona modelos comerciais nem completa todos os movesets de Storm/Jump Force.
+
+
+Atualização de jutsus (2026-10-03): Sakura agora usa Booby Trap com fio e bola física, pool de três; Kakashi usa Raikiri com dados próprios e Fireball. `JutsuDefinition` configura custo/cooldown para todos os jutsus selecionáveis. [Dados, aproximações e teste Android](docs/STORM_MOVES_DATA.md#sakura-e-kakashi--jutsus-próprios-2026-10-03). Ultimate/Awakening próprios dos três personagens ainda não estão implementados.

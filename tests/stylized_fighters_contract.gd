@@ -89,19 +89,19 @@ func run() -> void:
         check(arena.get_node("Sun").shadow_enabled and presentation.environment.environment.fog_enabled, "HIGH restores optional effects")
         check(player.camera_rig.spring_arm.collision_mask == 33, "Camera detects world and decorative roof layers")
         if definition.character_id == "sakura":
-            check(player.specials.selected.is_empty() and player.specials.projectiles.is_empty(), "Melee Sakura does not allocate foreign jutsu pools")
+            check(player.specials.selected == "booby_trap" and player.specials.projectiles.is_empty() and player.specials.traps.size() == 3, "Sakura owns trap pool without foreign projectile pools")
             player.specials.cycle_selection()
-            check(not player.specials.start(), "Empty jutsu profile is safe")
+            check(not player.specials.start("rasengan"), "Sakura rejects foreign Naruto jutsu")
             cpu.arsenal_delay = 0.0
             cpu.attack_cooldown = 0.0
             cpu.stagger_timer = 0.0
             cpu._decide_arsenal(6.0)
             var controls: Control = arena.get_node("HUD/MobileControls")
-            check(not controls.jutsu_enabled and controls.special_label == "—", "Sakura unfinished jutsu is disabled on mobile")
+            check(controls.jutsu_enabled and controls.special_label == "TRAP", "Sakura trap is available on mobile")
         if definition.character_id == "kakashi":
-            check(player.specials.selected == "chidori" and player.specials.projectiles.is_empty(), "Kakashi shares lightning mechanic without Naruto projectile pools")
+            check(player.specials.selected == "raikiri" and player.specials.projectiles.size() == 3, "Kakashi owns Raikiri and fireball pool")
             player.jutsu_cooldown = 0.0
-            check(player.specials.start("chidori") and not player.ultimate.start(), "Kakashi lightning works without Naruto Ultimate")
+            check(player.specials.start("raikiri") and not player.ultimate.start(), "Kakashi lightning works without Naruto Ultimate")
         check(flow.enter_selection() == OK, "Profile returns safely to selection")
         await frames(5)
         var menu: Control = current_scene

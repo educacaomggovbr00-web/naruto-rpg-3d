@@ -50,3 +50,6 @@ As ferramentas/formatos listados em `STORM_MOVES_DATA.md` foram referências de 
 Pesquisa adicional: Sasuke fanart rigado https://blendswap.com/blend/17887; Kakashi fanart https://blendswap.com/blend/29331; Naruto/Sasuke low poly https://sketchfab.com/3d-models/naruto-sasuke-low-poly-rig-texture-b650b60a7bbd4f11b05a435e65116168. Candidatos não importados: download/rig/proveniência não foram verificados em conjunto. Não tratamos licença de fanart ou rótulo “free” como autorização para distribuir assets extraídos de jogos.
 
 Toon usa o material nativo do Godot, sem código externo copiado: https://docs.godotengine.org/en/4.7/tutorials/shaders/shader_reference/spatial_shader.html. Arena/piso/sky e material são autorais; detalhes completos em STYLIZED_PRESENTATION.md.
+
+
+Booby Trap (2026-10-03): geometria de duas kunai, fio, bola e espinhos criada em `scripts/booby_trap.gd` com meshes nativos Godot. Nenhum asset externo/rip. JutsuDefinition `.tres` são configurações autorais; comportamentos referenciados em STORM_MOVES_DATA e números OUR_APPROXIMATION.
