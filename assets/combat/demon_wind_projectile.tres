@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ProjectileDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/projectile_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+projectile_id = "naruto_demon_wind"
+speed = 19.0
+radius = 0.45
+lifetime = 1.6
+tracking_strength = 1.8
+damage = 10.0
+knockback = 2.0
+launch_force = 1.0
+hitstun = 0.65
+spin_speed = 30.0
+evidence = "OUR_APPROXIMATION"
