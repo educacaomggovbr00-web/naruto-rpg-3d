@@ -42,4 +42,4 @@ Timings usam segundos no relógio de física; startup/active/recovery derivam do
 
 ## Restrições visuais
 
-O rig existente e os clips CC0 continuam sendo a base. Punch/hook e spell clips não equivalem às coreografias autorais de Naruto. Barrage usa golpe descendente real disponível, temporariamente com a mão; axe kick, double dropkick, transformação corporal em shuriken e animações de selos precisam de clips licenciados/autoria dedicada para fidelidade final. Esta fase replica estrutura e colisões, sem anunciar esses placeholders como animações finais de Storm.
+O rig existente e os clips CC0 continuam sendo a base. Punch/hook e spell clips não equivalem às coreografias autorais de Naruto. Barrage usa golpe descendente real disponível, temporariamente com a mão; axe kick, double dropkick, transições animadas da transformação em shuriken e animações de selos precisam de clips licenciados/autoria dedicada para fidelidade final. Esta fase replica estrutura e colisões, sem anunciar esses placeholders como animações finais de Storm.

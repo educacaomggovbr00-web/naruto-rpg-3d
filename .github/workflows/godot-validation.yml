@@ -40,3 +40,6 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/animation_contract.gd 2>&1 | tee /tmp/contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/contract.log
           grep -F 'ANIMATION CONTRACT: PASS' /tmp/contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/storm_slice_contract.gd 2>&1 | tee /tmp/storm-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/storm-contract.log
+          grep -F 'STORM SLICE CONTRACT: PASS' /tmp/storm-contract.log

@@ -5,7 +5,7 @@ Protótipo mobile de RPG de ação 3D inspirado no ritmo, mobilidade e câmera d
 > Projeto independente/fan prototype. Não inclui assets, áudio ou código proprietários de Naruto/Storm.
 
 ## Engine e alvo
-- Godot 4.7.x
+- Godot 4.7.2
 - mobile-first
 - orientação horizontal (landscape)
 - alvo de 60 FPS
@@ -64,7 +64,7 @@ O controlador expõe estados explícitos:
 
 O projeto agora possui um adapter real para `Skeleton3D + AnimationTree`. Quando existe `res://assets/characters/rigged.glb`, o modelo é instanciado automaticamente, o humanoide procedural é ocultado e os estados do combate passam a controlar uma máquina de estados de animação.
 
-O combate usa **22 clips reais retargetados e pré-bakeados**, derivados das Universal Animation Libraries 1 e 2 do Quaternius (CC0). O `happy` permanece no GLB original, mas não participa do combate. Não há geração procedural de animações do rig em runtime.
+O combate usa **27 clips reais retargetados e pré-bakeados**, derivados das Universal Animation Libraries 1 e 2 do Quaternius (CC0). O `happy` permanece no GLB original, mas não participa do combate. Não há geração procedural de animações do rig em runtime.
 
 Inclui idle, jog/sprint, salto, queda, pouso, jab, cross, hook, launcher, quatro golpes aéreos (incluindo slam), guarda, roll/dodge, chakra dash, carregamento, jutsu, hit reaction, knockback e KO. Launcher e variantes aéreas são adaptações de animações do pacote, documentadas em `docs/ANIMATION_SOURCES.md`; não são mocap dedicado nem movimentos extraídos de Storm.
 
@@ -132,9 +132,9 @@ O HUD mostra `RIG: OK` quando o asset foi importado corretamente. Sem o arquivo,
 
 ## Próximas melhorias
 - refinar guarda sem escudo e movimentos autorais específicos de chakra/jutsu
-- adicionar locomoção direcional dedicada para strafe em lock-on
+- substituir variantes adaptadas de strafe/recuo por animações direcionais dedicadas
 - avaliar desempenho e aparência em aparelhos Android reais
-- jutsus com projétil/área e VFX próprios
+- refinar coreografia autoral de Rasengan/clones/Barrage
 - seleção de personagem
 - arena temática maior com obstáculos
 - áudio de golpes, dash, chakra e jutsu
@@ -152,7 +152,7 @@ godot --headless --path . --editor --import
 godot --headless --path . --script res://tests/animation_contract.gd
 ```
 
-O teste verifica os 22 clips, ossos/canais/quaternions, estados exatos, combo terrestre, launcher, combo aéreo/slam, interrupções, reinício de golpes, jutsu e KO/respawn. CI usa Godot **4.7.2**. A validação local foi feita nessa mesma versão, em modo headless; não substitui testes no renderer e em dispositivo Android.
+O teste verifica os 27 clips, ossos/canais/quaternions, estados exatos, combo terrestre, launcher, combo aéreo/slam, interrupções, reinício de golpes, jutsu e KO/respawn. CI usa Godot **4.7.2**. A validação local foi feita nessa mesma versão, em modo headless; não substitui testes no renderer e em dispositivo Android.
 
 Para regenerar após trocar o personagem ou ajustar os recortes (Python com `numpy` e `scipy`):
 
@@ -168,3 +168,24 @@ python tools/preview_combat_poses.py
 ```
 
 O preview é um render diagnóstico por CPU, não uma captura do renderer do jogo. Histórico auditado e limitações estão em `docs/ANIMATION_IMPLEMENTATION.md`.
+
+## Vertical slice Storm 1 — Naruto, fase 1
+
+Pesquisa, diferenças de versões e aproximações: [STORM1_COMBAT_REFERENCE](docs/STORM1_COMBAT_REFERENCE.md). Novos sistemas: movimento orbital analógico, câmera volumétrica suavizada, combo com buffer/confirm/cancel, dash rastreado com contato físico e recoil, guard meter/break, cargas de substituição com recarga, Demon Wind Bomb, Rasengan, clones roteirizados e Barrage confirmado. Recursos de terceiros: [ASSET_SOURCES](docs/ASSET_SOURCES.md).
+
+### Novos controles
+
+- Toque **DWB/RAS** para alternar o jutsu selecionado; **JUTSU** executa.
+- **CLONE**: Charging Bullet no chão, Whirlwind Strike no ar.
+- **BARR**: Naruto Uzumaki Barrage; só continua se o primeiro golpe acertar.
+- PC: **1** seleciona Demon Wind, **2** seleciona Rasengan, **E** executa; **3** clones; **4** Barrage.
+- Direção ao iniciar combo: baixo derruba, lateral afasta, alto lança. Neutro mantém launcher do protótipo para preservar o fluxo já testado.
+- Aperte ATK durante recovery para buffer; DASH cancela golpes 1–3 somente após acerto e fechamento da janela ativa. Máximo duas perseguições por voo.
+
+```sh
+godot --headless --path . --script res://tests/storm_slice_contract.gd
+```
+
+[ANDROID_VALIDATION](docs/ANDROID_VALIDATION.md) contém a lista exata de observações no aparelho. Preset Android arm64 inclui o manifesto e exclui fontes/ferramentas/testes. Exportação APK necessita templates/SDK/assinatura no ambiente de exportação; nenhum segredo foi colocado no repositório. Renderer e landscape preservados.
+
+Esta fase implementa a estrutura de gameplay com coreografias CC0 adaptadas e meshes temporárias. O modelo continua sendo o arquivo fornecido: não foi substituído por um Naruto comercial. Ultimate/Nine-Tails, CPU rigada completa, ferramentas, áudio e outros personagens ficam para a fase posterior. Não se considera concluído o acabamento visual fiel ao Storm 1 nem a medição de 60 FPS no aparelho.

@@ -51,3 +51,11 @@ A CI repete importação e contrato na mesma versão. Fontes e ferramentas de ba
 ## Limitações reais
 
 Este conjunto resolve a ausência de animações reais; não equivale à qualidade de um jogo comercial com animação dedicada. Guarda deriva de uma postura de escudo (sem asset de escudo); chakra/jutsu são gestos genéricos de magia; launcher e golpes aéreos são adaptações declaradas. Os clips de jog/sprint são frontais: strafe em lock-on ainda pede clips direcionais dedicados. `knockback` está disponível na biblioteca, mas o controlador atual usa `hit` para stagger comum. O inimigo ainda é o dummy original. Android/renderer OpenGL e FPS em hardware real não foram medidos nesta execução headless.
+
+## Atualização Storm 1 — 2026-10-02
+
+Base auditada: main `41ac201`; histórico de 90 commits, scripts/cena/fontes/manifestações revisados antes da edição. Biblioteca agora tem 27 estados (20 clips-fonte): variantes de jog lateral e reverso, cross para Rasengan, Idle_Shield_Break. Variantes são adaptações de material real, não coreografia final de Naruto. Manifesto de golpes explicita startup/active/recovery e cancel windows; bake reproduz esses campos.
+
+Jutsu de dano por distância foi removido: Demon Wind tem swept sphere e colisão com mundo/hurtboxes; Rasengan usa Area3D no osso; clones têm Skeleton3D independente, AnimationPlayer manual e hitbox nos ossos com fonte redirecionada ao jogador. Pool de três clones/projéteis e 32 efeitos reutilizados. Barrage só segue após o primeiro contato limpo e sempre restaura câmera/controle em erro, cancelamento ou KO. CPU básica recebe guard meter e substituição probabilística atrasada, sem acesso ao input do jogador; a etapa CPU Fighter rigada continua posterior.
+
+Validação adicional: contrato Storm com colisão real, acerto/whiff/bloqueio/cenário, cancelamentos, câmera, bounded pools e recursos. PCK Android foi exportado e executado separadamente do projeto: manifesto/27 clips/clones presentes; fontes e testes ausentes. Não foi exportado APK nem medido FPS real. Inspeção CPU das 27 poses não substitui revisão visual do renderer no aparelho.

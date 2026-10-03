@@ -25,9 +25,10 @@ func _run() -> void:
     adapter = player.get_node("RiggedCharacterAdapter") as Node3D
     enemy = game.get_node("EnemyDummy") as CharacterBody3D
     enemy.set_physics_process(false)
+    enemy.reactive_substitution = false
     await frames(8)
     check(adapter.is_rig_loaded(), "Rig must load with real clips")
-    check(adapter.real_animation_count == 22, "All 22 clips must be installed")
+    check(adapter.real_animation_count == 27, "All 27 clips must be installed")
     check(adapter.right_hand_bone >= 0 and adapter.left_hand_bone >= 0, "Godot bone names must resolve")
     check(not adapter.animation_player.has_animation_library(&"proc"), "No procedural combat library")
     player.set_physics_process(false)
@@ -144,10 +145,14 @@ func _run() -> void:
     player.jutsu_cooldown = 0.0
     player.chakra = 100.0
     player.locked_target = enemy
+    enemy.global_position = Vector3(0, 0.96, 4.0)
+    enemy.health = 120.0
+    enemy.invulnerable_timer = 0.0
+    enemy.juggle_hits = 0
     var health_before: float = enemy.health
     player.call("_try_jutsu")
     check(enemy.health == health_before, "Jutsu must not damage during startup")
-    await frames(20)
+    await frames(50)
     check(enemy.health < health_before, "Jutsu must damage at release")
     player.call("_defeat")
     await frames(3)

@@ -16,7 +16,7 @@ Espelhos usados para aquisição reproduzível:
 - UAL1: https://github.com/J-Ponzo/gltf-universal-animation-library — commit `e24c23cf2a1323488a3faa226ea7ea21f644b73e` (distribuição de 2025-06-10).
 - UAL2: https://github.com/NafisRayan/Animate-Rigged-Humanoid-No-Blender — commit `5821923af517ac5fdc82505faa92a0d575fc1b1a`, somente `Universal Animation Library 2[Standard]/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb` e sua licença. Nenhum código do espelho foi usado.
 
-Extratos dos clips originais, sem meshes/texturas nem animações não utilizadas, estão em `assets/animations/source/`, com `.gdignore`, licenças e SHA-256 registrados no manifest. A biblioteca pré-bakeada fica em `assets/animations/combat_mixamo.tres`. 22 clips de jogo são derivados de 19 clips-fonte (contando a recuperação do hook); variantes não são apresentadas como mocap independente.
+Extratos dos clips originais, sem meshes/texturas nem animações não utilizadas, estão em `assets/animations/source/`, com `.gdignore`, licenças e SHA-256 registrados no manifest. A biblioteca pré-bakeada fica em `assets/animations/combat_mixamo.tres`. 27 clips de jogo são derivados de 20 clips-fonte (contando a recuperação do hook); variantes não são apresentadas como mocap independente.
 
 ## Mapeamento exato
 
@@ -24,6 +24,10 @@ Extratos dos clips originais, sem meshes/texturas nem animações não utilizada
 |---|---|---|
 | idle | UAL1 Idle_Loop | retarget, loop |
 | run | UAL1 Jog_Fwd_Loop | retarget, in-place |
+| strafe_left / strafe_right | UAL1 Jog_Fwd_Loop | movimento real, orientação das pernas adaptada ±70°; placeholder de strafe dedicado |
+| back_run | UAL1 Jog_Fwd_Loop | reprodução invertida; placeholder de corrida de costas dedicada |
+| rasengan | UAL1 Punch_Cross | gesto da mão direita em 0,95 s; sphere/hitbox física, não coreografia final |
+| guard_break | UAL2 Idle_Shield_Break | reação a quebra sem escudo |
 | sprint | UAL1 Sprint_Loop | retarget, in-place |
 | jump | UAL2 NinjaJump_Start | recorte, velocidade; deslocamento vertical pela física |
 | fall | UAL2 NinjaJump_Idle_Loop | loop, física vertical |

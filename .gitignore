@@ -18,3 +18,5 @@ assets/characters/rigged__*.png.import
 tests/animation_poses.json
 tests/animation_preview.png
 __pycache__/
+
+build/

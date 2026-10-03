@@ -21,3 +21,7 @@ Earlier procedural implementations cited this project for design/reference conce
 ## Previously supplied character
 
 The existing `assets/characters/rigged.glb` is unchanged. These animation licenses do not establish or alter ownership or licensing of that previously supplied model.
+
+## Fase Storm 1
+
+Nenhum asset proprietário novo foi adquirido. Clones compartilham o modelo previamente fornecido e a biblioteca CC0. As variantes de jog/strafe/recuo, guard break e Rasengan são adaptações das mesmas fontes Quaternius, registradas no manifesto. Fūma shuriken, esfera/anéis de chakra, fumaça e trails são meshes originais do código do projeto. Kenney Particle Pack (CC0) foi pesquisado, mas não distribuído nesta revisão. Ver `docs/ASSET_SOURCES.md`.
