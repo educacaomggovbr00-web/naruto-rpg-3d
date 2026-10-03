@@ -10,6 +10,12 @@ Naruto Uzumaki; Sasuke Uchiha; Sakura Haruno; Shikamaru Nara; Choji Akimichi; In
 
 Asuma Sarutobi; Kurenai Yuhi; Anko Mitarashi; Shizune; Hashirama Senju; Tobirama Senju; Kidomaru; Sakon/Ukon (uma entrada); Jirobo; Tayuya. Não tratar estes dez como lutadores completos da edição original. [Anúncio de DLC de suporte](https://www.gematsu.com/2008/10/naruto-ultimate-ninja-storm-dlc-to-be-free-detailed).
 
+## Estado no projeto
+
+Os **25 jogáveis acima já estão presentes na seleção** como jogador e CPU. Naruto, Sasuke, Sakura e Kakashi mantêm os perfis próprios já existentes. Os outros 21 usam temporariamente `assets/characters/rigged.glb`, combo-base compartilhado, sem jutsus, Ultimate ou Awakening emprestados de outro personagem. Isso torna o roster selecionável e testável sem fingir que o moveset final já foi concluído.
+
+Os 10 nomes de suporte permanecem separados em `CharacterCatalog.SUPPORT_ONLY` e não viraram lutadores completos.
+
 ## Dados por personagem e sequência de implementação
 
 | Personagem | Evidência registrada | Lacunas antes de implementação final |
@@ -18,6 +24,6 @@ Asuma Sarutobi; Kurenai Yuhi; Anko Mitarashi; Shizune; Hashirama Senju; Tobirama
 | Sasuke (criança) | Próximo após framework de Naruto consolidado | Pesquisar seção específica Storm 1: todos combos, Chidori/alternativas, Ultimate e formas; não usar moveset Shippuden |
 | Sakura (criança) | Próxima após Sasuke | Confirmar combos, força/alcance, jutsu, Ultimate, modo despertado e suporte na edição 1 |
 | Kakashi | Próximo após Sakura | Confirmar combos, jutsus selecionáveis, Ultimate, Sharingan/modo, efeitos e suporte na edição 1 |
-| Outros 21 | Identidades confirmadas acima | Preencher cada ficha durante sua fase; não inventar stats ou atribuir Ultimates de Storm 4 |
+| Outros 21 | Slots jogáveis já ativos no catálogo/seleção, com rig e combo-base temporários | Preencher cada ficha durante sua fase; substituir placeholder por modelo/moveset/jutsus/Ultimate/Awakening próprios sem inventar stats ou atribuir Ultimates de Storm 4 |
 
-Ficha obrigatória por personagem: modelo/skeleton/biblioteca/tree; combo neutro/direcional/launcher/aéreo; jutsus; Ultimate; Awakening; velocidade/alcance/estilo; particularidades; suporte; animações/VFX/áudio necessários; CPU profile; fonte e confiança. O framework deve configurar estes dados sem copiar o controlador. Nenhum destes personagens adicionais foi implementado por esta documentação.
+Ficha obrigatória por personagem: modelo/skeleton/biblioteca/tree; combo neutro/direcional/launcher/aéreo; jutsus; Ultimate; Awakening; velocidade/alcance/estilo; particularidades; suporte; animações/VFX/áudio necessários; CPU profile; fonte e confiança. O framework configura todos os 25 IDs sem duplicar o controlador. A presença no roster não significa conclusão individual: 21 ainda são slots de desenvolvimento até receberem implementação própria.
