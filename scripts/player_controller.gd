@@ -86,6 +86,7 @@ var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
 var ultimate: Node3D = null
 var awakening: Node3D = null
+var ninja_tools: Node3D = null
 var specials: Node3D = null
 var dash_hitbox: Area3D = null
 var dash_elapsed: float = 0.0
@@ -124,6 +125,10 @@ func _ready() -> void:
     ultimate.name = "Ultimate"
     ultimate.set_script(preload("res://scripts/ultimate_controller.gd"))
     add_child(ultimate)
+    ninja_tools = Node3D.new()
+    ninja_tools.name = "NinjaTools"
+    ninja_tools.set_script(preload("res://scripts/ninja_tools.gd"))
+    add_child(ninja_tools)
     spawn_position = global_position
     health = max_health
     chakra = max_chakra
@@ -166,6 +171,10 @@ func _unhandled_input(event: InputEvent) -> void:
             ultimate.call("start")
         elif event.physical_keycode == KEY_6:
             awakening.call("start")
+        elif event.physical_keycode == KEY_7:
+            ninja_tools.call("cycle")
+        elif event.physical_keycode == KEY_8:
+            ninja_tools.call("use")
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
@@ -262,6 +271,12 @@ func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
         return
 
+    if mobile_controls.tool_select_queue > 0:
+        mobile_controls.tool_select_queue = 0
+        ninja_tools.call("cycle")
+    if mobile_controls.tool_use_queue > 0:
+        mobile_controls.tool_use_queue = 0
+        ninja_tools.call("use")
     if mobile_controls.ultimate_queue > 0:
         mobile_controls.ultimate_queue = 0
         ultimate.call("start")
@@ -373,6 +388,8 @@ func _cancel_jutsu() -> void:
         specials.call("cancel")
     if is_instance_valid(ultimate):
         ultimate.call("cancel")
+    if is_instance_valid(ninja_tools):
+        ninja_tools.call("cancel")
     if is_instance_valid(awakening) and awakening.transforming:
         awakening.call("stop")
 
@@ -934,6 +951,7 @@ func _respawn() -> void:
     _cancel_jutsu()
     awakening.call("reset")
     ultimate.cooldown = 0.0
+    ninja_tools.call("reset")
     global_position = spawn_position
     velocity = Vector3.ZERO
     health = max_health
@@ -1042,7 +1060,7 @@ func get_special_animation() -> String:
     return String(specials.call("animation_clip"))
 
 func get_damage_multiplier() -> float:
-    return float(awakening.call("damage_multiplier"))
+    return float(awakening.call("damage_multiplier")) * (float(ninja_tools.call("damage_multiplier")) if ninja_tools != null else 1.0)
 
 func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
     if awakening.active:

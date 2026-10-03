@@ -43,6 +43,13 @@ func _process(_delta: float) -> void:
         resource_label.text = "ULTIMATE — TOQUE ATK: %d / %d" % [player.ultimate.presses, player.ultimate.definition.clash_presses]
     else:
         resource_label.text += "\nULT: %.1fs | AWK: %s" % [player.ultimate.cooldown, "%.1fs" % player.awakening.remaining if player.awakening.active else "CARREGUE CHK" if player.awakening.eligible() else "VIDA BAIXA + CHK CHEIO"]
+    var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]
+    resource_label.text += " | %s: %s" % [tool_name, "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
+    var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]
+    var controls: Node = get_node("MobileControls")
+    if controls.tool_label != labels[player.ninja_tools.selected]:
+        controls.tool_label = labels[player.ninja_tools.selected]
+        controls.queue_redraw()
     var cpu: Node = get_node("../EnemyDummy")
     status_label.text += " | CPU: %d" % int(cpu.health)
 
