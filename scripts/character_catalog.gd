@@ -97,7 +97,6 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.stylized_material = false
     definition.moveset = NARUTO.moveset
     definition.jutsus = PackedStringArray()
-    definition.jutsu_definitions = []
     definition.has_ultimate = false
     definition.has_awakening = false
     return definition
