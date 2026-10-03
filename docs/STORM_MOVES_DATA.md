@@ -93,3 +93,15 @@ Kakashi Raikiri: Resource distinto do Chidori de Sasuke, embora ambos ainda util
 Arquivos: `scripts/jutsu_definition.gd`, `assets/combat/jutsus/*.tres`, `CharacterDefinition.find_jutsu`, `scripts/combat_specials.gd`, `scripts/booby_trap.gd`. Todos os IDs dos quatro perfis possuem dados; states/pools/timers permanecem separados por lutador. Naruto/Sasuke mantêm parâmetros anteriores. Ultimates/Awakenings de Sakura/Sasuke/Kakashi continuam desabilitados: não emprestar golpes de Naruto.
 
 Validação: `tests/character_jutsus_contract.gd` exercita release/interrupção, contato real, miss, guarda/invulnerabilidade, pool cheio, expiração, parede, KO, Resource/máscara CPU e Fireball alternativo. Android: testar Sakura JUT, tocar fio com CPU, esquivar da queda, guardar, repetir três vezes; Kakashi alternar RAI/FIRE; comparar FPS LOW com traps + dois rigs. Sem medição física de FPS nesta sessão.
+
+## Storm 1 — formatos e CommandChartData (2026-10-03)
+
+Nova pesquisa técnica confirmou no código público do [NUNSMOD](https://github.com/roqols/NUNSMOD) que o `CommandChartData.xfbin` contém `nuccChunkBinary` separados por personagem. O próprio `command_chart_tool.py` fornece como exemplos `cmd1nrt` para Naruto e `cmd1ssk` para Sasuke e descreve os payloads como uma sequência de `uint32` big-endian e strings UTF-8. Classificação: `COMMUNITY_RESEARCH`.
+
+Isso **não identifica automaticamente** os inteiros como dano, startup, raio ou chakra. O novo `tools/storm1_command_chart_bridge.py` conserva texto, índice e inteiros vizinhos para que o significado seja validado antes de alimentar Resources do Godot.
+
+O parser XFBIN incluído no mesmo projeto documenta chunks CyberConnect2 e, no modo data-only, cita `NTP3` para `.nut` e `NDP3` para `.nud`. O [NUNS Meshswap Tool](https://github.com/Lyingcake77/NUNS_Meshswap_tool) também procura blocos `NDP3`, reforçando a pista de pesquisa de mesh/modelo. Isso é informação de formato, não licença para assets do jogo.
+
+O mod [Storm 1 PS Icons](https://github.com/AkikoKumagara/Naruto-STORM-1-PS-Icons) confirma a árvore PC `data_win32/interface` com áreas `adv`, `battle`, `battle_mode`, `cmn` e `title_option`. Usar essa organização como referência para decompor HUD/telas; nenhuma textura do mod foi copiada.
+
+Pipeline e comandos: [STORM1_FILE_PIPELINE](STORM1_FILE_PIPELINE.md). Quando houver um `CommandChartData.xfbin` fornecido pelo usuário, Naruto é a primeira extração alvo; só depois de identificar semanticamente cada campo os valores podem migrar para `naruto_moveset.tres` ou jutsus.
