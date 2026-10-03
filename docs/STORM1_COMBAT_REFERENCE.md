@@ -1,6 +1,6 @@
 # Referência de combate — Naruto: Ultimate Ninja Storm (2008)
 
-Pesquisa: 2026-10-02. Escopo implementável: Naruto vs CPU, fase 1 (movimento até Barrage). Nenhum código, áudio, modelo ou animação do jogo comercial foi extraído.
+Pesquisa: 2026-10-02/03. Escopo atual: Naruto, base de Ultimate/Awakening/ferramentas além do slice até Barrage. Nenhum código, áudio, modelo ou animação do jogo comercial foi extraído.
 
 ## Fontes e confiança
 
@@ -25,14 +25,14 @@ Pesquisa: 2026-10-02. Escopo implementável: Naruto vs CPU, fase 1 (movimento at
 | Recovery | Janelas puníveis; reação/evasão permite retomar neutral | Recovery explícito, whiff não permite cancel por hit confirm |
 | Guarda | Segurada, azul→vermelho, quebra deixa vulnerável | Meter contínuo, stun, break, regen após pausa; feedback próprio |
 | Substituição | Timing do botão de defesa, aparece atrás do oponente | Quatro cargas solicitadas pelo usuário (adaptação, não mecânica exata de Storm 1), recarga, cooldown curto, invulnerabilidade e posição validada |
-| Ferramentas | Shuriken, chakra shuriken e quatro itens direcionais | Pesquisa registrada; implementação de inventário reservada à fase posterior |
+| Ferramentas | Shuriken, chakra shuriken e quatro itens direcionais | Shuriken + ramen/food pills/kunai rain/bomb ball, estoque/cooldown e colisão física |
 | Demon Wind Bomb | Fūma shuriken de longo alcance; hit confirma golpes com clone | Projétil varrido, trajetória, bloqueio/cenário/timeout; clone após confirmação |
 | Rasengan | Jutsu selecionável, aproximação e esfera na mão | Esfera/área presa ao osso, janela ativa, corrida rastreada, colisão e dissipação |
 | Charging Bullet | Tilt invoca dois clones de médio alcance, entradas adicionais | Dois clones com ataques escalonados e confirmação física |
 | Whirlwind Strike | Combo aéreo de clones, final descendente | Clones com pernas aéreas e slam final |
 | Naruto Uzumaki Barrage | Clone lança; Naruto termina com golpe descendente | Entrada precisa conectar, clone launcher e golpe final do jogador; câmera temporária segura |
-| Ultimate | Naruto's Ninja Handbook; hit abre sequência/QTE, chakra alto | Fora da fase atual. Não confundir com 2K Barrage de jogos posteriores |
-| Awakening | Vida baixa habilita indicador; carregar chakra até máximo transforma | Nine-Tailed Fox Mode/Vermillion Rasengan, fora da fase atual; limiar/duração sem medição confiável |
+| Ultimate | Naruto's Ninja Handbook; hit abre sequência/QTE, chakra alto | Clone lançado confirma QTE mash; dogpile/corrente/finalizador adaptados, cleanup por token/watchdog. Não confundir com 2K Barrage de jogos posteriores |
+| Awakening | Vida baixa habilita indicador; carregar chakra até máximo transforma | Uma cauda temporária, Vermillion, wind wave/imunidade a ferramentas; limiar/duração próprios. Sealed Power ainda não implementado |
 | Impactos | Lançamento, queda, pancada forte, parede; alguns palcos permitem combate na parede | Preserva bounce existente; não implementa troca do plano de combate |
 | CPU | Quatro dificuldades; fontes não expõem algoritmo interno | IA atual preservada; guarda/sub probabilísticas com atraso. Não lê input do jogador |
 
@@ -43,3 +43,14 @@ Timings usam segundos no relógio de física; startup/active/recovery derivam do
 ## Restrições visuais
 
 O rig existente e os clips CC0 continuam sendo a base. Punch/hook e spell clips não equivalem às coreografias autorais de Naruto. Barrage usa golpe descendente real disponível, temporariamente com a mão; axe kick, double dropkick, transições animadas da transformação em shuriken e animações de selos precisam de clips licenciados/autoria dedicada para fidelidade final. Esta fase replica estrutura e colisões, sem anunciar esses placeholders como animações finais de Storm.
+
+
+## Ultimate/Awakening/ferramentas — revisão 2026-10-03
+
+[Handbook Storm wiki](https://naruto-ultimate-ninja-storm.fandom.com/wiki/Naruto%27s_Ninja_Handbook): entrada por clone lançado; clones se acumulam no adversário e formam uma corrente pelos tornozelos; derrota na disputa permite substituição. O texto foi recuperado por busca; página completa/vídeo não tiveram quadros verificáveis nesta sessão. [Compilação de Ultimates Storm 1](https://www.youtube.com/watch?v=Pjm4r0cMqtI) e [evolução do Ultimate, Storm em 2:53](https://www.youtube.com/watch?v=ANb2eR8moBE) são referências pendentes de inspeção visual, não de timings medidos.
+
+[Guia Ashurii](https://gamefaqs.gamespot.com/ps3/943434-naruto-ultimate-ninja-storm/faqs/54852) confirma Ultimate por chakra load duplo + ataque e modos command/mash/spin; Awakening por carregar além do máximo quando o indicador surge. O projeto expõe ULT/AWK diretamente no touch; mash adaptado pede 4 toques em 1 s. Não é jutsu clash simultâneo, nem implementação de todos os formatos de QTE. Não há Storm Gauge ainda.
+
+[Storm 1 Naruto Part 1](https://naruto-ultimate-ninja-storm.fandom.com/wiki/Naruto_Uzumaki_(Part_1)): uma cauda, mudanças de moveset, wind waves, resistência a ferramentas, Vermillion Rasengan e Sealed Power. Não misturar 2K Barrage de jogos posteriores. A base implementa temporização/recursos/efeitos e modifica movimento/dano/jutsu/projétil; combos de garras e Sealed Power precisam de fase adicional e animação dedicada.
+
+Valores próprios: Ultimate 80 chakra, CD 12 s; entry conforme manifest jutsu (.24 s); dogpile .9 s, corrente .65 s, finisher conforme attack_4; Awakening HP ≤30%, chakra cheio, carga extra .6 s, transição 1 s, duração 18 s, cooldown 20 s, movimento ×1.2/dano ×1.35. Estoques: ramen 1, pills/kunai/bomba 2; ramen chakra +30%, buff ×1.2 por 20 s. Quantidades/função dos itens são referências do guia des326; multiplicadores e tempos restantes são aproximações de balanceamento, não números oficiais.

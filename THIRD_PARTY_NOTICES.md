@@ -25,3 +25,8 @@ The existing `assets/characters/rigged.glb` is unchanged. These animation licens
 ## Fase Storm 1
 
 Nenhum asset proprietário novo foi adquirido. Clones compartilham o modelo previamente fornecido e a biblioteca CC0. As variantes de jog/strafe/recuo, guard break e Rasengan são adaptações das mesmas fontes Quaternius, registradas no manifesto. Fūma shuriken, esfera/anéis de chakra, fumaça e trails são meshes originais do código do projeto. Kenney Particle Pack (CC0) foi pesquisado, mas não distribuído nesta revisão. Ver `docs/ASSET_SOURCES.md`.
+
+
+## Revisão Ultimate/Awakening/ferramentas
+
+Nenhum conteúdo externo adicional foi distribuído. Shaders/meshes/VFX/configurações novos são originais do projeto. Animações e cópias do personagem reutilizam as fontes já declaradas acima. O modelo e imagens nele embutidas têm status UNKNOWN_LICENSE para publicação até comprovação. Registro com hashes: `assets/asset_registry.json`. Kenney Modular Buildings/KayKit Medieval Hexagon foram pesquisados sob CC0, sem importação. [Godot Engine — licença MIT](https://godotengine.org/license) deve constar nos créditos da distribuição.

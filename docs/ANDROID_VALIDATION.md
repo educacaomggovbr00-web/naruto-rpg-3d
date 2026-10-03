@@ -4,7 +4,7 @@ Engine alvo: Godot 4.7.2, gl_compatibility, landscape, 60 FPS como meta (não me
 
 ## Testes automáticos
 
-Importação sem parser errors; contrato de 27 clips (130 canais, quaternions e poses) e contrato da fase Storm (movimento, confirms, dash, guarda, projétil, Rasengan, clones e Barrage). CI executa ambos na versão fixada. Hit-stop é desabilitado somente na suíte da fase para assertions de tempo determinísticas; permanece habilitado no jogo e no contrato anterior.
+Importação sem parser errors; contrato de 27 clips (130 canais, quaternions e poses) e contrato da fase Storm (movimento, confirms, dash, guarda, projétil, Rasengan, clones e Barrage). CI executa os três contratos na versão fixada e testes do gate de release. Hit-stop é desabilitado somente na suíte da fase para assertions de tempo determinísticas; permanece habilitado no jogo e no contrato anterior.
 
 ## Roteiro no aparelho
 
@@ -18,7 +18,7 @@ Importação sem parser errors; contrato de 27 clips (130 canais, quaternions e 
 | DEF contra vários golpes e soltar | Meter desce, bloqueio tem feedback azul, esgotamento causa stun; meter recupera após pausa |
 | SUB durante combo, perto da parede | Fumaça e breve desaparecimento; surge atrás do alvo sem sair da arena; cargas voltam de uma em uma |
 | Selecionar DWB e JUTSU a média distância | Clone lançador, fūma giratório, personagem representado pelo projétil, colisão e golpes com clones após confirm; erro/parede não causa dano |
-| Selecionar RAS e JUTSU | Esfera e anéis acompanham mão direita; corrida aproxima sem atravessar cenário; fora da trajetória não acerta; ataque interrompido dissipa |
+| Selecionar RAS e JUTSU | Núcleo com fluxo, camada externa e órbitas acompanham mão direita; corrida aproxima sem atravessar cenário; fora da trajetória não acerta; ataque interrompido dissipa |
 | CLONE no chão e no ar | Duas cópias rigadas, golpes escalonados, fumaça ao sair; observar se punhos encostam no alvo e se poses/interseções precisam de ajuste |
 | BARR perto do alvo, longe e contra defesa | Só acerto limpo inicia sequência; clone lança, intermediário e slam; erro/bloqueio não abre câmera; SUB/KO restaura controles |
 | Repetir especiais por dois minutos | Sem crescimento de clones/efeitos, sem objetos esquecidos, sem erro de log; observar aquecimento e FPS |
@@ -27,4 +27,17 @@ Registrar modelo do aparelho, FPS mínimo durante 3 clones/Rasengan/trails, atra
 
 ## Limitações deliberadas desta fase
 
-Rig/modelo existente preservado. Golpes da mão substituem provisoriamente chutes específicos; Rasengan usa cross adaptado; guarda/shield e spell gestures ainda precisam de acabamento. CPU original continua sendo cápsula nesta fase, com defesa/sub melhoradas; CPU Fighter rigada está na etapa posterior solicitada. Não há inventário ninja tools, Ultimate, Awakening, áudio ou suporte de outros personagens nesta revisão.
+Rig/modelo existente preservado. Golpes da mão substituem provisoriamente chutes específicos; Rasengan usa cross adaptado; guarda/shield e spell gestures ainda precisam de acabamento. CPU original continua sendo cápsula nesta fase, com defesa/sub melhoradas; CPU Fighter rigada está na etapa posterior solicitada. A base de ferramentas/Ultimate/Awakening está implementada, com as limitações abaixo; áudio/outros personagens/CPU rigada permanecem pendentes.
+
+
+## Novos testes no aparelho
+
+| Ação | O que observar |
+|---|---|
+| ULT a média distância e ATK 4 vezes | Clone lançado conecta antes da cinematic; QTE legível; dogpile/corrente/finalizador; controle e câmera voltam. Repetir errando, contra DEF, usando SUB e perto da parede |
+| Vida ≤30%, encher CHK e continuar segurando / AWK | Transição interrompível, aura deixa modelo visível, uma cauda, velocidade/dano maiores, Rasengan vermelho; após 18 s volta ao normal sem buff acumulado |
+| ITEM → botão do item: SHUR/RAMEN/PILL/KUNAI/BOMB | Quantidades/CD, shuriken/projéteis bloqueados por cenário, bomba atinge apenas seu volume; ramen repõe chakra, buff expira |
+| LOW → MED → HIGH com Rasengan/clones | Touch continua nítido/na posição; LOW reduz sombras/camada externa; comparar FPS/temperatura. HUD não deve cobrir QTE ou botões |
+| Minimizar e voltar durante CHK/DEF/joystick | Não continuar carregando, defendendo ou andando por dedo preso |
+
+Não houve inspeção do shader em GPU Android nem medição de FPS nesta sessão. Headless validou a estrutura e recursos carregados; núcleo/shell/cauda precisam de avaliação visual no aparelho. Handbook usa a coreografia adaptada e limitada a três clones, não a sequência comercial final. Awakening ainda usa combos do rig existente e não implementa Sealed Power. Konoha está na fase posterior documentada, sem cena de mundo nova nesta revisão.

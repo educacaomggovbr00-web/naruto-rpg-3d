@@ -1,8 +1,8 @@
 # Shinobi RPG 3D
 
-Protótipo mobile de RPG de ação 3D inspirado no ritmo, mobilidade e câmera de arena fighters de anime.
+Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ultimate Ninja Storm 1**, em combate e, na fase do mundo, exploração física de Konoha. A direção completa está em [PROJECT_DIRECTION](docs/PROJECT_DIRECTION.md).
 
-> Projeto independente/fan prototype. Não inclui assets, áudio ou código proprietários de Naruto/Storm.
+> Projeto independente em desenvolvimento. Nenhum arquivo proprietário de Storm foi baixado ou extraído. A origem/licença do modelo previamente fornecido ainda não foi comprovada; desenvolvimento e publicação têm gates separados.
 
 ## Engine e alvo
 - Godot 4.7.2
@@ -106,7 +106,7 @@ A biblioteca `assets/animations/combat_mixamo.tres` contém movimentos reais em 
 - Espaço: pular
 
 ## Arquitetura de hitbox/hurtbox
-O jogador e o inimigo usam `Area3D` separadas para ataque e dano. A hitbox só processa acertos durante uma janela curta aberta pelo golpe. Cada alvo só pode ser acertado uma vez por janela. Isso prepara o projeto para no futuro anexar hitboxes a mãos, pés, armas e ossos específicos.
+O jogador e o inimigo usam `Area3D` separadas para ataque e dano. A hitbox só processa acertos durante uma janela curta aberta pelo golpe. Cada alvo só pode ser acertado uma vez por janela. As hitboxes do jogador e dos clones já acompanham mãos/pés do Skeleton3D após avaliação da pose.
 
 ## Combat Polish
 O feedback de combate agora é disparado pelo acerto real da hitbox. Golpes no vazio não aumentam o contador nem acionam hit-stop.
@@ -138,7 +138,7 @@ O HUD mostra `RIG: OK` quando o asset foi importado corretamente. Sem o arquivo,
 - seleção de personagem
 - arena temática maior com obstáculos
 - áudio de golpes, dash, chakra e jutsu
-- presets de qualidade para celulares fracos/intermediários/fortes
+- validar os perfis LOW/MED/HIGH em celulares reais
 
 
 ## Fontes de animação pesquisadas
@@ -188,4 +188,24 @@ godot --headless --path . --script res://tests/storm_slice_contract.gd
 
 [ANDROID_VALIDATION](docs/ANDROID_VALIDATION.md) contém a lista exata de observações no aparelho. Preset Android arm64 inclui o manifesto e exclui fontes/ferramentas/testes. Exportação APK necessita templates/SDK/assinatura no ambiente de exportação; nenhum segredo foi colocado no repositório. Renderer e landscape preservados.
 
-Esta fase implementa a estrutura de gameplay com coreografias CC0 adaptadas e meshes temporárias. O modelo continua sendo o arquivo fornecido: não foi substituído por um Naruto comercial. Ultimate/Nine-Tails, CPU rigada completa, ferramentas, áudio e outros personagens ficam para a fase posterior. Não se considera concluído o acabamento visual fiel ao Storm 1 nem a medição de 60 FPS no aparelho.
+Esta fase implementa a estrutura de gameplay com coreografias CC0 adaptadas e meshes temporárias. O modelo continua sendo o arquivo fornecido: não foi substituído por um Naruto comercial. A base de Ultimate/Nine-Tails e ferramentas descrita abaixo foi acrescentada. CPU rigada completa, áudio e outros personagens continuam nas fases seguintes. Não se considera concluído o acabamento visual fiel ao Storm 1 nem a medição de 60 FPS no aparelho.
+
+
+## Naruto — Ultimate, Awakening e ferramentas
+
+- **ULT** (PC 5): lança um clone físico após startup. Erro, cenário, invulnerabilidade e bloqueio não abrem cinematic; bloqueio que quebra guarda também não confirma. Após hit, toque **ATK** quatro vezes no QTE. Clones/finisher usam colisões reais; escape, interrupção, KO, watchdog e remoção de cena liberam câmera/controles/pools.
+- **AWK** (PC 6 ou segurar CHK além do máximo com vida baixa): transformação vulnerável → modo de uma cauda temporário. Aura/cauda originais, multiplicadores sem alterar stats-base, chakra vermelho no Rasengan, Vermillion substitui o jutsu escolhido, resistência a ferramentas e wind wave. Término/KO restaura estado.
+- **ITEM** (PC 7): alterna shuriken, ramen, food pills, kunai rain e bomb ball. Botão ao lado (PC 8) usa. Estoques finitos nos quatro itens; projéteis varridos e explosão por volume físico; ramen repõe chakra, pills concedem buff de 20 s.
+- **MED/LOW/HIGH** no topo: alterna resolução 3D, sombras e orçamento de efeitos. Salvo em user://graphics.cfg. Pools, animações, timing e touch viewport não mudam. Perda de foco libera dedos/holds/filas.
+
+O Ultimate está configurado em Resource próprio para reutilização futura. Esta é uma **implementação funcional adaptada**, ainda não a coreografia visual final do Handbook: lançamento/dogpile/corrente usam 3 clones e os clips CC0 existentes; poses de agarrar tornozelos/arremesso ainda faltam. QTE usa mash touch, sem modos command/spin nem Storm Gauge. Sealed Power não foi implementado: Handbook fica desabilitado durante Awakening para não substituir silenciosamente o Ultimate correto. Modo de uma cauda ainda requer modelo/combos/animações autorais próprios; aura/cauda não tornam o modelo fornecido um Naruto final. Não declarar Naruto completo ou Play Store pronto por estes testes.
+
+```sh
+godot --headless --path . --script res://tests/naruto_phase1_contract.gd
+python -m unittest discover -s tests -p 'test_release_assets.py'
+python tools/validate_release_assets.py
+```
+
+Exportação de desenvolvimento: `python tools/export_android.py --godot /caminho/godot --output build/dev.apk`. Publicação exige `--release` e passa pelo gate **antes** de iniciar Godot. O preset separado Android (Play Store) usa public_release/AAB; o plugin do editor recusa incluir payload quando o registro não está liberado, mesmo ao exportar diretamente pelo editor. Um backend pode gravar um container vazio com mensagem de erro: não é uma build publicável. Não desabilitar o gate para publicar assets sem autorização. Segredos de signing permanecem fora do Git.
+
+Referências adicionais: [elenco](docs/STORM1_CHARACTER_ROSTER.md), [Mundo Shinobi](docs/STORM1_WORLD_REFERENCE.md), [Play Store](docs/PLAY_STORE_RELEASE_CHECKLIST.md). Konoha foi pesquisada/documentada; o mundo jogável ainda não foi construído. Isso mantém a ordem Naruto → CPU → polimento → framework/personagens → mundo.
