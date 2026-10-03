@@ -60,16 +60,16 @@ func _setup_rig() -> void:
     rig_impl = Node3D.new()
     rig_impl.name = "RiggedCharacterAdapter3D"
     rig_impl.set_script(RIG_ADAPTER_SCRIPT)
-    rig_impl.model_path = model_path
-    rig_impl.fallback_visual_path = fallback_visual_path
-    rig_impl.model_offset = model_offset
-    rig_impl.model_scale = model_scale
-    rig_impl.auto_scale_model = auto_scale_model
-    rig_impl.ground_to_collision = ground_to_collision
-    rig_impl.target_character_height = target_character_height
-    rig_impl.fallback_import_scale = fallback_import_scale
-    rig_impl.model_yaw_degrees = model_yaw_degrees
-    rig_impl.follow_hitbox_to_bones = follow_hitbox_to_bones
+    rig_impl.set("model_path", model_path)
+    rig_impl.set("fallback_visual_path", fallback_visual_path)
+    rig_impl.set("model_offset", model_offset)
+    rig_impl.set("model_scale", model_scale)
+    rig_impl.set("auto_scale_model", auto_scale_model)
+    rig_impl.set("ground_to_collision", ground_to_collision)
+    rig_impl.set("target_character_height", target_character_height)
+    rig_impl.set("fallback_import_scale", fallback_import_scale)
+    rig_impl.set("model_yaw_degrees", model_yaw_degrees)
+    rig_impl.set("follow_hitbox_to_bones", follow_hitbox_to_bones)
     player.add_child(rig_impl)
 
 func _setup_sprite(definition: CharacterDefinition) -> void:
@@ -87,9 +87,11 @@ func _setup_sprite(definition: CharacterDefinition) -> void:
         var key: String = SPRITE_LAYOUT[index]
         var frame: AtlasTexture = AtlasTexture.new()
         frame.atlas = atlas_source
+        var column: int = index % 4
+        var row: int = index / 4
         frame.region = Rect2(
-            Vector2(float(index % 4) * cell.x, float(index / 4) * cell.y),
-            Vector2(cell.x, cell.y)
+            Vector2(float(column * cell.x), float(row * cell.y)),
+            Vector2(float(cell.x), float(cell.y))
         )
         sprite_frames[key] = frame
 
@@ -158,13 +160,17 @@ func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
 
 func get_attack_timing(combo_step: int, airborne: bool) -> Dictionary:
     if rig_impl != null and rig_impl.has_method("get_attack_timing"):
-        return rig_impl.call("get_attack_timing", combo_step, airborne) as Dictionary
+        var result: Variant = rig_impl.call("get_attack_timing", combo_step, airborne)
+        if result is Dictionary:
+            return result
     var state_name: String = ("air_attack_%d" if airborne else "attack_%d") % combo_step
     return manifest.get("clips", {}).get(state_name, {})
 
 func get_hand_world_position(short_name: String = "RightHand") -> Vector3:
     if rig_impl != null and rig_impl.has_method("get_hand_world_position"):
-        return rig_impl.call("get_hand_world_position", short_name) as Vector3
+        var result: Variant = rig_impl.call("get_hand_world_position", short_name)
+        if result is Vector3:
+            return result
     if player == null:
         return global_position
     var side: float = -0.22 if short_name == "LeftHand" else 0.22
@@ -184,7 +190,10 @@ func is_rig_loaded() -> bool:
 
 func get_available_animations_text() -> String:
     if sprite_mode:
-        return ", ".join(SPRITE_LAYOUT)
+        var names: PackedStringArray = PackedStringArray()
+        for key: String in SPRITE_LAYOUT:
+            names.append(key)
+        return ", ".join(names)
     if rig_impl != null and rig_impl.has_method("get_available_animations_text"):
         return String(rig_impl.call("get_available_animations_text"))
     return "nenhuma"
