@@ -84,6 +84,9 @@ func start(kind: String = "") -> bool:
     owner_fighter.is_guarding = false
     owner_fighter.is_charging_chakra = false
     owner_fighter.animation_action_id += 1
+    if owner_fighter.awakening.active and move in ["demon", "rasengan"]:
+        move = "rasengan"
+    sphere_visual.call("set_energy_color", Color(1.0, 0.15, 0.05) if owner_fighter.awakening.active else Color(0.08, 0.55, 1.0))
     current = move
     elapsed = 0.0
     duration = 0.95 if move == "rasengan" else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65

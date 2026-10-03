@@ -85,6 +85,7 @@ var attack_buffer: float = 0.0
 var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
 var ultimate: Node3D = null
+var awakening: Node3D = null
 var specials: Node3D = null
 var dash_hitbox: Area3D = null
 var dash_elapsed: float = 0.0
@@ -115,6 +116,10 @@ func _ready() -> void:
     specials.name = "CombatSpecials"
     specials.set_script(preload("res://scripts/combat_specials.gd"))
     add_child(specials)
+    awakening = Node3D.new()
+    awakening.name = "Awakening"
+    awakening.set_script(preload("res://scripts/naruto_awakening.gd"))
+    add_child(awakening)
     ultimate = Node3D.new()
     ultimate.name = "Ultimate"
     ultimate.set_script(preload("res://scripts/ultimate_controller.gd"))
@@ -159,6 +164,8 @@ func _unhandled_input(event: InputEvent) -> void:
             specials.call("start", "barrage")
         elif event.physical_keycode == KEY_5:
             ultimate.call("start")
+        elif event.physical_keycode == KEY_6:
+            awakening.call("start")
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
@@ -192,7 +199,7 @@ func _physics_process(delta: float) -> void:
         velocity.y = move_toward(velocity.y, 0.0, gravity * delta)
 
     if jump_requested and is_on_floor() and _can_use_movement_action():
-        velocity.y = jump_velocity
+        velocity.y = jump_velocity * awakening.call("movement_multiplier")
     jump_requested = false
 
     if stagger_timer > 0.0:
@@ -218,7 +225,7 @@ func _physics_process(delta: float) -> void:
                 chakra_dash_direction = chakra_dash_direction.slerp(pursuit.normalized(), minf(delta * 9.0, 1.0)).normalized()
         if dash_elapsed >= 0.06 and dash_hitbox.remaining_time <= 0.0:
             dash_hitbox.call("activate", self, 0.0, 0.0, 0.0, 0.16, 0.5)
-        dash_speed_now = move_toward(dash_speed_now, chakra_dash_speed, delta * 100.0) if dash_elapsed > 0.06 else 0.0
+        dash_speed_now = move_toward(dash_speed_now, chakra_dash_speed * awakening.call("movement_multiplier"), delta * 100.0) if dash_elapsed > 0.06 else 0.0
         velocity.x = chakra_dash_direction.x * dash_speed_now
         velocity.z = chakra_dash_direction.z * dash_speed_now
         velocity.y = chakra_dash_direction.y * minf(dash_speed_now, air_chase_speed)
@@ -228,7 +235,7 @@ func _physics_process(delta: float) -> void:
         return
 
     if jutsu_timer > 0.0:
-        var special_velocity: Vector3 = ultimate.call("movement_velocity", delta) if not ultimate.phase.is_empty() else specials.call("movement_velocity", delta)
+        var special_velocity: Vector3 = ultimate.call("movement_velocity", delta) if not ultimate.phase.is_empty() else Vector3.ZERO if awakening.transforming else specials.call("movement_velocity", delta)
         velocity.x = special_velocity.x
         velocity.z = special_velocity.z
         if specials.current == "barrage" and is_instance_valid(specials.confirmed_target):
@@ -258,6 +265,9 @@ func _consume_mobile_actions() -> void:
     if mobile_controls.ultimate_queue > 0:
         mobile_controls.ultimate_queue = 0
         ultimate.call("start")
+    if mobile_controls.awakening_queue > 0:
+        mobile_controls.awakening_queue = 0
+        awakening.call("start")
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
         specials.selected = "rasengan" if specials.selected == "demon" else "demon"
@@ -363,6 +373,8 @@ func _cancel_jutsu() -> void:
         specials.call("cancel")
     if is_instance_valid(ultimate):
         ultimate.call("cancel")
+    if is_instance_valid(awakening) and awakening.transforming:
+        awakening.call("stop")
 
 func _update_jutsu_timeline(delta: float) -> void:
     if jutsu_timer <= 0.0 or jutsu_released:
@@ -432,7 +444,7 @@ func _apply_movement(delta: float) -> void:
     if is_instance_valid(mobile_controls):
         wants_run = wants_run or bool(mobile_controls.call("is_run_requested"))
 
-    var target_speed: float = (run_speed if wants_run else move_speed)
+    var target_speed: float = (run_speed if wants_run else move_speed) * awakening.call("movement_multiplier")
     if is_guarding:
         target_speed *= 0.50
 
@@ -903,6 +915,7 @@ func _update_animation_state() -> void:
         animation_state = "idle"
 
 func _defeat() -> void:
+    awakening.call("stop")
     defeated = true
     respawn_timer = 2.5
     combo_hits = 0
@@ -919,6 +932,7 @@ func _defeat() -> void:
 
 func _respawn() -> void:
     _cancel_jutsu()
+    awakening.call("reset")
     ultimate.cooldown = 0.0
     global_position = spawn_position
     velocity = Vector3.ZERO
@@ -1023,10 +1037,18 @@ func _is_mobile_runtime() -> bool:
 func get_special_animation() -> String:
     if not ultimate.phase.is_empty():
         return ultimate.call("animation_clip")
+    if awakening.transforming:
+        return "chakra_charge"
     return String(specials.call("animation_clip"))
 
 func get_damage_multiplier() -> float:
-    return 1.0
+    return float(awakening.call("damage_multiplier"))
+
+func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
+    if awakening.active:
+        return 0.0
+    return receive_combat_hit(damage, direction, knockback, launch, stun)
+
 
 func on_hitbox_contact(_box: Area3D, target: Node, dealt: float, blocked: bool) -> void:
     specials.call("contact", target, dealt, blocked)

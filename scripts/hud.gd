@@ -42,7 +42,7 @@ func _process(_delta: float) -> void:
     if player.ultimate.phase == "clash":
         resource_label.text = "ULTIMATE — TOQUE ATK: %d / %d" % [player.ultimate.presses, player.ultimate.definition.clash_presses]
     else:
-        resource_label.text += " | ULT: %.1fs" % player.ultimate.cooldown
+        resource_label.text += "\nULT: %.1fs | AWK: %s" % [player.ultimate.cooldown, "%.1fs" % player.awakening.remaining if player.awakening.active else "CARREGUE CHK" if player.awakening.eligible() else "VIDA BAIXA + CHK CHEIO"]
     var cpu: Node = get_node("../EnemyDummy")
     status_label.text += " | CPU: %d" % int(cpu.health)
 

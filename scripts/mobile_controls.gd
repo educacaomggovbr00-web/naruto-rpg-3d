@@ -13,7 +13,9 @@ var camera_last_position: Vector2 = Vector2.ZERO
 var camera_delta: Vector2 = Vector2.ZERO
 
 var ultimate_queue: int = 0
+var awakening_queue: int = 0
 var ultimate_center: Vector2 = Vector2.ZERO
+var awakening_center: Vector2 = Vector2.ZERO
 var special_queue: int = 0
 var clone_queue: int = 0
 var barrage_queue: int = 0
@@ -78,6 +80,7 @@ func _update_layout() -> void:
     clone_center = Vector2(w - 355.0, h - 350.0)
     barrage_center = Vector2(w - 475.0, h - 350.0)
     ultimate_center = Vector2(w - 595.0, h - 350.0)
+    awakening_center = Vector2(w - 595.0, h - 220.0)
 
     queue_redraw()
 
@@ -93,6 +96,9 @@ func _input(event: InputEvent) -> void:
 func _touch_pressed(touch_id: int, position: Vector2) -> void:
     if _inside_circle(position, ultimate_center, 43.0):
         ultimate_queue += 1
+        return
+    if _inside_circle(position, awakening_center, 43.0):
+        awakening_queue += 1
         return
     if _inside_circle(position, special_center, 43.0):
         special_queue += 1
@@ -270,6 +276,7 @@ func _draw() -> void:
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
     _draw_button(ultimate_center, 43.0, jutsu_fill, "ULT", 16, text_color)
+    _draw_button(awakening_center, 43.0, attack_fill, "AWK", 16, text_color)
     _draw_button(special_center, 43.0, blue_fill, special_label, 14, text_color)
     _draw_button(clone_center, 43.0, blue_fill, "CLONE", 13, text_color)
     _draw_button(barrage_center, 43.0, attack_fill, "BARR", 14, text_color)
