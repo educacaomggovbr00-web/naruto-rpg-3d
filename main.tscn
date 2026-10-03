@@ -301,6 +301,10 @@ shape = SubResource("AttackShape")
 [node name="Visual" type="MeshInstance3D" parent="EnemyDummy"]
 mesh = SubResource("CapsuleMesh_enemy")
 
+[node name="RiggedCharacterAdapter" type="Node3D" parent="EnemyDummy"]
+script = ExtResource("10")
+fallback_visual_path = NodePath("../Visual")
+
 [node name="HealthLabel" type="Label3D" parent="EnemyDummy"]
 position = Vector3(0, 1.65, 0)
 billboard = 1

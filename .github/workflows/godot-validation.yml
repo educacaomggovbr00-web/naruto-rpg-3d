@@ -47,6 +47,9 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/naruto_phase1_contract.gd 2>&1 | tee /tmp/naruto-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/naruto-contract.log
           grep -F 'NARUTO PHASE 1 CONTRACT: PASS' /tmp/naruto-contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/cpu_rig_contract.gd 2>&1 | tee /tmp/cpu-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/cpu-contract.log
+          grep -F 'CPU RIG CONTRACT: PASS' /tmp/cpu-contract.log
       - name: Validate world traversal and mission lifecycle
         shell: bash
         run: |

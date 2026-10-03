@@ -41,12 +41,20 @@ var juggle_hits: int = 0
 var juggle_timer: float = 0.0
 @export var reactive_substitution: bool = true
 
+var locked_target: CharacterBody3D = null
+var combo_step: int = 1
+var animation_action_id: int = 0
+var attack_confirmed: bool = false
+var attack_airborne: bool = false
+var attack_timing: Dictionary = {}
+
 var attack_active: bool = false
 var attack_elapsed: float = 0.0
 var attack_hit_triggered: bool = false
 var ground_bounce_pending: bool = false
 var wall_bounce_pending: bool = false
 
+@onready var rig_adapter: Node3D = $RiggedCharacterAdapter
 @onready var visual: MeshInstance3D = $Visual
 @onready var lock_label: Label3D = $LockLabel
 @onready var health_label: Label3D = $HealthLabel
@@ -55,6 +63,7 @@ var wall_bounce_pending: bool = false
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func _ready() -> void:
+    locked_target = player
     health = max_health
     spawn_position = global_position
     _update_labels()
@@ -164,20 +173,50 @@ func _update_attack_timeline(delta: float) -> void:
 
     attack_elapsed += delta
 
-    if not attack_hit_triggered and attack_elapsed >= 0.18:
+    var startup: float = float(attack_timing.get("startup", 0.12))
+    var duration: float = float(attack_timing.get("duration", 0.28))
+    if not attack_hit_triggered and attack_elapsed >= startup:
         attack_hit_triggered = true
-        attack_hitbox.call(
-            "activate",
-            self,
-            attack_damage,
-            attack_knockback,
-            0.0,
-            0.30,
-            0.10
-        )
+        rig_adapter.call("snap_attack_hitbox", combo_step, attack_airborne)
+        var lift: float = -10.0 if attack_airborne and combo_step == 4 else 0.0
+        attack_hitbox.call("activate", self, attack_damage,
+            attack_knockback if combo_step == 4 else 1.2, lift, 0.30,
+            float(attack_timing.get("active", 0.09)))
 
-    if attack_elapsed >= 0.48:
+    # Continue only after an actual unblocked collision, inside the manifest window.
+    var cancel_open: float = float(attack_timing.get("cancel_open", duration))
+    var cancel_close: float = float(attack_timing.get("cancel_close", duration))
+    if attack_confirmed and combo_step < 4 and attack_elapsed >= cancel_open and attack_elapsed <= cancel_close:
+        combo_step += 1
+        _begin_strike()
+    elif attack_elapsed >= duration:
         attack_active = false
+        attack_hitbox.call("deactivate")
+
+func on_hitbox_contact(_hitbox: Area3D, _victim: Node, damage: float, blocked: bool) -> void:
+    if attack_active and not blocked and damage > 0.0:
+        attack_confirmed = true
+
+func get_animation_state() -> String:
+    if not targetable:
+        return "defeat"
+    if stagger_timer > 0.0:
+        return "knockback" if velocity.length() > 6.0 and guard_meter > 0.0 else "hit"
+    if dodge_timer > 0.0:
+        return "dodge"
+    if guarding:
+        return "guard"
+    if attack_active:
+        return "air_attack" if attack_airborne else "attack"
+    if not is_on_floor():
+        return "air"
+    return "run" if Vector2(velocity.x, velocity.z).length() > 0.2 else "idle"
+
+func get_combo_step() -> int:
+    return combo_step
+
+func get_animation_action_id() -> int:
+    return animation_action_id
 
 func _slow_down(delta: float) -> void:
     velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
@@ -209,9 +248,17 @@ func _start_attack() -> void:
     attack_elapsed = 0.0
     attack_hit_triggered = false
 
-    visual.scale = Vector3(1.05, 0.92, 1.15)
-    var tween: Tween = create_tween()
-    tween.tween_property(visual, "scale", Vector3.ONE, 0.16)
+    combo_step = 1
+    attack_airborne = not is_on_floor()
+    _begin_strike()
+
+func _begin_strike() -> void:
+    attack_hitbox.call("deactivate")
+    attack_elapsed = 0.0
+    attack_hit_triggered = false
+    attack_confirmed = false
+    animation_action_id += 1
+    attack_timing = rig_adapter.call("get_attack_timing", combo_step, attack_airborne)
 
 func _face_direction(direction: Vector3, delta: float) -> void:
     var flat: Vector3 = direction
@@ -342,7 +389,7 @@ func receive_combat_hit(
     if false and hit_cycle % 4 == 0 and health > 0.0 and not guarding and is_on_floor():
         _start_reaction_dodge(direction)
 
-    _flash_hit()
+    animation_action_id += 1
     _update_labels()
 
     if health <= 0.0:
@@ -380,11 +427,6 @@ func _start_reaction_dodge(incoming_direction: Vector3) -> void:
     dodge_direction = side.normalized()
     dodge_timer = 0.22
     stagger_timer = 0.0
-
-func _flash_hit() -> void:
-    visual.scale = Vector3(1.18, 0.82, 1.18)
-    var tween: Tween = create_tween()
-    tween.tween_property(visual, "scale", Vector3.ONE, 0.12)
 
 func _update_labels() -> void:
     var state: String = ""
