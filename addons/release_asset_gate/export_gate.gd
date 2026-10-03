@@ -2,11 +2,13 @@
 extends EditorExportPlugin
 
 var reject_payload: bool = false
+var suspended_autoloads: Dictionary = {}
 
 func _get_name() -> String:
     return "PublicReleaseAssetGate"
 
 func _export_begin(features: PackedStringArray, _is_debug: bool, _path: String, _flags: int) -> void:
+    _restore_autoloads()
     reject_payload = false
     if not features.has("public_release"):
         return
@@ -42,7 +44,23 @@ func _export_begin(features: PackedStringArray, _is_debug: bool, _path: String, 
         _check_unregistered("res://assets", registered, errors)
     if not errors.is_empty():
         reject_payload = true
+        # A backend may still emit a container/config after export errors. Do not
+        # let that rejected config initialize scripts whose resources were skipped.
+        for property: Dictionary in ProjectSettings.get_property_list():
+            var setting: String = String(property.name)
+            if setting.begins_with("autoload/"):
+                suspended_autoloads[setting] = {"value": ProjectSettings.get_setting(setting), "order": ProjectSettings.get_order(setting)}
+                ProjectSettings.set_setting(setting, null)
         get_export_platform().add_message(EditorExportPlatform.EXPORT_MESSAGE_ERROR, "Licenças", "Export público bloqueado; payload excluído. " + "; ".join(errors))
+
+func _export_end() -> void:
+    _restore_autoloads()
+
+func _restore_autoloads() -> void:
+    for setting: String in suspended_autoloads:
+        ProjectSettings.set_setting(setting, suspended_autoloads[setting].value)
+        ProjectSettings.set_order(setting, int(suspended_autoloads[setting].order))
+    suspended_autoloads.clear()
 
 func _export_file(_path: String, _type: String, _features: PackedStringArray) -> void:
     if reject_payload:

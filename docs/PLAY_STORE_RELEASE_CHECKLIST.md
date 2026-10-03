@@ -14,3 +14,5 @@ Build de desenvolvimento atual não é release público. Godot 4.7.2, Compatibil
 - [ ] Narração/áudio/modelos/animações próprios ou autorizados; nenhum download runtime.
 
 O modelo rigged.glb fornecido continua utilizável no desenvolvimento, mas sua licença não foi comprovada. Isso deve bloquear o release público até autorização verificável ou substituição adequada; não é motivo para apagar o rig atual.
+
+O mundo agora adiciona o autoload GameFlow. Quando o preset público é rejeitado, o plugin suspende autoloads somente na configuração do container bloqueado e restaura valores/ordem no fim do export; não salva alterações no project.godot. Isso evita inicializar scripts com recursos ausentes. Container bloqueado continua não publicável, e o contrato isolado verifica ausência de main/modelo/world e do autoload dependente.

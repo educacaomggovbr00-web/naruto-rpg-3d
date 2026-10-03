@@ -6,6 +6,10 @@ func _initialize() -> void:
 
 func run() -> void:
     if "--public" in OS.get_cmdline_user_args():
+        if ProjectSettings.has_setting("autoload/GameFlow"):
+            push_error("Rejected public container retained a resource-dependent autoload")
+            quit(1)
+            return
         if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn"):
             push_error("Uncleared public payload leaked")
             quit(1)
