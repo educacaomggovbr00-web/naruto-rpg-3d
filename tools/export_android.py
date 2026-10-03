@@ -15,4 +15,4 @@ if errors:
     raise SystemExit('\n'.join(errors))
 output = Path(args.output).resolve()
 output.parent.mkdir(parents=True, exist_ok=True)
-raise SystemExit(subprocess.call([args.godot, '--headless', '--path', str(ROOT), '--export-release' if args.release else '--export-debug', 'Android', str(output)]))
+raise SystemExit(subprocess.call([args.godot, '--headless', '--path', str(ROOT), '--export-release' if args.release else '--export-debug', 'Android (Play Store)' if args.release else 'Android', str(output)]))
