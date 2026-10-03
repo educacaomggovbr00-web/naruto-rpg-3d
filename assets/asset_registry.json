@@ -104,6 +104,15 @@
       "source": "Configuração original neste repositório",
       "license": "Conteúdo original do projeto",
       "modifications": "Parâmetros próprios do framework de Ultimate; não é asset extraído"
+    },
+    {
+      "path": "assets/vfx/chakra_tail.gdshader",
+      "sha256": "6a289bbf85e609783214e45fcc81ddca2257a97a15b2afa6e9264e883b2cedef",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Código original neste repositório",
+      "license": "Conteúdo original do projeto",
+      "modifications": "Shader original para cauda de chakra; não anima o esqueleto Mixamo"
     }
   ]
 }

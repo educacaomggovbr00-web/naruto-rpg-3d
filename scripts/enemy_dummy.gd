@@ -62,8 +62,8 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
     if is_instance_valid(cinematic_owner):
         cinematic_watchdog -= delta
-        _update_timers(delta)
         if cinematic_watchdog > 0.0 and targetable:
+            _update_timers(delta)
             velocity = Vector3.ZERO
             return
         cinematic_owner = null

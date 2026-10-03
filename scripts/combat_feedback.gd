@@ -6,6 +6,8 @@ var flashes: Array[MeshInstance3D] = []
 var lifetimes: Array[float] = []
 var durations: Array[float] = []
 var sizes: Array[float] = []
+var effect_budget: int = 32
+var trail_interval: float = 0.06
 var pool_cursor: int = 0
 var trail_timer: float = 0.0
 
@@ -45,7 +47,7 @@ func _process(delta: float) -> void:
     trail_timer -= delta
     var actor: Node3D = get_node_or_null("../Player") as Node3D
     if trail_timer <= 0.0 and actor != null:
-        trail_timer = 0.06
+        trail_timer = trail_interval
         if float(actor.get("chakra_dash_timer")) > 0.06 or (actor.get("specials") != null and actor.specials.current == "rasengan"):
             spawn_dash_burst(actor.global_position - actor.global_basis.z * 0.4)
     if hit_stop_end_msec <= 0:
@@ -116,7 +118,7 @@ func _spawn_flash(
     lifetime: float
 ) -> void:
     var index: int = pool_cursor
-    pool_cursor = (pool_cursor + 1) % flashes.size()
+    pool_cursor = (pool_cursor + 1) % mini(effect_budget, flashes.size())
     var effect: MeshInstance3D = flashes[index]
     var material: StandardMaterial3D = effect.mesh.material as StandardMaterial3D
     material.albedo_color = flash_color

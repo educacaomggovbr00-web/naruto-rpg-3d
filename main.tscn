@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=31 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1"]
 [ext_resource path="res://scripts/camera_rig.gd" type="Script" id="2"]
@@ -10,6 +10,8 @@
 [ext_resource path="res://scripts/combat_hurtbox.gd" type="Script" id="8"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="9"]
 [ext_resource path="res://scripts/rigged_character_adapter.gd" type="Script" id="10"]
+
+[ext_resource type="Script" path="res://scripts/mobile_quality.gd" id="quality"]
 
 [sub_resource type="StandardMaterial3D" id="BodyMaterial"]
 albedo_color = Color(0.95, 0.34, 0.07, 1)
@@ -415,3 +417,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5")
+
+[node name="MobileQuality" type="Node" parent="."]
+script = ExtResource("quality")

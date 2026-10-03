@@ -271,6 +271,9 @@ func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
         return
 
+    if mobile_controls.quality_queue > 0:
+        mobile_controls.quality_queue = 0
+        get_parent().get_node("MobileQuality").call("cycle")
     if mobile_controls.tool_select_queue > 0:
         mobile_controls.tool_select_queue = 0
         ninja_tools.call("cycle")

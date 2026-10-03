@@ -12,6 +12,9 @@ var guard_touch: int = -1
 var camera_last_position: Vector2 = Vector2.ZERO
 var camera_delta: Vector2 = Vector2.ZERO
 
+var quality_queue: int = 0
+var quality_center: Vector2 = Vector2.ZERO
+var quality_label: String = "MED"
 var tool_select_queue: int = 0
 var tool_use_queue: int = 0
 var tool_select_center: Vector2 = Vector2.ZERO
@@ -80,6 +83,7 @@ func _update_layout() -> void:
     substitution_center = Vector2(w - 355.0, h - 220.0)
     charge_center = Vector2(w - 475.0, h - 112.0)
     guard_center = Vector2(w - 475.0, h - 220.0)
+    quality_center = Vector2(w - 220.0, 82.0)
     lock_center = Vector2(w - 82.0, 82.0)
     special_center = Vector2(w - 235.0, h - 350.0)
     clone_center = Vector2(w - 355.0, h - 350.0)
@@ -101,6 +105,9 @@ func _input(event: InputEvent) -> void:
         _touch_dragged(event.index, event.position)
 
 func _touch_pressed(touch_id: int, position: Vector2) -> void:
+    if _inside_circle(position, quality_center, 43.0):
+        quality_queue += 1
+        return
     if _inside_circle(position, tool_select_center, 43.0):
         tool_select_queue += 1
         return
@@ -288,6 +295,7 @@ func _draw() -> void:
     draw_arc(joystick_center, joystick_radius, 0.0, TAU, 48, base_line, 3.0, true)
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
+    _draw_button(quality_center, 43.0, base_fill, quality_label, 14, text_color)
     _draw_button(tool_select_center, 43.0, base_fill, "ITEM", 14, text_color)
     _draw_button(tool_use_center, 43.0, blue_fill, tool_label, 12, text_color)
     _draw_button(ultimate_center, 43.0, jutsu_fill, "ULT", 16, text_color)
