@@ -6,7 +6,7 @@ func _initialize() -> void:
 
 func run() -> void:
     if "--public" in OS.get_cmdline_user_args():
-        if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb"):
+        if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn"):
             push_error("Uncleared public payload leaked")
             quit(1)
             return
@@ -37,7 +37,19 @@ func run() -> void:
         push_error("Development-only pipeline leaked into runtime")
         quit(1)
         return
-    print("ANDROID PHASE 1 PACK: PASS")
     game.queue_free()
+    for i: int in range(3):
+        await physics_frame
+    var village: Node = load("res://world.tscn").instantiate()
+    root.add_child(village)
+    for i: int in range(8):
+        await physics_frame
+    if village.points.size() != 7 or not village.get_node("Player").rig_adapter.rig_loaded or not ResourceLoader.exists("res://assets/world/training.tres"):
+        push_error("Development export lost village point JSON or mission/rig resources")
+        quit(1)
+        return
+    print("WORLD ANDROID PACK: PASS")
+    village.queue_free()
+    print("ANDROID PHASE 1 PACK: PASS")
     await process_frame
     quit(0)
