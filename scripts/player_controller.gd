@@ -84,6 +84,7 @@ var jutsu_released: bool = false
 var attack_buffer: float = 0.0
 var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
+var specials: Node3D = null
 var dash_hitbox: Area3D = null
 var dash_elapsed: float = 0.0
 var dash_speed_now: float = 0.0
@@ -109,6 +110,10 @@ var mobile_controls: Node = null
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func _ready() -> void:
+    specials = Node3D.new()
+    specials.name = "CombatSpecials"
+    specials.set_script(preload("res://scripts/combat_specials.gd"))
+    add_child(specials)
     spawn_position = global_position
     health = max_health
     chakra = max_chakra
@@ -318,6 +323,8 @@ func _cancel_attack() -> void:
 func _cancel_jutsu() -> void:
     jutsu_timer = 0.0
     jutsu_released = true
+    if is_instance_valid(specials):
+        specials.call("cancel")
 
 func _update_jutsu_timeline(delta: float) -> void:
     if jutsu_timer <= 0.0 or jutsu_released:
@@ -676,42 +683,10 @@ func _try_attack() -> void:
             _face_direction(flat, 1.0, 100.0)
 
 func _try_jutsu() -> void:
-    if defeated or attack_active or stagger_timer > 0.0 or jutsu_cooldown > 0.0:
-        return
-    if chakra < jutsu_cost or dodge_timer > 0.0 or chakra_dash_timer > 0.0:
-        return
-
-    is_guarding = false
-    is_charging_chakra = false
-    chakra -= jutsu_cost
-    jutsu_cooldown = jutsu_cooldown_time
-    jutsu_timer = 0.48
-    jutsu_elapsed = 0.0
-    jutsu_released = false
-    animation_action_id += 1
-    attack_cooldown = maxf(attack_cooldown, 0.48)
+    specials.call("start")
 
 func _release_jutsu() -> void:
-
-    var target: Node3D = _find_attack_target(jutsu_range)
-    if is_instance_valid(target):
-        var direction: Vector3 = target.global_position - global_position
-        direction.y = 0.0
-        _face_direction(direction, 1.0, 100.0)
-
-        if target.has_method("receive_combat_hit"):
-            var damage_result: Variant = target.call(
-                "receive_combat_hit",
-                jutsu_damage,
-                direction.normalized(),
-                jutsu_knockback,
-                4.5,
-                0.45
-            )
-            var actual_damage: float = jutsu_damage
-            if typeof(damage_result) == TYPE_FLOAT or typeof(damage_result) == TYPE_INT:
-                actual_damage = float(damage_result)
-            on_attack_connected(target, actual_damage, 4.5)
+    pass # Projectile/hand timelines are owned by CombatSpecials.
 
 func _find_attack_target(range_limit: float) -> Node3D:
     if is_instance_valid(locked_target):
