@@ -7,6 +7,7 @@ var start_button: Button
 var preview: SubViewportContainer
 
 func _ready() -> void:
+    CharacterCatalog.initialize()
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     var backdrop: ColorRect = ColorRect.new()
     backdrop.color = Color(0.035, 0.055, 0.09)
@@ -77,16 +78,14 @@ func _fighter_choice(row: HBoxContainer, title: String) -> OptionButton:
     var choice: OptionButton = OptionButton.new()
     choice.custom_minimum_size = Vector2(280, 64)
     for fighter: CharacterDefinition in CharacterCatalog.READY:
-        choice.add_item(fighter.display_name)
-    for name: String in CharacterCatalog.PENDING:
-        choice.add_item(name + " — em desenvolvimento")
-        choice.set_item_disabled(choice.item_count - 1, true)
+        var suffix: String = " — base em desenvolvimento" if fighter.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG" else ""
+        choice.add_item(fighter.display_name + suffix)
     group.add_child(choice)
     return choice
 
 func _describe(_index: int) -> void:
     var character: CharacterDefinition = CharacterCatalog.READY[player_pick.selected]
-    description.text = character.summary + "\n\nQuatro modelos 3D próprios, com animações reais compartilhadas. Esta é uma primeira versão visual; o moveset completo de cada personagem ainda está em desenvolvimento."
+    description.text = character.summary + "\n\nElenco jogável de Storm 1: %d personagens. Naruto, Sasuke, Sakura e Kakashi já têm perfis visuais próprios; os demais entram primeiro como slots jogáveis com rig/base compartilhados enquanto recebem implementação individual." % CharacterCatalog.READY.size()
     preview.call("show_fighters", character, CharacterCatalog.READY[cpu_pick.selected])
 
 func _start() -> void:
