@@ -65,13 +65,24 @@ func run() -> void:
         return
     print("SELECTABLE FIGHTERS ANDROID PACK: PASS")
     var catalog: Script = load("res://scripts/character_catalog.gd")
+    catalog.initialize()
+    var authored_visuals: int = 0
+    var roster_placeholders: int = 0
     for definition: Resource in catalog.READY:
-        if not ResourceLoader.exists(definition.model_path) or definition.visual_status != "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL":
+        if not ResourceLoader.exists(definition.model_path):
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-    if catalog.READY.size() != 4 or catalog.SAKURA.jutsus != PackedStringArray(["booby_trap"]) or catalog.KAKASHI.jutsus != PackedStringArray(["raikiri", "fireball"]):
-        push_error("Export lost four-profile ability restrictions")
+        if definition.visual_status == "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL":
+            authored_visuals += 1
+        elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+            roster_placeholders += 1
+        else:
+            push_error("Unexpected roster visual status: " + definition.character_id)
+            quit(1)
+            return
+    if catalog.READY.size() != 25 or authored_visuals != 4 or roster_placeholders != 21 or catalog.SAKURA.jutsus != PackedStringArray(["booby_trap"]) or catalog.KAKASHI.jutsus != PackedStringArray(["raikiri", "fireball"]):
+        push_error("Export lost Storm 1 roster or authored ability restrictions")
         quit(1)
         return
     for definition: Resource in catalog.READY:
@@ -85,7 +96,7 @@ func run() -> void:
         quit(1)
         return
     print("CHARACTER JUTSU DATA ANDROID PACK: PASS")
-    print("FOUR STYLIZED MODELS ANDROID PACK: PASS")
+    print("FULL STORM 1 ROSTER AND FOUR STYLIZED MODELS ANDROID PACK: PASS")
     menu.queue_free()
     await process_frame
     var village: Node = load("res://world.tscn").instantiate()
