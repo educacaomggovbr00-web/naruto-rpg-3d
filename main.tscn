@@ -9,7 +9,7 @@
 [ext_resource path="res://scripts/combat_hitbox.gd" type="Script" id="7"]
 [ext_resource path="res://scripts/combat_hurtbox.gd" type="Script" id="8"]
 [ext_resource path="res://scripts/combat_feedback.gd" type="Script" id="9"]
-[ext_resource path="res://scripts/rigged_character_adapter.gd" type="Script" id="10"]
+[ext_resource path="res://scripts/character_visual_adapter.gd" type="Script" id="10"]
 
 [ext_resource type="Script" path="res://scripts/mobile_quality.gd" id="quality"]
 
