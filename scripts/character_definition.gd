@@ -7,6 +7,11 @@ extends Resource
 @export var visual_status: String = "DEVELOPMENT_ONLY_SHARED_RIG"
 @export_multiline var summary: String = "Base de combate em desenvolvimento."
 @export var stylized_material: bool = false
+@export_enum("rig_3d", "sprite_2_5d") var visual_mode: String = "rig_3d"
+@export_file("*.png") var sprite_atlas_path: String = ""
+@export var sprite_cell_size: Vector2i = Vector2i(192, 192)
+@export var sprite_pixel_size: float = 0.013
+@export var sprite_offset: Vector3 = Vector3(0.0, 0.30, 0.0)
 @export var model_auto_scale: bool = true
 @export var model_ground_to_collision: bool = false
 @export var model_scale_multiplier: float = 1.0
