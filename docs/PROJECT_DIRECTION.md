@@ -22,3 +22,7 @@ Preservar o projeto atual, rig/modelo, 27 clips, AnimationTree, combate, mobile 
 Pesquisar antes de inventar. Distinguir informação confirmada, aproximação e lacuna. Registrar coreografias/animações ainda ausentes; clips CC0 genéricos não são a coreografia final de Naruto. Não declarar qualidade comercial concluída por compilação. Nenhum número próprio de balanceamento deve ser apresentado como frame data de Storm.
 
 Assets: SAFE_FOR_RELEASE, NEEDS_ATTRIBUTION, DEVELOPMENT_ONLY ou UNKNOWN_LICENSE. Arquivo fornecido pelo usuário deve ser examinado/integrado tecnicamente quando possível; origem desconhecida impede sua publicação automática, não seu uso técnico na build de desenvolvimento. Conferir também direitos da apresentação/personagens na versão pública, além das licenças dos arquivos.
+
+## Prioridade atual — 2026-10-03
+
+O pedido posterior “personagem também a aldeia principalmente” antecipou um primeiro trecho físico do Mundo Shinobi. Isso não elimina o restante de Naruto/CPU nem reduz a meta de fidelidade ao Storm 1. O mundo usa a batalha existente e dados de missões; terreno/layout/modelos específicos finais continuam em desenvolvimento. A origem de arquivos encontrados no GitHub deve ser comprovada antes de incorporar qualquer asset comercial.

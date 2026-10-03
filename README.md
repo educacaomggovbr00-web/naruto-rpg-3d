@@ -208,4 +208,23 @@ python tools/validate_release_assets.py
 
 Exportação de desenvolvimento: `python tools/export_android.py --godot /caminho/godot --output build/dev.apk`. Publicação exige `--release` e passa pelo gate **antes** de iniciar Godot. O preset separado Android (Play Store) usa public_release/AAB; o plugin do editor recusa incluir payload quando o registro não está liberado, mesmo ao exportar diretamente pelo editor. Um backend pode gravar um container vazio com mensagem de erro: não é uma build publicável. Não desabilitar o gate para publicar assets sem autorização. Segredos de signing permanecem fora do Git.
 
-Referências adicionais: [elenco](docs/STORM1_CHARACTER_ROSTER.md), [Mundo Shinobi](docs/STORM1_WORLD_REFERENCE.md), [Play Store](docs/PLAY_STORE_RELEASE_CHECKLIST.md). Konoha foi pesquisada/documentada; o mundo jogável ainda não foi construído. Isso mantém a ordem Naruto → CPU → polimento → framework/personagens → mundo.
+Referências adicionais: [elenco](docs/STORM1_CHARACTER_ROSTER.md), [Mundo Shinobi](docs/STORM1_WORLD_REFERENCE.md), [Play Store](docs/PLAY_STORE_RELEASE_CHECKLIST.md). O pedido mais recente priorizou a aldeia: há agora um primeiro trecho autoral jogável, ligado à batalha existente. Ainda faltam o mapa completo/medido e o acabamento visual fiel ao Storm 1.
+
+## Mundo Shinobi — primeiro trecho jogável
+
+Toque **ALDEIA** no topo do combate (**F10** no PC). O personagem rigado explora ruas, telhados, praça, pontes e pontos de academia/ramen/ferramentas. Analógico + CORRER, PULO duas vezes, arraste para câmera, AÇÃO para conversar e MAPA para localizar objetivos. PC: WASD, Shift, Space, E, M.
+
+- Instrutor na academia: aceitar percurso, recolher três pergaminhos por colisão física, retornar e receber 150 ryō uma vez.
+- Ferramentas: pacote por 40 ryō, máximo 3; acrescenta uma bomba e uma food pill ao próximo treino.
+- Treinador da praça: usa o mesmo `main.tscn` e combate/27 clips; vitória/derrota abre resultado, repetir ou voltar ao checkpoint. Primeira vitória concede 100 ryō.
+- Save versionado em `user://world_save.json`: progresso, ryō, coletas, pacotes e posição. Saves futuros/inválidos são preservados; posição ocupada recupera no portão.
+- LOW/MED/HIGH: distância de setores/NPCs, atualização de rig distante, resolução e sombras. Sem downloads runtime.
+
+Geometria e colocação são originais do projeto: **não é o mapa comercial extraído, nem Konoha final 100% igual**. O modelo fornecido e a CPU anterior foram preservados; não há novos modelos finais de Naruto, Sasuke, Sakura ou Kakashi. Naruto Cannon/wall run, história e missões completas, interiores, streaming/LOD avançados e acabamento dos landmarks continuam pendentes.
+
+```sh
+godot --headless --path . --script res://tests/world_contract.gd
+godot --headless --path . --script res://tests/world_flow_contract.gd
+```
+
+O [roteiro Android](docs/ANDROID_VALIDATION.md) detalha testes de toque, travessia, save e retorno. A [referência do mundo](docs/STORM1_WORLD_REFERENCE.md) separa evidências de Storm, implementação e lacunas.

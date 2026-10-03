@@ -40,4 +40,15 @@ Rig/modelo existente preservado. Golpes da mão substituem provisoriamente chute
 | LOW → MED → HIGH com Rasengan/clones | Touch continua nítido/na posição; LOW reduz sombras/camada externa; comparar FPS/temperatura. HUD não deve cobrir QTE ou botões |
 | Minimizar e voltar durante CHK/DEF/joystick | Não continuar carregando, defendendo ou andando por dedo preso |
 
-Não houve inspeção do shader em GPU Android nem medição de FPS nesta sessão. Headless validou a estrutura e recursos carregados; núcleo/shell/cauda precisam de avaliação visual no aparelho. Handbook usa a coreografia adaptada e limitada a três clones, não a sequência comercial final. Awakening ainda usa combos do rig existente e não implementa Sealed Power. Konoha está na fase posterior documentada, sem cena de mundo nova nesta revisão.
+Não houve inspeção do shader em GPU Android nem medição de FPS nesta sessão. Headless validou a estrutura e recursos carregados; núcleo/shell/cauda precisam de avaliação visual no aparelho. Handbook usa a coreografia adaptada e limitada a três clones, não a sequência comercial final. Awakening ainda usa combos do rig existente e não implementa Sealed Power. A aldeia agora tem um primeiro trecho autoral jogável; ainda não reproduz o layout completo/visual do Storm.
+
+## Aldeia — teste no aparelho
+
+1. Toque **ALDEIA** no topo do combate. Ande na avenida; segure **CORRER**, arraste a câmera e use **PULO** duas vezes. Os dedos devem funcionar simultaneamente.
+2. Abra **MAPA**. Movimento deve parar; feche e retome. Visite a **academia ao norte**, fale com o instrutor usando **AÇÃO** e aceite o percurso.
+3. Recolha os três pergaminhos marcados no mapa. Escadas a oeste do telhado sul e da academia devem permitir subida sem travar; use salto duplo para o telhado leste. Volte ao instrutor: **150 ryō**, sem recompensa duplicada.
+4. Visite **FERRAMENTAS**, compre um pacote, fale com o **TREINADOR** na praça. Combate deve ter uma bomba/food pill extra. Vença ou perca: resultado → voltar/repetir; câmera, controles e posição devem retornar corretamente.
+5. Minimize durante joystick/corrida, volte e reinicie o aplicativo. Dedos não devem ficar presos; pergaminhos, dinheiro, missões e pacotes devem permanecer. Toque ALDEIA para retornar ao mundo após reiniciar.
+6. Alterne **LOW/MED/HIGH**, percorra do portão à academia e rode a câmera perto das fachadas. Observar FPS mínimo, aquecimento, tempo de entrada/saída, pop-in dos setores/NPCs e câmera atravessando paredes.
+
+Registrar aparelho, perfil gráfico, FPS mínimo, tempo de transição e vídeo de travas/interseções. Não foi executada GPU Android, AAB/APK nem captura de performance nesta sessão. O mapa é um primeiro trecho autoral, NPCs usam o modelo existente e a CPU ainda não é o lutador humanoide final.

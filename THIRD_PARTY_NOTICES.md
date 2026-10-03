@@ -30,3 +30,7 @@ Nenhum asset proprietário novo foi adquirido. Clones compartilham o modelo prev
 ## Revisão Ultimate/Awakening/ferramentas
 
 Nenhum conteúdo externo adicional foi distribuído. Shaders/meshes/VFX/configurações novos são originais do projeto. Animações e cópias do personagem reutilizam as fontes já declaradas acima. O modelo e imagens nele embutidas têm status UNKNOWN_LICENSE para publicação até comprovação. Registro com hashes: `assets/asset_registry.json`. Kenney Modular Buildings/KayKit Medieval Hexagon foram pesquisados sob CC0, sem importação. [Godot Engine — licença MIT](https://godotengine.org/license) deve constar nos créditos da distribuição.
+
+## Aldeia autoral e dados de mundo
+
+A geometria de aldeia em `scripts/world/world_mesh_builder.gd`, pontos/missões em `assets/world`, mapa/UI e prévia diagnóstica em `docs/images/village_layout_preview.png` são conteúdo original deste projeto. A prévia renderiza apenas a geometria original em CPU; não contém imagem do Storm nem modelo fornecido. Nenhuma textura, áudio ou mesh do jogo original foi incorporada. NPCs continuam usando o rig já fornecido, com a proveniência UNKNOWN_LICENSE registrada anteriormente. A autorização de distribuição pública da apresentação/personagens permanece pendente; o gate não foi removido.
