@@ -16,8 +16,8 @@ func _ready() -> void:
     add_child(hitbox)
     rig_adapter = Node3D.new()
     rig_adapter.name = "RiggedCharacterAdapter"
-    rig_adapter.set_script(preload("res://scripts/rigged_character_adapter.gd"))
-    rig_adapter.follow_hitbox_to_bones = false
+    rig_adapter.set_script(preload("res://scripts/character_visual_adapter.gd"))
+    rig_adapter.set("follow_hitbox_to_bones", false)
     add_child(rig_adapter)
 
 func get_character_definition() -> CharacterDefinition:
