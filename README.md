@@ -11,6 +11,14 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 - alvo de 60 FPS
 - renderer `gl_compatibility`
 
+## Seleção e batalha
+
+O jogo abre em seleção de jogador, CPU e arena. Naruto e **Sasuke (base em desenvolvimento)** possuem perfis Resources separados; ambos ainda usam o rig fornecido, não modelos finais de Naruto/Sasuke. Sakura, Kakashi e Gaara estão desabilitados até seus movesets/visuais próprios existirem. As arenas são duas variantes da arena atual (treino/pátio com luz de entardecer), não mapas extraídos do Storm.
+
+Sasuke tem Fireball com sweep e Chidori preso à mão, com VFX elétrico próprio; coreografias exclusivas, Ultimate e transformação dele estão pendentes. Naruto conserva seu arsenal. A CPU usa os mesmos módulos de chakra/dash/jutsu/clones/Ultimate/Awakening/tools, com decisões atrasadas e probabilísticas. KO em versus abre vitória/derrota, seleção e revanche. A aldeia/treino e o save existente continuam disponíveis.
+
+Áudio CC0 Kenney, oito vozes SFX + um canal de carga; SOM ON/OFF salva a preferência. LOW/MED/HIGH mantém regras de colisão/timing iguais. FPS/DC ajudam a comparar no Moto G22; não houve medição real de FPS/GPU Android nesta sessão. Ver [validação e pendências](docs/SELECTABLE_FIGHTERS.md).
+
 ## Combate atual
 - movimentação 3D e corrida
 - pulo
@@ -19,7 +27,7 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 - combo terrestre de 4 golpes
 - hitbox/hurtbox 3D separadas por camada de colisão
 - janelas de impacto sincronizadas com o estado do golpe
-- 4º golpe terrestre lança o inimigo
+- finisher terrestre alto lança; neutro afasta, baixo derruba e lateral desloca
 - chakra dash persegue alvo lançado no ar
 - combo aéreo
 - pequena suspensão aérea durante ataques para facilitar continuidade
@@ -31,7 +39,7 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 - substituição com 4 cargas e cooldown
 - primeiro jutsu com custo de chakra, dano e knockback
 - vida do jogador, stagger, derrota e respawn
-- inimigo com IA de perseguição, ataque, defesa e reação/esquiva
+- inimigo rigado com IA de perseguição, combos, defesa, substituição e arsenal compartilhado
 - ataques da IA também usam janela de hitbox
 - K.O. e respawn do inimigo
 - HUD de vida, chakra, substituições, cooldowns, estado de animação e FPS

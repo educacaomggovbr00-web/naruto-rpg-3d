@@ -6,19 +6,19 @@ Atualização: 2026-10-03. Modelos de Naruto/Sasuke/Kakashi/Gaara comerciais nã
 |---|---|---|---|---|---|
 | Naruto Part 1 | Arena/lock/dash/aéreo existentes; branches neutro/alto/baixo/lateral | Demon Wind, Rasengan, clones/Charging Bullet/Whirlwind/Barrage existentes | Handbook adaptado; base temporária de uma cauda | 27 clips reais; Rasengan multilayer, aura/trails/flash pooled; não coreografia final | Moveset compartilhado jogador/CPU; direção após intro e buffer touch; neutro separado do launcher; projeção configurável; câmera por ataque. Faltam kicks/clones das branches, carga/grab/Impact, Sealed Power, suporte e modelo final |
 | Naruto adulto / Sage / KCM etc. | Não implementados como variantes | Não inventar seus golpes a partir de Part 1 | Formas/Ultimates próprios pendentes | Sem clips/modelos próprios | Comparação por jogo/build e CharacterDefinition/variante antes de implementar |
-| Sasuke | Controlador compartilhável; sem moveset próprio | Chidori/Katon como metas; Amaterasu apenas na variante correta | Pendentes | Sem modelo/clips/VFX próprios | Arquitetura de Attack/Moveset/Projectile pronta para dados próprios; nenhum personagem selecionável foi adicionado |
+| Sasuke Part 1 (base) | Selecionável; stats/moveset separado, terceiro golpe kick real | Fireball swept + Chidori hand Area, custo/recovery | Desabilitados; pendentes próprios de Sasuke | Rig compartilhado de desenvolvimento; elétrico/fogo originais; clips ainda adaptados | Falta modelo/retrato, coreografia exclusiva, costumes/desbloqueio, Phoenix Flower, Ultimate e Awakening |
 | Kakashi | Sem moveset próprio | Raikiri/clones como metas; Kamui depende da variante/jogo | Pendentes | Sem modelo/clips/VFX próprios | Pesquisar/comparar moveset da versão antes de implementar |
 | Gaara | Sem moveset próprio | Sand Shower/Tsunami/Coffin/Burial: metas a verificar por versão | Pendentes | Sem areia/rig/animações próprias | Não tratar como Naruto com material diferente; necessidade de hitboxes/VFX/ações específicas |
 | Sakura | Sem moveset próprio | Golpes/jutsus ainda precisam de referência específica | Pendentes | Sem modelo/clips próprios | Mantida como personagem futuro da direção anterior |
-| CPU atual | Humanoide, mesmo moveset Resource, decisões atrasadas, branches probabilísticas, reação/guarda/sub/bounce/KO | Sem dash/chakra/jutsu próprios completos | Sem Ultimate/Awakening próprios | Mesmos clips, AnimationTree independente | Migração de ataques compartilhada neste incremento; IA não lê inputs. Ainda não é CPU Fighter completa |
+| CPU atual | Humanoide selecionável; profile/moveset, branches, dash/pursuit, charge, guarda/sub/KO | Shared CombatSpecials/clones, jutsu profile, tools reais | Naruto: shared Ultimate com entry física/clash e Awakening; Sasuke desabilitados | AnimationTree independente, clips preparados compartilhados | Estratégia probabilística atrasada; ainda falta otimizar reação a projétil, perfis táticos por personagem e polimento competitivo |
 
 ## Contratos e integração
 
 - `AttackDefinition` consome dano/impulso/stun/animação/evento; startup/active/recovery/cancel vêm do manifesto real, preservando rig adapter e AnimationTree.
 - `MovesetDefinition` escolhe chain/branch; ambos os controladores utilizam o mesmo Resource imutável. Estado de cada luta fica nos controladores, nunca no Resource compartilhado.
 - `ProjectileDefinition` configura Demon Wind no sweep existente, sem dependência externa no Android.
-- `CameraEventDefinition` controla impactos do jogador. CPU/VFX/Ultimate específicos ainda não foram integralmente migrados.
-- `UltimateDefinition` pré-existente continua; não criamos classes vazias para declarar CharacterDefinition/Jutsu/Awakening concluídos.
+- `CameraEventDefinition` controla impactos do jogador; CPU usa feedback existente. Ultimate/câmera são compartilhados, mas nem todos os parâmetros migraram para Resources.
+- `CharacterDefinition` configura modelo/stats/moveset/jutsus/capabilities. UltimateDefinition continua; Jutsu/Awakening ainda são módulos compartilhados, não uma migração completa a Resources.
 - `moves_data_contract.gd`: seleção das quatro branches, timings reais, buffer touch, guard-break sem confirmação, recurso do projétil, cleanup. Suítes anteriores continuam obrigatórias.
 
 ## Checklist Android deste incremento

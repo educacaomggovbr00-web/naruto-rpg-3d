@@ -70,3 +70,13 @@ Demon: velocidade 19 m/s, raio .45 m, vida 1.6 s, tracking 1.8/s. Custos de chak
 ## Próximas lacunas verificáveis
 
 Grab, Ultimate Impact carregado e Rasengan carregável; Ninja Move/jump cancel; suporte/Storm Gauge; clone dentro das branches terrestres; novas animações; prioridade/armor/reflect; formas próprias de Naruto adulto; medições de vídeo identificadas por jogo/build/quadros. `CharacterDefinition`, jutsus/Awakening completamente orientados a dados e perfis de CPU ainda requerem migração progressiva. Não declarar Naruto completo ou cópia 100% por este incremento.
+
+## Sasuke Part 1 — base selecionável (2026-10-03)
+
+Referência de comunidade: [FAQ de Ashurii, Storm 1](https://gamefaqs.gamespot.com/xboxone/218500-naruto-ultimate-ninja-storm/faqs/54852), seção Sasuke. COMMUNITY_RESEARCH: Fireball é jutsu padrão, Phoenix Flower e Chidori possuem desbloqueio/condição de costume; Awakening depende de roupa (Curse Mark/Sharingan), e não de um Susano'o genérico de versões posteriores.
+
+Implementação OUR_APPROXIMATION: perfil de desenvolvimento reúne Fireball/Chidori para testar ambos; não aplica ainda desbloqueio/costumes. Fireball: speed 17 m/s, raio 0.5 m, vida 1.8 s, tracking 0.65/s, dano 20, knockback 8, lift 1, stun 0.45 s. Chidori: utiliza clip real disponível Rasengan, startup 0.38 s, active até 0.68 s, recovery até 0.95 s; Area na mão, aproximação 13 m/s, custo 32. Timings/danos não são oficiais. A biblioteca de 27 clips não ganhou coreografias comerciais neste incremento.
+
+Diferenças implementadas: CharacterDefinition seleciona stats/moveset/jutsus/model_path; terceiro golpe Sasuke usa kick real air_attack_2, com bone/timing do clip escolhido. Ultimate/Awakening Naruto são bloqueados no perfil Sasuke. Fireball não transporta o corpo nem cria clones como Demon Wind. Elétrico usa MultiMesh autoral de 16 segmentos opacos; Fireball usa shader opaco de fogo, sem exigir bloom.
+
+CPU: os módulos reais dos jutsus, Ultimate, Awakening e tools foram compartilhados. Máscaras de time passam a depender do source. CPU atacante no clash gera seus próprios comandos por RNG/tempo; ATK do jogador alimenta somente a defesa e SUB pode escapar. Decisões não leem filas/input do jogador; valores de chance e reação são OUR_APPROXIMATION.

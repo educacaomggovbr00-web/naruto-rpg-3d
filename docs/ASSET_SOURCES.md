@@ -9,7 +9,7 @@
 - [Kenney Particle Pack](https://kenney.nl/assets/particle-pack): 80 sprites de VFX, CC0. Boa opção para acabamento futuro; fase atual prioriza pooling de meshes opacas, sem aumentar overdraw/transparências.
 - [Quaternius UAL](https://quaternius.com/packs/universalanimationlibrary.html): animações CC0; as fontes já vendorizadas são suficientes para o protótipo de clones.
 
-Não foi localizado nesta pesquisa um pacote reutilizável com a coreografia exata de Rasengan/Barrage e licença apropriada. Usa-se a animação real disponível como placeholder documentado, nunca download/rip de Storm. Áudio e músicas não fazem parte desta fase.
+Não foi localizado nesta pesquisa um pacote reutilizável com a coreografia exata de Rasengan/Barrage e licença apropriada. Usa-se a animação real disponível como placeholder documentado, nunca download/rip de Storm. Na fase inicial ainda não havia áudio; a revisão de seleção abaixo adiciona SFX. Música permanece pendente.
 
 
 ## Revisão Ultimate/Awakening/mundo
@@ -33,3 +33,12 @@ O registro `assets/asset_registry.json` cobre arquivos runtime e hashes das text
 As ferramentas/formatos listados em `STORM_MOVES_DATA.md` foram referências de estrutura, sem código/binaries/PRM/ANM comerciais copiados. UE4SS possui MIT; Unverum GPL-3.0; vários outros repositórios consultados não expõem licença raiz. Licença da ferramenta não licencia assets do jogo.
 
 `assets/combat/naruto_moveset.tres` e `demon_wind_projectile.tres`: dados originais do projeto, SAFE_FOR_RELEASE quanto ao arquivo de configuração; nomes/apresentação/modelo continuam sujeitos ao gate separado. Dano/tempo/distâncias são OUR_APPROXIMATION. Nenhum novo asset externo foi baixado.
+
+## Seleção, Sasuke e áudio — 2026-10-03
+
+- [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds): CC0 1.0, conferido na página primária e em License.txt do ZIP oficial. Integrados sem alterar o arquivo: impactPunch_medium_000, impactPunch_heavy_000, impactMetal_light_000, footstep_concrete_000, footstep_grass_000. Fonte ZIP: https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip .
+- [Kenney Sci-fi Sounds](https://kenney.nl/assets/sci-fi-sounds): CC0 1.0, página/licença do ZIP verificadas. forceField_000, thrusterFire_000, explosionCrunch_000 são SFX temporários de energia/dash/fumaça; não são áudio Naruto. Fonte ZIP: https://kenney.nl/media/pages/assets/sci-fi-sounds/6b296f9ecf-1677589334/kenney_sci-fi-sounds.zip . Licenças locais em assets/audio/kenney/LICENSE_*.txt; hashes no registro. Oito OGG somam 297328 bytes (~290 KiB).
+- CharacterDefinition/Resources, Fireball e VFX elétrico/fogo são autorais. SAFE_FOR_RELEASE quanto ao conteúdo original dos arquivos, sem alterar o gate de apresentação/modelo.
+- [Naruto por RodrigoXP](https://blendswap.com/blend/17083): candidato fan art CC-BY (Blender 2.7), não importado; comentários públicos indicam ausência de bones/rig, e o arquivo não foi obtido/validado tecnicamente. CC-BY anunciado por uploader não resolve automaticamente direitos da personagem.
+- Resultados [Asif20 Naruto 2942](https://blendswap.com/blend/2942), [2945](https://blendswap.com/blend/2945), [Sasuke 2946](https://blendswap.com/blend/2946) são armas (kunai/shuriken/fūma), não GLBs dos personagens. Não foram usados como falsos substitutos.
+- Nenhum novo GLB/retrato comercial foi baixado. O rig fornecido segue preservado e UNKNOWN_LICENSE; perfis usam model_path configurável e o mesmo adaptador Mixamo. Conversão/rigging de modelos futuros deve ocorrer no pipeline de desenvolvimento, nunca no Android.
