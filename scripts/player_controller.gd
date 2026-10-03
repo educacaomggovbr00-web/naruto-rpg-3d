@@ -81,6 +81,17 @@ var attack_startup: float = 0.12
 var attack_duration: float = 0.28
 var jutsu_elapsed: float = 0.0
 var jutsu_released: bool = false
+var attack_buffer: float = 0.0
+var attack_confirmed: bool = false
+var combo_branch: String = "neutral"
+var dash_elapsed: float = 0.0
+var dash_speed_now: float = 0.0
+var air_dash_count: int = 0
+var guard_meter: float = 100.0
+var guard_stun: float = 0.0
+var guard_regen_delay: float = 0.0
+var sub_regen_timer: float = 0.0
+var substitution_hidden: float = 0.0
 var combo_hits: int = 0
 var combo_damage: float = 0.0
 var combo_display_timer: float = 0.0
@@ -126,6 +137,9 @@ func _physics_process(delta: float) -> void:
     _update_timers(delta)
     _update_attack_timeline(delta)
     _update_jutsu_timeline(delta)
+    if attack_buffer > 0.0 and not attack_active and attack_cooldown <= 0.0:
+        attack_buffer = 0.0
+        _try_attack()
 
     if defeated:
         _process_defeated(delta)
@@ -165,9 +179,23 @@ func _physics_process(delta: float) -> void:
         return
 
     if chakra_dash_timer > 0.0:
-        velocity.x = chakra_dash_direction.x * chakra_dash_speed
-        velocity.z = chakra_dash_direction.z * chakra_dash_speed
-        velocity.y = chakra_dash_direction.y * air_chase_speed
+        dash_elapsed += delta
+        if is_instance_valid(locked_target):
+            var pursuit: Vector3 = locked_target.global_position - global_position
+            if pursuit.length() < 1.25 and dash_elapsed >= 0.06:
+                chakra_dash_timer = 0.0
+                attack_cooldown = 0.0
+                if bool(locked_target.call("get_is_guarding")):
+                    stagger_timer = 0.22
+                    velocity = -chakra_dash_direction * 5.0
+                else:
+                    attack_buffer = maxf(attack_buffer, 0.16)
+            if pursuit.length_squared() > 0.001:
+                chakra_dash_direction = chakra_dash_direction.slerp(pursuit.normalized(), minf(delta * 9.0, 1.0)).normalized()
+        dash_speed_now = move_toward(dash_speed_now, chakra_dash_speed, delta * 100.0) if dash_elapsed > 0.06 else 0.0
+        velocity.x = chakra_dash_direction.x * dash_speed_now
+        velocity.z = chakra_dash_direction.z * dash_speed_now
+        velocity.y = chakra_dash_direction.y * minf(dash_speed_now, air_chase_speed)
         _face_direction(chakra_dash_direction, delta, 24.0)
         move_and_slide()
         _update_animation_state()
@@ -220,10 +248,25 @@ func _refresh_hold_states() -> void:
     var keyboard_guard: bool = Input.is_physical_key_pressed(KEY_R)
     var keyboard_charge: bool = Input.is_physical_key_pressed(KEY_C)
 
-    is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and not attack_active and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0
+    is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and guard_meter > 0.0 and not attack_active and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0
     is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and not attack_active and attack_cooldown <= 0.0 and jutsu_timer <= 0.0 and stagger_timer <= 0.0 and dodge_timer <= 0.0 and chakra_dash_timer <= 0.0
 
 func _update_timers(delta: float) -> void:
+    attack_buffer = maxf(attack_buffer - delta, 0.0)
+    guard_stun = maxf(guard_stun - delta, 0.0)
+    guard_regen_delay = maxf(guard_regen_delay - delta, 0.0)
+    if guard_regen_delay <= 0.0 and not is_guarding:
+        guard_meter = minf(100.0, guard_meter + delta * 22.0)
+    if substitutions < max_substitutions:
+        sub_regen_timer += delta
+        if sub_regen_timer >= 8.0:
+            substitutions += 1
+            sub_regen_timer = 0.0
+    substitution_hidden = maxf(substitution_hidden - delta, 0.0)
+    if is_instance_valid(rig_adapter):
+        rig_adapter.visible = substitution_hidden <= 0.0
+    if is_on_floor():
+        air_dash_count = 0
     combo_timer = maxf(combo_timer - delta, 0.0)
     attack_cooldown = maxf(attack_cooldown - delta, 0.0)
     attack_lunge_timer = maxf(attack_lunge_timer - delta, 0.0)
@@ -256,6 +299,7 @@ func _update_attack_timeline(delta: float) -> void:
         _open_attack_hitbox()
     if attack_elapsed >= attack_duration:
         attack_active = false
+        attack_hitbox.call("deactivate")
 
 func _cancel_attack() -> void:
     attack_active = false
@@ -288,6 +332,12 @@ func _open_attack_hitbox() -> void:
         else:
             launch_velocity = launcher_velocity
             hitstun = 0.38
+            if combo_branch == "down":
+                launch_velocity = -4.0
+                hitstun = 0.65
+            elif combo_branch == "side":
+                launch_velocity = 2.0
+                knockback_values[3] = 10.0
 
     if is_instance_valid(rig_adapter) and rig_adapter.has_method("snap_attack_hitbox"):
         rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
@@ -299,7 +349,7 @@ func _open_attack_hitbox() -> void:
         knockback_values[combo_step - 1],
         launch_velocity,
         hitstun,
-        0.09
+        float(rig_adapter.call("get_attack_timing", combo_step, attack_is_airborne).get("active", 0.09))
     )
 
 func _process_defeated(delta: float) -> void:
@@ -333,6 +383,8 @@ func _apply_movement(delta: float) -> void:
     if is_guarding:
         target_speed *= 0.50
 
+    if guard_stun > 0.0 or attack_active or jutsu_timer > 0.0:
+        target_speed = 0.0
     var target_velocity: Vector3 = direction * target_speed
     var accel: float = acceleration if is_on_floor() else air_control
 
@@ -432,8 +484,19 @@ func _validate_locked_target() -> void:
         _set_locked_target(null)
 
 func _start_chakra_dash() -> void:
-    if not _can_use_movement_action() or chakra < chakra_dash_cost:
+    var can_cancel: bool = attack_active and attack_confirmed and attack_elapsed >= attack_startup + 0.09 and combo_step < 4
+    if (not _can_use_movement_action() and not can_cancel) or chakra < chakra_dash_cost:
         return
+    if not is_on_floor() and air_dash_count >= 2:
+        return
+    if can_cancel:
+        _cancel_attack()
+        combo_step = 0
+        attack_cooldown = 0.0
+    if not is_on_floor():
+        air_dash_count += 1
+    dash_elapsed = 0.0
+    dash_speed_now = 0.0
 
     var direction: Vector3 = Vector3.ZERO
     var target_is_airborne: bool = false
@@ -460,7 +523,7 @@ func _start_chakra_dash() -> void:
     chakra -= chakra_dash_cost
     animation_action_id += 1
     chakra_dash_direction = direction.normalized()
-    chakra_dash_timer = chakra_dash_duration
+    chakra_dash_timer = 0.55
 
     if is_instance_valid(combat_feedback) and combat_feedback.has_method("spawn_dash_burst"):
         combat_feedback.call("spawn_dash_burst", global_position)
@@ -498,20 +561,29 @@ func _try_substitution() -> void:
     var substitution_origin: Vector3 = global_position
 
     substitutions -= 1
-    substitution_cooldown = substitution_cooldown_time
-    invulnerable_timer = maxf(invulnerable_timer, 0.80)
+    substitution_cooldown = 0.65
+    sub_regen_timer = 0.0
+    substitution_hidden = 0.12
+    invulnerable_timer = maxf(invulnerable_timer, 0.40)
     stagger_timer = 0.0
     velocity = Vector3.ZERO
     is_guarding = false
     is_charging_chakra = false
 
     if is_instance_valid(locked_target):
-        var behind: Vector3 = locked_target.global_basis.z
+        var behind: Vector3 = -locked_target.global_basis.z
         behind.y = 0.0
         if behind.length_squared() <= 0.001:
             behind = Vector3.BACK
 
-        global_position = locked_target.global_position + behind.normalized() * substitution_distance
+        var desired_position: Vector3 = locked_target.global_position + behind.normalized() * substitution_distance
+        desired_position.x = clampf(desired_position.x, -27.5, 27.5)
+        desired_position.z = clampf(desired_position.z, -27.5, 27.5)
+        var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(locked_target.global_position, desired_position, 1)
+        var obstruction: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+        if not obstruction.is_empty():
+            desired_position = obstruction["position"] + obstruction["normal"] * 0.7
+        global_position = desired_position
         var face: Vector3 = locked_target.global_position - global_position
         _face_direction(face, 1.0, 100.0)
     else:
@@ -530,6 +602,10 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
+    if attack_active:
+        if attack_elapsed >= attack_startup and combo_step < 4:
+            attack_buffer = 0.22
+        return
     if defeated or attack_active or jutsu_timer > 0.0 or attack_cooldown > 0.0 or chakra_dash_timer > 0.0 or dodge_timer > 0.0:
         return
     if stagger_timer > 0.0 or is_charging_chakra:
@@ -541,6 +617,10 @@ func _try_attack() -> void:
     if combo_step > 4:
         combo_step = 1
 
+    attack_confirmed = false
+    if combo_step == 1:
+        var stick: Vector2 = _get_move_input()
+        combo_branch = "down" if stick.y > 0.45 else "up" if stick.y < -0.45 else "side" if absf(stick.x) > 0.45 else "neutral"
     combo_timer = combo_reset_time
     var timing: Dictionary = {}
     if is_instance_valid(rig_adapter) and rig_adapter.has_method("get_attack_timing"):
@@ -653,6 +733,15 @@ func receive_combat_hit(
     var applied_knockback: float = knockback
 
     if is_guarding:
+        guard_meter = maxf(guard_meter - damage * 1.8 - knockback, 0.0)
+        guard_regen_delay = 1.2
+        guard_stun = 0.14
+        if guard_meter <= 0.0:
+            is_guarding = false
+            stagger_timer = 1.0
+            animation_action_id += 1
+            if is_instance_valid(combat_feedback):
+                combat_feedback.call("spawn_impact", global_position, "launcher")
         applied_damage *= guard_damage_multiplier
         applied_knockback *= 0.25
         launch_velocity *= 0.15
@@ -696,6 +785,7 @@ func on_attack_connected(target: Node, actual_damage: float, launch_velocity: fl
     )
 
     if not target_guarding:
+        attack_confirmed = true
         combo_hits += 1
         combo_damage += maxf(actual_damage, 0.0)
         combo_display_timer = combo_display_reset_time
@@ -802,6 +892,9 @@ func _respawn() -> void:
     combo_timer = 0.0
     combo_step = 0
     attack_cooldown = 0.0
+    guard_meter = 100.0
+    guard_stun = 0.0
+    attack_buffer = 0.0
     defeated = false
 
 func _can_use_movement_action() -> bool:

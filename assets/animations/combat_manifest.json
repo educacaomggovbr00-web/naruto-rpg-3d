@@ -91,7 +91,13 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "retarget/in-place"
+      "adaptation": "retarget/in-place",
+      "startup": 0.12,
+      "active": 0.09,
+      "recovery": 0.07,
+      "cancel_open": 0.21,
+      "cancel_close": 0.28,
+      "cancel_requires_hit": true
     },
     "attack_2": {
       "pack": 1,
@@ -106,28 +112,39 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "retarget/in-place"
+      "adaptation": "retarget/in-place",
+      "startup": 0.14,
+      "active": 0.09,
+      "recovery": 0.07,
+      "cancel_open": 0.23,
+      "cancel_close": 0.3,
+      "cancel_requires_hit": true
     },
     "attack_3": {
       "pack": 2,
       "clip": "Melee_Hook",
       "duration": 0.34,
       "loop": false,
-      "recovery": "Melee_Hook_Rec",
+      "recovery": 0.15,
       "impact": 0.1,
       "bone": "RightHand",
       "samples": 12,
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "retarget/in-place"
+      "adaptation": "retarget/in-place",
+      "startup": 0.1,
+      "active": 0.09,
+      "cancel_open": 0.19,
+      "cancel_close": 0.34,
+      "cancel_requires_hit": true
     },
     "attack_4": {
       "pack": 2,
       "clip": "Melee_Hook",
       "duration": 0.4,
       "loop": false,
-      "recovery": "Melee_Hook_Rec",
+      "recovery": 0.19,
       "uppercut": true,
       "impact": 0.12,
       "bone": "RightHand",
@@ -135,7 +152,12 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "uppercut"
+      "adaptation": "uppercut",
+      "startup": 0.12,
+      "active": 0.09,
+      "cancel_open": 0.21,
+      "cancel_close": 0.4,
+      "cancel_requires_hit": true
     },
     "air_attack_1": {
       "pack": 1,
@@ -151,7 +173,13 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "aerial legs"
+      "adaptation": "aerial legs",
+      "startup": 0.13,
+      "active": 0.09,
+      "recovery": 0.08,
+      "cancel_open": 0.22,
+      "cancel_close": 0.3,
+      "cancel_requires_hit": true
     },
     "air_attack_2": {
       "pack": 1,
@@ -167,14 +195,20 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "aerial legs"
+      "adaptation": "aerial legs",
+      "startup": 0.14,
+      "active": 0.09,
+      "recovery": 0.07,
+      "cancel_open": 0.23,
+      "cancel_close": 0.3,
+      "cancel_requires_hit": true
     },
     "air_attack_3": {
       "pack": 2,
       "clip": "Melee_Hook",
       "duration": 0.34,
       "loop": false,
-      "recovery": "Melee_Hook_Rec",
+      "recovery": 0.15,
       "aerial": true,
       "impact": 0.1,
       "bone": "RightHand",
@@ -182,7 +216,12 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "aerial legs"
+      "adaptation": "aerial legs",
+      "startup": 0.1,
+      "active": 0.09,
+      "cancel_open": 0.19,
+      "cancel_close": 0.34,
+      "cancel_requires_hit": true
     },
     "air_attack_4": {
       "pack": 2,
@@ -198,7 +237,13 @@
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",
-      "adaptation": "aerial legs"
+      "adaptation": "aerial legs",
+      "startup": 0.15,
+      "active": 0.09,
+      "recovery": 0.2,
+      "cancel_open": 0.24,
+      "cancel_close": 0.44,
+      "cancel_requires_hit": true
     },
     "guard": {
       "pack": 2,
