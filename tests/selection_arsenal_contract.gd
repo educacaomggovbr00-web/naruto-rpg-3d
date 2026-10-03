@@ -122,6 +122,14 @@ func run() -> void:
     check(cpu.awakening.active and cpu.get_damage_multiplier() > 1.0, "CPU Awakening affects real damage stats")
     cpu._knock_out()
     check(not cpu.awakening.active and cpu.specials.current.is_empty(), "KO cleans CPU modes and abilities")
+    var audio: Node = arena.get_node("AudioManager")
+    check(audio.voices.size() == 8 and audio.BANK.size() == 8, "Audio must use a bounded preloaded pool")
+    var node_count: int = audio.get_child_count()
+    for index: int in range(100):
+        audio.play("normal")
+    check(audio.get_child_count() == node_count, "Repeated SFX must not allocate more voices")
+    audio.stop_all()
+    check(not audio.charge_voice.playing, "Result cleanup stops charging loop")
     Engine.time_scale = 0.1
     check(flow.finish_battle(true), "Versus KO must enter result flow")
     check(Engine.time_scale == 1.0 and arena.process_mode == Node.PROCESS_MODE_DISABLED, "Hit-stop cannot freeze the result overlay")

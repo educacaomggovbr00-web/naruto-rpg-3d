@@ -10,7 +10,7 @@ func run() -> void:
             push_error("Rejected public container retained a resource-dependent autoload")
             quit(1)
             return
-        if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn"):
+        if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn") or FileAccess.file_exists("res://selection.tscn"):
             push_error("Uncleared public payload leaked")
             quit(1)
             return
@@ -49,6 +49,18 @@ func run() -> void:
     game.queue_free()
     for i: int in range(3):
         await physics_frame
+    var menu: Node = load("res://selection.tscn").instantiate()
+    root.add_child(menu)
+    for index: int in range(3):
+        await physics_frame
+    var sasuke: Resource = load("res://assets/characters/definitions/sasuke.tres")
+    if sasuke.jutsus != PackedStringArray(["fireball", "chidori"]) or not ResourceLoader.exists("res://assets/audio/kenney/impactPunch_medium_000.ogg") or not ResourceLoader.exists("res://assets/vfx/fire_core.gdshader"):
+        push_error("Selectable character/audio/effect data lost in Android payload")
+        quit(1)
+        return
+    print("SELECTABLE FIGHTERS ANDROID PACK: PASS")
+    menu.queue_free()
+    await process_frame
     var village: Node = load("res://world.tscn").instantiate()
     root.add_child(village)
     for i: int in range(8):

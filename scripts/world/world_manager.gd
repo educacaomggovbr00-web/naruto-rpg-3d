@@ -20,6 +20,10 @@ var quality_button: Button
 @onready var controls: Control = $HUD/WorldControls
 
 func _ready() -> void:
+    var audio: Node = Node.new()
+    audio.name = "AudioManager"
+    audio.set_script(preload("res://scripts/audio_manager.gd"))
+    add_child.call_deferred(audio)
     actor.global_position = GameFlow.resume_position()
     actor.rotation.y = float(GameFlow.progress.yaw)
     actor.last_safe_position = actor.global_position

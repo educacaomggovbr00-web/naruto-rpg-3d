@@ -38,3 +38,7 @@ A geometria de aldeia em `scripts/world/world_mesh_builder.gd`, pontos/missões 
 ## Referências técnicas (sem código/asset redistribuído)
 
 Storm Character Manager, UNSME, NSC Toolbox/ModManager, UNSG V2, Road to Connections, jumpforce-tools, UE4SS e Unverum foram consultados em 2026-10-03; fontes e limites em `docs/STORM_MOVES_DATA.md`. Novos Resources/implementações são originais; nenhum PRM/XFBIN/ANM comercial foi incorporado. Licenças das ferramentas não conferem licença dos jogos.
+
+## Kenney — SFX integrados
+
+Autor: Kenney (https://kenney.nl). Impact Sounds e Sci-fi Sounds, CC0 1.0 Universal. Oito arquivos OGG em assets/audio/kenney; arquivos de licença originais LICENSE_impact.txt e LICENSE_scifi.txt preservados. Fontes/nomes/hashes e uso estão em docs/ASSET_SOURCES.md e assets/asset_registry.json. Arquivos inalterados; volume e loop ajustados no runtime. Nenhum som ou música do Storm foi importado.

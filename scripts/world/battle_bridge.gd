@@ -3,6 +3,10 @@ extends Node
 var finished: bool = false
 
 func _ready() -> void:
+    var audio: Node = Node.new()
+    audio.name = "AudioManager"
+    audio.set_script(preload("res://scripts/audio_manager.gd"))
+    get_parent().add_child.call_deferred(audio)
     var layer: CanvasLayer = CanvasLayer.new()
     layer.layer = 30
     var button: Button = Button.new()
