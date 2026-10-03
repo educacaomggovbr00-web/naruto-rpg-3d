@@ -49,7 +49,7 @@ func run() -> void:
             placeholder_count += 1
     check(placeholder_count == 21, "Twenty-one roster slots should use the temporary shared rig until their visuals are authored")
     var model_paths: Dictionary = {}
-    var shared_library: AnimationLibrary
+    var shared_stylized_library: AnimationLibrary
     for definition: CharacterDefinition in CharacterCatalog.AUTHORED_VISUALS:
         check(not model_paths.has(definition.model_path), "Each selected fighter needs its own mesh")
         model_paths[definition.model_path] = true
@@ -67,12 +67,19 @@ func run() -> void:
             check(adapter.skeleton.get_bone_count() == 65, "Author mesh retains 65 Mixamo body bones")
             var meshes: Array[MeshInstance3D] = []
             adapter._collect_mesh_instances(adapter.model_instance, meshes)
-            check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "One opaque skinned surface per model")
-            check(meshes[0].material_override == adapter.TOON_MATERIAL, "Models share original toon material")
+            if definition.character_id == "naruto":
+                check(meshes.size() == 3, "Pre-Shippuden Naruto keeps its three supplied skinned meshes")
+                for mesh: MeshInstance3D in meshes:
+                    check(mesh.material_override == null, "Pre-Shippuden Naruto keeps embedded materials/textures")
+                check(not definition.model_auto_scale and absf(adapter.applied_model_scale - 0.01) < 0.0001, "Naruto rig keeps the centimeter-scale Mixamo transform")
+            else:
+                check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "Original authored fighter keeps one opaque skinned surface")
+                check(meshes[0].material_override == adapter.TOON_MATERIAL, "Original authored fighters keep the project toon material")
             var library: AnimationLibrary = adapter.animation_player.get_animation_library(&"combat")
-            if shared_library == null:
-                shared_library = library
-            check(library == shared_library, "Compatible authored models share immutable clip data")
+            if definition.character_id != "naruto":
+                if shared_stylized_library == null:
+                    shared_stylized_library = library
+                check(library == shared_stylized_library, "Compatible original authored models share immutable clip data")
             adapter.set_physics_process(false)
             adapter.animation_tree.active = false
             adapter.animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
