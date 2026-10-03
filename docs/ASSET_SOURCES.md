@@ -20,3 +20,10 @@ Não foi localizado nesta pesquisa um pacote reutilizável com a coreografia exa
 - [Godot demo projects](https://github.com/godotengine/godot-demo-projects): MIT, referência técnica para resolução/renderização, não copiado nesta revisão.
 
 O registro `assets/asset_registry.json` cobre arquivos runtime e hashes das texturas extraídas do GLB. Essas texturas herdam UNKNOWN_LICENSE do arquivo fornecido; sua ausência antes de importar é esperada. Arquivos novos/alterados exigem registro/revisão. Python valida o gate antes do export; plugin do editor protege o preset public_release. Nenhum modelo/animação de Naruto, Sasuke, Sakura, Kakashi ou Konoha foi encontrado com proveniência apropriada para importação nesta pesquisa. Assets genéricos CC0 não comprovam autorização de distribuição de personagens/marcas; o campo de apresentação pública continua não autorizado.
+
+## Aldeia — revisão 2026-10-03
+
+- `scripts/world/world_mesh_builder.gd`: geometria autoral do projeto, cores por vértice, fachadas, telhados, escadas, pontes, balcão e relevos; nenhuma mesh/textura do Storm foi importada. Conteúdo original, SAFE_FOR_RELEASE quanto à origem da geometria; autorização da apresentação pública continua pendente no gate existente.
+- Kenney Modular Buildings foi conferido novamente na página primária (CC0). KayKit Medieval Hexagon teve LICENSE.txt conferido no GitHub (CC0). Não foram importados: não oferecem Konoha ou Naruto próprios da referência.
+- `guto-alves/naruto-game` foi inspecionado no GitHub: aplicativo Android; não foi comprovado pacote 3D próprio/autorizado de personagem ou aldeia do Storm. MIT de código de outro repositório não foi tratado como autorização para redistribuir assets comerciais.
+- O rig fornecido continua UNKNOWN_LICENSE, inclusive no mundo; não foi substituído por download não autorizado. Nenhum novo modelo proprietário foi adquirido.

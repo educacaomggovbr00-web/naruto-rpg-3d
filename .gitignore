@@ -20,3 +20,7 @@ tests/animation_preview.png
 __pycache__/
 
 build/
+
+# Reproducible world diagnostic output
+tests/world_geometry.json
+tests/world_preview.png
