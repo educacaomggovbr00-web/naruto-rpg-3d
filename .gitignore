@@ -27,3 +27,6 @@ tests/world_preview.png
 
 # User-supplied Storm research payloads (never commit raw game files)
 external/storm1_raw/
+
+# User-supplied/licensed local character models; do not redistribute as standalone files
+external/character_assets/
