@@ -21,6 +21,7 @@ var combo_branch: String = "neutral"
 
 # Shared ability modules use the same fighter contract as the player.
 @export var enable_arsenal: bool = true
+@export var react_to_projectiles: bool = true
 var defeated: bool:
     get:
         return not targetable
@@ -205,6 +206,9 @@ func _physics_process(delta: float) -> void:
     decision_timer = maxf(decision_timer - delta, 0.0)
     if not attack_active and decision_timer <= 0.0:
         _decide_neutral(distance)
+        if react_to_projectiles and _react_to_projectile():
+            _move_and_handle_bounces()
+            return
         if enable_arsenal and _decide_arsenal(distance):
             _move_and_handle_bounces()
             return
@@ -774,3 +778,59 @@ func _decide_arsenal(distance: float) -> bool:
         ninja_tools.selected = 0
         return ninja_tools.call("use")
     return false
+
+func _observe_projectile() -> Node3D:
+    # Read only entities already visible in the world, never player input queues.
+    var closest: Node3D = null
+    var earliest: float = 0.65
+    for candidate: Node in get_parent().get_children():
+        if not candidate is Node3D or not candidate.has_method("launch") or not bool(candidate.get("active")):
+            continue
+        var source: Variant = candidate.get("owner_fighter")
+        if source == null:
+            source = candidate.get("source")
+        if source == self or not is_instance_valid(source):
+            continue
+        var mask: Variant = candidate.get("hit_mask")
+        if mask == null or (int(mask) & 16) == 0:
+            continue
+        var heading_value: Variant = candidate.get("direction")
+        if heading_value == null:
+            heading_value = candidate.get("heading")
+        if not heading_value is Vector3 or heading_value.length_squared() < 0.001:
+            continue
+        var direction: Vector3 = heading_value.normalized()
+        var to_body: Vector3 = global_position - candidate.global_position
+        var along: float = to_body.dot(direction)
+        if along < 0.0 or along > 10.0:
+            continue
+        var definition: Variant = candidate.get("definition")
+        var speed: float = definition.speed if definition is ProjectileDefinition else 12.0 if candidate.get("kind") == "bomb" else 24.0
+        var radius: float = definition.radius if definition is ProjectileDefinition else 0.4
+        var arrival: float = along / maxf(speed, 0.01)
+        var crossing: Vector3 = to_body - direction * along
+        if arrival < earliest and crossing.length() < radius + 0.75:
+            earliest = arrival
+            closest = candidate as Node3D
+    return closest
+
+func _react_to_projectile() -> bool:
+    if not _can_use_movement_action() or not is_on_floor():
+        return false
+    var threat: Node3D = _observe_projectile()
+    if threat == null:
+        return false
+    # Decisions are sampled on the existing delayed neutral tick; sometimes miss.
+    var reaction: float = decision_rng.randf()
+    if reaction >= 0.70:
+        return false
+    is_charging_chakra = false
+    if guard_meter > 35.0 and reaction < 0.45:
+        guarding = true
+        guard_timer = minf(guard_duration, 0.45)
+        return true
+    var incoming: Vector3 = global_position - threat.global_position
+    _start_reaction_dodge(incoming)
+    invulnerable_timer = maxf(invulnerable_timer, dodge_timer + 0.03)
+    animation_action_id += 1
+    return true

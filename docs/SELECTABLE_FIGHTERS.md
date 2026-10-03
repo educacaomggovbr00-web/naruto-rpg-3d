@@ -32,3 +32,7 @@ Contratos anteriores + selection_arsenal_contract: seleção/param inválido/vie
 4. RESULTADO: KO durante hit-stop; seleção/revanche sem tela presa, sons presos ou clones da luta anterior.
 5. SOM: passos/impactos/bloqueio/carga/dash/fumaça, volume aceitável; SOM OFF permanece após reabrir; pausar app para loop parar.
 6. FPS: LOW/MED/HIGH por 60 s, dois Narutos e vários clones/jutsus; anotar FPS/DC e hitch no primeiro clone. Repetir após 5 min para thermal. Conferir aldeia/save/treino continuam funcionando.
+
+## Continuação: CPU observa projéteis
+
+A CPU examina somente entidades lançadas no mundo, no tick de decisão atrasado existente. Ignora tiros do próprio time, reciclados, trajetórias que se afastam/passam ao lado, objetos além de 10 m e chegada prevista após 0.65 s. Ao perceber ameaça, há 30% de falha; pode guardar ou deslocar-se de lado com esquiva real/invulnerabilidade curta. Guarda baixa favorece esquiva. Não cancela hitstun/ataque e não lê input queue. Valores OUR_APPROXIMATION; varredura limitada aos pools da arena em ticks de decisão, sem criar nodes. CPU_THREAT_CONTRACT cobre trajetória, time, atraso/estado, probabilidades, recurso de guarda, invulnerabilidade contra sweep e cleanup. No Android: lançar FIRE/SHUR da média distância; CPU deve alternar guarda/esquiva e também tomar alguns tiros.

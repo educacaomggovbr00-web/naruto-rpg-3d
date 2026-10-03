@@ -10,7 +10,7 @@ Atualização: 2026-10-03. Modelos de Naruto/Sasuke/Kakashi/Gaara comerciais nã
 | Kakashi | Sem moveset próprio | Raikiri/clones como metas; Kamui depende da variante/jogo | Pendentes | Sem modelo/clips/VFX próprios | Pesquisar/comparar moveset da versão antes de implementar |
 | Gaara | Sem moveset próprio | Sand Shower/Tsunami/Coffin/Burial: metas a verificar por versão | Pendentes | Sem areia/rig/animações próprias | Não tratar como Naruto com material diferente; necessidade de hitboxes/VFX/ações específicas |
 | Sakura | Sem moveset próprio | Golpes/jutsus ainda precisam de referência específica | Pendentes | Sem modelo/clips próprios | Mantida como personagem futuro da direção anterior |
-| CPU atual | Humanoide selecionável; profile/moveset, branches, dash/pursuit, charge, guarda/sub/KO | Shared CombatSpecials/clones, jutsu profile, tools reais | Naruto: shared Ultimate com entry física/clash e Awakening; Sasuke desabilitados | AnimationTree independente, clips preparados compartilhados | Estratégia probabilística atrasada; ainda falta otimizar reação a projétil, perfis táticos por personagem e polimento competitivo |
+| CPU atual | Humanoide selecionável; profile/moveset, branches, dash/pursuit, charge, guarda/sub/KO | Shared CombatSpecials/clones, jutsu profile, tools reais | Naruto: shared Ultimate com entry física/clash e Awakening; Sasuke desabilitados | AnimationTree independente, clips preparados compartilhados | Estratégia probabilística atrasada; observação de projéteis lançados com guarda/esquiva/falha implementada; faltam perfis táticos específicos e polimento competitivo |
 
 ## Contratos e integração
 
