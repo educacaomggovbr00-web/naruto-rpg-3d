@@ -17,6 +17,8 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    root.size = Vector2i(1280, 720)
+    root.content_scale_size = Vector2i(1280, 720)
     flow = root.get_node("GameFlow")
     flow.save_path = "user://world_contract_save.json"
     flow.progress = {"version": 1, "ryo": 0, "accepted": [], "completed": [], "collected": [], "supplies": 0, "position": [-21,0.95,-41], "yaw": PI}
@@ -71,8 +73,27 @@ func run() -> void:
     check(village.map_open and not actor.input_enabled, "Map must suspend movement without changing combat")
     village.toggle_map()
     check(not village.map_open and actor.input_enabled, "Closing map must restore exploration input")
+    # Deliver real touch events: header GUI must not be swallowed by camera input.
+    var controls: Control = village.get_node("HUD/WorldControls")
+    Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+    var old_quality: int = village.quality
+    var touch: InputEventScreenTouch = InputEventScreenTouch.new()
+    touch.index = 11
+    touch.position = village.quality_button.global_position + village.quality_button.size * 0.5
+    touch.pressed = true
+    Input.parse_input_event(touch)
+    await frames(2)
+    touch = touch.duplicate() as InputEventScreenTouch
+    touch.pressed = false
+    Input.parse_input_event(touch)
+    await frames(2)
+    check(village.quality == (old_quality + 1) % 3 and controls.camera_touch == -1, "Quality GUI touch must not reserve camera finger")
     village.apply_quality(0, false)
     check(not village.get_node("Sun").shadow_enabled and is_equal_approx(root.scaling_3d_scale, 0.7), "World LOW must apply Compatibility budgets")
+    var npc_meshes: Array[MeshInstance3D] = []
+    var npc: CharacterBody3D = village.get_node("academy_guide").actor
+    npc.rig_adapter.call("_collect_mesh_instances", npc.rig_adapter.model_instance, npc_meshes)
+    check(not npc_meshes.is_empty() and npc_meshes[0].visibility_range_end == 28.0, "LOW must cull distant NPC rendering without removing interactions")
     village.apply_quality(2, false)
     check(village.get_node("Geometry").sectors[0].visibility_range_end == 130, "HIGH cannot lose village sectors")
     check(flow.buy_supplies(40) and flow.progress.ryo == 110 and flow.progress.supplies == 1, "Shop must exchange actual currency for supplies")
@@ -81,7 +102,7 @@ func run() -> void:
     actor.velocity = Vector3.ZERO
     await frames(8)
     var return_position: Vector3 = actor.last_safe_position
-    village.interact()
+    controls.interact_queue = 1
     await scene_changed
     await frames(8)
     var battle: Node3D = current_scene

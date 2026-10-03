@@ -93,6 +93,14 @@ func apply_quality(level: int, save: bool = true) -> void:
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
     get_viewport().scaling_3d_scale = [0.70, 0.85, 1.0][quality]
     quality_button.text = ["LOW", "MED", "HIGH"][quality]
+    for point: Area3D in points:
+        if point.actor == null or not is_instance_valid(point.actor.rig_adapter.model_instance):
+            continue
+        var meshes: Array[MeshInstance3D] = []
+        point.actor.rig_adapter.call("_collect_mesh_instances", point.actor.rig_adapter.model_instance, meshes)
+        for mesh: MeshInstance3D in meshes:
+            mesh.visibility_range_end = [28.0, 42.0, 65.0][quality]
+            mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if quality == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
     if save:
         settings.set_value("graphics", "quality", quality)
         settings.save("user://graphics.cfg")
@@ -141,6 +149,8 @@ func _physics_process(delta: float) -> void:
         controls.interact_queue = 0
         if not map_open:
             interact()
+            if GameFlow.busy or not is_inside_tree():
+                return
     toast_timer = maxf(toast_timer - delta, 0)
     message_label.visible = toast_timer > 0 and not map_open
     scan_timer -= delta
@@ -192,7 +202,10 @@ func interact() -> void:
             toast("Recolha os três pergaminhos nos telhados e volte aqui. As escadas e o salto duplo ajudam no percurso.")
     elif data.kind == "battle":
         controls.release_all()
-        GameFlow.start_battle(data.mission, actor.last_safe_position, actor.rotation.y)
+        var result: Error = GameFlow.start_battle(data.mission, actor.last_safe_position, actor.rotation.y)
+        if result == OK:
+            return
+        toast("Não foi possível abrir o treino. Tente novamente.")
     elif data.kind == "shop":
         toast("Suprimento comprado para o próximo treino." if GameFlow.buy_supplies(int(data.price)) else String(data.text) + " Limite: 3. Saldo: %d ryō." % int(GameFlow.progress.ryo))
     else:

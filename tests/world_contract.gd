@@ -19,6 +19,8 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    root.size = Vector2i(1280, 720)
+    root.content_scale_size = Vector2i(1280, 720)
     village = load("res://world.tscn").instantiate() as Node3D
     root.add_child(village)
     actor = village.get_node("Player")
