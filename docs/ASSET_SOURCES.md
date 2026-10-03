@@ -61,3 +61,19 @@ Booby Trap (2026-10-03): geometria de duas kunai, fio, bola e espinhos criada em
 - [AkikoKumagara/Naruto-STORM-1-PS-Icons](https://github.com/AkikoKumagara/Naruto-STORM-1-PS-Icons): usado apenas para confirmar a organização pública `data_win32/interface`; nenhuma textura foi incorporada.
 
 Foram adicionados somente scripts autorais de **inventário/normalização de metadados**. Eles não contêm assets, textos extraídos do jogo nem código copiado das ferramentas acima. Arquivos brutos fornecidos pelo usuário ficam fora do Git em `external/storm1_raw/`.
+
+
+## Naruto GLB fornecido pelo usuário — integração local 2026-10-03
+
+O arquivo enviado nesta conversa foi inspecionado antes da integração:
+
+- SHA-256: `5a86aa91a5ad38d33b6b9575962faab7adf326a4a531242ed849af6d1eebafb8`
+- tamanho: 159052 bytes
+- GLB 2.0
+- 7 nodes, 5 meshes, 5 materials, 5 imagens embutidas
+- **0 skins / 0 skeletons / 0 animations**
+- metadata embutida: autor `Tigerar1 (https://sketchfab.com/allanromanreyes)`
+- fonte embutida: `https://sketchfab.com/3d-models/naruto-eb8c3f9a617f420cb30e98dff569c780`
+- licença declarada no GLB: `SKETCHFAB Standard (https://sketchfab.com/licenses)`
+
+Por não possuir skeleton/skin, ele não substitui ainda o Naruto de combate animado. O projeto aceita uma cópia **local** em `res://external/character_assets/naruto_sketchfab.glb` e a mostra como preview estático na seleção. `tools/install_local_naruto_model.py` valida/copia o arquivo. A pasta é ignorada pelo Git para não redistribuir o asset como arquivo standalone.
