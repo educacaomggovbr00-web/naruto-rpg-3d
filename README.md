@@ -179,7 +179,7 @@ Pesquisa, diferenças de versões e aproximações: [STORM1_COMBAT_REFERENCE](do
 - **CLONE**: Charging Bullet no chão, Whirlwind Strike no ar.
 - **BARR**: Naruto Uzumaki Barrage; só continua se o primeiro golpe acertar.
 - PC: **1** seleciona Demon Wind, **2** seleciona Rasengan, **E** executa; **3** clones; **4** Barrage.
-- Direção ao iniciar combo: baixo derruba, lateral afasta, alto lança. Neutro mantém launcher do protótipo para preservar o fluxo já testado.
+- Direção no terceiro golpe (após a introdução): baixo derruba, lateral afasta, alto lança; neutro termina em knockback. O buffer touch conserva a direção do comando.
 - Aperte ATK durante recovery para buffer; DASH cancela golpes 1–3 somente após acerto e fechamento da janela ativa. Máximo duas perseguições por voo.
 
 ```sh
@@ -236,3 +236,9 @@ A CPU usa agora o modelo existente com AnimationTree independente, locomoção, 
 Decisões de aproximação, strafe e recuo têm atraso de 0,18–0,32 s e aleatoriedade própria. Guarda baixa incentiva recuo; guarda não segue mais a regra determinística de cada terceiro ataque. Esses valores são ajustes do projeto, não medidas oficiais do Storm. O alcance foi ajustado para haver contato físico, sem dano por distância.
 
 Ainda não é a CPU Fighter completa: chakra, chakra dash, launcher/pursuit deliberados, jutsus, Ultimate, Awakening e perfis por personagem continuam pendentes. O visual usa o modelo fornecido, sem alegar ser um Naruto final. A validação inclui uma CPU ativa aproximando e acertando via sobreposição real, além dos contratos existentes.
+
+### Dados de golpes e branches Storm 1
+
+Combos/projétil Demon Wind agora usam Resources compartilháveis, preservando o manifesto de timing e os 27 clips reais. A direção do combo é escolhida após os dois golpes iniciais: neutro afasta, cima lança, baixo derruba e lateral repele. O buffer touch conserva a direção escolhida; quebra de guarda continua classificada como bloqueio para cancel. Impactos do jogador usam eventos de câmera configuráveis.
+
+Referências e aproximações: [STORM_MOVES_DATA](docs/STORM_MOVES_DATA.md) e [matriz de personagens](docs/CHARACTER_IMPLEMENTATION_MATRIX.md). Este incremento não adiciona modelos comerciais nem completa todos os movesets de Storm/Jump Force.

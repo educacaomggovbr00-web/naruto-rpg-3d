@@ -12,7 +12,7 @@ Importação sem parser errors; contrato de 27 clips (130 canais, quaternions e 
 |---|---|
 | LOCK, joystick lateral/baixo, correr e pular | Orbitar sem virar as costas; intensidade do stick controla velocidade; comparar deslizamento dos pés (clips direcionais ainda adaptados) |
 | Afastar lutadores, circular perto das quatro paredes | Dois corpos visíveis; distância/FOV graduais; câmera não entra nas paredes nem oscila sem impacto |
-| ATK 1–4, alto/baixo/lateral antes do primeiro | Neutro preserva launcher; baixo derruba, lateral afasta; sem dano quando o braço passa longe |
+| ATK ×2, direção alto/baixo/lateral ao terceiro | Neutro afasta; alto lança, baixo derruba, lateral afasta; sem dano quando o braço passa longe |
 | ATK durante recovery; DASH após acerto e após erro | Entrada pode ficar em buffer; whiff não cancela; contato com guarda dá recoil; dash fecha ao tocar e ATK continua |
 | Launcher → DASH → aéreo → slam | Tracking acompanha altura; duas perseguições máximas no mesmo voo; CPU recupera de cadeias longas |
 | DEF contra vários golpes e soltar | Meter desce, bloqueio tem feedback azul, esgotamento causa stun; meter recupera após pausa |

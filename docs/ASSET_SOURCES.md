@@ -27,3 +27,9 @@ O registro `assets/asset_registry.json` cobre arquivos runtime e hashes das text
 - Kenney Modular Buildings foi conferido novamente na página primária (CC0). KayKit Medieval Hexagon teve LICENSE.txt conferido no GitHub (CC0). Não foram importados: não oferecem Konoha ou Naruto próprios da referência.
 - `guto-alves/naruto-game` foi inspecionado no GitHub: aplicativo Android; não foi comprovado pacote 3D próprio/autorizado de personagem ou aldeia do Storm. MIT de código de outro repositório não foi tratado como autorização para redistribuir assets comerciais.
 - O rig fornecido continua UNKNOWN_LICENSE, inclusive no mundo; não foi substituído por download não autorizado. Nenhum novo modelo proprietário foi adquirido.
+
+## Pesquisa técnica Storm / Jump Force — 2026-10-03
+
+As ferramentas/formatos listados em `STORM_MOVES_DATA.md` foram referências de estrutura, sem código/binaries/PRM/ANM comerciais copiados. UE4SS possui MIT; Unverum GPL-3.0; vários outros repositórios consultados não expõem licença raiz. Licença da ferramenta não licencia assets do jogo.
+
+`assets/combat/naruto_moveset.tres` e `demon_wind_projectile.tres`: dados originais do projeto, SAFE_FOR_RELEASE quanto ao arquivo de configuração; nomes/apresentação/modelo continuam sujeitos ao gate separado. Dano/tempo/distâncias são OUR_APPROXIMATION. Nenhum novo asset externo foi baixado.

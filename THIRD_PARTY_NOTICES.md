@@ -34,3 +34,7 @@ Nenhum conteúdo externo adicional foi distribuído. Shaders/meshes/VFX/configur
 ## Aldeia autoral e dados de mundo
 
 A geometria de aldeia em `scripts/world/world_mesh_builder.gd`, pontos/missões em `assets/world`, mapa/UI e prévia diagnóstica em `docs/images/village_layout_preview.png` são conteúdo original deste projeto. A prévia renderiza apenas a geometria original em CPU; não contém imagem do Storm nem modelo fornecido. Nenhuma textura, áudio ou mesh do jogo original foi incorporada. NPCs continuam usando o rig já fornecido, com a proveniência UNKNOWN_LICENSE registrada anteriormente. A autorização de distribuição pública da apresentação/personagens permanece pendente; o gate não foi removido.
+
+## Referências técnicas (sem código/asset redistribuído)
+
+Storm Character Manager, UNSME, NSC Toolbox/ModManager, UNSG V2, Road to Connections, jumpforce-tools, UE4SS e Unverum foram consultados em 2026-10-03; fontes e limites em `docs/STORM_MOVES_DATA.md`. Novos Resources/implementações são originais; nenhum PRM/XFBIN/ANM comercial foi incorporado. Licenças das ferramentas não conferem licença dos jogos.
