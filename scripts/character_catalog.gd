@@ -12,29 +12,6 @@ const AUTHORED_VISUALS: Array[CharacterDefinition] = [NARUTO, SASUKE, SAKURA, KA
 # Storm 1 has 25 playable fighters. The remaining entries are activated as
 # development roster slots using the shared rig + shared base combo until each
 # fighter receives its own model, moveset, jutsu, Ultimate and Awakening data.
-const STORM1_PLACEHOLDER_DATA: Array[Dictionary] = [
-    {"id": "shikamaru", "name": "Shikamaru Nara"},
-    {"id": "choji", "name": "Choji Akimichi"},
-    {"id": "ino", "name": "Ino Yamanaka"},
-    {"id": "rock_lee", "name": "Rock Lee"},
-    {"id": "neji", "name": "Neji Hyuga"},
-    {"id": "tenten", "name": "Tenten"},
-    {"id": "shino", "name": "Shino Aburame"},
-    {"id": "kiba", "name": "Kiba Inuzuka"},
-    {"id": "hinata", "name": "Hinata Hyuga"},
-    {"id": "gaara", "name": "Gaara"},
-    {"id": "kankuro", "name": "Kankuro"},
-    {"id": "temari", "name": "Temari"},
-    {"id": "might_guy", "name": "Might Guy"},
-    {"id": "jiraiya", "name": "Jiraiya"},
-    {"id": "tsunade", "name": "Tsunade"},
-    {"id": "hiruzen", "name": "Hiruzen Sarutobi"},
-    {"id": "orochimaru", "name": "Orochimaru"},
-    {"id": "kabuto", "name": "Kabuto Yakushi"},
-    {"id": "kimimaro", "name": "Kimimaro"},
-    {"id": "itachi", "name": "Itachi Uchiha"},
-    {"id": "kisame", "name": "Kisame Hoshigaki"}
-]
 
 # Original Storm 1 support-only roster. Kept separate from playable selection.
 const SUPPORT_ONLY: PackedStringArray = [
