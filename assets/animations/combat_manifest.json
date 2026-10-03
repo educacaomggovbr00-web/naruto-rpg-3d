@@ -4,8 +4,8 @@
   "target_sha256": "b5abb8cf927c65e861fb56ea23ce36db2526903d1491f55b53d54a29b4cc0d5c",
   "source_sha256": {
     "AnimationLibrary_Godot_Standard.gltf": "26ac6b55c4080f8ba8edcd3c00496f2792920ece64c539eb4b97f68572d16bda",
-    "AnimationLibrary_Godot_Standard.bin": "52d0f8e569cd58cc3b41f09f02da12f9f6aa419c0070c4d662922090f93ab1c1",
-    "UAL2_Standard.glb": "1b298168481f0cfd3927253890f82151610902fc889b42507fcc252b8c69b107"
+    "UAL2_Standard.glb": "d8238ca783bd497be53eebba38448aea88c668b4e191f6e0d7ac7e780abf3eaf",
+    "AnimationLibrary_Godot_Standard.bin": "52d0f8e569cd58cc3b41f09f02da12f9f6aa419c0070c4d662922090f93ab1c1"
   },
   "clips": {
     "idle": {
@@ -36,6 +36,74 @@
       "duration": 0.6666666865348816,
       "loop": true,
       "samples": 22,
+      "bone_count": 65,
+      "license": "CC0-1.0",
+      "author": "Quaternius",
+      "adaptation": "retarget/in-place"
+    },
+    "strafe_left": {
+      "pack": 1,
+      "clip": "Jog_Fwd_Loop",
+      "duration": 0.9166666865348816,
+      "loop": true,
+      "leg_yaw": -70,
+      "samples": 29,
+      "bone_count": 65,
+      "license": "CC0-1.0",
+      "author": "Quaternius",
+      "adaptation": "retarget/in-place"
+    },
+    "strafe_right": {
+      "pack": 1,
+      "clip": "Jog_Fwd_Loop",
+      "duration": 0.9166666865348816,
+      "loop": true,
+      "leg_yaw": 70,
+      "samples": 29,
+      "bone_count": 65,
+      "license": "CC0-1.0",
+      "author": "Quaternius",
+      "adaptation": "retarget/in-place"
+    },
+    "back_run": {
+      "pack": 1,
+      "clip": "Jog_Fwd_Loop",
+      "duration": 0.9166666865348816,
+      "loop": true,
+      "reverse": true,
+      "samples": 29,
+      "bone_count": 65,
+      "license": "CC0-1.0",
+      "author": "Quaternius",
+      "adaptation": "retarget/in-place"
+    },
+    "rasengan": {
+      "pack": 1,
+      "clip": "Punch_Cross",
+      "duration": 0.95,
+      "loop": false,
+      "start": 0.1,
+      "end": 0.9,
+      "impact": 0.38,
+      "bone": "RightHand",
+      "samples": 30,
+      "bone_count": 65,
+      "license": "CC0-1.0",
+      "author": "Quaternius",
+      "adaptation": "retarget/in-place",
+      "startup": 0.38,
+      "active": 0.3,
+      "recovery": 0.27,
+      "cancel_open": 0.6799999999999999,
+      "cancel_close": 0.95,
+      "cancel_requires_hit": true
+    },
+    "guard_break": {
+      "pack": 2,
+      "clip": "Idle_Shield_Break",
+      "duration": 1.0,
+      "loop": false,
+      "samples": 31,
       "bone_count": 65,
       "license": "CC0-1.0",
       "author": "Quaternius",

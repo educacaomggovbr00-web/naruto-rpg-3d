@@ -276,7 +276,7 @@ func _sync_animation_state(delta: float) -> void:
     var desired_state: String = _runtime_animation_state()
     var action_id: int = int(player.call("get_animation_action_id"))
     if desired_state == current_state:
-        if action_id != last_action_id and desired_state in ["hit", "jutsu", "dodge", "chakra_dash", "attack_1", "attack_2", "attack_3", "attack_4", "air_attack_1", "air_attack_2", "air_attack_3", "air_attack_4"]:
+        if action_id != last_action_id and desired_state in ["hit", "jutsu", "rasengan", "guard_break", "dodge", "chakra_dash", "attack_1", "attack_2", "attack_3", "attack_4", "air_attack_1", "air_attack_2", "air_attack_3", "air_attack_4"]:
             playback.start(StringName(desired_state), true)
     else:
         current_state = desired_state
@@ -297,6 +297,16 @@ func _runtime_animation_state() -> String:
         return "attack_%d" % combo_step
     if player_state == "air_attack":
         return "air_attack_%d" % combo_step
+    if player_state == "jutsu" and player.has_method("get_special_animation"):
+        return String(player.call("get_special_animation"))
+    if player_state == "hit" and player.guard_meter <= 0.0:
+        return "guard_break"
+    if player_state == "run" and is_instance_valid(player.locked_target):
+        var relative: Vector3 = player.global_basis.inverse() * player.velocity
+        if absf(relative.x) > absf(relative.z) * 0.8:
+            return "strafe_right" if relative.x > 0.0 else "strafe_left"
+        if relative.z < -0.2:
+            return "back_run"
     if player_state == "air":
         return "jump" if player.velocity.y > 0.5 else "fall"
     if landing_timer > 0.0 and player_state in ["idle", "run"]:
@@ -304,6 +314,11 @@ func _runtime_animation_state() -> String:
     if player_state == "run" and Vector2(player.velocity.x, player.velocity.z).length() > 9.0:
         return "sprint"
     return player_state
+
+func get_hand_world_position() -> Vector3:
+    if skeleton == null or right_hand_bone < 0:
+        return player.global_position + Vector3.UP * 0.3 + player.global_basis.z * 0.6
+    return (skeleton.global_transform * skeleton.get_bone_global_pose(right_hand_bone)).origin
 
 func get_attack_timing(combo_step: int, airborne: bool) -> Dictionary:
     var state_name: String = ("air_attack_%d" if airborne else "attack_%d") % combo_step

@@ -25,6 +25,7 @@
     "clips": [
       "A_TPose",
       "Hit_Knockback",
+      "Idle_Shield_Break",
       "Idle_Shield_Loop",
       "Melee_Hook",
       "Melee_Hook_Rec",

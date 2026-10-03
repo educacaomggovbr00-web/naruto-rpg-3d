@@ -144,6 +144,10 @@ func _unhandled_input(event: InputEvent) -> void:
             jump_requested = true
         elif event.physical_keycode == KEY_E:
             _try_jutsu()
+        elif event.physical_keycode == KEY_1:
+            specials.selected = "demon"
+        elif event.physical_keycode == KEY_2:
+            specials.selected = "rasengan"
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
@@ -212,7 +216,11 @@ func _physics_process(delta: float) -> void:
         _update_animation_state()
         return
 
-    if is_charging_chakra:
+    if jutsu_timer > 0.0:
+        var special_velocity: Vector3 = specials.call("movement_velocity", delta)
+        velocity.x = special_velocity.x
+        velocity.z = special_velocity.z
+    elif is_charging_chakra:
         velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
         velocity.z = move_toward(velocity.z, 0.0, acceleration * delta)
     elif attack_lunge_timer > 0.0:
@@ -975,3 +983,6 @@ func _is_mobile_runtime() -> bool:
         or OS.has_feature("web_android")
         or OS.has_feature("web_ios")
     )
+
+func get_special_animation() -> String:
+    return "rasengan" if specials.current == "rasengan" else "jutsu"

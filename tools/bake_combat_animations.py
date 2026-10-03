@@ -109,6 +109,11 @@ SPECS = {
     'idle': spec(1, 'Idle_Loop', loop=True),
     'run': spec(1, 'Jog_Fwd_Loop', loop=True),
     'sprint': spec(1, 'Sprint_Loop', loop=True),
+    'strafe_left': spec(1, 'Jog_Fwd_Loop', loop=True, leg_yaw=-70),
+    'strafe_right': spec(1, 'Jog_Fwd_Loop', loop=True, leg_yaw=70),
+    'back_run': spec(1, 'Jog_Fwd_Loop', loop=True, reverse=True),
+    'rasengan': spec(1, 'Punch_Cross', .95, start=.10, end=.90, impact=.38, bone='RightHand'),
+    'guard_break': spec(2, 'Idle_Shield_Break', 1.0),
     'jump': spec(2, 'NinjaJump_Start', .36, start=.25, end=.88),
     'fall': spec(2, 'NinjaJump_Idle_Loop', loop=True),
     'land': spec(2, 'NinjaJump_Land', .18, start=0, end=.35),
@@ -172,7 +177,7 @@ def bake():
         positions = []
         for time in times:
             phase = time / length
-            st = start + phase * source_length
+            st = start + (1.0 - phase if cfg.get("reverse") else phase) * source_length
             clip = cfg['clip']
             if st > end and 'recovery' in cfg:
                 clip, st = cfg['recovery'], st - end
@@ -201,6 +206,12 @@ def bake():
                 for short in ['RightArm', 'RightForeArm', 'RightHand']:
                     i = target.names['mixamorig:' + short]
                     desired[i] = Rotation.from_euler('x', 55 * weight, degrees=True) * desired[i]
+            if cfg.get("leg_yaw"):
+                leg_rotation = Rotation.from_euler("y", cfg["leg_yaw"], degrees=True)
+                for i in bind:
+                    short = target.nodes[i]["name"].split(":")[-1]
+                    if any(x in short for x in ["UpLeg", "Leg", "Foot", "Toe"]):
+                        desired[i] = leg_rotation * desired[i]
             for i in bind:
                 parent = target.parents.get(i)
                 pr = desired.get(parent, Rotation.identity())
@@ -247,6 +258,14 @@ def bake():
                                    'license': 'CC0-1.0', 'author': 'Quaternius',
                                    'adaptation': 'uppercut' if cfg.get('uppercut') else
                                                  'aerial legs' if cfg.get('aerial') else 'retarget/in-place'}
+    for name, config in manifest['clips'].items():
+        if 'attack_' in name or name == 'rasengan':
+            config['startup'] = config['impact']
+            config['active'] = .09 if name != 'rasengan' else .3
+            config['recovery'] = round(config['duration'] - config['startup'] - config['active'], 3)
+            config['cancel_open'] = config['startup'] + config['active']
+            config['cancel_close'] = config['duration']
+            config['cancel_requires_hit'] = True
     text = f'[gd_resource type="AnimationLibrary" load_steps={len(output)+1} format=3]\n\n'
     text += '\n\n'.join(output)
     text += '\n\n[resource]\n_data = {\n'
