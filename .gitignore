@@ -24,3 +24,6 @@ build/
 # Reproducible world diagnostic output
 tests/world_geometry.json
 tests/world_preview.png
+
+# User-supplied Storm research payloads (never commit raw game files)
+external/storm1_raw/
