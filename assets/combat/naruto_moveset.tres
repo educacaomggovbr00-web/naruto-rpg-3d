@@ -1,0 +1,153 @@
+[gd_resource type="Resource" script_class="MovesetDefinition" load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/moveset_definition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/attack_definition.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/camera_event_definition.gd" id="3"]
+
+[sub_resource type="Resource" id="light"]
+script = ExtResource("3")
+shake = 0.07
+fov_kick = 1.2
+hit_stop = 0.035
+impact_kind = "normal"
+
+[sub_resource type="Resource" id="heavy"]
+script = ExtResource("3")
+shake = 0.14
+fov_kick = 3
+hit_stop = 0.05
+impact_kind = "normal"
+
+[sub_resource type="Resource" id="launch"]
+script = ExtResource("3")
+shake = 0.13
+fov_kick = 2.6
+hit_stop = 0.055
+impact_kind = "launcher"
+
+[sub_resource type="Resource" id="slam"]
+script = ExtResource("3")
+shake = 0.17
+fov_kick = 3.8
+hit_stop = 0.07
+impact_kind = "slam"
+
+[sub_resource type="Resource" id="ground1"]
+script = ExtResource("2")
+attack_id = "naruto_ground1"
+animation_name = "attack_1"
+damage = 7.0
+knockback = 1.8
+launch_force = 0.0
+hitstun = 0.18
+camera_event = SubResource("light")
+
+[sub_resource type="Resource" id="ground2"]
+script = ExtResource("2")
+attack_id = "naruto_ground2"
+animation_name = "attack_2"
+damage = 8.0
+knockback = 2.4
+launch_force = 0.0
+hitstun = 0.18
+camera_event = SubResource("light")
+
+[sub_resource type="Resource" id="ground3"]
+script = ExtResource("2")
+attack_id = "naruto_ground3"
+animation_name = "attack_3"
+damage = 10.0
+knockback = 3.0
+launch_force = 0.0
+hitstun = 0.18
+camera_event = SubResource("light")
+
+[sub_resource type="Resource" id="ground4"]
+script = ExtResource("2")
+attack_id = "naruto_ground4"
+animation_name = "attack_4"
+damage = 16.0
+knockback = 8.0
+launch_force = 0.0
+hitstun = 0.38
+camera_event = SubResource("heavy")
+
+[sub_resource type="Resource" id="air1"]
+script = ExtResource("2")
+attack_id = "naruto_air1"
+animation_name = "air_attack_1"
+damage = 7.0
+knockback = 1.8
+launch_force = 0.0
+hitstun = 0.18
+camera_event = SubResource("light")
+
+[sub_resource type="Resource" id="air2"]
+script = ExtResource("2")
+attack_id = "naruto_air2"
+animation_name = "air_attack_2"
+damage = 8.0
+knockback = 2.4
+launch_force = 0.0
+hitstun = 0.18
+camera_event = SubResource("light")
+
+[sub_resource type="Resource" id="air3"]
+script = ExtResource("2")
+attack_id = "naruto_air3"
+animation_name = "air_attack_3"
+damage = 10.0
+knockback = 3.0
+launch_force = 0.0
+hitstun = 0.18
+camera_event = SubResource("light")
+
+[sub_resource type="Resource" id="air4"]
+script = ExtResource("2")
+attack_id = "naruto_air4"
+animation_name = "air_attack_4"
+damage = 16.0
+knockback = 5.0
+launch_force = -13.0
+hitstun = 0.42
+camera_event = SubResource("slam")
+
+[sub_resource type="Resource" id="up"]
+script = ExtResource("2")
+attack_id = "naruto_up_finisher"
+animation_name = "attack_4"
+damage = 16.0
+knockback = 5.0
+launch_force = 8.5
+hitstun = 0.38
+camera_event = SubResource("launch")
+
+[sub_resource type="Resource" id="down"]
+script = ExtResource("2")
+attack_id = "naruto_down_finisher"
+animation_name = "attack_4"
+damage = 16.0
+knockback = 5.0
+launch_force = -4.0
+hitstun = 0.65
+camera_event = SubResource("slam")
+
+[sub_resource type="Resource" id="side"]
+script = ExtResource("2")
+attack_id = "naruto_side_finisher"
+animation_name = "attack_4"
+damage = 16.0
+knockback = 10.0
+launch_force = 2.0
+hitstun = 0.38
+camera_event = SubResource("launch")
+
+[resource]
+script = ExtResource("1")
+ground = Array[ExtResource("2")]([SubResource("ground1"), SubResource("ground2"), SubResource("ground3"), SubResource("ground4")])
+aerial = Array[ExtResource("2")]([SubResource("air1"), SubResource("air2"), SubResource("air3"), SubResource("air4")])
+neutral_finisher = SubResource("ground4")
+up_finisher = SubResource("up")
+down_finisher = SubResource("down")
+side_finisher = SubResource("side")
+branch_step = 3

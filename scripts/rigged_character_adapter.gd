@@ -293,6 +293,8 @@ func _sync_animation_state(delta: float) -> void:
 func _runtime_animation_state() -> String:
     var player_state: String = String(player.call("get_animation_state"))
     var combo_step: int = clampi(int(player.call("get_combo_step")), 1, 4)
+    if player_state in ["attack", "air_attack"] and player.has_method("get_attack_animation"):
+        return String(player.call("get_attack_animation"))
     if player_state == "attack":
         return "attack_%d" % combo_step
     if player_state == "air_attack":

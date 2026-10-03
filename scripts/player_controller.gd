@@ -7,6 +7,10 @@ extends CharacterBody3D
 @export var jump_velocity: float = 7.0
 @export var turn_speed: float = 14.0
 
+@export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
+var selected_attack: AttackDefinition = null
+var buffered_branch: String = ""
+
 @export_group("Combat")
 @export var max_health: float = 100.0
 @export var lock_range: float = 28.0
@@ -380,6 +384,7 @@ func _update_attack_timeline(delta: float) -> void:
 
 func _cancel_attack() -> void:
     attack_active = false
+    buffered_branch = ""
     attack_lunge_timer = 0.0
     air_float_timer = 0.0
     attack_hitbox.call("deactivate")
@@ -405,37 +410,15 @@ func _update_jutsu_timeline(delta: float) -> void:
         _release_jutsu()
 
 func _open_attack_hitbox() -> void:
-    var damage_values: Array[float] = [7.0, 8.0, 10.0, 16.0]
-    var knockback_values: Array[float] = [1.8, 2.4, 3.0, 5.0]
-    var launch_velocity: float = 0.0
-    var hitstun: float = 0.18
-
-    if combo_step == 4:
-        if attack_is_airborne:
-            launch_velocity = air_slam_velocity
-            hitstun = 0.42
-        else:
-            launch_velocity = launcher_velocity
-            hitstun = 0.38
-            if combo_branch == "down":
-                launch_velocity = -4.0
-                hitstun = 0.65
-            elif combo_branch == "side":
-                launch_velocity = 2.0
-                knockback_values[3] = 10.0
-
-    if is_instance_valid(rig_adapter) and rig_adapter.has_method("snap_attack_hitbox"):
-        rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
-
-    attack_hitbox.call(
-        "activate",
-        self,
-        damage_values[combo_step - 1],
-        knockback_values[combo_step - 1],
-        launch_velocity,
-        hitstun,
-        float(rig_adapter.call("get_attack_timing", combo_step, attack_is_airborne).get("active", 0.09))
-    )
+    selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    if selected_attack == null:
+        _cancel_attack()
+        return
+    rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
+    var timing: Dictionary = selected_attack.animation_timing(rig_adapter.manifest)
+    attack_hitbox.call("activate", self, selected_attack.damage,
+        selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun,
+        float(timing.get("active", 0.09)))
 
 func _process_defeated(delta: float) -> void:
     if not is_on_floor():
@@ -711,6 +694,8 @@ func _try_attack() -> void:
     if attack_active:
         if attack_elapsed >= attack_startup and combo_step < 4:
             attack_buffer = maxf(0.22, attack_duration - attack_elapsed + 0.12)
+            if combo_step + 1 == moveset.branch_step:
+                buffered_branch = _read_combo_branch()
         return
     if defeated or attack_active or jutsu_timer > 0.0 or attack_cooldown > 0.0 or chakra_dash_timer > 0.0 or dodge_timer > 0.0:
         return
@@ -725,12 +710,14 @@ func _try_attack() -> void:
 
     attack_confirmed = false
     if combo_step == 1:
-        var stick: Vector2 = _get_move_input()
-        combo_branch = "down" if stick.y > 0.45 else "up" if stick.y < -0.45 else "side" if absf(stick.x) > 0.45 else "neutral"
+        combo_branch = "neutral"
+        buffered_branch = ""
+    elif combo_step == moveset.branch_step and not attack_is_airborne:
+        combo_branch = buffered_branch if not buffered_branch.is_empty() else _read_combo_branch()
+        buffered_branch = ""
+    selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
     combo_timer = combo_reset_time
-    var timing: Dictionary = {}
-    if is_instance_valid(rig_adapter) and rig_adapter.has_method("get_attack_timing"):
-        timing = rig_adapter.call("get_attack_timing", combo_step, attack_is_airborne)
+    var timing: Dictionary = selected_attack.animation_timing(rig_adapter.manifest)
     attack_startup = float(timing.get("impact", 0.12 if combo_step < 4 else 0.18))
     attack_duration = float(timing.get("duration", 0.28 if combo_step < 4 else 0.40))
     attack_cooldown = attack_duration
@@ -755,6 +742,13 @@ func _try_attack() -> void:
             var approach_distance: float = maxf(flat.length() - 1.15, 0.0)
             attack_lunge_timer = minf(0.12, approach_distance / maxf(attack_lunge_speed, 0.01))
             _face_direction(flat, 1.0, 100.0)
+
+func _read_combo_branch() -> String:
+    var stick: Vector2 = _get_move_input()
+    return "down" if stick.y > 0.45 else "up" if stick.y < -0.45 else "side" if absf(stick.x) > 0.45 else "neutral"
+
+func get_attack_animation() -> String:
+    return selected_attack.animation_name if selected_attack != null else "attack_1"
 
 func _try_jutsu() -> void:
     specials.call("start")
@@ -859,7 +853,6 @@ func on_attack_connected(target: Node, actual_damage: float, launch_velocity: fl
     )
 
     if not target_guarding:
-        attack_confirmed = true
         combo_hits += 1
         combo_damage += maxf(actual_damage, 0.0)
         combo_display_timer = combo_display_reset_time
@@ -884,6 +877,13 @@ func on_attack_connected(target: Node, actual_damage: float, launch_velocity: fl
         hit_stop_duration = 0.070
         shake_strength = 0.17
         zoom_kick = 3.8
+
+    if not target_guarding and attack_active and selected_attack != null and selected_attack.camera_event != null:
+        var event: CameraEventDefinition = selected_attack.camera_event
+        impact_kind = event.impact_kind
+        hit_stop_duration = event.hit_stop
+        shake_strength = event.shake
+        zoom_kick = event.fov_kick
 
     if is_instance_valid(combat_feedback):
         if combat_feedback.has_method("spawn_impact") and target is Node3D:
@@ -1072,4 +1072,6 @@ func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launc
 
 
 func on_hitbox_contact(_box: Area3D, target: Node, dealt: float, blocked: bool) -> void:
+    if _box == attack_hitbox and attack_active and not blocked and dealt > 0.0:
+        attack_confirmed = true
     specials.call("contact", target, dealt, blocked)

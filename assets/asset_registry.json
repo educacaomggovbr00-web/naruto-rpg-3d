@@ -140,6 +140,15 @@
       "source": "Dados originais neste repositório",
       "license": "Conteúdo original do projeto",
       "modifications": "Missões e posicionamento autoral; não extraídos do Storm"
+    },
+    {
+      "path": "assets/combat/naruto_moveset.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Criação original no repositório; pesquisa pública apenas como referência de comportamento",
+      "license": "Original project content",
+      "modifications": "Dados próprios de gameplay, sem importar PRM/Skill/ANM comerciais",
+      "sha256": "f50d728c01b0307e9bfbac716b133f24e255a4a62af99ab3618d9ae90a1b92d5"
     }
   ]
 }

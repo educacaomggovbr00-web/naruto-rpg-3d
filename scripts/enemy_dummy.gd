@@ -1,5 +1,9 @@
 extends CharacterBody3D
 
+@export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
+var selected_attack: AttackDefinition = null
+var combo_branch: String = "neutral"
+
 @export var max_health: float = 120.0
 @export var move_speed: float = 5.0
 @export var acceleration: float = 18.0
@@ -197,9 +201,8 @@ func _update_attack_timeline(delta: float) -> void:
     if not attack_hit_triggered and attack_elapsed >= startup:
         attack_hit_triggered = true
         rig_adapter.call("snap_attack_hitbox", combo_step, attack_airborne)
-        var lift: float = -10.0 if attack_airborne and combo_step == 4 else 0.0
-        attack_hitbox.call("activate", self, attack_damage,
-            attack_knockback if combo_step == 4 else 1.2, lift, 0.30,
+        attack_hitbox.call("activate", self, selected_attack.damage * attack_damage / 10.0,
+            selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun,
             float(attack_timing.get("active", 0.09)))
 
     # Continue only after an actual unblocked collision, inside the manifest window.
@@ -230,6 +233,9 @@ func get_animation_state() -> String:
     if not is_on_floor():
         return "air"
     return "run" if Vector2(velocity.x, velocity.z).length() > 0.2 else "idle"
+
+func get_attack_animation() -> String:
+    return selected_attack.animation_name if selected_attack != null else "attack_1"
 
 func get_combo_step() -> int:
     return combo_step
@@ -294,6 +300,7 @@ func _start_attack() -> void:
 
     combo_step = 1
     attack_airborne = not is_on_floor()
+    combo_branch = ["neutral", "up", "down", "side"][decision_rng.randi_range(0, 3)]
     _begin_strike()
 
 func _begin_strike() -> void:
@@ -302,7 +309,8 @@ func _begin_strike() -> void:
     attack_hit_triggered = false
     attack_confirmed = false
     animation_action_id += 1
-    attack_timing = rig_adapter.call("get_attack_timing", combo_step, attack_airborne)
+    selected_attack = moveset.attack(combo_step, attack_airborne, combo_branch)
+    attack_timing = selected_attack.animation_timing(rig_adapter.manifest)
 
 func _face_direction(direction: Vector3, delta: float) -> void:
     var flat: Vector3 = direction
