@@ -50,7 +50,14 @@ func _ready() -> void:
     process_physics_priority = 10
     fallback_visual = get_node_or_null(fallback_visual_path) as Node3D
     if player.has_method("get_character_definition"):
-        model_path = player.call("get_character_definition").model_path
+        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+        if definition != null:
+            model_path = definition.model_path
+            auto_scale_model = definition.model_auto_scale
+            model_scale = definition.model_scale_multiplier
+            model_offset = definition.model_offset
+            model_yaw_degrees = definition.model_yaw_degrees
+            fallback_import_scale = definition.model_fallback_import_scale
     _try_load_rig()
 
 func _physics_process(delta: float) -> void:
