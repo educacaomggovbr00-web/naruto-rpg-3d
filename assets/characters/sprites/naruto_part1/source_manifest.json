@@ -1,0 +1,79 @@
+{
+  "source_archive": "Browser Games - Naruto Online - Recruitable Characters - Naruto Uzumaki (Part 1).zip",
+  "source_site": "The Spriters Resource",
+  "source_game": "Naruto Online",
+  "source_group": "Recruitable Characters / Naruto Uzumaki (Part 1) / Battle",
+  "status": "DEVELOPMENT_ONLY",
+  "note": "16 poses selected from the user-supplied archive, normalized to 192x192 cells and packed into a 4x4 atlas for the 2.5D prototype. Public redistribution rights are not established.",
+  "cell_size": [
+    192,
+    192
+  ],
+  "columns": 4,
+  "frames": {
+    "idle": {
+      "index": 0,
+      "source": "133_Asset_63.png"
+    },
+    "run": {
+      "index": 1,
+      "source": "70_Asset_131.png"
+    },
+    "sprint": {
+      "index": 2,
+      "source": "54_Asset_9.png"
+    },
+    "back_run": {
+      "index": 3,
+      "source": "50_Asset_30.png"
+    },
+    "guard": {
+      "index": 4,
+      "source": "135_Asset_101.png"
+    },
+    "attack_1": {
+      "index": 5,
+      "source": "48_Asset_18.png"
+    },
+    "attack_2": {
+      "index": 6,
+      "source": "129_Asset_19.png"
+    },
+    "attack_3": {
+      "index": 7,
+      "source": "139_Asset_85.png"
+    },
+    "attack_4": {
+      "index": 8,
+      "source": "1_Asset_15.png"
+    },
+    "air": {
+      "index": 9,
+      "source": "86_Asset_28.png"
+    },
+    "dodge": {
+      "index": 10,
+      "source": "78_Asset_134.png"
+    },
+    "hit": {
+      "index": 11,
+      "source": "117_Asset_110.png"
+    },
+    "defeat": {
+      "index": 12,
+      "source": "81_Asset_57.png"
+    },
+    "chakra_charge": {
+      "index": 13,
+      "source": "45_Asset_42.png"
+    },
+    "chakra_dash": {
+      "index": 14,
+      "source": "65_Asset_59.png"
+    },
+    "jutsu": {
+      "index": 15,
+      "source": "101_Asset_32.png"
+    }
+  }
+}
