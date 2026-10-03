@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "presentation_distribution_authorized": false,
+  "assets": [
+    {
+      "path": "assets/characters/rigged.glb",
+      "status": "UNKNOWN_LICENSE",
+      "author": "Usuário / origem não comprovada",
+      "source": "Fornecido no repositório",
+      "license": "UNKNOWN",
+      "modifications": "Modelo original preservado; escala/retarget em runtime",
+      "sha256": "b5abb8cf927c65e861fb56ea23ce36db2526903d1491f55b53d54a29b4cc0d5c"
+    },
+    {
+      "path": "assets/animations/combat_mixamo.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius / Gonzalo Furnier",
+      "source": "https://quaternius.itch.io/universal-animation-library-2",
+      "license": "CC0-1.0",
+      "modifications": "Retarget UAL1/2 para Mixamo, 27 clips; ver manifesto",
+      "sha256": "d4d8013715182f30367ef872a3caa06cf919aabee972e5743504763bda95f05f"
+    }
+  ]
+}
