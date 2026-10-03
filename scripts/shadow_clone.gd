@@ -1,6 +1,8 @@
 extends CharacterBody3D
 
 var support_pose: bool = false
+# Pool ownership follows the activation, not the fighter sharing the rig.
+var sequence_owner: Node = null
 var active: bool = false
 var source: CharacterBody3D
 var target: Node3D
@@ -69,10 +71,11 @@ func prepare(actor: CharacterBody3D) -> void:
     animation_player.add_animation_library(&"combat", adapter.animation_player.get_animation_library(&"combat"))
     animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 
-func summon(victim: Node3D, origin: Vector3, approach_offset: Vector3, delay: float, clip: String, lift: float = 0.0, power: float = 6.0) -> void:
+func summon(victim: Node3D, origin: Vector3, approach_offset: Vector3, delay: float, clip: String, lift: float = 0.0, power: float = 6.0, sequence: Node = null) -> void:
     if model == null:
         return
     support_pose = false
+    sequence_owner = sequence
     target = victim
     global_position = origin
     offset = approach_offset
@@ -139,14 +142,16 @@ func recycle() -> void:
     if active and is_inside_tree() and is_instance_valid(source) and is_instance_valid(source.combat_feedback) and source.combat_feedback.is_inside_tree():
         source.combat_feedback.call("spawn_substitution", global_position)
     active = false
+    sequence_owner = null
     visible = false
     hurtbox.collision_layer = 0
     hitbox.call("deactivate")
     target = null
     animation_player.stop()
 
-func present(origin: Vector3, heading: float, lifetime_seconds: float, clip: String = "jutsu") -> void:
+func present(origin: Vector3, heading: float, lifetime_seconds: float, clip: String = "jutsu", sequence: Node = null) -> void:
     support_pose = true
+    sequence_owner = sequence
     active = true
     visible = true
     global_position = origin

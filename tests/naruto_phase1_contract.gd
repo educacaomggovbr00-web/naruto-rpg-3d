@@ -206,6 +206,24 @@ func run() -> void:
     await frames(35)
     check(enemy.cinematic_owner == null, "Watchdog must release an abandoned cinematic lock")
     enemy.set_physics_process(false)
+    # Shared clone pool: interruption removes only the cancelling sequence's actors.
+    reset(3.0)
+    await frames(3)
+    check(fighter.specials.summon_clone(enemy, Vector3(0, 0, -0.7), 0.5, "attack_2"), "Clone attack must reserve a pooled actor")
+    var special_clone: CharacterBody3D = fighter.specials.clones[0]
+    check(special_clone.active and special_clone.sequence_owner == fighter.specials, "Clone activation must record sequence ownership")
+    fighter.specials.cancel(false)
+    check(special_clone.active, "Normal jutsu recovery must let released clone finish")
+    var interrupted_hp: float = enemy.health
+    fighter.specials.cancel()
+    check(not special_clone.active and special_clone.sequence_owner == null, "Interruption must recycle pending clone and clear its owner")
+    await frames(65)
+    check(enemy.health == interrupted_hp, "Cancelled clone cannot deliver a delayed ghost hit")
+    special_clone.call("present", fighter.global_position, 0.0, 1.0, "guard", ultimate)
+    fighter.specials.cancel()
+    check(special_clone.active and special_clone.sequence_owner == ultimate, "Jutsu cleanup cannot recycle an Ultimate-owned pool actor")
+    special_clone.call("recycle")
+    check(special_clone.sequence_owner == null, "Recycling must not retain ownership across pool reuse")
     # Awakening: full chakra + low HP, vulnerable transition, non-stacking stats.
     reset()
     await frames(3)

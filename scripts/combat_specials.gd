@@ -66,7 +66,7 @@ func summon_clone(target: Node3D, offset: Vector3, delay: float, clip: String, l
     for clone: CharacterBody3D in clones:
         if not clone.active:
             var origin: Vector3 = owner_fighter.global_position + owner_fighter.global_basis.x * (1.2 if offset.x >= 0.0 else -1.2)
-            clone.call("summon", target, origin, offset, delay, clip, lift, damage)
+            clone.call("summon", target, origin, offset, delay, clip, lift, damage, self)
             return true
     return false
 
@@ -99,15 +99,19 @@ func start(kind: String = "") -> bool:
     if move == "demon":
         for clone: CharacterBody3D in clones:
             if not clone.active:
-                clone.call("present", owner_fighter.global_position - owner_fighter.global_basis.z * 0.8, owner_fighter.rotation.y, 0.65)
+                clone.call("present", owner_fighter.global_position - owner_fighter.global_basis.z * 0.8, owner_fighter.rotation.y, 0.65, "jutsu", self)
                 break
     return true
 
 func _physics_process(delta: float) -> void:
     if current.is_empty():
         return
-    if owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.jutsu_timer <= 0.0:
+    if owner_fighter.defeated or owner_fighter.stagger_timer > 0.0:
         cancel()
+        return
+    if owner_fighter.jutsu_timer <= 0.0:
+        # Player physics runs first and may expire recovery before this timeline.
+        cancel(false)
         return
     elapsed += delta
     if current == "barrage":
@@ -138,9 +142,14 @@ func _physics_process(delta: float) -> void:
                 projectile.call("launch", owner_fighter, owner_fighter.locked_target, owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8, owner_fighter.global_basis.z)
                 break
     if elapsed >= duration:
-        cancel()
+        # Successful release lets delayed clone attacks finish autonomously.
+        cancel(false)
 
-func cancel() -> void:
+func cancel(stop_clones: bool = true) -> void:
+    if stop_clones:
+        for clone: CharacterBody3D in clones:
+            if is_instance_valid(clone) and clone.active and clone.sequence_owner == self:
+                clone.call("recycle")
     current = ""
     transformed = false
     if is_instance_valid(demon_projectile) and demon_projectile.active:

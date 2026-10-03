@@ -19,7 +19,7 @@ Importação sem parser errors; contrato de 27 clips (130 canais, quaternions e 
 | SUB durante combo, perto da parede | Fumaça e breve desaparecimento; surge atrás do alvo sem sair da arena; cargas voltam de uma em uma |
 | Selecionar DWB e JUTSU a média distância | Clone lançador, fūma giratório, personagem representado pelo projétil, colisão e golpes com clones após confirm; erro/parede não causa dano |
 | Selecionar RAS e JUTSU | Núcleo com fluxo, camada externa e órbitas acompanham mão direita; corrida aproxima sem atravessar cenário; fora da trajetória não acerta; ataque interrompido dissipa |
-| CLONE no chão e no ar | Duas cópias rigadas, golpes escalonados, fumaça ao sair; observar se punhos encostam no alvo e se poses/interseções precisam de ajuste |
+| CLONE no chão e no ar | Duas cópias rigadas, golpes escalonados, fumaça ao sair; interromper com SUB antes do golpe deve recolher clones e impedir acerto atrasado; observar se punhos encostam no alvo e se poses/interseções precisam de ajuste |
 | BARR perto do alvo, longe e contra defesa | Só acerto limpo inicia sequência; clone lança, intermediário e slam; erro/bloqueio não abre câmera; SUB/KO restaura controles |
 | Repetir especiais por dois minutos | Sem crescimento de clones/efeitos, sem objetos esquecidos, sem erro de log; observar aquecimento e FPS |
 

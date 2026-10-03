@@ -101,7 +101,7 @@ func _physics_process(delta: float) -> void:
             for clone: CharacterBody3D in fighter.specials.clones:
                 if not clone.active:
                     entry_clone = clone
-                    clone.call("present", fighter.global_position + fighter.global_basis.z * 0.8, fighter.rotation.y, 1.2, "air_attack_1")
+                    clone.call("present", fighter.global_position + fighter.global_basis.z * 0.8, fighter.rotation.y, 1.2, "air_attack_1", self)
                     owned_clones.append(clone)
                     entry_direction = fighter.global_basis.z
                     entry_box.call("activate", self, definition.entry_damage, 0.0, 0.0, 1.2, 0.85)
@@ -129,7 +129,7 @@ func _physics_process(delta: float) -> void:
         for i: int in range(3):
             for clone: CharacterBody3D in fighter.specials.clones:
                 if not clone.active:
-                    clone.call("present", fighter.global_position - fighter.global_basis.z * (0.8 + float(i) * 0.75), fighter.rotation.y, definition.chain_duration + 0.1, "guard")
+                    clone.call("present", fighter.global_position - fighter.global_basis.z * (0.8 + float(i) * 0.75), fighter.rotation.y, definition.chain_duration + 0.1, "guard", self)
                     owned_clones.append(clone)
                     break
     elif phase == "chain" and elapsed >= definition.chain_duration:
@@ -200,7 +200,7 @@ func movement_velocity(delta: float) -> Vector3:
 func _summon(offset: Vector3, delay: float, clip: String, damage: float) -> void:
     for clone: CharacterBody3D in fighter.specials.clones:
         if not clone.active:
-            clone.call("summon", target, fighter.global_position + fighter.global_basis.x * offset.x, offset, delay, clip, 0.0, damage)
+            clone.call("summon", target, fighter.global_position + fighter.global_basis.x * offset.x, offset, delay, clip, 0.0, damage, self)
             owned_clones.append(clone)
             return
 
