@@ -28,6 +28,14 @@ var respawn_timer: float = 0.0
 var dodge_direction: Vector3 = Vector3.ZERO
 var attack_cycle: int = 0
 var hit_cycle: int = 0
+var guard_meter: float = 100.0
+var guard_regen_delay: float = 0.0
+var substitutions: int = 4
+var substitution_regen: float = 0.0
+var substitution_cooldown: float = 0.0
+var invulnerable_timer: float = 0.0
+var reaction_timer: float = 0.0
+@export var reactive_substitution: bool = true
 
 var attack_active: bool = false
 var attack_elapsed: float = 0.0
@@ -109,6 +117,20 @@ func _physics_process(delta: float) -> void:
     _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
+    invulnerable_timer = maxf(invulnerable_timer - delta, 0.0)
+    substitution_cooldown = maxf(substitution_cooldown - delta, 0.0)
+    guard_regen_delay = maxf(guard_regen_delay - delta, 0.0)
+    if guard_regen_delay <= 0.0 and not guarding:
+        guard_meter = minf(100.0, guard_meter + delta * 20.0)
+    if substitutions < 4:
+        substitution_regen += delta
+        if substitution_regen >= 8.0:
+            substitutions += 1
+            substitution_regen = 0.0
+    if reaction_timer > 0.0:
+        reaction_timer -= delta
+        if reaction_timer <= 0.0 and stagger_timer > 0.0:
+            _substitute()
     attack_cooldown = maxf(attack_cooldown - delta, 0.0)
     guard_timer = maxf(guard_timer - delta, 0.0)
     stagger_timer = maxf(stagger_timer - delta, 0.0)
@@ -254,13 +276,20 @@ func receive_combat_hit(
     launch_velocity: float,
     hitstun: float
 ) -> float:
-    if not targetable:
+    if not targetable or invulnerable_timer > 0.0:
         return 0.0
 
     var applied_damage: float = damage
     var applied_knockback: float = knockback
 
     if guarding:
+        guard_meter = maxf(guard_meter - damage * 1.8 - knockback, 0.0)
+        guard_regen_delay = 1.2
+        guard_timer = maxf(guard_timer, 0.14)
+        if guard_meter <= 0.0:
+            guarding = false
+            guard_timer = 0.0
+            stagger_timer = 1.0
         applied_damage *= 0.22
         applied_knockback *= 0.18
         launch_velocity *= 0.15
@@ -270,6 +299,8 @@ func receive_combat_hit(
         attack_active = false
         attack_hitbox.call("deactivate")
         stagger_timer = hitstun
+        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and randf() < 0.18:
+            reaction_timer = randf_range(0.10, 0.18)
         wall_bounce_pending = applied_knockback >= 4.0
         ground_bounce_pending = launch_velocity < -2.0
 
@@ -285,7 +316,7 @@ func receive_combat_hit(
         velocity.y = launch_velocity
 
     hit_cycle += 1
-    if hit_cycle % 4 == 0 and health > 0.0 and not guarding and is_on_floor():
+    if false and hit_cycle % 4 == 0 and health > 0.0 and not guarding and is_on_floor():
         _start_reaction_dodge(direction)
 
     _flash_hit()
@@ -356,6 +387,10 @@ func _respawn() -> void:
     global_position = spawn_position
     velocity = Vector3.ZERO
     health = max_health
+    guard_meter = 100.0
+    substitutions = 4
+    invulnerable_timer = 0.0
+    reaction_timer = 0.0
     targetable = true
     guarding = false
     ground_bounce_pending = false
@@ -373,3 +408,20 @@ func get_is_guarding() -> bool:
 
 func is_airborne() -> bool:
     return not is_on_floor()
+
+func _substitute() -> void:
+    if not targetable or substitutions <= 0 or substitution_cooldown > 0.0:
+        return
+    combat_feedback.call("spawn_substitution", global_position)
+    substitutions -= 1
+    substitution_cooldown = 0.65
+    substitution_regen = 0.0
+    invulnerable_timer = 0.4
+    stagger_timer = 0.0
+    attack_active = false
+    attack_hitbox.call("deactivate")
+    velocity = Vector3.ZERO
+    global_position = player.global_position - player.global_basis.z * 2.3
+    global_position.x = clampf(global_position.x, -27.5, 27.5)
+    global_position.z = clampf(global_position.z, -27.5, 27.5)
+    combat_feedback.call("spawn_substitution", global_position)
