@@ -20,6 +20,9 @@ var tool_use_queue: int = 0
 var tool_select_center: Vector2 = Vector2.ZERO
 var tool_use_center: Vector2 = Vector2.ZERO
 var tool_label: String = "SHUR"
+var ultimate_enabled: bool = true
+var awakening_enabled: bool = true
+var clones_enabled: bool = true
 var ultimate_queue: int = 0
 var awakening_queue: int = 0
 var ultimate_center: Vector2 = Vector2.ZERO
@@ -115,19 +118,23 @@ func _touch_pressed(touch_id: int, position: Vector2) -> void:
         tool_use_queue += 1
         return
     if _inside_circle(position, ultimate_center, 43.0):
-        ultimate_queue += 1
+        if ultimate_enabled:
+            ultimate_queue += 1
         return
     if _inside_circle(position, awakening_center, 43.0):
-        awakening_queue += 1
+        if awakening_enabled:
+            awakening_queue += 1
         return
     if _inside_circle(position, special_center, 43.0):
         special_queue += 1
         return
     if _inside_circle(position, clone_center, 43.0):
-        clone_queue += 1
+        if clones_enabled:
+            clone_queue += 1
         return
     if _inside_circle(position, barrage_center, 43.0):
-        barrage_queue += 1
+        if clones_enabled:
+            barrage_queue += 1
         return
     if _inside_circle(position, attack_center, attack_radius):
         attack_queue += 1
@@ -298,11 +305,11 @@ func _draw() -> void:
     _draw_button(quality_center, 43.0, base_fill, quality_label, 14, text_color)
     _draw_button(tool_select_center, 43.0, base_fill, "ITEM", 14, text_color)
     _draw_button(tool_use_center, 43.0, blue_fill, tool_label, 12, text_color)
-    _draw_button(ultimate_center, 43.0, jutsu_fill, "ULT", 16, text_color)
-    _draw_button(awakening_center, 43.0, attack_fill, "AWK", 16, text_color)
+    _draw_button(ultimate_center, 43.0, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.4), "ULT" if ultimate_enabled else "—", 16, text_color)
+    _draw_button(awakening_center, 43.0, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.4), "AWK" if awakening_enabled else "—", 16, text_color)
     _draw_button(special_center, 43.0, blue_fill, special_label, 14, text_color)
-    _draw_button(clone_center, 43.0, blue_fill, "CLONE", 13, text_color)
-    _draw_button(barrage_center, 43.0, attack_fill, "BARR", 14, text_color)
+    _draw_button(clone_center, 43.0, blue_fill if clones_enabled else Color(0.2, 0.2, 0.2, 0.4), "CLONE" if clones_enabled else "—", 13, text_color)
+    _draw_button(barrage_center, 43.0, attack_fill if clones_enabled else Color(0.2, 0.2, 0.2, 0.4), "BARR" if clones_enabled else "—", 14, text_color)
     _draw_button(attack_center, attack_radius, attack_fill, "ATK", 25, text_color)
     _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color)
     _draw_button(dash_center, dash_radius, blue_fill, "DASH", 17, text_color)
@@ -359,4 +366,11 @@ func _notification(what: int) -> void:
     tool_select_queue = 0
     tool_use_queue = 0
     quality_queue = 0
+    queue_redraw()
+
+func configure_character(definition: CharacterDefinition) -> void:
+    ultimate_enabled = definition.has_ultimate
+    awakening_enabled = definition.has_awakening
+    clones_enabled = "clones" in definition.jutsus
+    special_label = "FIRE" if definition.character_id == "sasuke" else "DWB"
     queue_redraw()

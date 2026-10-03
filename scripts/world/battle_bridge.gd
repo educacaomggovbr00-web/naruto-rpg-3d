@@ -12,6 +12,18 @@ func _ready() -> void:
     button.pressed.connect(GameFlow.enter_world)
     layer.add_child(button)
     add_child(layer)
+    var versus: Button = Button.new()
+    versus.text = "VERSUS"
+    versus.position = Vector2(680, 12)
+    versus.custom_minimum_size = Vector2(140, 46)
+    versus.pressed.connect(GameFlow.enter_selection)
+    layer.add_child(versus)
+    if GameFlow.arena_id == "courtyard":
+        var floor_mesh: MeshInstance3D = get_parent().get_node("Ground/Mesh")
+        var material: StandardMaterial3D = StandardMaterial3D.new()
+        material.albedo_color = Color(0.36, 0.38, 0.42)
+        floor_mesh.material_override = material
+        get_parent().get_node("Sun").light_color = Color(1, 0.85, 0.65)
     if not GameFlow.pending_battle.is_empty() and int(GameFlow.progress.supplies) > 0:
         var fighter: Node = get_parent().get_node("Player")
         fighter.ninja_tools.stock.bomb += 1
@@ -20,7 +32,7 @@ func _ready() -> void:
         GameFlow.save_progress()
 
 func _physics_process(_delta: float) -> void:
-    if finished or GameFlow.pending_battle.is_empty():
+    if finished or (GameFlow.pending_battle.is_empty() and not GameFlow.versus_mode):
         return
     var fighter: Node = get_parent().get_node("Player")
     var cpu: Node = get_parent().get_node("EnemyDummy")

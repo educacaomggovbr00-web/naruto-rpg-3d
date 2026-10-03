@@ -55,6 +55,7 @@ func _ready() -> void:
 
 func prepare(actor: CharacterBody3D) -> void:
     source = actor
+    hitbox.collision_mask = 8 if source.collision_layer == 4 else 16
     var adapter: Node = source.get_node("RiggedCharacterAdapter")
     model = load(adapter.model_path).instantiate() as Node3D
     add_child(model)
@@ -91,7 +92,7 @@ func summon(victim: Node3D, origin: Vector3, approach_offset: Vector3, delay: fl
     hitbox.call("deactivate")
     active = true
     visible = true
-    hurtbox.collision_layer = 8
+    hurtbox.collision_layer = 16 if source.collision_layer == 4 else 8
     animation_player.play(&"combat/run")
     source.combat_feedback.call("spawn_substitution", global_position)
 
@@ -158,7 +159,7 @@ func present(origin: Vector3, heading: float, lifetime_seconds: float, clip: Str
     rotation.y = heading
     lifetime = lifetime_seconds
     elapsed = 0.0
-    hurtbox.collision_layer = 8
+    hurtbox.collision_layer = 16 if source.collision_layer == 4 else 8
     hitbox.call("deactivate")
     animation_player.play(StringName("combat/" + clip))
     source.combat_feedback.call("spawn_substitution", global_position)

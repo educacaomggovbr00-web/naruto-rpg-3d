@@ -17,6 +17,7 @@ func apply(value: int, save: bool = true) -> void:
     var fighter: CharacterBody3D = get_parent().get_node("Player")
     fighter.specials.sphere_visual.call("set_quality", level)
     fighter.awakening.aura.call("set_quality", level)
+    _apply_effect_quality(get_parent())
     var feedback: Node = get_parent().get_node("CombatFeedback")
     feedback.effect_budget = [12, 24, 32][level]
     feedback.trail_interval = [0.10, 0.075, 0.06][level]
@@ -38,3 +39,9 @@ func apply(value: int, save: bool = true) -> void:
         var result: Error = settings.save("user://graphics.cfg")
         if result != OK:
             push_warning("Não foi possível salvar qualidade gráfica: %s" % error_string(result))
+
+func _apply_effect_quality(node: Node) -> void:
+    if node.has_method("set_quality"):
+        node.call("set_quality", level)
+    for child: Node in node.get_children():
+        _apply_effect_quality(child)

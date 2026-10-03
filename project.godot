@@ -1,6 +1,6 @@
 [application]
 config/name="Shinobi RPG 3D"
-run/main_scene="res://main.tscn"
+run/main_scene="res://selection.tscn"
 run/max_fps=60
 
 [autoload]

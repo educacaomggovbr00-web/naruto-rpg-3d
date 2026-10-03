@@ -45,11 +45,12 @@ func _process(delta: float) -> void:
         flashes[i].scale = Vector3.ONE * sizes[i] * (1.0 + phase) * (1.0 - phase * phase)
         flashes[i].visible = lifetimes[i] > 0.0
     trail_timer -= delta
-    var actor: Node3D = get_node_or_null("../Player") as Node3D
-    if trail_timer <= 0.0 and actor != null:
+    if trail_timer <= 0.0:
         trail_timer = trail_interval
-        if float(actor.get("chakra_dash_timer")) > 0.06 or (actor.get("specials") != null and actor.specials.current == "rasengan"):
-            spawn_dash_burst(actor.global_position - actor.global_basis.z * 0.4)
+        for title: String in ["Player", "EnemyDummy"]:
+            var actor: Node3D = get_node_or_null("../" + title) as Node3D
+            if actor != null and (float(actor.get("chakra_dash_timer")) > 0.06 or (actor.get("specials") != null and actor.specials.current in ["rasengan", "chidori"])):
+                _spawn_flash(actor.global_position - actor.global_basis.z * 0.4 + Vector3.UP * 0.55, 0.35, Color(0.1, 0.55, 1.0), 0.16)
     if hit_stop_end_msec <= 0:
         return
 
@@ -86,9 +87,15 @@ func spawn_impact(world_position: Vector3, impact_kind: String = "normal") -> vo
         color_value = Color(1.0, 0.58, 0.15, 1.0)
         lifetime = 0.14
 
+    var audio: Node = get_node_or_null("../AudioManager")
+    if audio != null:
+        audio.call("play", "guard" if impact_kind == "guard" else "heavy" if impact_kind in ["slam", "launcher", "bounce"] else "normal")
     _spawn_flash(world_position, scale_value, color_value, lifetime)
 
 func spawn_substitution(world_position: Vector3) -> void:
+    var audio: Node = get_node_or_null("../AudioManager")
+    if audio != null:
+        audio.call("play", "smoke", -21.0)
     var offsets: Array[Vector3] = [
         Vector3(-0.42, 0.25, 0.0),
         Vector3(0.38, 0.35, 0.12),
@@ -104,6 +111,9 @@ func spawn_substitution(world_position: Vector3) -> void:
         )
 
 func spawn_dash_burst(world_position: Vector3) -> void:
+    var audio: Node = get_node_or_null("../AudioManager")
+    if audio != null:
+        audio.call("play", "dash", -21.0)
     _spawn_flash(
         world_position + Vector3.UP * 0.55,
         0.48,

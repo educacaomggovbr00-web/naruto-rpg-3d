@@ -6,6 +6,11 @@ const MISSIONS: Dictionary = {
     "roof_scrolls": preload("res://assets/world/roof_scrolls.tres"),
     "training": preload("res://assets/world/training.tres")
 }
+var player_character: CharacterDefinition = CharacterCatalog.NARUTO
+var cpu_character: CharacterDefinition = CharacterCatalog.NARUTO
+var arena_id: String = "training"
+var versus_mode: bool = false
+
 var save_path: String = "user://world_save.json"
 var progress: Dictionary = {"version": SAVE_VERSION, "ryo": 0, "collected": [], "accepted": [], "completed": [], "supplies": 0, "position": [0, 0.95, 42], "yaw": PI}
 var busy: bool = false
@@ -41,12 +46,36 @@ func _transition(path: String) -> Error:
 func enter_world() -> Error:
     if busy:
         return ERR_BUSY
+    versus_mode = false
     pending_battle = ""
     battle_finished = false
     var current: Node = get_tree().current_scene
     if current != null and current.scene_file_path == "res://world.tscn":
         return OK
     return _transition("res://world.tscn")
+
+func enter_selection() -> Error:
+    if busy:
+        return ERR_BUSY
+    versus_mode = false
+    pending_battle = ""
+    battle_finished = false
+    return _transition("res://selection.tscn")
+
+func start_versus(player_id: String, cpu_id: String, stage: String) -> Error:
+    if busy:
+        return ERR_BUSY
+    var selected_player: CharacterDefinition = CharacterCatalog.find(player_id)
+    var selected_cpu: CharacterDefinition = CharacterCatalog.find(cpu_id)
+    if selected_player == null or selected_cpu == null or stage not in ["training", "courtyard"]:
+        return ERR_INVALID_PARAMETER
+    player_character = selected_player
+    cpu_character = selected_cpu
+    arena_id = stage
+    versus_mode = true
+    pending_battle = ""
+    battle_finished = false
+    return _transition("res://main.tscn")
 
 func checkpoint(position: Vector3, yaw: float) -> void:
     if not position.is_finite() or absf(position.x) > 75.0 or absf(position.z) > 61.0 or position.y < 0.8 or position.y > 25.0:
@@ -112,6 +141,10 @@ func start_battle(id: String, position: Vector3, yaw: float) -> Error:
         return ERR_BUSY
     if not MISSIONS.has(id) or MISSIONS[id].kind != "battle":
         return ERR_INVALID_PARAMETER
+    versus_mode = false
+    player_character = CharacterCatalog.NARUTO
+    cpu_character = CharacterCatalog.NARUTO
+    arena_id = "training"
     accept_mission(id)
     checkpoint(position, yaw)
     save_progress()
@@ -123,19 +156,27 @@ func start_battle(id: String, position: Vector3, yaw: float) -> Error:
     return result
 
 func finish_battle(won: bool) -> bool:
-    if pending_battle.is_empty() or battle_finished or not MISSIONS.has(pending_battle):
+    if (pending_battle.is_empty() and not versus_mode) or battle_finished or (not versus_mode and not MISSIONS.has(pending_battle)):
         return false
     battle_finished = true
-    var first_win: bool = won and not progress.completed.has(pending_battle)
+    var first_win: bool = not versus_mode and won and not progress.completed.has(pending_battle)
     if first_win:
         _reward(pending_battle)
     return_message = "Treino concluído: +%d ryō" % int(MISSIONS[pending_battle].reward_ryo) if first_win else "Treino concluído; recompensa já recebida." if won else "Derrota no treino. Tente novamente."
+    if versus_mode:
+        return_message = "%s vs %s" % [player_character.display_name, cpu_character.display_name]
     var current: Node = get_tree().current_scene
     if current != null:
+        var feedback: Node = current.get_node_or_null("CombatFeedback")
+        if feedback != null:
+            Engine.time_scale = feedback.normal_time_scale
         var player: Node = current.get_node_or_null("Player")
         if player != null and player.has_method("_cancel_jutsu"):
             player.call("_cancel_jutsu")
             player.call("_cancel_attack")
+        var audio: Node = current.get_node_or_null("AudioManager")
+        if audio != null:
+            audio.call("stop_all")
         current.process_mode = Node.PROCESS_MODE_DISABLED
     _show_result(won)
     return true
@@ -158,16 +199,16 @@ func _show_result(won: bool) -> void:
     label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     label.add_theme_font_size_override("font_size", 24)
     panel.add_child(label)
-    for title: String in ["VOLTAR À ALDEIA", "REPETIR TREINO"]:
+    for title: String in (["SELEÇÃO", "REVANCHE"] if versus_mode else ["VOLTAR À ALDEIA", "REPETIR TREINO"]):
         var button: Button = Button.new()
         button.text = title
         button.custom_minimum_size = Vector2(480, 62)
-        button.pressed.connect(enter_world if title == "VOLTAR À ALDEIA" else retry_battle)
+        button.pressed.connect(enter_selection if title == "SELEÇÃO" else enter_world if title == "VOLTAR À ALDEIA" else retry_battle)
         panel.add_child(button)
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func retry_battle() -> Error:
-    if pending_battle.is_empty() or busy:
+    if (pending_battle.is_empty() and not versus_mode) or busy:
         return ERR_BUSY
     battle_finished = false
     return _transition("res://main.tscn")

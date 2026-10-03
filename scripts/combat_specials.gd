@@ -16,16 +16,20 @@ var confirmed_target: Node3D = null
 var sequence_elapsed: float = 0.0
 var sequence_stage: int = 0
 var barrage_hitbox: Area3D
+var chidori_visual: MultiMeshInstance3D
+var owns_camera: bool = false
 var owner_fighter: CharacterBody3D
 
 func _ready() -> void:
     owner_fighter = get_parent() as CharacterBody3D
-    call_deferred("warm_clone_pool")
+    selected = owner_fighter.character_definition.jutsus[0]
+    if not owner_fighter.has_method("is_cpu_controlled"):
+        call_deferred("warm_clone_pool")
     process_physics_priority = 15
     rasengan_hitbox = Area3D.new()
     rasengan_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
     rasengan_hitbox.collision_layer = 0
-    rasengan_hitbox.collision_mask = 16
+    rasengan_hitbox.collision_mask = 8 if owner_fighter.collision_layer == 4 else 16
     var collision: CollisionShape3D = CollisionShape3D.new()
     var hit_shape: SphereShape3D = SphereShape3D.new()
     hit_shape.radius = 0.55
@@ -37,10 +41,13 @@ func _ready() -> void:
     sphere_visual.set_script(preload("res://scripts/chakra_orb.gd"))
     rasengan_hitbox.add_child(sphere_visual)
     sphere_visual.visible = false
+    chidori_visual = MultiMeshInstance3D.new()
+    chidori_visual.set_script(preload("res://scripts/chidori_effect.gd"))
+    rasengan_hitbox.add_child(chidori_visual)
     barrage_hitbox = Area3D.new()
     barrage_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
     barrage_hitbox.collision_layer = 0
-    barrage_hitbox.collision_mask = 16
+    barrage_hitbox.collision_mask = rasengan_hitbox.collision_mask
     var barrage_shape: CollisionShape3D = CollisionShape3D.new()
     var fist: SphereShape3D = SphereShape3D.new()
     fist.radius = 0.7
@@ -50,11 +57,13 @@ func _ready() -> void:
     barrage_hitbox.top_level = true
     for i: int in range(3):
         var projectile: Node3D = Node3D.new()
-        projectile.set_script(preload("res://scripts/chakra_projectile.gd"))
+        projectile.set_script(preload("res://scripts/fireball_projectile.gd") if selected == "fireball" else preload("res://scripts/chakra_projectile.gd"))
         owner_fighter.get_parent().add_child.call_deferred(projectile)
         projectiles.append(projectile)
 
 func warm_clone_pool() -> void:
+    if not clones.is_empty() or owner_fighter.character_definition.character_id != "naruto":
+        return
     for i: int in range(3):
         var clone: CharacterBody3D = CharacterBody3D.new()
         clone.set_script(preload("res://scripts/shadow_clone.gd"))
@@ -70,14 +79,21 @@ func summon_clone(target: Node3D, offset: Vector3, delay: float, clip: String, l
             return true
     return false
 
+func cycle_selection() -> void:
+    var choices: PackedStringArray = owner_fighter.character_definition.jutsus
+    var index: int = choices.find(selected)
+    selected = choices[(index + 1) % choices.size()]
+
 func start(kind: String = "") -> bool:
     var move: String = selected if kind.is_empty() else kind
     if not current.is_empty() or owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.jutsu_timer > 0.0 or owner_fighter.attack_active or owner_fighter.dodge_timer > 0.0 or owner_fighter.chakra_dash_timer > 0.0 or owner_fighter.jutsu_cooldown > 0.0:
         return false
-    if move not in ["demon", "rasengan", "clones", "whirlwind", "barrage"]:
+    if move not in owner_fighter.character_definition.jutsus:
         return false
     if owner_fighter.chakra < 32.0:
         return false
+    if move in ["demon", "clones", "whirlwind", "barrage"]:
+        warm_clone_pool()
     owner_fighter.chakra -= 32.0
     owner_fighter.jutsu_cooldown = 4.0 if move == "barrage" else 1.5
     owner_fighter.jutsu_timer = 0.65
@@ -86,10 +102,13 @@ func start(kind: String = "") -> bool:
     owner_fighter.animation_action_id += 1
     if owner_fighter.awakening.active and move in ["demon", "rasengan"]:
         move = "rasengan"
-    sphere_visual.call("set_energy_color", Color(1.0, 0.15, 0.05) if owner_fighter.awakening.active else Color(0.08, 0.55, 1.0))
+    sphere_visual.call("set_energy_color", Color(1.0, 0.15, 0.05) if owner_fighter.awakening.active else owner_fighter.character_definition.energy_color)
+    var audio: Node = owner_fighter.get_parent().get_node_or_null("AudioManager")
+    if audio != null:
+        audio.call("play", "chakra")
     current = move
     elapsed = 0.0
-    duration = 0.95 if move == "rasengan" else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
+    duration = 0.95 if move in ["rasengan", "chidori"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     confirmed_target = null
     sequence_stage = 0
     sequence_elapsed = 0.0
@@ -116,10 +135,11 @@ func _physics_process(delta: float) -> void:
     elapsed += delta
     if current == "barrage":
         _barrage_timeline(delta)
-    elif current == "rasengan":
+    elif current in ["rasengan", "chidori"]:
         var hand: Vector3 = owner_fighter.rig_adapter.call("get_hand_world_position")
         rasengan_hitbox.global_position = hand + owner_fighter.global_basis.z * 0.12
-        sphere_visual.visible = elapsed > 0.12 and elapsed < 0.84
+        sphere_visual.visible = current == "rasengan" and elapsed > 0.12 and elapsed < 0.84
+        chidori_visual.visible = current == "chidori" and elapsed > 0.12 and elapsed < 0.84
         sphere_visual.scale = Vector3.ONE * minf(1.0, elapsed * 5.0)
         if elapsed >= 0.38 and not active_opened:
             active_opened = true
@@ -138,7 +158,7 @@ func _physics_process(delta: float) -> void:
         for projectile: Node3D in projectiles:
             if projectile.is_inside_tree() and not projectile.active:
                 demon_projectile = projectile
-                transformed = true
+                transformed = current == "demon"
                 projectile.call("launch", owner_fighter, owner_fighter.locked_target, owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8, owner_fighter.global_basis.z)
                 break
     if elapsed >= duration:
@@ -150,17 +170,20 @@ func cancel(stop_clones: bool = true) -> void:
         for clone: CharacterBody3D in clones:
             if is_instance_valid(clone) and clone.active and clone.sequence_owner == self:
                 clone.call("recycle")
+    var ended_kind: String = current
     current = ""
     transformed = false
-    if is_instance_valid(demon_projectile) and demon_projectile.active:
+    if is_instance_valid(demon_projectile) and demon_projectile.active and (stop_clones or ended_kind == "demon"):
         demon_projectile.call("recycle")
     demon_projectile = null
     sphere_visual.visible = false
+    chidori_visual.visible = false
     rasengan_hitbox.call("deactivate")
     barrage_hitbox.call("deactivate")
     confirmed_target = null
-    if is_instance_valid(owner_fighter.camera_rig):
+    if owns_camera and is_instance_valid(owner_fighter.camera_rig):
         owner_fighter.camera_rig.call("end_sequence")
+    owns_camera = false
     owner_fighter.jutsu_timer = 0.0
 
 func demon_confirm(target: Node) -> void:
@@ -183,7 +206,7 @@ func movement_velocity(delta: float) -> Vector3:
     if current == "barrage" and is_instance_valid(confirmed_target) and sequence_elapsed < 0.65:
         var pursuit: Vector3 = confirmed_target.global_position - owner_fighter.global_position - owner_fighter.global_basis.z * 1.0
         return pursuit.limit_length(1.0) * 12.0
-    if current != "rasengan" or elapsed < 0.28 or elapsed > 0.68:
+    if current not in ["rasengan", "chidori"] or elapsed < 0.28 or elapsed > 0.68:
         return Vector3.ZERO
     var forward: Vector3 = owner_fighter.global_basis.z
     if is_instance_valid(owner_fighter.locked_target):
@@ -205,7 +228,8 @@ func contact(target: Node, dealt: float, blocked: bool = false) -> void:
     duration = elapsed + 1.4
     owner_fighter.jutsu_timer = 1.5
     barrage_hitbox.call("deactivate")
-    owner_fighter.camera_rig.call("begin_sequence", confirmed_target, 1.4)
+    owns_camera = true
+    owner_fighter.camera_rig.call("begin_sequence", owner_fighter if owner_fighter.collision_layer == 4 else confirmed_target, 1.4)
     summon_clone(confirmed_target, -owner_fighter.global_basis.z * 1.0, 0.08, "attack_4", 8.5, 5.0)
 
 func _barrage_timeline(delta: float) -> void:
@@ -233,7 +257,7 @@ func _barrage_timeline(delta: float) -> void:
         cancel()
 
 func animation_clip() -> String:
-    if current == "rasengan":
+    if current in ["rasengan", "chidori"]:
         return "rasengan"
     if current == "barrage":
         return "air_attack_4" if sequence_stage >= 2 else "attack_1"

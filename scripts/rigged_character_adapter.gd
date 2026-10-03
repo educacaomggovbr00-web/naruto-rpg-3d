@@ -1,6 +1,9 @@
 extends Node3D
 
 const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
+# Track paths are immutable after installation; playback stays per fighter.
+static var library_cache: Dictionary = {}
+
 const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
 
 @export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
@@ -45,6 +48,8 @@ var left_foot_bone: int = -1
 func _ready() -> void:
     process_physics_priority = 10
     fallback_visual = get_node_or_null(fallback_visual_path) as Node3D
+    if player.has_method("get_character_definition"):
+        model_path = player.call("get_character_definition").model_path
     _try_load_rig()
 
 func _physics_process(delta: float) -> void:
@@ -201,21 +206,27 @@ func _install_combat_library() -> bool:
         return false
     manifest = parsed
     var clips: Dictionary = manifest.get("clips", {})
-    var library: AnimationLibrary = COMBAT_LIBRARY.duplicate(true) as AnimationLibrary
     var animation_root: Node = animation_player.get_node(animation_player.root_node)
     var skeleton_path: String = String(animation_root.get_path_to(skeleton))
-    for clip_name: StringName in library.get_animation_list():
-        if not clips.has(String(clip_name)):
-            return false
-        var animation: Animation = library.get_animation(clip_name)
-        for track: int in range(animation.get_track_count()):
-            var path: NodePath = animation.track_get_path(track)
-            var bone_name: String = String(path.get_subname(0))
-            var index: int = skeleton.find_bone(bone_name)
-            if index < 0:
-                push_error("Combat clip %s: missing bone %s" % [clip_name, bone_name])
+    var bone_names: PackedStringArray = []
+    for index: int in range(skeleton.get_bone_count()):
+        bone_names.append(String(skeleton.get_bone_name(index)))
+    var cache_key: String = model_path + "|" + skeleton_path + "|" + ",".join(bone_names)
+    var library: AnimationLibrary = library_cache.get(cache_key) as AnimationLibrary
+    if library == null:
+        library = COMBAT_LIBRARY.duplicate(true) as AnimationLibrary
+        for clip_name: StringName in library.get_animation_list():
+            if not clips.has(String(clip_name)):
                 return false
-            animation.track_set_path(track, NodePath(skeleton_path + ":" + bone_name))
+            var animation: Animation = library.get_animation(clip_name)
+            for track: int in range(animation.get_track_count()):
+                var path: NodePath = animation.track_get_path(track)
+                var bone_name: String = String(path.get_subname(0))
+                if skeleton.find_bone(bone_name) < 0:
+                    push_error("Combat clip %s: missing bone %s" % [clip_name, bone_name])
+                    return false
+                animation.track_set_path(track, NodePath(skeleton_path + ":" + bone_name))
+        library_cache[cache_key] = library
     # Original happy remains in the import, but is never selected for combat.
     var result: Error = animation_player.add_animation_library(&"combat", library)
     real_animation_count = library.get_animation_list().size()
@@ -350,6 +361,8 @@ func snap_attack_hitbox(combo_step: int, airborne: bool) -> void:
 
 func _choose_strike_bone(combo_step: int, airborne: bool) -> int:
     var timing: Dictionary = get_attack_timing(clampi(combo_step, 1, 4), airborne)
+    if player.get("selected_attack") is AttackDefinition:
+        timing = player.selected_attack.animation_timing(manifest)
     return _find_mixamo_bone(String(timing.get("bone", "RightHand")))
 
 func _find_skeleton(root: Node) -> Skeleton3D:

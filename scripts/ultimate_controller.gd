@@ -19,15 +19,18 @@ var last_result: String = ""
 var owned_clones: Array[CharacterBody3D] = []
 var activation_serial: int = 0
 var last_press_msec: int = -1000
+var last_defense_msec: int = -1000
+var cpu_controlled: bool = false
 
 func _ready() -> void:
     fighter = get_parent() as CharacterBody3D
+    cpu_controlled = fighter.has_method("is_cpu_controlled")
     clash_rng.randomize()
     process_physics_priority = 15
     entry_box = Area3D.new()
     entry_box.set_script(preload("res://scripts/combat_hitbox.gd"))
     entry_box.collision_layer = 0
-    entry_box.collision_mask = 16
+    entry_box.collision_mask = 8 if cpu_controlled else 16
     var collision: CollisionShape3D = CollisionShape3D.new()
     var shape: SphereShape3D = SphereShape3D.new()
     shape.radius = 0.65
@@ -37,6 +40,10 @@ func _ready() -> void:
     entry_box.top_level = true
 
 func start() -> bool:
+    if not fighter.character_definition.has_ultimate:
+        return false
+    if fighter.camera_rig.cinematic_remaining > 0.0:
+        return false
     if not phase.is_empty() or cooldown > 0.0 or fighter.chakra < definition.chakra_cost or not fighter.call("_can_use_movement_action") or fighter.attack_cooldown > 0.0 or not fighter.is_on_floor():
         return false
     # Sealed Power needs separate verified choreography; do not relabel Handbook.
@@ -67,6 +74,7 @@ func _enter(next: String) -> void:
         presses = 0
         cpu_presses = 0
         last_press_msec = -1000
+        last_defense_msec = -1000
         cpu_press_timer = _cpu_delay(definition.cpu_clash_reaction_min, definition.cpu_clash_reaction_max)
     if is_instance_valid(target):
         fighter.camera_rig.call("set_sequence_shot", phase)
@@ -156,7 +164,7 @@ func on_hitbox_contact(_box: Area3D, victim: Node, dealt: float, blocked: bool) 
     _recycle_clones()
     entry_clone = null
     cinematic_started = true
-    fighter.camera_rig.call("begin_sequence", target, 6.0)
+    fighter.camera_rig.call("begin_sequence", fighter if cpu_controlled else target, 6.0)
     _enter("clash")
 
 func on_attack_connected(victim: Node, dealt: float, lift: float) -> void:
@@ -172,6 +180,12 @@ func press_attack() -> void:
         presses += 1
         last_press_msec = now
 
+func press_defense() -> void:
+    var now: int = Time.get_ticks_msec()
+    if cpu_controlled and phase == "clash" and now - last_defense_msec >= 50:
+        cpu_presses += 1
+        last_defense_msec = now
+
 func _cpu_delay(minimum: float, maximum: float) -> float:
     return clash_rng.randf_range(maxf(minimum, 0.05), maxf(maximum, maxf(minimum, 0.05)))
 
@@ -179,7 +193,10 @@ func _advance_cpu_clash(delta: float) -> void:
     # CPU never inspects the player's presses, input queues or touch events.
     cpu_press_timer -= delta
     while cpu_press_timer <= 0.0:
-        cpu_presses += 1
+        if cpu_controlled:
+            presses += 1
+        else:
+            cpu_presses += 1
         cpu_press_timer += _cpu_delay(definition.cpu_clash_interval_min, definition.cpu_clash_interval_max)
 
 func animation_clip() -> String:
@@ -239,7 +256,7 @@ func _move_entry_clone(delta: float) -> void:
     query.shape = entry_box.get_child(0).shape
     query.transform = Transform3D(Basis.IDENTITY, entry_clone.global_position)
     query.motion = travel
-    query.collision_mask = 1 | 16
+    query.collision_mask = 1 | entry_box.collision_mask
     query.collide_with_areas = true
     var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
     var fractions: PackedFloat32Array = space.cast_motion(query)

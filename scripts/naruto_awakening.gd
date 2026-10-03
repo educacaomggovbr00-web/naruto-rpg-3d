@@ -63,7 +63,7 @@ func _ready() -> void:
     tail.visible = false
 
 func eligible() -> bool:
-    return not fighter.defeated and not active and not transforming and cooldown <= 0.0 and fighter.health <= fighter.max_health * health_threshold and fighter.chakra >= fighter.max_chakra - 0.01
+    return fighter.character_definition.has_awakening and not fighter.defeated and not active and not transforming and cooldown <= 0.0 and fighter.health <= fighter.max_health * health_threshold and fighter.chakra >= fighter.max_chakra - 0.01
 
 func start() -> bool:
     if not eligible() or fighter.attack_active or fighter.stagger_timer > 0.0 or fighter.jutsu_timer > 0.0 or fighter.chakra_dash_timer > 0.0 or fighter.dodge_timer > 0.0 or not fighter.is_on_floor():

@@ -5,6 +5,7 @@ var source: CharacterBody3D
 var target: Node3D
 var kind: String = "shuriken"
 var heading: Vector3 = Vector3.BACK
+var hit_mask: int = 16
 var remaining: float = 0.0
 var sweep_shape: SphereShape3D
 var shuriken: Node3D
@@ -96,6 +97,7 @@ func _ready() -> void:
 
 func launch(fighter: CharacterBody3D, victim: Node3D, origin: Vector3, direction: Vector3, tool: String) -> void:
     source = fighter
+    hit_mask = 8 if source.collision_layer == 4 else 16
     target = victim
     kind = tool
     heading = direction.normalized()
@@ -126,7 +128,7 @@ func _physics_process(delta: float) -> void:
     query.shape = sweep_shape
     query.transform = Transform3D(Basis.IDENTITY, global_position)
     query.motion = travel
-    query.collision_mask = 1 | 16
+    query.collision_mask = 1 | hit_mask
     query.collide_with_areas = true
     var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
     var fractions: PackedFloat32Array = space.cast_motion(query)
@@ -140,7 +142,7 @@ func _physics_process(delta: float) -> void:
             var blast: SphereShape3D = SphereShape3D.new()
             blast.radius = 1.5
             query.shape = blast
-            query.collision_mask = 16
+            query.collision_mask = hit_mask
             contacts = space.intersect_shape(query, 12)
             source.combat_feedback.call("spawn_impact", global_position, "bounce")
         for contact: Dictionary in contacts:

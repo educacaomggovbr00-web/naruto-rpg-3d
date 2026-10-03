@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
+var character_definition: CharacterDefinition = null
 var selected_attack: AttackDefinition = null
 var combo_branch: String = "neutral"
 
@@ -17,6 +18,36 @@ var combo_branch: String = "neutral"
 @export var knockback_friction: float = 12.0
 @export var ground_bounce_velocity: float = 6.2
 @export var wall_bounce_strength: float = 0.68
+
+# Shared ability modules use the same fighter contract as the player.
+@export var enable_arsenal: bool = true
+var defeated: bool:
+    get:
+        return not targetable
+var is_guarding: bool:
+    get:
+        return guarding
+    set(value):
+        guarding = value
+var is_charging_chakra: bool = false
+var max_chakra: float = 100.0
+var chakra: float = 100.0
+var jutsu_timer: float = 0.0
+var jutsu_cooldown: float = 0.0
+var chakra_dash_timer: float = 0.0
+var dash_elapsed: float = 0.0
+var dash_speed: float = 0.0
+var dash_direction: Vector3 = Vector3.ZERO
+var dash_hitbox: Area3D
+var air_dash_count: int = 0
+var arsenal_delay: float = 2.0
+var attack_buffer: float = 0.0
+var jump_requested: bool = false
+var specials: Node3D
+var awakening: Node3D
+var ultimate: Node3D
+var ninja_tools: Node3D
+@onready var camera_rig: Node3D = $"../Player/CameraRig"
 
 var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var health: float = 120.0
@@ -73,7 +104,31 @@ var wall_bounce_pending: bool = false
 @onready var attack_hitbox: Area3D = $AttackHitbox
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
+func get_character_definition() -> CharacterDefinition:
+    return GameFlow.cpu_character
+
 func _ready() -> void:
+    character_definition = get_character_definition()
+    moveset = character_definition.moveset
+    max_chakra = character_definition.max_chakra
+    chakra = max_chakra
+    if GameFlow.versus_mode:
+        max_health = character_definition.max_health
+        move_speed = character_definition.movement_speed
+    specials = _ability("CombatSpecials", preload("res://scripts/combat_specials.gd"))
+    awakening = _ability("Awakening", preload("res://scripts/naruto_awakening.gd"))
+    ultimate = _ability("Ultimate", preload("res://scripts/ultimate_controller.gd"))
+    ninja_tools = _ability("NinjaTools", preload("res://scripts/ninja_tools.gd"))
+    dash_hitbox = Area3D.new()
+    dash_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
+    dash_hitbox.collision_layer = 0
+    dash_hitbox.collision_mask = 8
+    var collision: CollisionShape3D = CollisionShape3D.new()
+    var shape: SphereShape3D = SphereShape3D.new()
+    shape.radius = 0.85
+    collision.shape = shape
+    dash_hitbox.add_child(collision)
+    add_child(dash_hitbox)
     decision_rng.randomize()
     locked_target = player
     health = max_health
@@ -134,17 +189,32 @@ func _physics_process(delta: float) -> void:
         return
 
     guarding = false
+    if chakra_dash_timer > 0.0:
+        _dash_motion(delta)
+        _move_and_handle_bounces()
+        return
+    if jutsu_timer > 0.0:
+        var motion: Vector3 = ultimate.call("movement_velocity", delta) if not ultimate.phase.is_empty() else Vector3.ZERO if awakening.transforming else specials.call("movement_velocity", delta)
+        velocity.x = motion.x
+        velocity.z = motion.z
+        if specials.current == "barrage":
+            velocity.y = motion.y
+        _move_and_handle_bounces()
+        return
 
     decision_timer = maxf(decision_timer - delta, 0.0)
     if not attack_active and decision_timer <= 0.0:
         _decide_neutral(distance)
+        if enable_arsenal and _decide_arsenal(distance):
+            _move_and_handle_bounces()
+            return
 
     if attack_active:
         if distance > 1.05 and attack_elapsed < float(attack_timing.get("startup", 0.12)):
             _chase_player(to_player, delta)
         else:
             _slow_down(delta)
-    elif distance > detection_range:
+    elif is_charging_chakra or distance > detection_range:
         _slow_down(delta)
     elif neutral_motion == "retreat" and distance < 6.0:
         _chase_player(-to_player, delta)
@@ -160,6 +230,16 @@ func _physics_process(delta: float) -> void:
     _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
+    arsenal_delay = maxf(arsenal_delay - delta, 0.0)
+    jutsu_cooldown = maxf(jutsu_cooldown - delta, 0.0)
+    jutsu_timer = maxf(jutsu_timer - delta, 0.0)
+    chakra_dash_timer = maxf(chakra_dash_timer - delta, 0.0)
+    if dash_hitbox != null and chakra_dash_timer <= 0.0:
+        dash_hitbox.call("deactivate")
+    if targetable and stagger_timer <= 0.0 and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0:
+        chakra = minf(max_chakra, chakra + delta * (22.0 if is_charging_chakra else 3.0))
+    if is_on_floor():
+        air_dash_count = 0
     juggle_timer = maxf(juggle_timer - delta, 0.0)
     if juggle_timer <= 0.0:
         juggle_hits = 0
@@ -216,6 +296,16 @@ func _update_attack_timeline(delta: float) -> void:
         attack_hitbox.call("deactivate")
 
 func on_hitbox_contact(_hitbox: Area3D, _victim: Node, damage: float, blocked: bool) -> void:
+    if _hitbox == dash_hitbox and chakra_dash_timer > 0.0:
+        chakra_dash_timer = 0.0
+        dash_hitbox.call("deactivate")
+        velocity = -dash_direction * 5.0 if blocked else Vector3.ZERO
+        if blocked:
+            stagger_timer = 0.22
+        else:
+            attack_cooldown = 0.0
+            _start_attack()
+    specials.call("contact", _victim, damage, blocked)
     if attack_active and not blocked and damage > 0.0:
         attack_confirmed = true
 
@@ -228,6 +318,12 @@ func get_animation_state() -> String:
         return "dodge"
     if guarding:
         return "guard"
+    if chakra_dash_timer > 0.0:
+        return "chakra_dash"
+    if jutsu_timer > 0.0:
+        return "jutsu"
+    if is_charging_chakra:
+        return "chakra_charge"
     if attack_active:
         return "air_attack" if attack_airborne else "attack"
     if not is_on_floor():
@@ -252,8 +348,8 @@ func _chase_player(to_player: Vector3, delta: float) -> void:
         return
 
     var direction: Vector3 = to_player.normalized()
-    velocity.x = move_toward(velocity.x, direction.x * move_speed, acceleration * delta)
-    velocity.z = move_toward(velocity.z, direction.z * move_speed, acceleration * delta)
+    velocity.x = move_toward(velocity.x, direction.x * move_speed * float(awakening.call("movement_multiplier")), acceleration * delta)
+    velocity.z = move_toward(velocity.z, direction.z * move_speed * float(awakening.call("movement_multiplier")), acceleration * delta)
 
 func _decide_neutral(distance: float) -> void:
     decision_timer = decision_rng.randf_range(decision_interval_min, decision_interval_max)
@@ -276,6 +372,12 @@ func get_cpu_state() -> String:
         return "dodge"
     if guarding:
         return "guard"
+    if chakra_dash_timer > 0.0:
+        return "chase"
+    if jutsu_timer > 0.0:
+        return "ultimate" if not ultimate.phase.is_empty() else "awakening" if awakening.transforming else "jutsu"
+    if is_charging_chakra:
+        return "charge"
     if attack_active:
         return "combo" if combo_step > 1 else "attack"
     return neutral_motion
@@ -312,7 +414,7 @@ func _begin_strike() -> void:
     selected_attack = moveset.attack(combo_step, attack_airborne, combo_branch)
     attack_timing = selected_attack.animation_timing(rig_adapter.manifest)
 
-func _face_direction(direction: Vector3, delta: float) -> void:
+func _face_direction(direction: Vector3, delta: float, speed: float = 10.0) -> void:
     var flat: Vector3 = direction
     flat.y = 0.0
 
@@ -320,7 +422,7 @@ func _face_direction(direction: Vector3, delta: float) -> void:
         return
 
     var target_yaw: float = atan2(flat.x, flat.z)
-    rotation.y = lerp_angle(rotation.y, target_yaw, 10.0 * delta)
+    rotation.y = lerp_angle(rotation.y, target_yaw, minf(speed * delta, 1.0))
 
 func _move_and_handle_bounces() -> void:
     var was_on_floor: bool = is_on_floor()
@@ -376,6 +478,12 @@ func _trigger_bounce_feedback(_bounce_kind: String) -> void:
     if is_instance_valid(player) and player.has_method("extend_combo_feedback"):
         player.call("extend_combo_feedback", 0.85)
 
+func is_defeated() -> bool:
+    return not targetable
+
+func get_damage_multiplier() -> float:
+    return float(awakening.call("damage_multiplier")) * float(ninja_tools.call("damage_multiplier"))
+
 func is_targetable() -> bool:
     return targetable
 
@@ -418,6 +526,7 @@ func receive_combat_hit(
         ground_bounce_pending = false
         wall_bounce_pending = false
     else:
+        _cancel_abilities()
         attack_active = false
         attack_hitbox.call("deactivate")
         stagger_timer = hitstun
@@ -487,9 +596,11 @@ func _update_labels() -> void:
     elif not is_on_floor():
         state = "  [AR]"
 
-    health_label.text = "ENEMY  %d / %d%s" % [int(health), int(max_health), state]
+    health_label.text = "%s %d/%d%s" % [character_definition.display_name, int(health), int(max_health), state]
 
 func _knock_out() -> void:
+    _cancel_abilities()
+    awakening.call("stop")
     targetable = false
     guarding = false
     attack_active = false
@@ -501,6 +612,12 @@ func _knock_out() -> void:
     respawn_timer = recovery_delay
 
 func _respawn() -> void:
+    _cancel_abilities()
+    awakening.call("reset")
+    ninja_tools.call("reset")
+    ultimate.cooldown = 0.0
+    chakra = max_chakra
+    arsenal_delay = 2.0
     cinematic_owner = null
     global_position = spawn_position
     velocity = Vector3.ZERO
@@ -532,6 +649,7 @@ func is_airborne() -> bool:
 func _substitute() -> void:
     if not targetable or substitutions <= 0 or substitution_cooldown > 0.0:
         return
+    _cancel_abilities()
     combat_feedback.call("spawn_substitution", global_position)
     substitutions -= 1
     substitution_cooldown = 0.65
@@ -549,6 +667,7 @@ func _substitute() -> void:
 func begin_cinematic_lock(requester: Node) -> bool:
     if not targetable or (is_instance_valid(cinematic_owner) and cinematic_owner != requester):
         return false
+    _cancel_abilities()
     cinematic_owner = requester
     cinematic_watchdog = 0.5
     attack_active = false
@@ -568,3 +687,90 @@ func end_cinematic_lock(requester: Node) -> void:
     if cinematic_owner == requester:
         cinematic_owner = null
         cinematic_watchdog = 0.0
+
+func _ability(title: String, script: Script) -> Node3D:
+    var ability: Node3D = Node3D.new()
+    ability.name = title
+    ability.set_script(script)
+    add_child(ability)
+    return ability
+
+func is_cpu_controlled() -> bool:
+    return true
+
+func get_special_animation() -> String:
+    return ultimate.call("animation_clip") if not ultimate.phase.is_empty() else "chakra_charge" if awakening.transforming else specials.call("animation_clip")
+
+func _can_use_movement_action() -> bool:
+    return targetable and not is_instance_valid(cinematic_owner) and not attack_active and stagger_timer <= 0.0 and dodge_timer <= 0.0 and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0 and not guarding
+
+func _cancel_abilities() -> void:
+    if specials != null:
+        specials.call("cancel")
+        ultimate.call("cancel", "interrupted")
+        ninja_tools.call("cancel")
+    chakra_dash_timer = 0.0
+    is_charging_chakra = false
+    if dash_hitbox != null:
+        dash_hitbox.call("deactivate")
+
+func _start_chakra_dash() -> bool:
+    if not _can_use_movement_action() or chakra < 18.0 or not is_instance_valid(player) or player.defeated or (not is_on_floor() and air_dash_count >= 2):
+        return false
+    var aim: Vector3 = player.global_position - global_position
+    if aim.length_squared() <= 0.001:
+        return false
+    if not is_on_floor():
+        air_dash_count += 1
+    chakra -= 18.0
+    is_charging_chakra = false
+    dash_direction = aim.normalized()
+    chakra_dash_timer = 0.55
+    dash_elapsed = 0.0
+    dash_speed = 0.0
+    animation_action_id += 1
+    combat_feedback.call("spawn_dash_burst", global_position)
+    return true
+
+func _dash_motion(delta: float) -> void:
+    dash_elapsed += delta
+    var aim: Vector3 = player.global_position - global_position
+    if aim.length_squared() > 0.001:
+        dash_direction = dash_direction.slerp(aim.normalized(), minf(delta * 9.0, 1.0)).normalized()
+    if dash_elapsed >= 0.06:
+        if dash_hitbox.remaining_time <= 0.0:
+            dash_hitbox.call("activate", self, 0.0, 0.0, 0.0, 0.16, 0.5)
+        dash_speed = move_toward(dash_speed, 24.0 * float(awakening.call("movement_multiplier")), delta * 100.0)
+    velocity = dash_direction * dash_speed
+    dash_hitbox.position = Vector3(0, 0.15, 0.4)
+    _face_direction(dash_direction, delta, 24.0)
+    if is_on_wall():
+        chakra_dash_timer = 0.0
+        dash_hitbox.call("deactivate")
+        stagger_timer = 0.16
+
+func _decide_arsenal(distance: float) -> bool:
+    if arsenal_delay > 0.0 or not _can_use_movement_action() or distance > detection_range:
+        return false
+    is_charging_chakra = false
+    if health <= max_health * 0.30 and character_definition.has_awakening and chakra >= max_chakra and decision_rng.randf() < 0.40:
+        arsenal_delay = 1.0
+        return awakening.call("start")
+    if chakra < 32.0 and distance > 5.0:
+        is_charging_chakra = true
+        neutral_motion = "retreat"
+        return false
+    var roll: float = decision_rng.randf()
+    arsenal_delay = decision_rng.randf_range(1.2, 2.2)
+    if distance > 3.0 and distance < 10.0 and chakra >= 80.0 and character_definition.has_ultimate and roll < 0.12:
+        specials.call("warm_clone_pool")
+        return ultimate.call("start")
+    if distance > 2.0 and distance < 12.0 and roll < 0.48:
+        var choice: String = character_definition.jutsus[decision_rng.randi_range(0, character_definition.jutsus.size() - 1)]
+        return specials.call("start", choice)
+    if distance > 4.0 and roll < 0.78:
+        return _start_chakra_dash()
+    if distance > 3.0:
+        ninja_tools.selected = 0
+        return ninja_tools.call("use")
+    return false

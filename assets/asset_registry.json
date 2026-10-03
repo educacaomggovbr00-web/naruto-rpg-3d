@@ -194,6 +194,15 @@
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
       "sha256": "4228d44a495645fc7edfac963327c5d3301cb0336e1c8c27d2d974cf62925217"
+    },
+    {
+      "path": "assets/vfx/fire_core.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Criado no projeto; comportamento aproximado de referência pública",
+      "license": "Original project content; no third-party game asset copied",
+      "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
+      "sha256": "39fc62ca767f1b3d5bacd2ac913d58a29a318cc22fe951307b6a197bea10b34c"
     }
   ]
 }

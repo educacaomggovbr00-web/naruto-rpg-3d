@@ -6,6 +6,7 @@ var active: bool = false
 var owner_fighter: Node3D = null
 var target: Node3D = null
 var direction: Vector3 = Vector3.BACK
+var hit_mask: int = 16
 var remaining: float = 0.0
 var spin: Node3D
 var shape: SphereShape3D
@@ -33,6 +34,7 @@ func _ready() -> void:
 
 func launch(source: Node3D, destination: Node3D, origin: Vector3, heading: Vector3) -> void:
     owner_fighter = source
+    hit_mask = 8 if source.collision_layer == 4 else 16
     target = destination
     global_position = origin
     direction = heading.normalized()
@@ -58,7 +60,7 @@ func _physics_process(delta: float) -> void:
     query.shape = shape
     query.transform = Transform3D(Basis.IDENTITY, global_position)
     query.motion = travel
-    query.collision_mask = 1 | 16
+    query.collision_mask = 1 | hit_mask
     query.collide_with_areas = true
     query.collide_with_bodies = true
     var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state

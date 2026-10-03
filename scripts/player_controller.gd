@@ -8,6 +8,9 @@ extends CharacterBody3D
 @export var turn_speed: float = 14.0
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
+var character_definition: CharacterDefinition = null
+var cinematic_owner: Node = null
+var cinematic_watchdog: float = 0.0
 var selected_attack: AttackDefinition = null
 var buffered_branch: String = ""
 
@@ -116,7 +119,16 @@ var mobile_controls: Node = null
 @onready var rig_adapter: Node = get_node_or_null("RiggedCharacterAdapter")
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
+func get_character_definition() -> CharacterDefinition:
+    return GameFlow.player_character
+
 func _ready() -> void:
+    character_definition = get_character_definition()
+    moveset = character_definition.moveset
+    move_speed = character_definition.movement_speed
+    run_speed = character_definition.sprint_speed
+    max_health = character_definition.max_health
+    max_chakra = character_definition.max_chakra
     specials = Node3D.new()
     specials.name = "CombatSpecials"
     specials.set_script(preload("res://scripts/combat_specials.gd"))
@@ -138,6 +150,8 @@ func _ready() -> void:
     chakra = max_chakra
     substitutions = max_substitutions
     mobile_controls = get_node_or_null("../HUD/MobileControls")
+    if mobile_controls != null:
+        mobile_controls.call("configure_character", character_definition)
     dash_hitbox = Area3D.new()
     dash_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
     dash_hitbox.collision_layer = 0
@@ -164,9 +178,9 @@ func _unhandled_input(event: InputEvent) -> void:
         elif event.physical_keycode == KEY_E:
             _try_jutsu()
         elif event.physical_keycode == KEY_1:
-            specials.selected = "demon"
+            specials.selected = character_definition.jutsus[0]
         elif event.physical_keycode == KEY_2:
-            specials.selected = "rasengan"
+            specials.selected = character_definition.jutsus[1] if character_definition.jutsus.size() > 1 else character_definition.jutsus[0]
         elif event.physical_keycode == KEY_3:
             specials.call("start", "clones" if is_on_floor() else "whirlwind")
         elif event.physical_keycode == KEY_4:
@@ -187,6 +201,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
     _consume_mobile_actions()
     _update_timers(delta)
+    if is_instance_valid(cinematic_owner):
+        cinematic_watchdog -= delta
+        if cinematic_watchdog > 0.0 and not defeated and invulnerable_timer <= 0.0:
+            velocity = Vector3.ZERO
+            stagger_timer = maxf(stagger_timer, 0.12)
+            _update_animation_state()
+            return
+        cinematic_owner = null
     _update_attack_timeline(delta)
     _update_jutsu_timeline(delta)
     if attack_buffer > 0.0 and not attack_active and attack_cooldown <= 0.0:
@@ -292,8 +314,8 @@ func _consume_mobile_actions() -> void:
         awakening.call("start")
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
-        specials.selected = "rasengan" if specials.selected == "demon" else "demon"
-        mobile_controls.special_label = "RAS" if specials.selected == "rasengan" else "DWB"
+        specials.call("cycle_selection")
+        mobile_controls.special_label = {"rasengan": "RAS", "demon": "DWB", "fireball": "FIRE", "chidori": "CHID", "clones": "CLONE", "whirlwind": "AIR", "barrage": "BARR"}.get(specials.selected, "JUT")
         mobile_controls.queue_redraw()
     if mobile_controls.clone_queue > 0:
         mobile_controls.clone_queue = 0
@@ -553,6 +575,8 @@ func _validate_locked_target() -> void:
 
 func _start_chakra_dash() -> void:
     var cancel_timing: Dictionary = rig_adapter.call("get_attack_timing", maxi(combo_step, 1), attack_is_airborne)
+    if selected_attack != null:
+        cancel_timing = selected_attack.animation_timing(rig_adapter.manifest)
     var can_cancel: bool = attack_active and attack_confirmed and attack_elapsed >= float(cancel_timing.get("cancel_open", attack_startup + 0.09)) and attack_elapsed <= float(cancel_timing.get("cancel_close", attack_duration)) and combo_step < 4
     if (not _can_use_movement_action() and not can_cancel) or chakra < chakra_dash_cost:
         return
@@ -637,6 +661,9 @@ func _try_substitution() -> void:
     if defeated or substitutions <= 0 or substitution_cooldown > 0.0:
         return
 
+    if is_instance_valid(cinematic_owner):
+        cinematic_owner.call("cancel", "substitution")
+        cinematic_owner = null
     _cancel_attack()
     _cancel_jutsu()
     dodge_timer = 0.0
@@ -685,6 +712,10 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
+    if is_instance_valid(cinematic_owner):
+        if cinematic_owner.has_method("press_defense"):
+            cinematic_owner.call("press_defense")
+        return
     if not ultimate.phase.is_empty():
         ultimate.call("press_attack")
         return
@@ -943,6 +974,9 @@ func _defeat() -> void:
     combo_display_timer = 0.0
     is_guarding = false
     is_charging_chakra = false
+    if is_instance_valid(cinematic_owner):
+        cinematic_owner.call("cancel", "ko")
+        cinematic_owner = null
     _cancel_attack()
     _cancel_jutsu()
     dodge_timer = 0.0
@@ -981,6 +1015,7 @@ func _can_use_movement_action() -> bool:
         not defeated
         and stagger_timer <= 0.0
         and dodge_timer <= 0.0
+        and not is_instance_valid(cinematic_owner)
         and chakra_dash_timer <= 0.0
         and not is_charging_chakra
         and not attack_active
@@ -1075,3 +1110,32 @@ func on_hitbox_contact(_box: Area3D, target: Node, dealt: float, blocked: bool) 
     if _box == attack_hitbox and attack_active and not blocked and dealt > 0.0:
         attack_confirmed = true
     specials.call("contact", target, dealt, blocked)
+
+func begin_cinematic_lock(requester: Node) -> bool:
+    if defeated or (is_instance_valid(cinematic_owner) and cinematic_owner != requester):
+        return false
+    _cancel_attack()
+    _cancel_jutsu()
+    chakra_dash_timer = 0.0
+    dash_hitbox.call("deactivate")
+    cinematic_owner = requester
+    cinematic_watchdog = 0.5
+    is_guarding = false
+    is_charging_chakra = false
+    velocity = Vector3.ZERO
+    return true
+
+func refresh_cinematic_lock(requester: Node) -> bool:
+    if cinematic_owner != requester or defeated or invulnerable_timer > 0.0:
+        return false
+    cinematic_watchdog = 0.5
+    return true
+
+func end_cinematic_lock(requester: Node) -> void:
+    if cinematic_owner == requester:
+        cinematic_owner = null
+        cinematic_watchdog = 0.0
+        stagger_timer = 0.0
+
+func is_targetable() -> bool:
+    return not defeated
