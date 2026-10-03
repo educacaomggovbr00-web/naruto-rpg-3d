@@ -165,8 +165,8 @@
       "author": "Projeto naruto-rpg-3d",
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
-      "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
-      "sha256": "e64d7d50c0aeadda714b267d633d42de8198f3028ce2212d4c4e37fd6ce767f1"
+      "modifications": "Resource de gameplay original atualizado para usar o modelo pré-Shippuden rigado fornecido pelo usuário.",
+      "sha256": "6b9ccf97184c1a6bdfa550a52a1a3c4086c4a0b4e1a75210a661e2153d9e1a86"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -346,6 +346,16 @@
       "license": "Original project content; character likeness and supplied skeleton not cleared for public release",
       "modifications": "Offline original stylized geometry bound to 65 supplied Mixamo joints; no imported game meshes/textures",
       "sha256": "f9df9d9d1aedd12d74d6a1e9211ec525616fc3d317a2f91859fce486278a1117"
+    },
+    {
+      "path": "assets/characters/stylized/naruto_pre_shippuden.glb",
+      "status": "NEEDS_ATTRIBUTION",
+      "author": "Rida.Sidi.Ben.Ali",
+      "source": "https://sketchfab.com/3d-models/naruto-uzumaki-pre-shippuden-3d-model-2714a1005f21454197f39890caf74766",
+      "license": "CC-BY-4.0",
+      "credit": "Rida.Sidi.Ben.Ali via Sketchfab — CC BY 4.0",
+      "modifications": "Arquivo fornecido pelo usuário; malha/texturas preservadas e adaptadas ao esqueleto Mixamo de 65 bones para as animações do projeto.",
+      "sha256": "dab4ff302f100211540ab60e46041b21757fa24f79ac81a6ce0ce00240e57b71"
     },
     {
       "path": "assets/characters/stylized/sasuke.glb",
