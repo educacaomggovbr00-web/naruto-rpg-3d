@@ -253,3 +253,21 @@ Referências e aproximações: [STORM_MOVES_DATA](docs/STORM_MOVES_DATA.md) e [m
 
 
 Atualização de jutsus (2026-10-03): Sakura agora usa Booby Trap com fio e bola física, pool de três; Kakashi usa Raikiri com dados próprios e Fireball. `JutsuDefinition` configura custo/cooldown para todos os jutsus selecionáveis. [Dados, aproximações e teste Android](docs/STORM_MOVES_DATA.md#sakura-e-kakashi--jutsus-próprios-2026-10-03). Ultimate/Awakening próprios dos três personagens ainda não estão implementados.
+
+## Storm 1 — bridge de pesquisa de arquivos
+
+A pesquisa recente encontrou ferramentas públicas que documentam XFBIN/nuccChunkBinary e o `CommandChartData.xfbin` do Storm 1. O projeto agora possui um pipeline próprio, sem vendorização de payload comercial:
+
+- `tools/storm1_file_probe.py`: inventaria arquivos fornecidos localmente, hashes e assinaturas `NDP3/NTP3/CPK`;
+- `tools/storm1_command_chart_bridge.py`: normaliza o JSON produzido pelo Command Chart Tool do NUNSMOD e preserva contexto numérico sem inventar significado;
+- `docs/STORM1_FILE_PIPELINE.md`: fontes verificadas, limites e fluxo para converter descobertas em `AttackDefinition/JutsuDefinition/ProjectileDefinition`.
+
+Uso rápido:
+
+```sh
+python tools/storm1_file_probe.py external/storm1_raw
+python tools/storm1_command_chart_bridge.py command_chart.json build/research/storm1_command_chart.normalized.json
+python -m unittest discover -s tests -p 'test_storm1_research_tools.py'
+```
+
+Arquivos brutos ficam em `external/storm1_raw/` e são ignorados pelo Git. O primeiro alvo é transformar dados verificáveis de Naruto em Resources já existentes, sem aplicar números desconhecidos como se fossem frame data oficial.
