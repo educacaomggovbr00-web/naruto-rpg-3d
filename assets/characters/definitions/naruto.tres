@@ -11,9 +11,11 @@
 script = ExtResource("1")
 character_id = "naruto"
 display_name = "Naruto"
-model_path = "res://assets/characters/stylized/naruto.glb"
-visual_status = "DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL"
-stylized_material = true
-summary = "Rasengan, Demon Wind, clones, Barrage, Ultimate e base Nine-Tails. Modelo próprio estilizado; coreografias e aparência ainda em evolução."
+model_path = "res://assets/characters/stylized/naruto_pre_shippuden.glb"
+visual_status = "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED"
+stylized_material = false
+model_auto_scale = false
+model_fallback_import_scale = 0.01
+summary = "Rasengan, Demon Wind, clones, Barrage, Ultimate e base Nine-Tails. Visual Naruto clássico pré-Shippuden fornecido pelo usuário e adaptado ao rig Mixamo de 65 bones; texturas originais do GLB preservadas."
 moveset = ExtResource("2")
 jutsu_definitions = Array[ExtResource("jutsu_script")]([ExtResource("j_demon"), ExtResource("j_rasengan"), ExtResource("j_clones"), ExtResource("j_whirlwind"), ExtResource("j_barrage")])
