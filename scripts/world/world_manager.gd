@@ -20,6 +20,9 @@ var quality_button: Button
 @onready var controls: Control = $HUD/WorldControls
 
 func _ready() -> void:
+    var presentation: Script = preload("res://scripts/anime_presentation.gd")
+    $Environment.environment = presentation.environment(false, $Environment.environment)
+    presentation.sun($Sun)
     var audio: Node = Node.new()
     audio.name = "AudioManager"
     audio.set_script(preload("res://scripts/audio_manager.gd"))
@@ -92,6 +95,7 @@ func _build_hud() -> void:
 func apply_quality(level: int, save: bool = true) -> void:
     quality = clampi(level, 0, 2)
     $Geometry.set_quality(quality)
+    $Environment.environment.fog_enabled = quality > 0
     $Sun.shadow_enabled = quality > 0
     $Sun.directional_shadow_max_distance = [0.0, 24.0, 40.0][quality]
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR

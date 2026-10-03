@@ -22,11 +22,11 @@ func _ready() -> void:
     environment.environment.background_color = Color("152c42")
     environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     environment.environment.ambient_light_color = Color("aec5df")
-    environment.environment.ambient_light_energy = 0.65
+    environment.environment.ambient_light_energy = 0.24
     stage.add_child(environment)
     var light: DirectionalLight3D = DirectionalLight3D.new()
     light.rotation_degrees = Vector3(-35, -35, 0)
-    light.light_energy = 1.2
+    preload("res://scripts/anime_presentation.gd").sun(light)
     stage.add_child(light)
     var camera: Camera3D = Camera3D.new()
     camera.position = Vector3(0, 1.05, 5)

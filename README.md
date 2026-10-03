@@ -11,6 +11,14 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 - alvo de 60 FPS
 - renderer `gl_compatibility`
 
+## Gráficos anime
+
+Primeiro incremento visual inspirado em Genshin Impact: iluminação em faixas,
+sombras azuladas, luz de contorno, céu/paleta renovados e névoa leve na arena e
+aldeia. Texturas do Naruto preservadas; seleção/CPU/clones usam a mesma camada.
+LOW/MED/HIGH continuam disponíveis. Implementação autoral, ainda sem acabamento
+equivalente ao jogo de referência nem medição no Android. [Detalhes e validação](docs/ANIME_GRAPHICS.md).
+
 ## Seleção e batalha
 
 O jogo abre em seleção de jogador, CPU e arena, com preview 3D. O **elenco jogável completo de 25 lutadores do Storm 1** já aparece na seleção. Naruto, Sasuke, Sakura e Kakashi possuem modelos próprios estilizados e perfis Resources separados; os outros 21 entram inicialmente como slots jogáveis usando o rig e combo-base compartilhados, sem herdar jutsus/Ultimate/Awakening de Naruto. Cada slot será substituído progressivamente por visual e moveset próprios. As animações reais ainda são compartilhadas e não equivalem às coreografias completas do Storm. As duas variantes da arena têm cenário autoral de treino/pátio com luz de entardecer; nenhum mapa de Storm foi importado. Veja [elenco](docs/STORM1_CHARACTER_ROSTER.md) e [modelos/apresentação](docs/STYLIZED_PRESENTATION.md).

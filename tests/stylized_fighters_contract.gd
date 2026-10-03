@@ -71,6 +71,13 @@ func run() -> void:
                 check(meshes.size() == 3, "Pre-Shippuden Naruto keeps its three supplied skinned meshes")
                 for mesh: MeshInstance3D in meshes:
                     check(mesh.material_override == null, "Pre-Shippuden Naruto keeps embedded materials/textures")
+                    for surface: int in range(mesh.mesh.get_surface_count()):
+                        var original: StandardMaterial3D = mesh.mesh.surface_get_material(surface) as StandardMaterial3D
+                        var anime: StandardMaterial3D = mesh.get_surface_override_material(surface) as StandardMaterial3D
+                        check(anime != null and anime.diffuse_mode == BaseMaterial3D.DIFFUSE_TOON and anime.rim_enabled, "Naruto receives toon lighting per surface")
+                        if anime != null and original != null:
+                            check(anime.albedo_texture == original.albedo_texture, "Anime lighting preserves each original Naruto texture")
+                            check(anime.albedo_color == original.albedo_color, "Anime lighting preserves each original Naruto tint")
                 check(not definition.model_auto_scale and absf(adapter.applied_model_scale - 0.01) < 0.0001, "Naruto rig keeps the centimeter-scale Mixamo transform")
             else:
                 check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "Original authored fighter keeps one opaque skinned surface")

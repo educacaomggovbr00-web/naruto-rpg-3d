@@ -8,7 +8,7 @@ var footprints: Array[Dictionary] = []
 var collision_count: int = 0
 var plaster: Color = Color("e9d5a6")
 var timber: Color = Color("624736")
-var tile: Color = Color("647572")
+var tile: Color = Color("598c93")
 var red: Color = Color("b7513f")
 var dark: Color = Color("344b52")
 
@@ -145,8 +145,8 @@ func stairs(origin: Vector3, width: float, height: float, length: float) -> void
 
 func tree(origin: Vector3, radius: float = 2.2) -> void:
     cylinder(origin + Vector3.UP * 1.4, 0.24, 2.8, timber, 7)
-    cylinder(origin + Vector3.UP * 3.2, radius, 2.7, Color("688d56"), 9, radius * 0.38)
-    cylinder(origin + Vector3.UP * 4.0, radius * 0.8, 2.2, Color("82a866"), 9, radius * 0.20)
+    cylinder(origin + Vector3.UP * 3.2, radius, 2.7, Color("609b64"), 9, radius * 0.38)
+    cylinder(origin + Vector3.UP * 4.0, radius * 0.8, 2.2, Color("91be72"), 9, radius * 0.20)
     collider(origin + Vector3.UP * 1.1, Vector3(0.4, 2.2, 0.4))
 
 func signpost(origin: Vector3, title: String) -> void:
@@ -167,7 +167,7 @@ func build() -> void:
         for z: int in range(-66, 66, 24):
             var width: float = minf(24, 78 - x)
             var depth: float = minf(24, 66 - z)
-            box(Vector3(float(x) + width * 0.5, -0.3, float(z) + depth * 0.5), Vector3(width, 0.6, depth), Color("91a876"))
+            box(Vector3(float(x) + width * 0.5, -0.3, float(z) + depth * 0.5), Vector3(width, 0.6, depth), Color("8db876"))
     box(Vector3(0, 0.015, 0), Vector3(11, 0.03, 112), Color("cbb993"))
     box(Vector3(-10, 0.02, 5), Vector3(32, 0.04, 20), Color("d9c9a7"))
     for z: float in [-29.0, -10.0, 22.0, 40.0]:
@@ -236,12 +236,7 @@ func build() -> void:
     box(Vector3(0, 6, 65), Vector3(156, 12, 2), Color("8c9478"), true)
     for origin: Vector3 in [Vector3(-65,0,-42), Vector3(-52,0,46), Vector3(-36,0,46), Vector3(52,0,45), Vector3(64,0,-43), Vector3(18,0,43), Vector3(-12,0,-14), Vector3(18,0,-36)]:
         tree(origin)
-    var material: StandardMaterial3D = StandardMaterial3D.new()
-    material.vertex_color_use_as_albedo = true
-    material.roughness = 1.0
-    material.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
-    material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-    material.cull_mode = BaseMaterial3D.CULL_DISABLED
+    var material: ShaderMaterial = preload("res://assets/world/anime_scenery.tres")
     for key: Vector2i in batches:
         var surface: SurfaceTool = batches[key] as SurfaceTool
         surface.set_material(material)

@@ -25,4 +25,9 @@ Assets: SAFE_FOR_RELEASE, NEEDS_ATTRIBUTION, DEVELOPMENT_ONLY ou UNKNOWN_LICENSE
 
 ## Prioridade atual — 2026-10-03
 
+Pedido posterior: continuar na `main` e adicionar apresentação gráfica anime
+próxima de Genshin Impact. Incremento inicial documentado em
+[ANIME_GRAPHICS](ANIME_GRAPHICS.md); muda iluminação/paleta, preservando a direção
+de gameplay Storm 1 e o modelo texturizado atual do Naruto.
+
 O pedido posterior “personagem também a aldeia principalmente” antecipou um primeiro trecho físico do Mundo Shinobi. Isso não elimina o restante de Naruto/CPU nem reduz a meta de fidelidade ao Storm 1. O mundo usa a batalha existente e dados de missões; terreno/layout/modelos específicos finais continuam em desenvolvimento. A origem de arquivos encontrados no GitHub deve ser comprovada antes de incorporar qualquer asset comercial.

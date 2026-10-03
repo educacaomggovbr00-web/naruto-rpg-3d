@@ -1,7 +1,8 @@
 extends Node3D
 
 const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
-const TOON_MATERIAL: StandardMaterial3D = preload("res://assets/characters/stylized/toon.tres")
+const TOON_MATERIAL: ShaderMaterial = preload("res://assets/characters/stylized/toon.tres")
+const ANIME: Script = preload("res://scripts/anime_presentation.gd")
 # Track paths are immutable after installation; playback stays per fighter.
 static var library_cache: Dictionary = {}
 
@@ -201,12 +202,17 @@ func apply_visual_material(root: Node) -> void:
     var use_toon: bool = model_path.begins_with("res://assets/characters/stylized/")
     if player.has_method("get_character_definition"):
         use_toon = bool(player.call("get_character_definition").stylized_material)
-    if not use_toon:
-        return
     var meshes: Array[MeshInstance3D] = []
     _collect_mesh_instances(root, meshes)
     for mesh: MeshInstance3D in meshes:
-        mesh.material_override = TOON_MATERIAL
+        if use_toon:
+            mesh.material_override = TOON_MATERIAL
+        else:
+            # Keep the supplied Naruto's individual textures and mesh resources.
+            for index: int in range(mesh.mesh.get_surface_count()):
+                var source: Material = mesh.get_active_material(index)
+                if source is StandardMaterial3D:
+                    mesh.set_surface_override_material(index, ANIME.textured(source))
 
 func _cache_combat_bones() -> void:
     right_hand_bone = _find_mixamo_bone("RightHand")

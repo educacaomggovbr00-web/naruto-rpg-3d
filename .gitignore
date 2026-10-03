@@ -13,6 +13,8 @@ Thumbs.db
 # Recreated from embedded GLB textures during import
 assets/characters/rigged__*.png
 assets/characters/rigged__*.png.import
+assets/characters/stylized/naruto_pre_shippuden_*.png
+assets/characters/stylized/naruto_pre_shippuden_*.png.import
 
 # Reproducible diagnostic output
 tests/animation_poses.json

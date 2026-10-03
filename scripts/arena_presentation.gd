@@ -4,6 +4,7 @@ extends "res://scripts/world/world_mesh_builder.gd"
 var environment: WorldEnvironment
 var ground_material: ShaderMaterial
 var detail: Array[MeshInstance3D] = []
+const ANIME: Script = preload("res://scripts/anime_presentation.gd")
 
 func collider(center: Vector3, size: Vector3) -> void:
     var body: StaticBody3D = StaticBody3D.new()
@@ -33,30 +34,14 @@ func build() -> void:
     var dusk: bool = GameFlow.arena_id == "courtyard"
     environment = WorldEnvironment.new()
     environment.name = "ArenaEnvironment"
-    var settings: Environment = Environment.new()
-    settings.background_mode = Environment.BG_SKY
-    var sky_material: ProceduralSkyMaterial = ProceduralSkyMaterial.new()
-    sky_material.sky_top_color = Color("455885") if dusk else Color("4780a7")
-    sky_material.sky_horizon_color = Color("e6ad83") if dusk else Color("c5dfdf")
-    sky_material.ground_bottom_color = Color("394756")
-    sky_material.ground_horizon_color = sky_material.sky_horizon_color
-    settings.sky = Sky.new()
-    settings.sky.sky_material = sky_material
-    settings.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-    settings.ambient_light_color = Color("aabacc")
-    settings.ambient_light_energy = 0.55
-    settings.fog_enabled = true
-    settings.fog_light_color = sky_material.sky_horizon_color
-    settings.fog_density = 0.003
-    environment.environment = settings
+    environment.environment = ANIME.environment(dusk)
     add_child(environment)
     ground_material = ShaderMaterial.new()
     ground_material.shader = preload("res://assets/vfx/arena_ground.gdshader")
     ground_material.set_shader_parameter("courtyard", dusk)
     get_parent().get_node("Ground/Mesh").material_override = ground_material
     var sun: DirectionalLight3D = get_parent().get_node("Sun")
-    sun.light_color = Color("ffd2a4") if dusk else Color("fff0d7")
-    sun.light_energy = 1.0
+    ANIME.sun(sun, dusk)
     for side: Node in get_parent().get_node("ArenaWalls").get_children():
         side.get_node("Mesh").visible = false
     # Same physical boundary, enriched wall caps, buttresses and timber rails.
@@ -91,11 +76,7 @@ func build() -> void:
         cylinder(origin + Vector3.UP * 3, 0.5, 6, timber, 7)
         cylinder(origin + Vector3.UP * 7, 3.6, 6, Color("527b54"), 10, 1.0)
         cylinder(origin + Vector3.UP * 9, 2.8, 5, Color("759655"), 10, 0.1)
-    var material: StandardMaterial3D = StandardMaterial3D.new()
-    material.vertex_color_use_as_albedo = true
-    material.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
-    material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-    material.roughness = 0.7
+    var material: ShaderMaterial = preload("res://assets/world/anime_scenery.tres")
     for key: Vector2i in batches:
         var surface: SurfaceTool = batches[key]
         surface.set_material(material)

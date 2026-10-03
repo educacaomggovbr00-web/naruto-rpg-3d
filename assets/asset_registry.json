@@ -166,7 +166,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource de gameplay original atualizado para usar o modelo pré-Shippuden rigado fornecido pelo usuário.",
-      "sha256": "6b9ccf97184c1a6bdfa550a52a1a3c4086c4a0b4e1a75210a661e2153d9e1a86"
+      "sha256": "526a25d3566b34bc68f5315109032ec44a5de1e371081d9ede7662c67ff4460e"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -327,7 +327,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "fb2e58589e448c92890fbabd2b28eccefc31af43fd49a9ed28aed72c7c73bca9"
+      "sha256": "4cda45f347da6d98058836684f196651d2143e3bc7503b5ef83a848a763ee0d7"
     },
     {
       "path": "assets/characters/stylized/toon.tres",
@@ -336,7 +336,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "cdf4a6308b72276d67240232e977da22f5c449aa654588e6760ea4d581d7f7dd"
+      "sha256": "42d28a3a09c17452745f56aac9fd161e664cef94afccbdd8075426bb608b2ec9"
     },
     {
       "path": "assets/characters/stylized/naruto.glb",
@@ -355,7 +355,17 @@
       "license": "CC-BY-4.0",
       "credit": "Rida.Sidi.Ben.Ali via Sketchfab — CC BY 4.0",
       "modifications": "Arquivo fornecido pelo usuário; malha/texturas preservadas e adaptadas ao esqueleto Mixamo de 65 bones para as animações do projeto.",
-      "sha256": "dab4ff302f100211540ab60e46041b21757fa24f79ac81a6ce0ce00240e57b71"
+      "sha256": "dab4ff302f100211540ab60e46041b21757fa24f79ac81a6ce0ce00240e57b71",
+      "embedded_images": [
+        {
+          "path": "assets/characters/stylized/naruto_pre_shippuden_0.png",
+          "sha256": "ab3b4a53be24410f98d97f647e562ae41ee41e39553c9864d2e221417239e95a"
+        },
+        {
+          "path": "assets/characters/stylized/naruto_pre_shippuden_1.png",
+          "sha256": "1a55654c08215a6a258ed5bc32a7237fd9ad76aae14e22388f02a33c7fef2d94"
+        }
+      ]
     },
     {
       "path": "assets/characters/stylized/sasuke.glb",
@@ -464,6 +474,24 @@
       "license": "Project source license; no imported proprietary assets",
       "modifications": "Original runtime configuration; tuning marked OUR_APPROXIMATION",
       "sha256": "f255c5df3a176db4e82d06d16c3a91c606bf9fcce0fceb3d1c543b571fcf4031"
+    },
+    {
+      "path": "assets/world/anime_scenery.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Código original neste repositório",
+      "license": "Original project content",
+      "modifications": "Iluminação anime original em passagem opaca única, sem assets de Genshin Impact",
+      "sha256": "3aa3c594c9f11ef709c038326c47e0ee971e97f6233c2471de11bf089e0ea1cc"
+    },
+    {
+      "path": "assets/vfx/anime_surface.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Código original neste repositório",
+      "license": "Original project content",
+      "modifications": "Iluminação anime original em passagem opaca única, sem assets de Genshin Impact",
+      "sha256": "6844bdd41c554d8424afb82e807e2853064d0a18c2f0cd575297e71226d2b442"
     }
   ]
 }
