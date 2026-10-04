@@ -501,6 +501,44 @@
       "license": "UNKNOWN / asset de jogo proprietário; não liberado para redistribuição pública",
       "modifications": "16 complete battle poses rebuilt from the user ZIP, with transparent padding, common baseline and lossless PNG encoding; tools/build_naruto_sprite_atlas.py records each source hash.",
       "sha256": "ec1c0e0865baaa23d7352072bfa60cd893d54f5f7d2a204a130d2b8212da207a"
+    },
+    {
+      "path": "assets/characters/base_basic/base_basic_pbr.glb",
+      "status": "UNKNOWN_LICENSE",
+      "author": "Não informado no arquivo fornecido",
+      "source": "ZIP fornecido pelo usuário: 635d8c0a-27cc-4eb0-90b0-2f3ba33d2bfc (1).zip",
+      "license": "UNKNOWN",
+      "modifications": "Arquivo GLB original preservado byte a byte; modelo estático sem skin, skeleton ou animações.",
+      "sha256": "42f83734b0c3341223615e9326a6151340c481fbfe02a8dcf941d79c4ce997f1",
+      "embedded_images": [
+        {
+          "path": "assets/characters/base_basic/base_basic_pbr_texture_diffuse.png",
+          "sha256": "1ad72a7be3168263676ed36618040ca6e79ef77e6a72d0b125eb46784d3b95f0"
+        },
+        {
+          "path": "assets/characters/base_basic/base_basic_pbr_texture_metallic-texture_roughness.png",
+          "sha256": "a5796d6cfe89429225ec8d010ba21e8abc289ce686a835761b6008b321edcd80"
+        },
+        {
+          "path": "assets/characters/base_basic/base_basic_pbr_texture_normal.png",
+          "sha256": "ae0ea2d5b8e0599434d1836581463ce3edd78232e85e54e1ba231d3268df4b95"
+        }
+      ]
+    },
+    {
+      "path": "assets/characters/base_basic/base_basic_shaded.glb",
+      "status": "UNKNOWN_LICENSE",
+      "author": "Não informado no arquivo fornecido",
+      "source": "ZIP fornecido pelo usuário: 635d8c0a-27cc-4eb0-90b0-2f3ba33d2bfc (1).zip",
+      "license": "UNKNOWN",
+      "modifications": "Arquivo GLB original preservado byte a byte; modelo estático sem skin, skeleton ou animações.",
+      "sha256": "09e4961c220eb76ba0178de1499b395e3f5839b0af6f01225da3933d2ee90d79",
+      "embedded_images": [
+        {
+          "path": "assets/characters/base_basic/base_basic_shaded_shaded.png",
+          "sha256": "23c45c5ac431756823e52ba4623a74db3033721d8a936a01e2ef254bd429e8ab"
+        }
+      ]
     }
   ]
 }

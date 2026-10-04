@@ -1,5 +1,7 @@
 # Personagem rigado
 
+Os modelos estáticos `base_basic_pbr.glb` e `base_basic_shaded.glb` enviados pelo usuário estão em [`base_basic/`](base_basic/README.md), com seus arquivos originais preservados. Eles não possuem skin, skeleton ou animações; os detalhes técnicos estão no README da pasta.
+
 O arquivo original `rigged.glb` permanece intacto, com sua animação `happy`. O adapter adiciona a biblioteca externa `../animations/combat_mixamo.tres` ao AnimationPlayer, sob o namespace `combat/`. Todos os estados jogáveis usam os clips reais dessa biblioteca.
 
 O Godot 4.7.2 importa os nomes Mixamo substituindo `:` por `_`. O adapter resolve ambos os formatos, descobre o caminho real do Skeleton3D e remapeia os canais da biblioteca; não depende da animação `happy` para descobrir os ossos.
