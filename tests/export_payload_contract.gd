@@ -60,8 +60,8 @@ func run() -> void:
         push_error("Development export lost shared moveset, CPU rig or projectile definition")
         quit(1)
         return
-    if not ResourceLoader.exists("res://assets/vfx/chakra_core.gdshader") or not ResourceLoader.exists("res://assets/combat/naruto_handbook.tres"):
-        push_error("Development export lost Naruto resources")
+    if not ResourceLoader.exists("res://assets/vfx/chakra_core.gdshader") or not ResourceLoader.exists("res://assets/combat/naruto_handbook.tres") or not FileAccess.file_exists("res://assets/animations/mixamo_reference_rest.json"):
+        push_error("Development export lost Naruto or retarget resources")
         quit(1)
         return
     if FileAccess.file_exists("res://tests/storm_slice_contract.gd") or FileAccess.file_exists("res://assets/animations/source/UAL2_Standard.glb") or FileAccess.file_exists("res://addons/release_asset_gate/plugin.gd"):
