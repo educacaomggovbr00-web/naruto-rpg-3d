@@ -309,10 +309,10 @@ func _install_combat_library() -> bool:
                 var path: NodePath = animation.track_get_path(track)
                 var source_bone_name: String = String(path.get_subname(0))
                 var target_bone: int = _find_named_bone(skeleton, source_bone_name)
-                var source_rest: Transform3D = _reference_rest(source_bone_name)
-                if target_bone < 0 or source_rest == Transform3D():
+                if target_bone < 0 or not _has_reference_rest(source_bone_name):
                     animation.remove_track(track)
                     continue
+                var source_rest: Transform3D = _reference_rest(source_bone_name)
                 var target_bone_name: String = String(skeleton.get_bone_name(target_bone))
                 var target_rest: Transform3D = skeleton.get_bone_rest(target_bone)
                 _retarget_track(animation, track, source_rest, target_rest)
@@ -346,16 +346,29 @@ func _ensure_reference_rest_cache() -> bool:
     instance.free()
     return not reference_rest_cache.is_empty()
 
-func _reference_rest(bone_name: String) -> Transform3D:
+func _reference_rest_key(bone_name: String) -> String:
     if reference_rest_cache.has(bone_name):
-        return reference_rest_cache[bone_name] as Transform3D
-    var alternate: String = bone_name
+        return bone_name
     if bone_name.begins_with("mixamorig_"):
-        alternate = bone_name.replace("mixamorig_", "mixamorig:")
+        var colon_name: String = bone_name.replace("mixamorig_", "mixamorig:")
+        if reference_rest_cache.has(colon_name):
+            return colon_name
     elif bone_name.begins_with("mixamorig:"):
-        alternate = bone_name.replace("mixamorig:", "mixamorig_")
-    if reference_rest_cache.has(alternate):
-        return reference_rest_cache[alternate] as Transform3D
+        var underscore_name: String = bone_name.replace("mixamorig:", "mixamorig_")
+        if reference_rest_cache.has(underscore_name):
+            return underscore_name
+    return ""
+
+func _has_reference_rest(bone_name: String) -> bool:
+    return not _reference_rest_key(bone_name).is_empty()
+
+func _reference_rest(bone_name: String) -> Transform3D:
+    var key: String = _reference_rest_key(bone_name)
+    if key.is_empty():
+        return Transform3D()
+    var value: Variant = reference_rest_cache[key]
+    if typeof(value) == TYPE_TRANSFORM3D:
+        return value
     return Transform3D()
 
 func _find_named_bone(target: Skeleton3D, bone_name: String) -> int:
