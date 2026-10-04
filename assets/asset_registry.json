@@ -290,8 +290,8 @@
       "author": "Projeto / Codex",
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
-      "modifications": "Original authored presentation/profile data",
-      "sha256": "2ea1307f898b06b71bfadff44bb261b2147d6c77ba24eb3a6f289955c99668f3"
+      "modifications": "Resource de gameplay atualizado para preferir o modelo Sakura rigado fornecido pelo usuário quando instalado, com fallback seguro para o visual autoral anterior.",
+      "sha256": "fc3247b640238f5a39510d7c81b3d79b077ba3fa726695f6c85504368fa14133"
     },
     {
       "path": "assets/characters/definitions/kakashi.tres",
