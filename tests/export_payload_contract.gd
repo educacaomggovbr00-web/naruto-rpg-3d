@@ -86,11 +86,13 @@ func run() -> void:
     var authored_visuals: int = 0
     var roster_placeholders: int = 0
     for definition: Resource in catalog.READY:
-        if not ResourceLoader.exists(definition.model_path):
+        var preferred_exists: bool = ResourceLoader.exists(definition.model_path)
+        var fallback_exists: bool = not definition.model_fallback_path.is_empty() and ResourceLoader.exists(definition.model_fallback_path)
+        if not preferred_exists and not fallback_exists:
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_2_5D_SPRITES", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED"]:
+        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_2_5D_SPRITES", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED"]:
             authored_visuals += 1
         elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
             roster_placeholders += 1
