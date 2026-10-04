@@ -297,6 +297,7 @@ func _install_combat_library() -> bool:
     var rest_signature: String = ""
     for index: int in range(skeleton.get_bone_count()):
         rest_signature += str(skeleton.get_bone_rest(index))
+    var retarget_required: bool = not _matches_reference_rest()
     var cache_key: String = skeleton_path + "|" + ",".join(bone_names) + "|" + rest_signature.sha256_text()
     var library: AnimationLibrary = library_cache.get(cache_key) as AnimationLibrary
     if library == null:
@@ -314,14 +315,30 @@ func _install_combat_library() -> bool:
                     continue
                 var source_rest: Transform3D = _reference_rest(source_bone_name)
                 var target_bone_name: String = String(skeleton.get_bone_name(target_bone))
-                var target_rest: Transform3D = skeleton.get_bone_rest(target_bone)
-                _retarget_track(animation, track, source_rest, target_rest)
+                if retarget_required:
+                    var target_rest: Transform3D = skeleton.get_bone_rest(target_bone)
+                    _retarget_track(animation, track, source_rest, target_rest)
                 animation.track_set_path(track, NodePath(skeleton_path + ":" + target_bone_name))
         library_cache[cache_key] = library
 
     var result: Error = animation_player.add_animation_library(&"combat", library)
     real_animation_count = library.get_animation_list().size()
     return result == OK and real_animation_count == clips.size()
+
+func _matches_reference_rest() -> bool:
+    for index: int in range(skeleton.get_bone_count()):
+        var bone_name: String = String(skeleton.get_bone_name(index))
+        if not _has_reference_rest(bone_name):
+            continue
+        var source_rest: Transform3D = _reference_rest(bone_name)
+        var target_rest: Transform3D = skeleton.get_bone_rest(index)
+        if source_rest.origin.distance_to(target_rest.origin) > 0.001:
+            return false
+        var source_rotation: Quaternion = source_rest.basis.orthonormalized().get_rotation_quaternion()
+        var target_rotation: Quaternion = target_rest.basis.orthonormalized().get_rotation_quaternion()
+        if absf(source_rotation.dot(target_rotation)) < 0.99999:
+            return false
+    return true
 
 func _ensure_reference_rest_cache() -> bool:
     if reference_rest_ready:
