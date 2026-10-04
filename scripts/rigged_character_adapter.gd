@@ -56,6 +56,8 @@ func _ready() -> void:
         var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
         if definition != null:
             model_path = definition.model_path
+            if not ResourceLoader.exists(model_path) and not definition.model_fallback_path.is_empty():
+                model_path = definition.model_fallback_path
             auto_scale_model = definition.model_auto_scale
             ground_to_collision = definition.model_ground_to_collision
             model_scale = definition.model_scale_multiplier
@@ -135,7 +137,10 @@ func _try_load_rig() -> void:
         fallback_visual.visible = false
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
-    rig_status = "RIG: OK | %d clips reais CC0" % real_animation_count
+    rig_status = "RIG: OK | %d clips reais CC0 | %d bones" % [
+        real_animation_count,
+        skeleton.get_bone_count()
+    ]
 
 func _update_chakra_aura(delta: float) -> void:
     if chakra_aura == null:
@@ -212,7 +217,7 @@ func apply_visual_material(root: Node) -> void:
     if player.has_method("get_character_definition"):
         var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
         if definition != null:
-            use_toon = definition.stylized_material
+            use_toon = use_toon or definition.stylized_material
     var meshes: Array[MeshInstance3D] = []
     _collect_mesh_instances(root, meshes)
     for mesh: MeshInstance3D in meshes:
@@ -243,13 +248,16 @@ func _install_combat_library() -> bool:
         return false
     manifest = parsed
     var clips: Dictionary = manifest.get("clips", {})
+    if not _has_required_combat_bones():
+        push_error("Combat rig is missing a required body bone")
+        return false
     var animation_root: Node = animation_player.get_node(animation_player.root_node)
     var skeleton_path: String = String(animation_root.get_path_to(skeleton))
     var bone_names: PackedStringArray = []
     for index: int in range(skeleton.get_bone_count()):
         bone_names.append(String(skeleton.get_bone_name(index)))
-    # Same rest rig can drive different original meshes. Different rigs must
-    # never accidentally share retargeted transforms just because names match.
+    # Compatible Mixamo body rigs may omit fingers/end helpers. Combat tracks
+    # for those optional bones are discarded, while hands/feet/body remain.
     var rest_signature: String = ""
     for index: int in range(skeleton.get_bone_count()):
         rest_signature += str(skeleton.get_bone_rest(index))
@@ -261,18 +269,42 @@ func _install_combat_library() -> bool:
             if not clips.has(String(clip_name)):
                 return false
             var animation: Animation = library.get_animation(clip_name)
-            for track: int in range(animation.get_track_count()):
+            for track: int in range(animation.get_track_count() - 1, -1, -1):
                 var path: NodePath = animation.track_get_path(track)
                 var bone_name: String = String(path.get_subname(0))
                 if skeleton.find_bone(bone_name) < 0:
-                    push_error("Combat clip %s: missing bone %s" % [clip_name, bone_name])
-                    return false
+                    animation.remove_track(track)
+                    continue
                 animation.track_set_path(track, NodePath(skeleton_path + ":" + bone_name))
         library_cache[cache_key] = library
-    # Original happy remains in the import, but is never selected for combat.
     var result: Error = animation_player.add_animation_library(&"combat", library)
     real_animation_count = library.get_animation_list().size()
     return result == OK and real_animation_count == clips.size()
+
+func _has_required_combat_bones() -> bool:
+    var required: Array[String] = [
+        "Hips",
+        "Spine",
+        "Spine1",
+        "Spine2",
+        "Head",
+        "LeftArm",
+        "LeftForeArm",
+        "LeftHand",
+        "RightArm",
+        "RightForeArm",
+        "RightHand",
+        "LeftUpLeg",
+        "LeftLeg",
+        "LeftFoot",
+        "RightUpLeg",
+        "RightLeg",
+        "RightFoot"
+    ]
+    for short_name: String in required:
+        if _find_mixamo_bone(short_name) < 0:
+            return false
+    return true
 
 func _setup_animation_tree() -> void:
     available_animations = animation_player.get_animation_list()
