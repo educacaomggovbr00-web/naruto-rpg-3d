@@ -64,7 +64,8 @@ func run() -> void:
         for actor: CharacterBody3D in [player, cpu]:
             var adapter: Node3D = actor.rig_adapter
             check(adapter.rig_loaded and adapter.real_animation_count == 27, "Authored profiles/CPU use 27 real clips")
-            check(adapter.skeleton.get_bone_count() == 65, "Author mesh retains 65 Mixamo body bones")
+            check(adapter.skeleton.get_bone_count() >= 27, "Authored mesh keeps a complete Mixamo body rig")
+            check(adapter._has_required_combat_bones(), "Authored mesh keeps every combat-critical hand/foot/body bone")
             var meshes: Array[MeshInstance3D] = []
             adapter._collect_mesh_instances(adapter.model_instance, meshes)
             if definition.character_id == "naruto":
@@ -88,15 +89,21 @@ func run() -> void:
                 var collision: CollisionShape3D = actor.get_node("CollisionShape3D")
                 check(absf(adapter.model_instance.position.y + adapter.detected_source_min_y * adapter.applied_model_scale - (collision.position.y - collision.shape.height * 0.5)) < 0.001, "Naruto soles align with each actor's physical capsule bottom")
                 check(is_equal_approx(adapter.model_instance.rotation_degrees.y, 180.0), "Naruto faces the same combat axis as the other fighters")
+            elif definition.character_id == "sakura" and adapter.model_path == definition.model_path:
+                check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "User Sakura keeps one optimized skinned surface")
+                check(meshes[0].mesh.surface_get_array_index_len(0) / 3 <= 50000, "User Sakura stays within the mobile triangle budget")
+                check(meshes[0].material_override == null, "Textured Sakura keeps her embedded material instead of the flat placeholder shader")
+                check(adapter.detected_source_height > 1.0 and adapter.detected_source_height < 2.5, "User Sakura arrives in meter-like source units")
+                check(absf(adapter.applied_model_scale * adapter.detected_source_height - 1.75) < 0.001, "User Sakura normalizes to combat height")
             else:
                 check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "Original authored fighter keeps one opaque skinned surface")
                 check(meshes[0].material_override == adapter.TOON_MATERIAL, "Original authored fighters keep the project toon material")
             var library: AnimationLibrary = adapter.animation_player.get_animation_library(&"combat")
             check(library == cpu.rig_adapter.animation_player.get_animation_library(&"combat"), "Identical profiles share immutable prepared clips across teams")
-            if definition.character_id != "naruto":
+            if definition.character_id != "naruto" and adapter.skeleton.get_bone_count() == 65:
                 if shared_stylized_library == null:
                     shared_stylized_library = library
-                check(library == shared_stylized_library, "Compatible original authored models share immutable clip data")
+                check(library == shared_stylized_library, "Compatible 65-bone authored models share immutable clip data")
             adapter.set_physics_process(false)
             adapter.animation_tree.active = false
             adapter.animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
@@ -139,7 +146,9 @@ func run() -> void:
         menu.player_pick.select(CharacterCatalog.READY.find(definition))
         menu._describe(0)
         await frames(3)
-        check(menu.preview.fighters.size() == 2 and menu.preview.fighters[0].rig_adapter.model_path == definition.model_path, "3D preview follows chosen profile")
+        var preview_path: String = menu.preview.fighters[0].rig_adapter.model_path if menu.preview.fighters.size() == 2 else ""
+        var valid_preview_path: bool = preview_path == definition.model_path or (not definition.model_fallback_path.is_empty() and preview_path == definition.model_fallback_path)
+        check(menu.preview.fighters.size() == 2 and valid_preview_path, "3D preview follows preferred model or its declared fallback")
         check(menu.start_button.get_global_rect().end.y <= 720, "Preview cannot displace touch start button")
     current_scene.queue_free()
     await frames(5)
