@@ -40,6 +40,8 @@ var landing_timer: float = 0.0
 var was_airborne: bool = false
 var chakra_aura: MeshInstance3D = null
 var aura_base_scale: Vector3 = Vector3.ONE
+var prefer_native_locomotion: bool = false
+var native_locomotion_count: int = 0
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -64,6 +66,7 @@ func _ready() -> void:
             model_offset = definition.model_offset
             model_yaw_degrees = definition.model_yaw_degrees
             fallback_import_scale = definition.model_fallback_import_scale
+            prefer_native_locomotion = definition.prefer_native_locomotion
     _try_load_rig()
 
 func _physics_process(delta: float) -> void:
@@ -124,6 +127,8 @@ func _try_load_rig() -> void:
         model_instance.queue_free()
         model_instance = null
         return
+    if prefer_native_locomotion:
+        native_locomotion_count = _install_native_locomotion_library()
     _setup_animation_tree()
 
     rig_loaded = true
@@ -138,8 +143,9 @@ func _try_load_rig() -> void:
         fallback_visual.visible = false
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
-    rig_status = "RIG: OK | %d clips reais CC0 | %d bones" % [
+    rig_status = "RIG: OK | %d clips CC0 | %d native | %d bones" % [
         real_animation_count,
+        native_locomotion_count,
         skeleton.get_bone_count()
     ]
 
@@ -326,6 +332,48 @@ func _has_required_combat_bones() -> bool:
             return false
     return true
 
+func _install_native_locomotion_library() -> int:
+    var library: AnimationLibrary = AnimationLibrary.new()
+    var mappings: Dictionary = {
+        "idle": "idle",
+        "run": "run"
+    }
+    for destination: String in mappings:
+        var source_name: StringName = _find_imported_animation(String(mappings[destination]))
+        if source_name == StringName():
+            continue
+        var source: Animation = animation_player.get_animation(source_name)
+        if source == null:
+            continue
+        var copy: Animation = source.duplicate(true) as Animation
+        if copy == null:
+            continue
+        copy.loop_mode = Animation.LOOP_LINEAR
+        var add_result: Error = library.add_animation(StringName(destination), copy)
+        if add_result != OK:
+            continue
+    if library.get_animation_list_size() <= 0:
+        return 0
+    var result: Error = animation_player.add_animation_library(&"native", library)
+    return library.get_animation_list_size() if result == OK else 0
+
+func _find_imported_animation(lower_name: String) -> StringName:
+    for animation_name: StringName in animation_player.get_animation_list():
+        var text_name: String = String(animation_name)
+        if text_name.begins_with("combat/") or text_name.begins_with("native/"):
+            continue
+        if text_name.to_lower() == lower_name:
+            return animation_name
+    return StringName()
+
+func _animation_for_state(state_name: String) -> StringName:
+    if prefer_native_locomotion:
+        if state_name == "idle" and animation_player.has_animation(&"native/idle"):
+            return &"native/idle"
+        if state_name in ["run", "sprint"] and animation_player.has_animation(&"native/run"):
+            return &"native/run"
+    return StringName("combat/" + state_name)
+
 func _setup_animation_tree() -> void:
     available_animations = animation_player.get_animation_list()
     animation_player.stop()
@@ -341,7 +389,7 @@ func _setup_animation_tree() -> void:
     for state_name: String in clips:
         var blend: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
         var clip: AnimationNodeAnimation = AnimationNodeAnimation.new()
-        clip.animation = StringName("combat/" + state_name)
+        clip.animation = _animation_for_state(state_name)
         blend.add_node(&"clip", clip, Vector2(0, 0))
         blend.add_node(&"speed", AnimationNodeTimeScale.new(), Vector2(180, 0))
         blend.connect_node(&"speed", 0, &"clip")
