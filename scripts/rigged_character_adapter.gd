@@ -471,6 +471,7 @@ func _install_native_locomotion_library() -> int:
     var library: AnimationLibrary = AnimationLibrary.new()
     var mappings: Dictionary = {
         "idle": "idle",
+        "walk": "walk",
         "run": "run"
     }
     for destination: String in mappings:
@@ -505,7 +506,9 @@ func _animation_for_state(state_name: String) -> StringName:
     if prefer_native_locomotion:
         if state_name == "idle" and animation_player.has_animation(&"native/idle"):
             return &"native/idle"
-        if state_name in ["run", "sprint"] and animation_player.has_animation(&"native/run"):
+        if state_name == "run" and animation_player.has_animation(&"native/walk"):
+            return &"native/walk"
+        if state_name == "sprint" and animation_player.has_animation(&"native/run"):
             return &"native/run"
     return StringName("combat/" + state_name)
 
