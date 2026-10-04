@@ -358,12 +358,12 @@ func _install_native_locomotion_library() -> int:
     return library.get_animation_list_size() if result == OK else 0
 
 func _find_imported_animation(lower_name: String) -> StringName:
-    for animation_name: StringName in animation_player.get_animation_list():
-        var text_name: String = String(animation_name)
+    for animation_value: String in animation_player.get_animation_list():
+        var text_name: String = String(animation_value)
         if text_name.begins_with("combat/") or text_name.begins_with("native/"):
             continue
         if text_name.to_lower() == lower_name:
-            return animation_name
+            return StringName(text_name)
     return StringName()
 
 func _animation_for_state(state_name: String) -> StringName:
