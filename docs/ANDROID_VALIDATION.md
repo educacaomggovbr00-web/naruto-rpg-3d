@@ -60,3 +60,16 @@ Registrar aparelho, perfil gráfico, FPS mínimo, tempo de transição e vídeo 
 - Defender o primeiro golpe: a CPU deve encerrar a sequência; deixar acertar: ela pode continuar os quatro golpes.
 - Interromper com golpe/SUB, aplicar launcher/slam e KO: verificar reação, fechamento das hitboxes e reinício.
 - Medir FPS com dois rigs, clones e Rasengan nos perfis LOW/MEDIUM/HIGH; enviar vídeo se houver pé deslizando ou golpes sem contato aparente.
+
+
+## Sakura rigada + resolução adaptativa — 2026-10-04
+
+Quando `assets/characters/sakura_user/sakura_mobile_rigged.glb` estiver instalado:
+
+1. Na seleção, escolha Sakura como jogador e CPU. Confirmar textura rosa/vermelha, escala semelhante aos demais lutadores e pés apoiados no chão.
+2. Andar/correr por 20 s: Idle/Run nativos devem assumir a locomoção; ataques, guarda, hit, dodge e especiais continuam usando os 27 clips de combate.
+3. Executar ATK ×4, combo aéreo, DEF, ESQ e TRAP. Punhos/pés precisam continuar alinhados às hitboxes apesar do rig compacto de 27 bones.
+4. Repetir Sakura vs Naruto com MED e HIGH por dois minutos. A resolução 3D pode cair gradualmente se o FPS ficar abaixo de 48 e deve recuperar lentamente acima de 57; HUD/touch permanecem na resolução nativa.
+5. Fazer o mesmo na aldeia. Observar pop-in, câmera e aquecimento enquanto a resolução adaptativa atua apenas no 3D.
+
+O GLB recebido tinha ~35,7 mil triângulos e três texturas 2048. A variante mobile mantém mesh/skin/animações e reduz as texturas para 1024, caindo de 13,6 MB para ~4,37 MB. Isso ainda não substitui medição real de GPU/temperatura no aparelho.
