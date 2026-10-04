@@ -14,6 +14,7 @@ stylized_material = false
 model_auto_scale = true
 model_ground_to_collision = true
 model_offset = Vector3(0, 0, 0)
+prefer_native_locomotion = true
 summary = "Sakura com modelo 3D rigado fornecido pelo usuário, otimizado para mobile e compatível com o corpo Mixamo. Usa os 27 clips de combate quando o arquivo novo está instalado; mantém o visual estilizado anterior como fallback. Booby Trap física; Ultimate e coreografias finais ainda pendentes."
 moveset = ExtResource("2")
 jutsus = PackedStringArray("booby_trap")
