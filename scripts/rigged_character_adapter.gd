@@ -7,7 +7,7 @@ const ANIME: Script = preload("res://scripts/anime_presentation.gd")
 static var library_cache: Dictionary = {}
 
 const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
-const REFERENCE_RIG_PATH: String = "res://assets/characters/rigged.glb"
+const REFERENCE_REST_PATH: String = "res://assets/animations/mixamo_reference_rest.json"
 static var reference_rest_cache: Dictionary = {}
 static var reference_rest_ready: bool = false
 
@@ -328,22 +328,45 @@ func _ensure_reference_rest_cache() -> bool:
         return not reference_rest_cache.is_empty()
     reference_rest_ready = true
     reference_rest_cache.clear()
-    if not ResourceLoader.exists(REFERENCE_RIG_PATH):
+    if not FileAccess.file_exists(REFERENCE_REST_PATH):
         return false
 
-    var packed: PackedScene = ResourceLoader.load(REFERENCE_RIG_PATH) as PackedScene
-    if packed == null:
+    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(REFERENCE_REST_PATH))
+    if not parsed is Dictionary:
         return false
-    var instance: Node = packed.instantiate()
-    var reference_skeleton: Skeleton3D = _find_skeleton(instance)
-    if reference_skeleton == null:
-        instance.free()
+    var root_data: Dictionary = parsed
+    var bones_value: Variant = root_data.get("bones", {})
+    if not bones_value is Dictionary:
         return false
+    var bones: Dictionary = bones_value
 
-    for index: int in range(reference_skeleton.get_bone_count()):
-        var bone_name: String = String(reference_skeleton.get_bone_name(index))
-        reference_rest_cache[bone_name] = reference_skeleton.get_bone_rest(index)
-    instance.free()
+    for bone_value: String in bones:
+        var entry_value: Variant = bones[bone_value]
+        if not entry_value is Dictionary:
+            continue
+        var entry: Dictionary = entry_value
+        var position_value: Variant = entry.get("p", [])
+        var rotation_value: Variant = entry.get("q", [])
+        if not position_value is Array or not rotation_value is Array:
+            continue
+        var position_data: Array = position_value
+        var rotation_data: Array = rotation_value
+        if position_data.size() != 3 or rotation_data.size() != 4:
+            continue
+
+        var position: Vector3 = Vector3(
+            float(position_data[0]),
+            float(position_data[1]),
+            float(position_data[2])
+        )
+        var rotation: Quaternion = Quaternion(
+            float(rotation_data[0]),
+            float(rotation_data[1]),
+            float(rotation_data[2]),
+            float(rotation_data[3])
+        ).normalized()
+        reference_rest_cache[bone_value] = Transform3D(Basis(rotation), position)
+
     return not reference_rest_cache.is_empty()
 
 func _reference_rest_key(bone_name: String) -> String:
