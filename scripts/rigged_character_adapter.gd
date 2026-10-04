@@ -45,6 +45,7 @@ var chakra_aura: MeshInstance3D = null
 var aura_base_scale: Vector3 = Vector3.ONE
 var prefer_native_locomotion: bool = false
 var native_locomotion_count: int = 0
+var combat_retargeted: bool = false
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -146,10 +147,11 @@ func _try_load_rig() -> void:
         fallback_visual.visible = false
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
-    rig_status = "RIG: OK | %d clips CC0 | %d native | %d bones" % [
+    rig_status = "RIG: OK | %d CC0 | %d native | %d bones%s" % [
         real_animation_count,
         native_locomotion_count,
-        skeleton.get_bone_count()
+        skeleton.get_bone_count(),
+        " | RETARGET" if combat_retargeted else ""
     ]
 
 func _tint_chakra_aura() -> void:
@@ -298,6 +300,7 @@ func _install_combat_library() -> bool:
     for index: int in range(skeleton.get_bone_count()):
         rest_signature += str(skeleton.get_bone_rest(index))
     var retarget_required: bool = not _matches_reference_rest()
+    combat_retargeted = retarget_required
     var cache_key: String = skeleton_path + "|" + ",".join(bone_names) + "|" + rest_signature.sha256_text()
     var library: AnimationLibrary = library_cache.get(cache_key) as AnimationLibrary
     if library == null:
