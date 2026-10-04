@@ -134,6 +134,7 @@ func _try_load_rig() -> void:
         if chakra_aura != null:
             chakra_aura.reparent(self, true)
             aura_base_scale = chakra_aura.scale
+            _tint_chakra_aura()
         fallback_visual.visible = false
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -141,6 +142,25 @@ func _try_load_rig() -> void:
         real_animation_count,
         skeleton.get_bone_count()
     ]
+
+func _tint_chakra_aura() -> void:
+    if chakra_aura == null:
+        return
+    var source: StandardMaterial3D = chakra_aura.get_active_material(0) as StandardMaterial3D
+    if source == null:
+        return
+    var material: StandardMaterial3D = source.duplicate(true) as StandardMaterial3D
+    if material == null:
+        return
+    var color: Color = Color(0.08, 0.55, 1.0)
+    if player.has_method("get_character_definition"):
+        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+        if definition != null:
+            color = definition.energy_color
+    material.albedo_color = Color(color.r, color.g, color.b, source.albedo_color.a)
+    material.emission_enabled = true
+    material.emission = color
+    chakra_aura.material_override = material
 
 func _update_chakra_aura(delta: float) -> void:
     if chakra_aura == null:
