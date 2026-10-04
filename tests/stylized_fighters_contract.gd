@@ -12,6 +12,36 @@ func frames(count: int) -> void:
     for index: int in range(count):
         await physics_frame
 
+func check_retarget_math() -> void:
+    var adapter: Node3D = preload("res://scripts/rigged_character_adapter.gd").new()
+    check(adapter._ensure_reference_rest_cache(), "Compact retarget metadata must load without the reference GLB")
+    check(adapter._has_reference_rest("mixamorig_Hips"), "Retarget metadata must contain the reference hips")
+
+    var animation: Animation = Animation.new()
+    animation.length = 1.0
+    var rotation_track: int = animation.add_track(Animation.TYPE_ROTATION_3D)
+    var position_track: int = animation.add_track(Animation.TYPE_POSITION_3D)
+
+    var source_rest_rotation: Quaternion = Quaternion.from_euler(Vector3(0.2, -0.3, 0.1))
+    var target_rest_rotation: Quaternion = Quaternion.from_euler(Vector3(-0.4, 0.1, 0.35))
+    var relative_rotation: Quaternion = Quaternion.from_euler(Vector3(0.12, 0.18, -0.08))
+    var source_rest: Transform3D = Transform3D(Basis(source_rest_rotation), Vector3(0.0, 10.0, 0.0))
+    var target_rest: Transform3D = Transform3D(Basis(target_rest_rotation), Vector3(0.0, 2.0, 0.0))
+    animation.rotation_track_insert_key(rotation_track, 0.0, (source_rest_rotation * relative_rotation).normalized())
+    animation.position_track_insert_key(position_track, 0.0, source_rest.origin + Vector3(1.0, -2.0, 3.0))
+
+    adapter._retarget_track(animation, rotation_track, source_rest, target_rest)
+    adapter._retarget_track(animation, position_track, source_rest, target_rest)
+
+    var actual_rotation: Quaternion = animation.track_get_key_value(rotation_track, 0)
+    var expected_rotation: Quaternion = (target_rest_rotation * relative_rotation).normalized()
+    check(absf(actual_rotation.dot(expected_rotation)) > 0.99999, "Retarget must preserve rotation relative to Bone Rest")
+
+    var actual_position: Vector3 = animation.track_get_key_value(position_track, 0)
+    var expected_position: Vector3 = target_rest.origin + Vector3(1.0, -2.0, 3.0) * 0.2
+    check(actual_position.distance_to(expected_position) < 0.00001, "Retarget must normalize position delta to target bone length")
+    adapter.free()
+
 func skin_bounds(mesh: MeshInstance3D, skeleton: Skeleton3D) -> AABB:
     var skin: Skin = mesh.skin
     var transforms: Array[Transform3D] = []
@@ -42,6 +72,7 @@ func run() -> void:
     root.content_scale_size = Vector2i(1280, 720)
     var flow: Node = root.get_node("GameFlow")
     CharacterCatalog.initialize()
+    check_retarget_math()
     check(CharacterCatalog.READY.size() == 25, "Storm 1 selection must expose all 25 playable fighters")
     var placeholder_count: int = 0
     for definition: CharacterDefinition in CharacterCatalog.READY:
