@@ -60,7 +60,7 @@ func prepare(actor: CharacterBody3D) -> void:
     var adapter: Node = source.get_node("RiggedCharacterAdapter")
     model = load(adapter.model_path).instantiate() as Node3D
     add_child(model)
-    model.position = adapter.model_offset
+    model.position = adapter.model_instance.position
     model.rotation_degrees.y = adapter.model_yaw_degrees
     model.scale = Vector3.ONE * adapter.applied_model_scale
     adapter.call("apply_visual_material", model)

@@ -1,5 +1,11 @@
 # Fontes de assets
 
+## base_basic rigado — 2026-10-04
+
+Os GLBs `base_basic_pbr.glb` e `base_basic_shaded.glb` foram fornecidos pelo usuário, sem metadados de autor/licença. Os originais permanecem intactos. `tools/rig_base_basic_models.py` gera derivados com ajuste da pose assimétrica, pesos de skin e 65 ossos corporais do rig existente, para usar os 27 clips CC0 já registrados. Cada derivado tem 39998 triângulos e texturas de 1024 px; o PBR é o visual padrão do Naruto e o shaded é uma alternativa compatível.
+
+O gltfpack 1.3 do meshoptimizer (MIT, https://github.com/zeux/meshoptimizer) é uma ferramenta externa de preparação da malha, sem dependência no runtime. A fonte do skeleton/modelo não foi reclassificada como liberada: os derivados permanecem DEVELOPMENT_ONLY no registro. `assets/characters/base_basic/rig_profile.json` registra fontes, resultados e landmarks. Mãos mantêm a geometria de punhos fechados; animação individual de dedos requer trabalho adicional na malha.
+
 ## Integrados
 - Quaternius UAL 1/2 Standard, CC0: clips reais já retargetados. Ver ANIMATION_SOURCES.md e manifestos com hashes. Compartilhados com clones; nenhum download runtime.
 - Modelo rigged.glb fornecido anteriormente pelo usuário: licença permanece sob responsabilidade/origem do arquivo; nenhuma aquisição nova de modelo proprietário.

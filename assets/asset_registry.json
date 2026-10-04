@@ -165,8 +165,8 @@
       "author": "Projeto naruto-rpg-3d",
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
-      "modifications": "Resource de gameplay original com sprites 2.5D do ZIP fornecido pelo usuário; o modelo pré-Shippuden continua disponível para ossos, colisões e fallback.",
-      "sha256": "7f87c3c34674f863676ee89fb3d804633a35176d1381a9116ef5afab68342a15"
+      "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado; sprites 2.5D mantidos como opção.",
+      "sha256": "8684f7c3b5e8a61742ce80bbc3c0481bf6756813b2f68a0724290406f18c58ab"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -537,6 +537,44 @@
         {
           "path": "assets/characters/base_basic/base_basic_shaded_shaded.png",
           "sha256": "23c45c5ac431756823e52ba4623a74db3033721d8a936a01e2ef254bd429e8ab"
+        }
+      ]
+    },
+    {
+      "path": "assets/characters/base_basic/base_basic_pbr_rigged.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Modelo fornecido pelo usuário / rig e preparação pelo projeto",
+      "source": "GLB base_basic original fornecido no ZIP; skeleton corporal de assets/characters/rigged.glb",
+      "license": "Origem do modelo e skeleton não comprovada; animações CC0 do Quaternius registradas separadamente",
+      "modifications": "Malha reduzida offline a 39998 triângulos, texturas 1024, ajuste de pose, 65 bones Mixamo e pesos de skin. Originais preservados.",
+      "sha256": "e5ec8399e3531870f6f8fcf14b8d4d2d687a538c05be513c4b80a8a785fd4522",
+      "embedded_images": [
+        {
+          "path": "assets/characters/base_basic/base_basic_pbr_rigged_texture_normal.png",
+          "sha256": "88ac7b3d5d1fedd97fe7eab695170f79f5a725a3e5c4cf27ed303929b196490f"
+        },
+        {
+          "path": "assets/characters/base_basic/base_basic_pbr_rigged_texture_diffuse.png",
+          "sha256": "e2f1b75cab9ab61af611a3b6d412cc4d99ad4450c7943b66ea10d01d20282bab"
+        },
+        {
+          "path": "assets/characters/base_basic/base_basic_pbr_rigged_texture_metallic-texture_roughness.png",
+          "sha256": "a2431bcdc59b743c332e2185880d48c962734a49bd8bacde435b1f0c694ef21e"
+        }
+      ]
+    },
+    {
+      "path": "assets/characters/base_basic/base_basic_shaded_rigged.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Modelo fornecido pelo usuário / rig e preparação pelo projeto",
+      "source": "GLB base_basic original fornecido no ZIP; skeleton corporal de assets/characters/rigged.glb",
+      "license": "Origem do modelo e skeleton não comprovada; animações CC0 do Quaternius registradas separadamente",
+      "modifications": "Malha reduzida offline a 39998 triângulos, texturas 1024, ajuste de pose, 65 bones Mixamo e pesos de skin. Originais preservados.",
+      "sha256": "2fb923779afc721d5d07048ecae7d31090cadbb34dc7a3fb0b16b81ebfe89a06",
+      "embedded_images": [
+        {
+          "path": "assets/characters/base_basic/base_basic_shaded_rigged_shaded.png",
+          "sha256": "2667c83ed13ca235bfb4761a1cc3ef1302a6216ba91ae419c73754e0a6d2eec8"
         }
       ]
     }

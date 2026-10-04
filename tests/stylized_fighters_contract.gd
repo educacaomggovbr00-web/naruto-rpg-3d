@@ -68,17 +68,22 @@ func run() -> void:
             var meshes: Array[MeshInstance3D] = []
             adapter._collect_mesh_instances(adapter.model_instance, meshes)
             if definition.character_id == "naruto":
-                check(meshes.size() == 3, "Pre-Shippuden Naruto keeps its three supplied skinned meshes")
+                check(meshes.size() == 1, "BaseBasic Naruto uses one optimized skinned mesh")
+                check(meshes[0].mesh.surface_get_array_index_len(0) / 3 <= 60000, "Naruto stays within the offline triangle budget")
                 for mesh: MeshInstance3D in meshes:
                     check(mesh.material_override == null, "Pre-Shippuden Naruto keeps embedded materials/textures")
                     for surface: int in range(mesh.mesh.get_surface_count()):
                         var original: StandardMaterial3D = mesh.mesh.surface_get_material(surface) as StandardMaterial3D
                         var anime: StandardMaterial3D = mesh.get_surface_override_material(surface) as StandardMaterial3D
-                        check(anime != null and anime.diffuse_mode == BaseMaterial3D.DIFFUSE_TOON and anime.rim_enabled, "Naruto receives toon lighting per surface")
+                        if original != null and original.normal_enabled:
+                            check(anime != null and anime.normal_enabled and anime.normal_texture == original.normal_texture, "PBR Naruto keeps its normal map")
+                            check(anime != null and anime.metallic_texture == original.metallic_texture and anime.roughness_texture == original.roughness_texture, "PBR Naruto keeps metallic/roughness maps")
+                        else:
+                            check(anime != null and anime.diffuse_mode == BaseMaterial3D.DIFFUSE_TOON and anime.rim_enabled, "Simple Naruto materials receive toon lighting per surface")
                         if anime != null and original != null:
                             check(anime.albedo_texture == original.albedo_texture, "Anime lighting preserves each original Naruto texture")
                             check(anime.albedo_color == original.albedo_color, "Anime lighting preserves each original Naruto tint")
-                check(definition.model_auto_scale and absf(adapter.detected_source_height - 175.0) < 0.01, "Naruto mesh bounds use the same centimeter units as its skeleton")
+                check(definition.model_auto_scale and adapter.detected_source_height > 150.0 and adapter.detected_source_height < 200.0, "Naruto mesh bounds use the same centimeter units as its skeleton")
                 check(absf(adapter.applied_model_scale * adapter.detected_source_height - 1.75) < 0.001, "Naruto normalizes to the other fighters' physical height")
                 var collision: CollisionShape3D = actor.get_node("CollisionShape3D")
                 check(absf(adapter.model_instance.position.y + adapter.detected_source_min_y * adapter.applied_model_scale - (collision.position.y - collision.shape.height * 0.5)) < 0.001, "Naruto soles align with each actor's physical capsule bottom")

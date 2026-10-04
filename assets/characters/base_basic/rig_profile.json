@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "source_sha256": {
+    "pbr": "42f83734b0c3341223615e9326a6151340c481fbfe02a8dcf941d79c4ce997f1",
+    "shaded": "09e4961c220eb76ba0178de1499b395e3f5839b0af6f01225da3933d2ee90d79"
+  },
+  "rig_source_sha256": "b5abb8cf927c65e861fb56ea23ce36db2526903d1491f55b53d54a29b4cc0d5c",
+  "source_landmarks_cm": {
+    "Hips": [
+      0,
+      88,
+      8
+    ],
+    "Spine": [
+      0,
+      98,
+      8
+    ],
+    "Spine1": [
+      0,
+      111,
+      7
+    ],
+    "Spine2": [
+      0,
+      123,
+      6
+    ],
+    "Neck": [
+      0,
+      135,
+      7
+    ],
+    "Head": [
+      0,
+      143,
+      8
+    ],
+    "HeadTop_End": [
+      0,
+      165,
+      8
+    ],
+    "LeftShoulder": [
+      -7,
+      130,
+      5
+    ],
+    "LeftArm": [
+      -22,
+      130,
+      5
+    ],
+    "LeftForeArm": [
+      -32,
+      114,
+      -6
+    ],
+    "LeftHand": [
+      -25,
+      133,
+      -21
+    ],
+    "RightShoulder": [
+      7,
+      130,
+      5
+    ],
+    "RightArm": [
+      22,
+      129,
+      5
+    ],
+    "RightForeArm": [
+      33,
+      109,
+      1
+    ],
+    "RightHand": [
+      25,
+      95,
+      -10
+    ],
+    "LeftUpLeg": [
+      -12,
+      82,
+      8
+    ],
+    "LeftLeg": [
+      -20,
+      46,
+      7
+    ],
+    "LeftFoot": [
+      -25,
+      10,
+      5
+    ],
+    "LeftToeBase": [
+      -27,
+      3,
+      -5
+    ],
+    "LeftToe_End": [
+      -27,
+      3,
+      -13
+    ],
+    "RightUpLeg": [
+      12,
+      82,
+      8
+    ],
+    "RightLeg": [
+      20,
+      46,
+      7
+    ],
+    "RightFoot": [
+      25,
+      10,
+      5
+    ],
+    "RightToeBase": [
+      27,
+      3,
+      -5
+    ],
+    "RightToe_End": [
+      27,
+      3,
+      -13
+    ]
+  },
+  "outputs": [
+    {
+      "path": "assets/characters/base_basic/base_basic_pbr_rigged.glb",
+      "sha256": "e5ec8399e3531870f6f8fcf14b8d4d2d687a538c05be513c4b80a8a785fd4522",
+      "size_bytes": 5134660,
+      "vertices": 46513,
+      "triangles": 39998,
+      "joints": 65,
+      "texture_max_size": 1024
+    },
+    {
+      "path": "assets/characters/base_basic/base_basic_shaded_rigged.glb",
+      "sha256": "2fb923779afc721d5d07048ecae7d31090cadbb34dc7a3fb0b16b81ebfe89a06",
+      "size_bytes": 3788684,
+      "vertices": 46513,
+      "triangles": 39998,
+      "joints": 65,
+      "texture_max_size": 1024
+    }
+  ],
+  "weighting": "Adjacent segment blends; rigid head and closed fists. Offline fitted bind pose.",
+  "combat_library": "res://assets/animations/combat_mixamo.tres",
+  "combat_clips": 27
+}

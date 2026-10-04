@@ -5,6 +5,7 @@ Run animation_contract.gd -- --dump-poses first. Requires numpy/scipy/Pillow.
 Not a screenshot of the game renderer: verifies retargeted mesh silhouettes.
 """
 import io
+import argparse
 import json
 import struct
 from pathlib import Path
@@ -14,7 +15,10 @@ from PIL import Image, ImageDraw
 from scipy.spatial.transform import Rotation
 
 ROOT = Path(__file__).resolve().parents[1]
-raw = (ROOT / 'assets/characters/rigged.glb').read_bytes()
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--model', type=Path, default=ROOT / 'assets/characters/rigged.glb')
+args = parser.parse_args()
+raw = args.model.read_bytes()
 size = struct.unpack_from('<I', raw, 12)[0]
 data = json.loads(raw[20:20+size])
 buf = raw[28+size:]

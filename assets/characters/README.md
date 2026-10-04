@@ -1,6 +1,6 @@
 # Personagem rigado
 
-Os modelos estáticos `base_basic_pbr.glb` e `base_basic_shaded.glb` enviados pelo usuário estão em [`base_basic/`](base_basic/README.md), com seus arquivos originais preservados. Eles não possuem skin, skeleton ou animações; os detalhes técnicos estão no README da pasta.
+Os modelos `base_basic_pbr.glb` e `base_basic_shaded.glb` enviados pelo usuário estão em [`base_basic/`](base_basic/README.md), com seus arquivos originais preservados. As versões `_rigged.glb` foram preparadas com 65 ossos, skin e compatibilidade com os 27 clips; o perfil do Naruto usa o PBR rigado por padrão. Os detalhes técnicos e limites dos punhos fechados estão no README da pasta.
 
 O arquivo original `rigged.glb` permanece intacto, com sua animação `happy`. O adapter adiciona a biblioteca externa `../animations/combat_mixamo.tres` ao AnimationPlayer, sob o namespace `combat/`. Todos os estados jogáveis usam os clips reais dessa biblioteca.
 

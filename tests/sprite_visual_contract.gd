@@ -16,6 +16,10 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    # Sprites remain an explicit alternative; the default Naruto now uses 3D.
+    var default_mode: String = CharacterCatalog.NARUTO.visual_mode
+    var sprite_definition: CharacterDefinition = CharacterCatalog.NARUTO
+    sprite_definition.visual_mode = "sprite_2_5d"
     var flow: Node = root.get_node("GameFlow")
     check(flow.start_versus("naruto", "naruto", "training") == OK, "Naruto match opens")
     await frames(8)
@@ -67,5 +71,6 @@ func run() -> void:
     await frames(8)
     check(not current_scene.get_node("Player").rig_adapter.sprite_mode, "Sasuke retains the 3D model")
     check(current_scene.get_node("Player").rig_adapter.model_instance.visible, "3D fallback stays visible")
+    sprite_definition.visual_mode = default_mode
     print("SPRITE VISUAL CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(0 if failures == 0 else 1)
