@@ -19,6 +19,7 @@ extends Resource
 @export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
 @export var model_yaw_degrees: float = 180.0
 @export var model_fallback_import_scale: float = 0.01
+@export var prefer_native_locomotion: bool = false
 @export var moveset: MovesetDefinition
 @export var jutsus: PackedStringArray = PackedStringArray(["demon", "rasengan", "clones", "whirlwind", "barrage"])
 @export var jutsu_definitions: Array[JutsuDefinition] = []
