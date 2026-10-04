@@ -7,6 +7,9 @@ const ANIME: Script = preload("res://scripts/anime_presentation.gd")
 static var library_cache: Dictionary = {}
 
 const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
+const REFERENCE_RIG_PATH: String = "res://assets/characters/rigged.glb"
+static var reference_rest_cache: Dictionary = {}
+static var reference_rest_ready: bool = false
 
 @export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
 @export var fallback_visual_path: NodePath = NodePath("../VisualRoot")
@@ -277,13 +280,20 @@ func _install_combat_library() -> bool:
     if not _has_required_combat_bones():
         push_error("Combat rig is missing a required body bone")
         return false
+    if not _ensure_reference_rest_cache():
+        push_error("Combat retarget reference rig is unavailable")
+        return false
+
     var animation_root: Node = animation_player.get_node(animation_player.root_node)
     var skeleton_path: String = String(animation_root.get_path_to(skeleton))
     var bone_names: PackedStringArray = []
     for index: int in range(skeleton.get_bone_count()):
         bone_names.append(String(skeleton.get_bone_name(index)))
-    # Compatible Mixamo body rigs may omit fingers/end helpers. Combat tracks
-    # for those optional bones are discarded, while hands/feet/body remain.
+
+    # Godot 4 bone animation values include Bone Rest. Matching names alone is
+    # insufficient when a Mixamo export uses a different rest orientation or
+    # source unit. Retarget every kept track from the reference rest into the
+    # target rest before installing the library.
     var rest_signature: String = ""
     for index: int in range(skeleton.get_bone_count()):
         rest_signature += str(skeleton.get_bone_rest(index))
@@ -297,15 +307,127 @@ func _install_combat_library() -> bool:
             var animation: Animation = library.get_animation(clip_name)
             for track: int in range(animation.get_track_count() - 1, -1, -1):
                 var path: NodePath = animation.track_get_path(track)
-                var bone_name: String = String(path.get_subname(0))
-                if skeleton.find_bone(bone_name) < 0:
+                var source_bone_name: String = String(path.get_subname(0))
+                var target_bone: int = _find_named_bone(skeleton, source_bone_name)
+                var source_rest: Transform3D = _reference_rest(source_bone_name)
+                if target_bone < 0 or source_rest == Transform3D():
                     animation.remove_track(track)
                     continue
-                animation.track_set_path(track, NodePath(skeleton_path + ":" + bone_name))
+                var target_bone_name: String = String(skeleton.get_bone_name(target_bone))
+                var target_rest: Transform3D = skeleton.get_bone_rest(target_bone)
+                _retarget_track(animation, track, source_rest, target_rest)
+                animation.track_set_path(track, NodePath(skeleton_path + ":" + target_bone_name))
         library_cache[cache_key] = library
+
     var result: Error = animation_player.add_animation_library(&"combat", library)
     real_animation_count = library.get_animation_list().size()
     return result == OK and real_animation_count == clips.size()
+
+func _ensure_reference_rest_cache() -> bool:
+    if reference_rest_ready:
+        return not reference_rest_cache.is_empty()
+    reference_rest_ready = true
+    reference_rest_cache.clear()
+    if not ResourceLoader.exists(REFERENCE_RIG_PATH):
+        return false
+
+    var packed: PackedScene = ResourceLoader.load(REFERENCE_RIG_PATH) as PackedScene
+    if packed == null:
+        return false
+    var instance: Node = packed.instantiate()
+    var reference_skeleton: Skeleton3D = _find_skeleton(instance)
+    if reference_skeleton == null:
+        instance.free()
+        return false
+
+    for index: int in range(reference_skeleton.get_bone_count()):
+        var bone_name: String = String(reference_skeleton.get_bone_name(index))
+        reference_rest_cache[bone_name] = reference_skeleton.get_bone_rest(index)
+    instance.free()
+    return not reference_rest_cache.is_empty()
+
+func _reference_rest(bone_name: String) -> Transform3D:
+    if reference_rest_cache.has(bone_name):
+        return reference_rest_cache[bone_name] as Transform3D
+    var alternate: String = bone_name
+    if bone_name.begins_with("mixamorig_"):
+        alternate = bone_name.replace("mixamorig_", "mixamorig:")
+    elif bone_name.begins_with("mixamorig:"):
+        alternate = bone_name.replace("mixamorig:", "mixamorig_")
+    if reference_rest_cache.has(alternate):
+        return reference_rest_cache[alternate] as Transform3D
+    return Transform3D()
+
+func _find_named_bone(target: Skeleton3D, bone_name: String) -> int:
+    var index: int = target.find_bone(bone_name)
+    if index >= 0:
+        return index
+    if bone_name.begins_with("mixamorig_"):
+        index = target.find_bone(bone_name.replace("mixamorig_", "mixamorig:"))
+    elif bone_name.begins_with("mixamorig:"):
+        index = target.find_bone(bone_name.replace("mixamorig:", "mixamorig_"))
+    return index
+
+func _retarget_track(
+    animation: Animation,
+    track: int,
+    source_rest: Transform3D,
+    target_rest: Transform3D
+) -> void:
+    var track_type: int = animation.track_get_type(track)
+    var key_count: int = animation.track_get_key_count(track)
+
+    if track_type == Animation.TYPE_ROTATION_3D:
+        var source_rest_rotation: Quaternion = source_rest.basis.orthonormalized().get_rotation_quaternion()
+        var target_rest_rotation: Quaternion = target_rest.basis.orthonormalized().get_rotation_quaternion()
+        for key: int in range(key_count):
+            var value: Variant = animation.track_get_key_value(track, key)
+            if typeof(value) != TYPE_QUATERNION:
+                continue
+            var source_rotation: Quaternion = value
+            var relative_rotation: Quaternion = source_rest_rotation.inverse() * source_rotation
+            var target_rotation: Quaternion = (target_rest_rotation * relative_rotation).normalized()
+            animation.track_set_key_value(track, key, target_rotation)
+        return
+
+    if track_type == Animation.TYPE_POSITION_3D:
+        var position_scale: float = _rest_length_ratio(source_rest.origin, target_rest.origin)
+        for key: int in range(key_count):
+            var value: Variant = animation.track_get_key_value(track, key)
+            if typeof(value) != TYPE_VECTOR3:
+                continue
+            var source_position: Vector3 = value
+            var relative_position: Vector3 = source_position - source_rest.origin
+            animation.track_set_key_value(
+                track,
+                key,
+                target_rest.origin + relative_position * position_scale
+            )
+        return
+
+    if track_type == Animation.TYPE_SCALE_3D:
+        var source_rest_scale: Vector3 = source_rest.basis.get_scale()
+        var target_rest_scale: Vector3 = target_rest.basis.get_scale()
+        for key: int in range(key_count):
+            var value: Variant = animation.track_get_key_value(track, key)
+            if typeof(value) != TYPE_VECTOR3:
+                continue
+            var source_scale: Vector3 = value
+            var ratio: Vector3 = Vector3.ONE
+            if absf(source_rest_scale.x) > 0.00001:
+                ratio.x = source_scale.x / source_rest_scale.x
+            if absf(source_rest_scale.y) > 0.00001:
+                ratio.y = source_scale.y / source_rest_scale.y
+            if absf(source_rest_scale.z) > 0.00001:
+                ratio.z = source_scale.z / source_rest_scale.z
+            animation.track_set_key_value(track, key, target_rest_scale * ratio)
+
+func _rest_length_ratio(source_position: Vector3, target_position: Vector3) -> float:
+    var source_length: float = source_position.length()
+    var target_length: float = target_position.length()
+    if source_length <= 0.00001 or target_length <= 0.00001:
+        return 1.0
+    return clampf(target_length / source_length, 0.001, 1000.0)
 
 func _has_required_combat_bones() -> bool:
     var required: Array[String] = [
