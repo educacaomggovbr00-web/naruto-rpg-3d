@@ -13,6 +13,54 @@ extends CanvasLayer
 func _ready() -> void:
     health_bar.max_value = float(player.call("get_max_health"))
     chakra_bar.max_value = float(player.call("get_max_chakra"))
+    _apply_anime_hud_style()
+
+
+func _apply_anime_hud_style() -> void:
+    var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+    var chakra_color: Color = Color(0.10, 0.58, 1.0)
+    if definition != null:
+        chakra_color = definition.energy_color
+
+    _style_bar(health_bar, Color("e85846"))
+    _style_bar(chakra_bar, chakra_color)
+
+    $Title.add_theme_color_override("font_color", Color("ffd27a"))
+    $Title.add_theme_color_override("font_shadow_color", Color(0.02, 0.03, 0.06, 0.95))
+    $Title.add_theme_constant_override("shadow_offset_x", 2)
+    $Title.add_theme_constant_override("shadow_offset_y", 2)
+
+    for label: Label in [$HealthText, $ChakraText, status_label, resource_label]:
+        label.add_theme_color_override("font_color", Color("f5f1e8"))
+        label.add_theme_color_override("font_shadow_color", Color(0.02, 0.03, 0.06, 0.85))
+        label.add_theme_constant_override("shadow_offset_x", 1)
+        label.add_theme_constant_override("shadow_offset_y", 1)
+
+    combo_label.add_theme_color_override("font_color", Color("ffd369"))
+    combo_label.add_theme_color_override("font_shadow_color", Color("32150b"))
+    combo_label.add_theme_constant_override("shadow_offset_x", 3)
+    combo_label.add_theme_constant_override("shadow_offset_y", 3)
+    rig_label.add_theme_color_override("font_color", Color("b7cadb"))
+    fps_label.add_theme_color_override("font_color", Color("d6e4ed"))
+
+func _style_bar(bar: ProgressBar, fill_color: Color) -> void:
+    var background: StyleBoxFlat = StyleBoxFlat.new()
+    background.bg_color = Color(0.025, 0.035, 0.06, 0.82)
+    background.border_color = Color(0.78, 0.84, 0.91, 0.42)
+    background.set_border_width_all(1)
+    background.corner_radius_top_left = 8
+    background.corner_radius_top_right = 8
+    background.corner_radius_bottom_left = 8
+    background.corner_radius_bottom_right = 8
+    bar.add_theme_stylebox_override("background", background)
+
+    var fill: StyleBoxFlat = StyleBoxFlat.new()
+    fill.bg_color = fill_color
+    fill.corner_radius_top_left = 7
+    fill.corner_radius_top_right = 7
+    fill.corner_radius_bottom_left = 7
+    fill.corner_radius_bottom_right = 7
+    bar.add_theme_stylebox_override("fill", fill)
 
 var refresh_timer: float = 0.0
 func _process(delta: float) -> void:
