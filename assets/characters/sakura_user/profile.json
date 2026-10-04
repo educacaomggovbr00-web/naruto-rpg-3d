@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "character_id": "sakura",
+  "expected_path": "res://assets/characters/sakura_user/sakura_mobile_rigged.glb",
+  "source_sha256": "ef814d05c5ab4d33c15448918b9581c5c9ad5507e6401516324a7120fe131668",
+  "mobile_sha256": "fc02718a9e9409603cae00087cb1f8525f628c7f0f3c6f45f19c1e3f013cc997",
+  "source_bytes": 13621748,
+  "mobile_bytes": 4365668,
+  "vertices": 20856,
+  "indices": 107157,
+  "triangles": 35719,
+  "bones": 27,
+  "source_bounds_min": [
+    -0.4497101306915283,
+    0,
+    -0.26655128598213196
+  ],
+  "source_bounds_max": [
+    0.4438176453113556,
+    1.5499999523162842,
+    0.2619996666908264
+  ],
+  "embedded_textures": {
+    "source_size": [
+      2048,
+      2048
+    ],
+    "mobile_max_size": [
+      1024,
+      1024
+    ]
+  },
+  "native_animations": [
+    {
+      "name": "Bind",
+      "duration": 0
+    },
+    {
+      "name": "Idle",
+      "duration": 4
+    },
+    {
+      "name": "Walk",
+      "duration": 1
+    },
+    {
+      "name": "Run",
+      "duration": 0.7
+    },
+    {
+      "name": "Wave",
+      "duration": 2.5
+    }
+  ],
+  "license_status": "UNKNOWN_LICENSE"
+}
