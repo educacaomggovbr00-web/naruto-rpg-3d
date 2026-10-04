@@ -1,5 +1,7 @@
 extends Node3D
 const POINTS_PATH: String = "res://assets/world/village_points.json"
+const TARGET_SCALE: Array[float] = [0.70, 0.85, 1.0]
+const MIN_ADAPTIVE_SCALE: Array[float] = [0.58, 0.68, 0.78]
 var points: Array[Area3D] = []
 var nearest: Area3D = null
 var scan_timer: float = 0.0
@@ -9,6 +11,8 @@ var toast_timer: float = 0.0
 var map_open: bool = false
 var quality: int = 1
 var settings: ConfigFile = ConfigFile.new()
+var adaptive_timer: float = 4.0
+var render_scale: float = 0.85
 var status_label: Label
 var objective_label: Label
 var context_label: Label
@@ -99,7 +103,9 @@ func apply_quality(level: int, save: bool = true) -> void:
     $Sun.shadow_enabled = quality > 0
     $Sun.directional_shadow_max_distance = [0.0, 24.0, 40.0][quality]
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-    get_viewport().scaling_3d_scale = [0.70, 0.85, 1.0][quality]
+    render_scale = TARGET_SCALE[quality]
+    adaptive_timer = 4.0
+    get_viewport().scaling_3d_scale = render_scale
     quality_button.text = ["LOW", "MED", "HIGH"][quality]
     for point: Area3D in points:
         if point.actor == null or not is_instance_valid(point.actor.rig_adapter.model_instance):
@@ -136,6 +142,7 @@ func _unhandled_input(event: InputEvent) -> void:
             toggle_map()
 
 func _physics_process(delta: float) -> void:
+    _update_adaptive_resolution(delta)
     if not spawn_checked:
         spawn_checked = true
         var query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
@@ -175,6 +182,33 @@ func _physics_process(delta: float) -> void:
                 point.actor.rig_adapter.set_physics_process(point.global_position.distance_squared_to(actor.global_position) < pow([18.0, 25.0, 35.0][quality], 2.0))
     if map_open:
         map_panel.queue_redraw()
+
+func _update_adaptive_resolution(delta: float) -> void:
+    if not _is_mobile_runtime():
+        return
+    adaptive_timer -= delta
+    if adaptive_timer > 0.0:
+        return
+    adaptive_timer = 1.25
+    var fps: float = float(Engine.get_frames_per_second())
+    var target: float = TARGET_SCALE[quality]
+    var minimum: float = MIN_ADAPTIVE_SCALE[quality]
+    var next_scale: float = render_scale
+    if fps > 1.0 and fps < 48.0:
+        next_scale = maxf(render_scale - 0.05, minimum)
+    elif fps >= 57.0:
+        next_scale = minf(render_scale + 0.025, target)
+    if not is_equal_approx(next_scale, render_scale):
+        render_scale = next_scale
+        get_viewport().scaling_3d_scale = render_scale
+
+func _is_mobile_runtime() -> bool:
+    return (
+        OS.has_feature("android")
+        or OS.has_feature("ios")
+        or OS.has_feature("web_android")
+        or OS.has_feature("web_ios")
+    )
 
 func _find_interaction() -> void:
     nearest = null
