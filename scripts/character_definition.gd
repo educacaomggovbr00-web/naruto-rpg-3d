@@ -4,6 +4,7 @@ extends Resource
 @export var character_id: String = "naruto"
 @export var display_name: String = "Naruto"
 @export_file("*.glb") var model_path: String = "res://assets/characters/rigged.glb"
+@export_file("*.glb") var model_fallback_path: String = ""
 @export var visual_status: String = "DEVELOPMENT_ONLY_SHARED_RIG"
 @export_multiline var summary: String = "Base de combate em desenvolvimento."
 @export var stylized_material: bool = false
