@@ -31,8 +31,11 @@ A versão mobile preparada reduz somente as três texturas embutidas de 2048 par
 
 O adapter aceita rigs Mixamo compactos desde que mantenham os bones críticos de
 tronco, braços/mãos e pernas/pés. Tracks opcionais de dedos/helpers que não
-existirem são descartados ao preparar a biblioteca; os 27 clips de combate
-continuam disponíveis para os bones presentes.
+existirem são descartados. Como o Bone Rest deste GLB difere do rig de referência,
+os clips são retargetados em runtime usando `assets/animations/mixamo_reference_rest.json`:
+rotação é transferida relativa ao rest e posições são normalizadas pelo comprimento
+do bone. Assim o rig compacto não recebe as transformações absolutas em centímetros
+do personagem antigo.
 
 O material texturizado mantém diffuse/normal/roughness e recebe o passe de
 iluminação anime do projeto. Autoescala normaliza o personagem para 1,75 m e o
