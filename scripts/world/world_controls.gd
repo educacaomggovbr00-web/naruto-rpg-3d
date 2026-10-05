@@ -1,5 +1,5 @@
 extends Control
-## Independent exploration touch surface: no hidden combat hit areas.
+## Exploration touch surface. Visual grouping keeps the world readable on small screens.
 var move_vector: Vector2 = Vector2.ZERO
 var camera_delta: Vector2 = Vector2.ZERO
 var joystick_touch: int = -1
@@ -22,13 +22,13 @@ func _ready() -> void:
     _layout()
 
 func _layout() -> void:
-    radius = clampf(size.y * 0.13, 52.0, 92.0)
-    button_radius = clampf(size.y * 0.072, 32.0, 50.0)
-    joystick_center = Vector2(radius + 40, size.y - radius - 35)
-    sprint_center = Vector2(size.x - button_radius - 28, size.y - button_radius - 32)
-    jump_center = sprint_center + Vector2(-button_radius * 2.3, -button_radius * 0.4)
-    interact_center = sprint_center + Vector2(-button_radius * 0.1, -button_radius * 2.5)
-    map_center = Vector2(size.x - button_radius - 28, button_radius + 25)
+    radius = clampf(size.y * 0.12, 50.0, 86.0)
+    button_radius = clampf(size.y * 0.064, 30.0, 44.0)
+    joystick_center = Vector2(radius + 34.0, size.y - radius - 28.0)
+    sprint_center = Vector2(size.x - button_radius - 26.0, size.y - button_radius - 26.0)
+    jump_center = sprint_center + Vector2(-button_radius * 2.25, -button_radius * 0.45)
+    interact_center = sprint_center + Vector2(-button_radius * 0.18, -button_radius * 2.45)
+    map_center = Vector2(size.x - button_radius - 26.0, button_radius + 24.0)
     queue_redraw()
 
 func _inside(point: Vector2, center: Vector2, reach: float) -> bool:
@@ -37,7 +37,7 @@ func _inside(point: Vector2, center: Vector2, reach: float) -> bool:
 func _input(event: InputEvent) -> void:
     if event is InputEventScreenTouch:
         if event.pressed:
-            if joystick_touch == -1 and _inside(event.position, joystick_center, radius * 1.3):
+            if joystick_touch == -1 and _inside(event.position, joystick_center, radius * 1.35):
                 joystick_touch = event.index
                 _move_stick(event.position)
             elif _inside(event.position, jump_center, button_radius):
@@ -48,8 +48,7 @@ func _input(event: InputEvent) -> void:
                 map_queue += 1
             elif sprint_touch == -1 and _inside(event.position, sprint_center, button_radius):
                 sprint_touch = event.index
-            elif event.position.y < 110.0:
-                # Let header Buttons receive GUI touch before reserving a camera finger.
+            elif event.position.y < 112.0:
                 return
             elif camera_touch == -1 and event.position.x > size.x * 0.38:
                 camera_touch = event.index
@@ -100,12 +99,31 @@ func _notification(what: int) -> void:
         release_all()
 
 func _draw() -> void:
-    var fill: Color = Color(0.04, 0.09, 0.10, 0.65)
-    draw_circle(joystick_center, radius, fill)
-    draw_arc(joystick_center, radius, 0, TAU, 36, Color("dccdb2"), 2.0, true)
-    draw_circle(joystick_center + move_vector * radius, radius * 0.4, Color(0.9, 0.85, 0.7, 0.7))
-    for entry: Array in [[jump_center, "PULO"], [sprint_center, "CORRER"], [interact_center, context_label], [map_center, "MAPA"]]:
-        var center: Vector2 = entry[0]
-        draw_circle(center, button_radius, fill)
-        draw_arc(center, button_radius, 0, TAU, 36, Color("dccdb2"), 2.0, true)
-        draw_string(ThemeDB.fallback_font, center + Vector2(-button_radius, 6), entry[1], HORIZONTAL_ALIGNMENT_CENTER, button_radius * 2, 14, Color("fff2d5"))
+    var dark: Color = Color(0.015, 0.035, 0.055, 0.56)
+    var line: Color = Color(0.78, 0.90, 0.94, 0.58)
+    var orange: Color = Color(0.91, 0.36, 0.12, 0.66)
+    var teal: Color = Color(0.09, 0.43, 0.52, 0.64)
+    var text_color: Color = Color("fff4dc")
+
+    draw_circle(joystick_center, radius, dark)
+    draw_arc(joystick_center, radius, 0.0, TAU, 42, line, 2.0, true)
+    draw_circle(joystick_center + move_vector * radius, radius * 0.38, Color(0.86, 0.93, 0.90, 0.56))
+    draw_arc(joystick_center + move_vector * radius, radius * 0.38, 0.0, TAU, 30, Color(1, 1, 1, 0.28), 1.5, true)
+
+    _button(jump_center, "PULO", teal, text_color)
+    _button(sprint_center, "CORRER", orange if sprint_touch != -1 else dark, text_color)
+    _button(interact_center, context_label, orange, text_color)
+    _button(map_center, "MAPA", dark, text_color)
+
+func _button(center: Vector2, label: String, fill: Color, text_color: Color) -> void:
+    draw_circle(center, button_radius, fill)
+    draw_arc(center, button_radius, 0.0, TAU, 34, Color(0.9, 0.95, 1.0, 0.44), 2.0, true)
+    draw_string(
+        ThemeDB.fallback_font,
+        center + Vector2(-button_radius, 5.0),
+        label,
+        HORIZONTAL_ALIGNMENT_CENTER,
+        button_radius * 2.0,
+        13,
+        text_color
+    )
