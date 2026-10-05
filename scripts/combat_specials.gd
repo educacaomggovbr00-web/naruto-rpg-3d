@@ -153,10 +153,13 @@ func start(kind: String = "") -> bool:
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     if move_definition != null:
+        var move_timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
         if move_definition.strategy == "hand":
-            duration = float(move_definition.animation_timing(owner_fighter.rig_adapter.manifest).get("duration", 0.95))
+            duration = float(move_timing.get("duration", 0.95))
         elif move_definition.strategy == "burst":
-            duration = 0.72
+            duration = maxf(0.72, float(move_timing.get("duration", 0.72)))
+        elif move not in ["demon", "clones", "whirlwind", "barrage"]:
+            duration = maxf(0.65, float(move_timing.get("duration", 0.65)))
         var hit_shape: SphereShape3D = rasengan_hitbox.get_child(0).shape as SphereShape3D
         if move_definition.strategy in ["hand", "burst"]:
             hit_shape.radius = move_definition.hitbox_radius
@@ -340,10 +343,10 @@ func release_time() -> float:
     return float(move_definition.animation_timing(owner_fighter.rig_adapter.manifest).get("impact", 0.24))
 
 func animation_clip() -> String:
-    if move_definition != null and move_definition.strategy == "hand":
-        return move_definition.animation_name
     if current == "barrage":
         return "air_attack_4" if sequence_stage >= 2 else "attack_1"
+    if move_definition != null and not move_definition.animation_name.is_empty():
+        return move_definition.animation_name
     return "jutsu"
 
 func projectile_finished() -> void:
