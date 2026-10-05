@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[node name="InvalidStaticModel" type="Node3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = null
