@@ -35,3 +35,40 @@ Atualização: 2026-10-04. Modelos de Naruto/Sasuke/Kakashi/Gaara comerciais nã
 Os 21 slots que antes apontavam para `NARUTO.moveset` agora recebem `MovesetDefinition` independente em runtime por `RosterMovesetFactory`. Cada perfil possui quatro ataques terrestres, quatro aéreos, branches neutro/cima/baixo/lateral e parâmetros próprios de mobilidade/vida. Rock Lee/Guy priorizam velocidade, Choji/Tsunade/Kisame peso e knockback, Gaara/Kankuro/Temari controle pesado, e os demais recebem variações coerentes apenas como balanceamento provisório.
 
 Esses dados **não são frame data oficial nem coreografia final do Storm 1**. O objetivo é permitir testar todo o roster sem emprestar o kit do Naruto enquanto jutsus, Ultimate, Awakening, VFX, CPU profile e animações exclusivas são implementados em lotes.
+
+
+## Ataques-base e especiais do elenco completo — 2026-10-05
+
+Todos os 25 lutadores selecionáveis agora possuem `MovesetDefinition` válido e pelo menos um jutsu selecionável. Naruto, Sasuke, Sakura e Kakashi preservam os kits específicos já existentes. Os 21 slots restantes usam o rig compartilhado temporário, porém não herdam mais ataques ou jutsus de Naruto.
+
+| Lutador | Especial atual de desenvolvimento | Família runtime |
+|---|---|---|
+| Naruto | Demon Wind / Rasengan / Clones / Whirlwind / Barrage | projétil / mão / clones |
+| Sasuke | Fireball / Chidori | projétil / mão |
+| Sakura | Booby Trap | armadilha |
+| Shikamaru | Shadow Bind | projétil de controle |
+| Choji | Human Boulder | rush |
+| Ino | Mind Transfer | projétil de controle |
+| Rock Lee | Leaf Whirlwind | rush |
+| Neji | Eight Trigrams Rotation | área |
+| Tenten | Weapon Volley | projétil |
+| Shino | Insect Swarm | projétil |
+| Kiba | Fang Over Fang | rush |
+| Hinata | Gentle Fist | rush |
+| Gaara | Sand Coffin | área |
+| Kankuro | Puppet Strike | projétil |
+| Temari | Wind Scythe | projétil |
+| Kakashi | Raikiri / Fireball | mão / projétil |
+| Might Guy | Dynamic Entry | rush |
+| Jiraiya | Toad Oil Bullet | projétil |
+| Tsunade | Heaven Kick | rush pesado |
+| Hiruzen | Fire Dragon | projétil |
+| Orochimaru | Snake Bind | projétil de controle |
+| Kabuto | Chakra Scalpel | rush |
+| Kimimaro | Bone Dance | área |
+| Itachi | Fire Style | projétil |
+| Kisame | Water Shark | projétil |
+
+Os 21 novos especiais são uma camada jogável **OUR_APPROXIMATION** usando animações compartilhadas e VFX leves compatíveis com mobile. Os nomes representam a direção do kit; coreografia, timing, modelo, VFX e comportamento finais ainda exigem pesquisa e passes próprios por personagem. O runtime comum possui estratégias `hand`, `projectile`, `burst`, `trap`, `clones` e `barrage`, permitindo evoluir personagens sem duplicar controladores.
+
+O contrato `full_roster_specials_contract.gd` exige que todos os 25 tenham combo terrestre, combo aéreo e jutsu resolvível, além de executar em arena um projétil genérico e um golpe em área.
