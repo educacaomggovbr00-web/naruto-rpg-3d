@@ -48,6 +48,10 @@ var native_locomotion_count: int = 0
 var combat_retargeted: bool = false
 var character_definition: CharacterDefinition = null
 var roster_accessories: Array[Dictionary] = []
+var requested_model_path: String = ""
+var resolved_model_path: String = ""
+var using_model_fallback: bool = false
+var model_attempt_log: PackedStringArray = PackedStringArray()
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -64,8 +68,7 @@ func _ready() -> void:
         character_definition = player.call("get_character_definition") as CharacterDefinition
         if character_definition != null:
             model_path = character_definition.model_path
-            if not ResourceLoader.exists(model_path) and not character_definition.model_fallback_path.is_empty():
-                model_path = character_definition.model_fallback_path
+            requested_model_path = character_definition.model_path
             auto_scale_model = character_definition.model_auto_scale
             ground_to_collision = character_definition.model_ground_to_collision
             model_scale = character_definition.model_scale_multiplier
@@ -90,21 +93,52 @@ func _physics_process(delta: float) -> void:
         snap_attack_hitbox(int(player.call("get_combo_step")), state == "air_attack")
 
 func _try_load_rig() -> void:
-    if not ResourceLoader.exists(model_path):
-        rig_status = "RIG: coloque rigged.glb em assets/characters/"
-        return
+    rig_loaded = false
+    resolved_model_path = ""
+    model_attempt_log.clear()
 
-    var packed_scene: PackedScene = ResourceLoader.load(model_path) as PackedScene
+    if requested_model_path.is_empty():
+        requested_model_path = model_path
+
+    var candidates: PackedStringArray = PackedStringArray()
+    if not requested_model_path.is_empty():
+        candidates.append(requested_model_path)
+
+    var fallback_path: String = ""
+    if character_definition != null:
+        fallback_path = character_definition.model_fallback_path
+    if not fallback_path.is_empty() and fallback_path not in candidates:
+        candidates.append(fallback_path)
+
+    for candidate_path: String in candidates:
+        using_model_fallback = candidate_path != requested_model_path
+        if _try_load_rig_candidate(candidate_path):
+            resolved_model_path = candidate_path
+            model_path = candidate_path
+            _finalize_loaded_rig()
+            return
+        _discard_rig_candidate()
+
+    using_model_fallback = false
+    rig_status = "RIG: nenhum modelo válido; verifique modelo final e fallback"
+
+
+func _try_load_rig_candidate(candidate_path: String) -> bool:
+    if not ResourceLoader.exists(candidate_path):
+        model_attempt_log.append("%s | ausente" % candidate_path)
+        return false
+
+    var packed_scene: PackedScene = ResourceLoader.load(candidate_path) as PackedScene
     if packed_scene == null:
-        rig_status = "RIG: GLB não abriu como PackedScene"
-        return
+        model_attempt_log.append("%s | não abriu como PackedScene" % candidate_path)
+        return false
 
     var instance_node: Node = packed_scene.instantiate()
     model_instance = instance_node as Node3D
     if model_instance == null:
-        instance_node.queue_free()
-        rig_status = "RIG: raiz do GLB não é Node3D"
-        return
+        instance_node.free()
+        model_attempt_log.append("%s | raiz não é Node3D" % candidate_path)
+        return false
 
     add_child(model_instance)
     model_instance.position = Vector3.ZERO
@@ -113,33 +147,49 @@ func _try_load_rig() -> void:
 
     _apply_character_scale()
     model_instance.position = model_offset
+
     if ground_to_collision:
         var collision: CollisionShape3D = player.get_node_or_null("CollisionShape3D") as CollisionShape3D
         if collision != null and collision.shape is CapsuleShape3D:
-            # Keep the visual sole at the physical capsule's bottom for both teams.
             model_instance.position.y = collision.position.y - collision.shape.height * 0.5 - detected_source_min_y * applied_model_scale
 
     skeleton = _find_skeleton(model_instance)
-    animation_player = _find_animation_player(model_instance)
-
     if skeleton == null:
-        rig_status = "RIG: Skeleton3D não encontrado"
-        model_instance.queue_free()
-        model_instance = null
-        return
+        model_attempt_log.append("%s | Skeleton3D ausente" % candidate_path)
+        return false
 
     _cache_combat_bones()
+    if character_definition != null and character_definition.model_slot != null:
+        if character_definition.model_slot.require_combat_bones and not _has_required_combat_bones():
+            model_attempt_log.append("%s | ossos críticos incompatíveis" % candidate_path)
+            return false
+    elif not _has_required_combat_bones():
+        model_attempt_log.append("%s | ossos críticos incompatíveis" % candidate_path)
+        return false
+
+    animation_player = _find_animation_player(model_instance)
+    if animation_player == null:
+        animation_player = AnimationPlayer.new()
+        animation_player.name = "RuntimeAnimationPlayer"
+        animation_player.root_node = NodePath("..")
+        model_instance.add_child(animation_player)
+
     apply_visual_material(model_instance)
-    _install_roster_visual_identity()
-    if animation_player == null or not _install_combat_library():
-        rig_status = "RIG: biblioteca real incompleta; confira o log"
-        model_instance.queue_free()
-        model_instance = null
-        return
+
+    if not _install_combat_library():
+        model_attempt_log.append("%s | retarget/biblioteca de combate incompatível" % candidate_path)
+        return false
+
     if prefer_native_locomotion:
         native_locomotion_count = _install_native_locomotion_library()
-    _setup_animation_tree()
 
+    _setup_animation_tree()
+    _install_roster_visual_identity()
+    model_attempt_log.append("%s | OK" % candidate_path)
+    return true
+
+
+func _finalize_loaded_rig() -> void:
     rig_loaded = true
     attack_hitbox.top_level = true
 
@@ -152,7 +202,9 @@ func _try_load_rig() -> void:
         fallback_visual.visible = false
         fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
-    rig_status = "RIG: OK | %d CC0 | %d native | %d bones%s" % [
+    var source_label: String = "FALLBACK" if using_model_fallback else "FINAL"
+    rig_status = "RIG: OK %s | %d CC0 | %d native | %d bones%s" % [
+        source_label,
         real_animation_count,
         native_locomotion_count,
         skeleton.get_bone_count(),
@@ -160,9 +212,41 @@ func _try_load_rig() -> void:
     ]
 
 
+func _discard_rig_candidate() -> void:
+    roster_accessories.clear()
+
+    if animation_tree != null and is_instance_valid(animation_tree):
+        animation_tree.free()
+    animation_tree = null
+    playback = null
+
+    if model_instance != null and is_instance_valid(model_instance):
+        model_instance.free()
+    model_instance = null
+    skeleton = null
+    animation_player = null
+
+    real_animation_count = 0
+    native_locomotion_count = 0
+    combat_retargeted = false
+    detected_source_height = 0.0
+    detected_source_min_y = 0.0
+    applied_model_scale = 1.0
+
+
+func _should_use_procedural_identity() -> bool:
+    if character_definition == null or character_definition.visual_profile == null:
+        return false
+    if character_definition.model_slot == null:
+        return true
+    return using_model_fallback and character_definition.model_slot.procedural_identity_on_fallback
+
+
 func _install_roster_visual_identity() -> void:
     roster_accessories.clear()
     if character_definition == null or character_definition.visual_profile == null or skeleton == null:
+        return
+    if not _should_use_procedural_identity():
         return
 
     var profile: RosterVisualProfileDefinition = character_definition.visual_profile
@@ -390,7 +474,7 @@ func apply_visual_material(root: Node) -> void:
         use_toon = use_toon or character_definition.stylized_material
 
     var profile: RosterVisualProfileDefinition = null
-    if character_definition != null:
+    if _should_use_procedural_identity():
         profile = character_definition.visual_profile
 
     var meshes: Array[MeshInstance3D] = []
