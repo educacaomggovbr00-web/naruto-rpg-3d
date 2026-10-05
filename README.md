@@ -314,3 +314,16 @@ Os 21 lutadores que ainda usam `assets/characters/rigged.glb` ganharam `RosterVi
 Exemplos: Gaara usa cabaça/sash, Temari leque, Kisame espada nas costas, Kabuto óculos, Tenten coques, Shikamaru/Ino rabo de cavalo, Jiraiya cabelo longo/rolo, Hiruzen armadura/cajado, Kimimaro espinhos ósseos e Itachi manto/faixa. Os acessórios são primitivas low-poly com material anime e sombra desligada, sincronizadas aos bones do mesmo rig.
 
 Essa camada é `OUR_APPROXIMATION` e **não substitui modelos finais**. Ela funciona como identidade visual mobile-first enquanto modelos próprios e animações realmente exclusivas são produzidos/fornecidos. Naruto, Sasuke, Sakura e Kakashi continuam usando seus visuais dedicados.
+
+
+## Slots de modelo final + fallback automático — 2026-10-05
+
+Os 21 personagens que ainda usam o rig compartilhado agora têm um caminho final reservado:
+
+`assets/characters/final/<character_id>/<character_id>_mobile.glb`
+
+`RosterModelSlotFactory` registra o modelo preferido e `assets/characters/rigged.glb` como fallback. O `RiggedCharacterAdapter` tenta o modelo final primeiro e valida carregamento, `Skeleton3D`, ossos críticos de combate e retarget da biblioteca de 27 clips. Se qualquer etapa falhar, o candidato é descartado e o fallback entra automaticamente.
+
+O adapter expõe `requested_model_path`, `resolved_model_path`, `using_model_fallback` e `model_attempt_log` para diagnóstico. A identidade procedural de paleta/acessórios só é aplicada quando o fallback está ativo; um GLB final válido usa seus próprios materiais/mesh sem receber o placeholder por cima.
+
+O contrato de arquivos e nomes está em `assets/characters/final/README.md`. Modelos finais só devem entrar com procedência/licença verificável.
