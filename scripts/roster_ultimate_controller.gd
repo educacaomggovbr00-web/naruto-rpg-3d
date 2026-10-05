@@ -37,7 +37,7 @@ func _ready() -> void:
 
     add_child(entry_box)
     entry_box.top_level = true
-    power_visual.call("set_energy_color", _effect_color(definition.effect if definition != null else "chakra"))
+    power_visual.call("set_energy_color", RosterVisualStyle.color(definition.effect if definition != null else "chakra", fighter.character_definition.energy_color))
 
 func start() -> bool:
     if definition == null or not fighter.character_definition.has_ultimate:
@@ -89,7 +89,10 @@ func _physics_process(delta: float) -> void:
 
     if phase == "entry":
         entry_box.global_position = fighter.global_position + Vector3.UP * 0.65 + fighter.global_basis.z * 0.78
-        if not opened and elapsed >= 0.16:
+        var entry_timing: Dictionary = _clip_timing(definition.entry_clip)
+        var entry_impact: float = float(entry_timing.get("impact", 0.16))
+        var entry_duration: float = maxf(entry_impact + 0.30, float(entry_timing.get("duration", 0.62)))
+        if not opened and elapsed >= entry_impact:
             opened = true
             entry_box.call(
                 "activate",
@@ -100,7 +103,7 @@ func _physics_process(delta: float) -> void:
                 0.75,
                 0.28
             )
-        if elapsed >= 0.72:
+        if elapsed >= entry_duration + 0.10:
             cancel("miss_or_block")
         return
 
@@ -124,7 +127,10 @@ func _physics_process(delta: float) -> void:
 
     if phase == "finish":
         entry_box.global_position = target.global_position + Vector3.UP * 0.55
-        if not opened and elapsed >= 0.18:
+        var finish_timing: Dictionary = _clip_timing(definition.finisher_clip)
+        var finish_impact: float = float(finish_timing.get("impact", 0.18))
+        var finish_duration: float = maxf(finish_impact + 0.28, float(finish_timing.get("duration", 0.52)))
+        if not opened and elapsed >= finish_impact:
             opened = true
             target.call("end_cinematic_lock", self)
             entry_box.call(
@@ -140,7 +146,7 @@ func _physics_process(delta: float) -> void:
                 fighter.combat_feedback.call("spawn_impact", target.global_position + Vector3.UP * 0.6, "slam")
             fighter.camera_rig.call("add_combat_impact", 0.16, 3.5)
 
-        if elapsed >= 0.62:
+        if elapsed >= finish_duration + 0.10:
             cancel("complete")
 
 func on_hitbox_contact(_box: Area3D, victim: Node, dealt: float, blocked: bool) -> void:
@@ -211,29 +217,9 @@ func _exit_tree() -> void:
         target.call("end_cinematic_lock", self)
 
 
-func _effect_color(effect: String) -> Color:
-    match effect:
-        "fire":
-            return Color(1.0, 0.22, 0.04)
-        "water":
-            return Color(0.08, 0.52, 1.0)
-        "wind":
-            return Color(0.44, 0.94, 0.84)
-        "lightning":
-            return Color(0.45, 0.80, 1.0)
-        "sand", "earth":
-            return Color(0.86, 0.61, 0.22)
-        "shadow":
-            return Color(0.20, 0.10, 0.32)
-        "mind":
-            return Color(0.96, 0.34, 0.74)
-        "insect":
-            return Color(0.28, 0.24, 0.12)
-        "steel", "puppet", "bone":
-            return Color(0.74, 0.80, 0.88)
-        "snake":
-            return Color(0.38, 0.80, 0.28)
-        "taijutsu":
-            return Color(0.34, 1.0, 0.38)
-        _:
-            return fighter.character_definition.energy_color if fighter != null else Color(0.20, 0.65, 1.0)
+
+func _clip_timing(clip: String) -> Dictionary:
+    if fighter == null or fighter.rig_adapter == null:
+        return {}
+    var clips: Dictionary = fighter.rig_adapter.manifest.get("clips", {})
+    return clips.get(clip, {})
