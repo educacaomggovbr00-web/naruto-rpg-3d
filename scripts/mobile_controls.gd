@@ -380,6 +380,19 @@ func configure_character(definition: CharacterDefinition) -> void:
     if definition.jutsus.is_empty():
         special_label = "—"
     else:
-        var compact_id: String = String(definition.jutsus[0]).replace("_", "").to_upper()
-        special_label = compact_id.substr(0, mini(compact_id.length(), 5))
+        var first_id: String = String(definition.jutsus[0])
+        var known_labels: Dictionary = {
+            "rasengan": "RAS",
+            "demon": "DWB",
+            "fireball": "FIRE",
+            "chidori": "CHID",
+            "raikiri": "RAI",
+            "booby_trap": "TRAP",
+            "clones": "CLONE",
+            "whirlwind": "AIR",
+            "barrage": "BARR"
+        }
+        var compact_id: String = first_id.replace("_", "").to_upper()
+        var fallback_label: String = compact_id.substr(0, mini(compact_id.length(), 5))
+        special_label = String(known_labels.get(first_id, fallback_label))
     queue_redraw()
