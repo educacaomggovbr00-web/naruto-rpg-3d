@@ -41,7 +41,7 @@ func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3,
         var character: CharacterDefinition = source.call("get_character_definition") as CharacterDefinition
         if character != null:
             fallback_color = character.energy_color
-    var color: Color = RosterVisualStyle.color(data.effect, fallback_color)
+    var color: Color = RosterVisualStyle.color(data.effect, fallback_color).lerp(fallback_color, 0.18)
     material.albedo_color = color
     material.emission = color
     active = true
