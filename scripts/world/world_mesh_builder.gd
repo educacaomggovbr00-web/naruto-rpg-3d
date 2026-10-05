@@ -6,11 +6,11 @@ var sectors: Array[MeshInstance3D] = []
 var triangles: int = 0
 var footprints: Array[Dictionary] = []
 var collision_count: int = 0
-var plaster: Color = Color("e9d5a6")
-var timber: Color = Color("624736")
-var tile: Color = Color("598c93")
-var red: Color = Color("b7513f")
-var dark: Color = Color("344b52")
+var plaster: Color = Color("d9c59a")
+var timber: Color = Color("49362e")
+var tile: Color = Color("3e727a")
+var red: Color = Color("aa4634")
+var dark: Color = Color("263c43")
 
 func _ready() -> void:
     build()
@@ -149,6 +149,17 @@ func tree(origin: Vector3, radius: float = 2.2) -> void:
     cylinder(origin + Vector3.UP * 4.0, radius * 0.8, 2.2, Color("91be72"), 9, radius * 0.20)
     collider(origin + Vector3.UP * 1.1, Vector3(0.4, 2.2, 0.4))
 
+func lantern(origin: Vector3, accent: Color = Color("d86b34")) -> void:
+    cylinder(origin + Vector3.UP * 1.55, 0.075, 3.1, timber, 6)
+    box(origin + Vector3.UP * 3.0, Vector3(0.72, 0.12, 0.12), timber)
+    box(origin + Vector3(0.28, 2.72, 0), Vector3(0.34, 0.46, 0.22), accent)
+    box(origin + Vector3(0.28, 2.72, 0.115), Vector3(0.20, 0.28, 0.03), Color("f2cf86"))
+
+func banner(origin: Vector3, accent: Color) -> void:
+    cylinder(origin + Vector3.UP * 1.7, 0.055, 3.4, timber, 6)
+    box(origin + Vector3(0.35, 2.65, 0), Vector3(0.62, 1.18, 0.05), accent)
+    box(origin + Vector3(0.35, 3.28, 0), Vector3(0.78, 0.08, 0.08), dark)
+
 func signpost(origin: Vector3, title: String) -> void:
     var label: Label3D = Label3D.new()
     label.position = origin
@@ -167,22 +178,27 @@ func build() -> void:
         for z: int in range(-66, 66, 24):
             var width: float = minf(24, 78 - x)
             var depth: float = minf(24, 66 - z)
-            box(Vector3(float(x) + width * 0.5, -0.3, float(z) + depth * 0.5), Vector3(width, 0.6, depth), Color("8db876"))
-    box(Vector3(0, 0.015, 0), Vector3(11, 0.03, 112), Color("cbb993"))
-    box(Vector3(-10, 0.02, 5), Vector3(32, 0.04, 20), Color("d9c9a7"))
+            box(Vector3(float(x) + width * 0.5, -0.3, float(z) + depth * 0.5), Vector3(width, 0.6, depth), Color("729b68"))
+    box(Vector3(0, 0.015, 0), Vector3(11, 0.03, 112), Color("b9aa88"))
+    for side: float in [-5.55, 5.55]:
+        box(Vector3(side, 0.075, 0), Vector3(0.16, 0.15, 112), Color("5b544a"))
+    for z: float in [-42.0, -24.0, -6.0, 12.0, 30.0, 46.0]:
+        lantern(Vector3(-6.7, 0, z), Color("c95735"))
+        banner(Vector3(6.7, 0, z + 4.0), Color("b84837") if int(z) % 2 == 0 else Color("3c7981"))
+    box(Vector3(-10, 0.02, 5), Vector3(32, 0.04, 20), Color("c5b493"))
     for z: float in [-29.0, -10.0, 22.0, 40.0]:
-        box(Vector3(-4, 0.02, z), Vector3(124, 0.04, 6), Color("cbb993"))
+        box(Vector3(-4, 0.02, z), Vector3(124, 0.04, 6), Color("b9aa88"))
     # Raised banks keep traversal safe; water is opaque to avoid mobile overdraw.
-    box(Vector3(34, -0.04, 0), Vector3(6, 0.06, 112), Color("65a5a6"))
+    box(Vector3(34, -0.04, 0), Vector3(6, 0.06, 112), Color("4f8b94"))
     for x: float in [30.8, 37.2]:
-        box(Vector3(x, 0.3, 0), Vector3(0.6, 0.6, 112), Color("a69375"), true)
+        box(Vector3(x, 0.3, 0), Vector3(0.6, 0.6, 112), Color("86735f"), true)
     for z: float in [-10.0, 22.0]:
         box(Vector3(34, 0.72, z), Vector3(10, 0.24, 5.0), timber, true)
         for x: float in [29.5, 38.5]:
             stairs(Vector3(x, 0, z + 2.5), 1.6, 0.84, 4.0)
         for side: float in [-2.4, 2.4]:
             box(Vector3(34, 1.2, z + side), Vector3(9.5, 0.12, 0.12), timber)
-    var palette: Array[Color] = [plaster, Color("ddc4a8"), Color("e0d4b8"), Color("e3ba91")]
+    var palette: Array[Color] = [plaster, Color("cfb596"), Color("d7c9a9"), Color("d9a981")]
     var number: int = 0
     for x: float in [-55.0, -41.0, -25.0, 18.0, 48.0, 62.0]:
         for z: float in [-20.0, 0.0, 31.0]:
@@ -252,4 +268,4 @@ func build() -> void:
 
 func set_quality(level: int) -> void:
     for sector: MeshInstance3D in sectors:
-        sector.visibility_range_end = [70.0, 100.0, 130.0][clampi(level, 0, 2)]
+        sector.visibility_range_end = [58.0, 82.0, 112.0][clampi(level, 0, 2)]
