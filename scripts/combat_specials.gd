@@ -382,30 +382,4 @@ func projectile_finished() -> void:
 
 
 func _effect_color(effect: String, fallback: Color) -> Color:
-    match effect:
-        "fire":
-            return Color(1.0, 0.23, 0.04)
-        "water":
-            return Color(0.08, 0.52, 1.0)
-        "wind":
-            return Color(0.45, 0.94, 0.86)
-        "lightning":
-            return Color(0.45, 0.80, 1.0)
-        "sand", "earth", "oil":
-            return Color(0.86, 0.62, 0.22)
-        "shadow":
-            return Color(0.18, 0.10, 0.30)
-        "mind":
-            return Color(0.96, 0.34, 0.74)
-        "insect":
-            return Color(0.26, 0.22, 0.12)
-        "steel", "puppet", "bone":
-            return Color(0.74, 0.78, 0.86)
-        "snake":
-            return Color(0.38, 0.78, 0.26)
-        "taijutsu":
-            return Color(0.36, 1.0, 0.38)
-        "chakra":
-            return Color(0.22, 0.66, 1.0)
-        _:
-            return fallback
+    return RosterVisualStyle.color(effect, fallback).lerp(fallback, 0.18)
