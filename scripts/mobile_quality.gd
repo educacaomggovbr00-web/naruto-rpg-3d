@@ -9,6 +9,9 @@ var level: int = 1
 var settings: ConfigFile = ConfigFile.new()
 var adaptive_timer: float = 3.0
 var render_scale: float = 0.76
+var low_fps_streak: int = 0
+var recovery_streak: int = 0
+var emergency_mode: bool = false
 
 func _ready() -> void:
     settings.load("user://graphics.cfg")
@@ -39,6 +42,21 @@ func _process(delta: float) -> void:
         render_scale = next_scale
         get_viewport().scaling_3d_scale = render_scale
 
+    if fps > 1.0 and fps < 42.0 and render_scale <= minimum + 0.01:
+        low_fps_streak += 1
+        recovery_streak = 0
+    elif fps >= 56.0:
+        low_fps_streak = 0
+        recovery_streak += 1
+    else:
+        low_fps_streak = maxi(low_fps_streak - 1, 0)
+        recovery_streak = 0
+
+    if low_fps_streak >= 3 and not emergency_mode:
+        _set_emergency_mode(true)
+    elif emergency_mode and recovery_streak >= 8:
+        _set_emergency_mode(false)
+
 func cycle() -> void:
     apply((level + 1) % 3, true)
 
@@ -46,6 +64,9 @@ func apply(value: int, save: bool = true) -> void:
     level = clampi(value, 0, 2)
     render_scale = TARGET_SCALE[level]
     adaptive_timer = 3.0
+    low_fps_streak = 0
+    recovery_streak = 0
+    emergency_mode = false
 
     var fighter: CharacterBody3D = get_parent().get_node("Player")
     fighter.specials.sphere_visual.call("set_quality", level)
@@ -78,6 +99,37 @@ func apply(value: int, save: bool = true) -> void:
         var result: Error = settings.save("user://graphics.cfg")
         if result != OK:
             push_warning("Não foi possível salvar qualidade gráfica: %s" % error_string(result))
+
+func _set_emergency_mode(enabled: bool) -> void:
+    emergency_mode = enabled
+    low_fps_streak = 0
+    recovery_streak = 0
+
+    var feedback: Node = get_parent().get_node("CombatFeedback")
+    var normal_budget: int = [8, 16, 28][level]
+    feedback.effect_budget = mini(normal_budget, [6, 10, 18][level])
+    feedback.trail_interval = maxf([0.12, 0.09, 0.065][level], 0.12) if enabled else [0.12, 0.09, 0.065][level]
+
+    if not enabled:
+        feedback.effect_budget = normal_budget
+
+    var sun: DirectionalLight3D = get_parent().get_node("Sun")
+    sun.shadow_enabled = level > 0 and not enabled
+    sun.directional_shadow_max_distance = 0.0 if enabled else (18.0 if level == 1 else 32.0)
+
+    var presentation: Node = get_parent().get_node_or_null("ArenaPresentation")
+    if presentation != null and presentation.get("environment") != null:
+        var world_environment: WorldEnvironment = presentation.get("environment") as WorldEnvironment
+        if world_environment != null and world_environment.environment != null:
+            world_environment.environment.fog_enabled = level > 0 and not enabled
+
+    if enabled:
+        render_scale = MIN_ADAPTIVE_SCALE[level]
+        get_viewport().scaling_3d_scale = render_scale
+
+    var controls: Node = get_parent().get_node("HUD/MobileControls")
+    controls.quality_label = LABELS[level] + ("*" if enabled else "")
+    controls.queue_redraw()
 
 func _apply_effect_quality(node: Node) -> void:
     if node.has_method("set_quality"):
