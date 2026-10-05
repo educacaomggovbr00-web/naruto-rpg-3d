@@ -89,13 +89,13 @@ func run() -> void:
     await frames(2)
     check(village.quality == (old_quality + 1) % 3 and controls.camera_touch == -1, "Quality GUI touch must not reserve camera finger")
     village.apply_quality(0, false)
-    check(not village.get_node("Sun").shadow_enabled and is_equal_approx(root.scaling_3d_scale, 0.7), "World LOW must apply Compatibility budgets")
+    check(not village.get_node("Sun").shadow_enabled and is_equal_approx(root.scaling_3d_scale, 0.62), "World LOW must apply Compatibility budgets")
     var npc_meshes: Array[MeshInstance3D] = []
     var npc: CharacterBody3D = village.get_node("academy_guide").actor
     npc.rig_adapter.call("_collect_mesh_instances", npc.rig_adapter.model_instance, npc_meshes)
-    check(not npc_meshes.is_empty() and npc_meshes[0].visibility_range_end == 28.0, "LOW must cull distant NPC rendering without removing interactions")
+    check(not npc_meshes.is_empty() and npc_meshes[0].visibility_range_end == 24.0, "LOW must cull distant NPC rendering without removing interactions")
     village.apply_quality(2, false)
-    check(village.get_node("Geometry").sectors[0].visibility_range_end == 130, "HIGH cannot lose village sectors")
+    check(village.get_node("Geometry").sectors[0].visibility_range_end == 112, "HIGH cannot lose village sectors")
     check(flow.buy_supplies(40) and flow.progress.ryo == 110 and flow.progress.supplies == 1, "Shop must exchange actual currency for supplies")
     check(not flow.buy_supplies(0) and not flow.buy_supplies(1000), "Invalid or unaffordable purchases cannot change inventory")
     actor.global_position = Vector3(8,0.95,2.5)
