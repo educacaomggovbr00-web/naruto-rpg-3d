@@ -34,6 +34,8 @@ var special_center: Vector2 = Vector2.ZERO
 var clone_center: Vector2 = Vector2.ZERO
 var barrage_center: Vector2 = Vector2.ZERO
 var special_label: String = "DWB"
+var character_accent: Color = Color(0.08, 0.55, 1.0)
+var ui_scale: float = 1.0
 var jutsu_enabled: bool = true
 var attack_queue: int = 0
 var jump_queue: int = 0
@@ -75,28 +77,43 @@ func _ready() -> void:
 func _update_layout() -> void:
     var w: float = size.x
     var h: float = size.y
+    ui_scale = clampf(h / 720.0, 0.78, 1.12)
 
-    joystick_center = Vector2(145.0, h - 140.0)
+    joystick_radius = 92.0 * ui_scale
+    attack_radius = 62.0 * ui_scale
+    jump_radius = 44.0 * ui_scale
+    dash_radius = 48.0 * ui_scale
+    lock_radius = 42.0 * ui_scale
+    jutsu_radius = 50.0 * ui_scale
+    substitution_radius = 43.0 * ui_scale
+    dodge_radius = 43.0 * ui_scale
+    charge_radius = 46.0 * ui_scale
+    guard_radius = 40.0 * ui_scale
+    advanced_radius = 34.0 * ui_scale
+
+    joystick_center = Vector2(145.0 * ui_scale, h - 140.0 * ui_scale)
     if joystick_touch == -1:
         joystick_knob = joystick_center
 
-    attack_center = Vector2(w - 98.0, h - 102.0)
-    jump_center = Vector2(w - 98.0, h - 225.0)
-    jutsu_center = Vector2(w - 222.0, h - 105.0)
-    dash_center = Vector2(w - 222.0, h - 225.0)
-    dodge_center = Vector2(w - 338.0, h - 100.0)
-    substitution_center = Vector2(w - 338.0, h - 190.0)
-    charge_center = Vector2(w - 444.0, h - 100.0)
-    guard_center = Vector2(w - 444.0, h - 190.0)
-    quality_center = Vector2(w - 190.0, 72.0)
-    lock_center = Vector2(w - 72.0, 72.0)
-    special_center = Vector2(w - 530.0, 150.0)
-    clone_center = Vector2(w - 450.0, 150.0)
-    barrage_center = Vector2(w - 370.0, 150.0)
-    tool_select_center = Vector2(w - 690.0, 150.0)
-    tool_use_center = Vector2(w - 610.0, 150.0)
-    ultimate_center = Vector2(w - 290.0, 150.0)
-    awakening_center = Vector2(w - 210.0, 150.0)
+    attack_center = Vector2(w - 98.0 * ui_scale, h - 102.0 * ui_scale)
+    jump_center = Vector2(w - 98.0 * ui_scale, h - 225.0 * ui_scale)
+    jutsu_center = Vector2(w - 222.0 * ui_scale, h - 105.0 * ui_scale)
+    dash_center = Vector2(w - 222.0 * ui_scale, h - 225.0 * ui_scale)
+    dodge_center = Vector2(w - 338.0 * ui_scale, h - 100.0 * ui_scale)
+    substitution_center = Vector2(w - 338.0 * ui_scale, h - 190.0 * ui_scale)
+    charge_center = Vector2(w - 444.0 * ui_scale, h - 100.0 * ui_scale)
+    guard_center = Vector2(w - 444.0 * ui_scale, h - 190.0 * ui_scale)
+    quality_center = Vector2(w - 190.0 * ui_scale, 72.0 * ui_scale)
+    lock_center = Vector2(w - 72.0 * ui_scale, 72.0 * ui_scale)
+
+    var advanced_y: float = minf(150.0 * ui_scale, h * 0.29)
+    special_center = Vector2(w - 530.0 * ui_scale, advanced_y)
+    clone_center = Vector2(w - 450.0 * ui_scale, advanced_y)
+    barrage_center = Vector2(w - 370.0 * ui_scale, advanced_y)
+    tool_select_center = Vector2(w - 690.0 * ui_scale, advanced_y)
+    tool_use_center = Vector2(w - 610.0 * ui_scale, advanced_y)
+    ultimate_center = Vector2(w - 290.0 * ui_scale, advanced_y)
+    awakening_center = Vector2(w - 210.0 * ui_scale, advanced_y)
 
     queue_redraw()
 
@@ -110,7 +127,7 @@ func _input(event: InputEvent) -> void:
         _touch_dragged(event.index, event.position)
 
 func _touch_pressed(touch_id: int, position: Vector2) -> void:
-    if _inside_circle(position, quality_center, 43.0):
+    if _inside_circle(position, quality_center, 43.0 * ui_scale):
         quality_queue += 1
         return
     if _inside_circle(position, tool_select_center, advanced_radius):
@@ -296,9 +313,10 @@ func _consume_queue(queue_name: String) -> bool:
 func _draw() -> void:
     var base_fill: Color = Color(0.015, 0.035, 0.055, 0.52)
     var base_line: Color = Color(0.82, 0.93, 0.98, 0.42)
-    var blue_fill: Color = Color(0.05, 0.43, 0.70, 0.58)
+    var blue_fill: Color = Color(character_accent.r, character_accent.g, character_accent.b, 0.58)
     var attack_fill: Color = Color(0.90, 0.29, 0.10, 0.64)
-    var jutsu_fill: Color = Color(0.38, 0.20, 0.76, 0.62)
+    var jutsu_color: Color = character_accent.lerp(Color(0.60, 0.24, 0.88), 0.34)
+    var jutsu_fill: Color = Color(jutsu_color.r, jutsu_color.g, jutsu_color.b, 0.62)
     var defense_fill: Color = Color(0.06, 0.52, 0.46, 0.58)
     var text_color: Color = Color(1.0, 1.0, 1.0, 0.94)
 
@@ -306,7 +324,7 @@ func _draw() -> void:
     draw_arc(joystick_center, joystick_radius, 0.0, TAU, 48, base_line, 3.0, true)
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
-    _draw_button(quality_center, 34.0, base_fill, quality_label, 12, text_color)
+    _draw_button(quality_center, advanced_radius, base_fill, quality_label, maxi(10, int(12.0 * ui_scale)), text_color)
     _draw_button(tool_select_center, advanced_radius, base_fill, "ITEM", 11, text_color)
     _draw_button(tool_use_center, advanced_radius, blue_fill, tool_label, 10, text_color)
     _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
@@ -322,7 +340,7 @@ func _draw() -> void:
     _draw_button(substitution_center, substitution_radius, defense_fill, "SUB", 16, text_color)
     _draw_button(charge_center, charge_radius, blue_fill, "CHK", 16, text_color)
     _draw_button(guard_center, guard_radius, defense_fill, "DEF", 16, text_color)
-    _draw_button(lock_center, 34.0, base_fill, "LOCK", 12, text_color)
+    _draw_button(lock_center, advanced_radius, base_fill, "LOCK", maxi(10, int(12.0 * ui_scale)), text_color)
 
     if charge_touch != -1:
         draw_arc(charge_center, charge_radius + 7.0, 0.0, TAU, 40, text_color, 4.0, true)
@@ -373,6 +391,7 @@ func _notification(what: int) -> void:
     queue_redraw()
 
 func configure_character(definition: CharacterDefinition) -> void:
+    character_accent = definition.energy_color
     jutsu_enabled = not definition.jutsus.is_empty()
     ultimate_enabled = definition.has_ultimate
     awakening_enabled = definition.has_awakening
