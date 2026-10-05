@@ -133,9 +133,10 @@ func _process(delta: float) -> void:
     elif player.ultimate.phase == "clash":
         resource_label.text = "ULT — TOQUE ATK! VOCÊ %d : CPU %d | %.1fs | mínimo %d" % [player.ultimate.presses, player.ultimate.cpu_presses, maxf(player.ultimate.definition.clash_duration - player.ultimate.elapsed, 0.0), player.ultimate.definition.clash_presses]
     else:
-        resource_label.text += "\nULT: %.1fs | AWK: %s" % [player.ultimate.cooldown, "%.1fs" % player.awakening.remaining if player.awakening.active else "CARREGUE CHK" if player.awakening.eligible() else "VIDA BAIXA + CHK CHEIO" if player.character_definition.has_awakening else "INDISPONÍVEL"]
+        var awakening_text: String = "%.1f" % player.awakening.remaining if player.awakening.active else "PRONTO" if player.awakening.eligible() else "—"
+        resource_label.text += "  •  ULT %.1f  •  AWK %s" % [player.ultimate.cooldown, awakening_text]
     var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]
-    resource_label.text += " | %s: %s" % [tool_name, "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
+    resource_label.text += "  •  %s %s" % [tool_name.to_upper(), "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
     var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]
     var controls: Node = get_node("MobileControls")
     if controls.tool_label != labels[player.ninja_tools.selected]:
