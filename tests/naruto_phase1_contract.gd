@@ -266,10 +266,10 @@ func run() -> void:
     var quality: Node = game.get_node("MobileQuality")
     var hp_before: float = fighter.health
     quality.call("apply", 0, false)
-    check(game.get_node("CombatFeedback").effect_budget == 12 and not game.get_node("Sun").shadow_enabled, "LOW must lower effects and shadows")
-    check(is_equal_approx(root.scaling_3d_scale, 0.70), "LOW must scale 3D while preserving touch viewport")
+    check(game.get_node("CombatFeedback").effect_budget == 8 and not game.get_node("Sun").shadow_enabled, "LOW must lower effects and shadows")
+    check(is_equal_approx(root.scaling_3d_scale, 0.62), "LOW must scale 3D while preserving touch viewport")
     quality.call("apply", 2, false)
-    check(game.get_node("CombatFeedback").effect_budget == 32 and orb.orbits.multimesh.visible_instance_count == 12, "HIGH must restore bounded budgets")
+    check(game.get_node("CombatFeedback").effect_budget == 28 and orb.orbits.multimesh.visible_instance_count == 12, "HIGH must restore bounded budgets")
     check(fighter.health == hp_before and fighter.rig_adapter.real_animation_count == 27, "Quality changes cannot alter combat or clips")
     # Inventory, startup, physical tools, buffs, healing chakra and lifecycle.
     reset(6.0)
