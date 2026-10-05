@@ -1,7 +1,7 @@
 extends Node3D
 
 var yaw: float = 0.0
-var pitch: float = 0.06
+var pitch: float = 0.14
 var focus: Vector3
 
 @onready var actor: CharacterBody3D = get_parent() as CharacterBody3D
