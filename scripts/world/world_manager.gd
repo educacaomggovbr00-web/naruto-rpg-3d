@@ -162,7 +162,8 @@ func apply_quality(level: int, save: bool = true) -> void:
         settings.save("user://graphics.cfg")
 
 func _refresh_progress() -> void:
-    status_label.text = "ALDEIA DA FOLHA | %d ryō" % int(GameFlow.progress.ryo)
+    var hero_name: String = GameFlow.player_character.display_name.to_upper() if GameFlow.player_character != null else "NARUTO"
+    status_label.text = "ALDEIA DA FOLHA  •  %s  •  %d ryō" % [hero_name, int(GameFlow.progress.ryo)]
     if GameFlow.progress.completed.has("roof_scrolls"):
         objective_label.text = "Percurso concluído. Treine na praça ou visite a loja de ferramentas."
     elif GameFlow.progress.accepted.has("roof_scrolls"):
