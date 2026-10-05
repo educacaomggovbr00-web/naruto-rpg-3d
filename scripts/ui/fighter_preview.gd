@@ -5,12 +5,12 @@ var fighters: Array[CharacterBody3D] = []
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
-    custom_minimum_size = Vector2(0, 310)
+    custom_minimum_size = Vector2(0, 255)
     stretch = true
     stretch_shrink = 2
 
     var viewport: SubViewport = SubViewport.new()
-    viewport.size = Vector2i(760, 310)
+    viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
     viewport.msaa_3d = Viewport.MSAA_DISABLED
@@ -80,7 +80,7 @@ func _ready() -> void:
     var camera: Camera3D = Camera3D.new()
     camera.position = Vector3(0, 1.18, 5.0)
     camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-    camera.size = 2.30
+    camera.size = 2.18
     camera.keep_aspect = Camera3D.KEEP_HEIGHT
     stage.add_child(camera)
 
