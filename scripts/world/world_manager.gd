@@ -13,6 +13,9 @@ var quality: int = 1
 var settings: ConfigFile = ConfigFile.new()
 var adaptive_timer: float = 4.0
 var render_scale: float = 0.76
+var low_fps_streak: int = 0
+var recovery_streak: int = 0
+var emergency_mode: bool = false
 var status_label: Label
 var objective_label: Label
 var context_label: Label
@@ -109,7 +112,7 @@ func _build_hud() -> void:
     context_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     context_label.add_theme_color_override("font_color", Color("fff0d4"))
 
-    fps_label = _label(Vector2(1042, 18), Vector2(118, 28), 14)
+    fps_label = _label(Vector2(885, 18), Vector2(275, 28), 13)
     fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
     fps_label.add_theme_color_override("font_color", Color("c8dde3"))
 
@@ -141,6 +144,9 @@ func apply_quality(level: int, save: bool = true) -> void:
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
     render_scale = TARGET_SCALE[quality]
     adaptive_timer = 4.0
+    low_fps_streak = 0
+    recovery_streak = 0
+    emergency_mode = false
     get_viewport().scaling_3d_scale = render_scale
     quality_button.text = ["LOW", "MED", "HIGH"][quality]
     for point: Area3D in points:
@@ -212,10 +218,19 @@ func _physics_process(delta: float) -> void:
     if scan_timer <= 0:
         scan_timer = 0.12
         _find_interaction()
-        fps_label.text = "%d FPS • %s" % [Engine.get_frames_per_second(), ["LOW", "MED", "HIGH"][quality]]
+        fps_label.text = "%d FPS • %s%s • %.2fx • %d DC" % [
+            Engine.get_frames_per_second(),
+            ["LOW", "MED", "HIGH"][quality],
+            "*" if emergency_mode else "",
+            render_scale,
+            int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+        ]
         for point: Area3D in points:
             if point.actor != null:
-                point.actor.rig_adapter.set_physics_process(point.global_position.distance_squared_to(actor.global_position) < pow([16.0, 22.0, 30.0][quality], 2.0))
+                var active_radius: float = [16.0, 22.0, 30.0][quality] * (0.72 if emergency_mode else 1.0)
+                var active: bool = point.global_position.distance_squared_to(actor.global_position) < active_radius * active_radius
+                point.actor.rig_adapter.set_physics_process(active)
+                point.actor.rig_adapter.set_process(active)
     if map_open:
         map_panel.queue_redraw()
 
@@ -234,9 +249,40 @@ func _update_adaptive_resolution(delta: float) -> void:
         next_scale = maxf(render_scale - 0.06, minimum)
     elif fps >= 57.0:
         next_scale = minf(render_scale + 0.02, target)
+
     if not is_equal_approx(next_scale, render_scale):
         render_scale = next_scale
         get_viewport().scaling_3d_scale = render_scale
+
+    if fps > 1.0 and fps < 42.0 and render_scale <= minimum + 0.01:
+        low_fps_streak += 1
+        recovery_streak = 0
+    elif fps >= 56.0:
+        low_fps_streak = 0
+        recovery_streak += 1
+    else:
+        low_fps_streak = maxi(low_fps_streak - 1, 0)
+        recovery_streak = 0
+
+    if low_fps_streak >= 3 and not emergency_mode:
+        _set_emergency_mode(true)
+    elif emergency_mode and recovery_streak >= 8:
+        _set_emergency_mode(false)
+
+func _set_emergency_mode(enabled: bool) -> void:
+    emergency_mode = enabled
+    low_fps_streak = 0
+    recovery_streak = 0
+
+    $Sun.shadow_enabled = quality > 0 and not enabled
+    $Sun.directional_shadow_max_distance = 0.0 if enabled else [0.0, 18.0, 30.0][quality]
+    $Environment.environment.fog_enabled = quality > 0 and not enabled
+
+    if enabled:
+        render_scale = MIN_ADAPTIVE_SCALE[quality]
+        get_viewport().scaling_3d_scale = render_scale
+
+    quality_button.text = ["LOW", "MED", "HIGH"][quality] + ("*" if enabled else "")
 
 func _is_mobile_runtime() -> bool:
     return (
