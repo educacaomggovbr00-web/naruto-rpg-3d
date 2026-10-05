@@ -4,7 +4,7 @@ extends Resource
 ## Independent runtime tuning; clip startup/active/recovery come from the bake.
 @export var jutsu_id: String = ""
 @export var display_name: String = ""
-@export_enum("hand", "projectile", "clones", "barrage", "trap") var strategy: String = "hand"
+@export_enum("hand", "projectile", "clones", "barrage", "trap", "burst") var strategy: String = "hand"
 @export var animation_name: String = "rasengan"
 @export var chakra_cost: float = 32.0
 @export var cooldown: float = 1.5
