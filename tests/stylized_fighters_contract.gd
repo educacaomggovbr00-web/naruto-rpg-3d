@@ -12,6 +12,13 @@ func frames(count: int) -> void:
     for index: int in range(count):
         await physics_frame
 
+func wait_for_scene(path: String, max_frames: int = 180) -> Node:
+    for index: int in range(max_frames):
+        if current_scene != null and current_scene.scene_file_path == path:
+            return current_scene
+        await physics_frame
+    return current_scene
+
 func check_retarget_math() -> void:
     var adapter: Node3D = preload("res://scripts/rigged_character_adapter.gd").new()
     check(adapter._ensure_reference_rest_cache(), "Compact retarget metadata must load without the reference GLB")
@@ -116,7 +123,7 @@ func run() -> void:
                             check(anime.albedo_texture == original.albedo_texture, "Anime lighting preserves each original Naruto texture")
                             check(anime.albedo_color == original.albedo_color, "Anime lighting preserves each original Naruto tint")
                 check(definition.model_auto_scale and adapter.detected_source_height > 150.0 and adapter.detected_source_height < 200.0, "Naruto mesh bounds use the same centimeter units as its skeleton")
-                check(absf(adapter.applied_model_scale * adapter.detected_source_height - 1.75) < 0.001, "Naruto normalizes to the other fighters' physical height")
+                check(absf(adapter.applied_model_scale * adapter.detected_source_height - definition.model_target_height) < 0.001, "Naruto respects its tuned physical height")
                 var collision: CollisionShape3D = actor.get_node("CollisionShape3D")
                 check(absf(adapter.model_instance.position.y + adapter.detected_source_min_y * adapter.applied_model_scale - (collision.position.y - collision.shape.height * 0.5)) < 0.001, "Naruto soles align with each actor's physical capsule bottom")
                 check(is_equal_approx(adapter.model_instance.rotation_degrees.y, 180.0), "Naruto faces the same combat axis as the other fighters")
@@ -125,7 +132,8 @@ func run() -> void:
                 check(meshes[0].mesh.surface_get_array_index_len(0) / 3 <= 50000, "User Sakura stays within the mobile triangle budget")
                 check(meshes[0].material_override == null, "Textured Sakura keeps her embedded material instead of the flat placeholder shader")
                 check(adapter.detected_source_height > 1.0 and adapter.detected_source_height < 2.5, "User Sakura arrives in meter-like source units")
-                check(absf(adapter.applied_model_scale * adapter.detected_source_height - 1.75) < 0.001, "User Sakura normalizes to combat height")
+                check(absf(adapter.applied_model_scale * adapter.detected_source_height - definition.model_target_height) < 0.001, "User Sakura respects her tuned combat height")
+                check(is_equal_approx(adapter.model_instance.rotation_degrees.y, definition.model_yaw_degrees), "Sakura keeps her corrected forward facing")
             else:
                 check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "Original authored fighter keeps one opaque skinned surface")
                 check(meshes[0].material_override == adapter.TOON_MATERIAL, "Original authored fighters keep the project toon material")
@@ -172,11 +180,14 @@ func run() -> void:
             player.jutsu_cooldown = 0.0
             check(player.specials.start("raikiri") and not player.ultimate.start(), "Kakashi lightning works without Naruto Ultimate")
         check(flow.enter_selection() == OK, "Profile returns safely to selection")
-        await frames(5)
-        var menu: Control = current_scene
+        var loaded_scene: Node = await wait_for_scene("res://selection.tscn")
+        var menu: Control = loaded_scene as Control
+        check(menu != null, "Selection scene must become ready before preview validation")
+        if menu == null:
+            continue
         menu.player_pick.select(CharacterCatalog.READY.find(definition))
         menu._describe(0)
-        await frames(3)
+        await frames(5)
         var preview_path: String = menu.preview.fighters[0].rig_adapter.model_path if menu.preview.fighters.size() == 2 else ""
         var valid_preview_path: bool = preview_path == definition.model_path or (not definition.model_fallback_path.is_empty() and preview_path == definition.model_fallback_path)
         check(menu.preview.fighters.size() == 2 and valid_preview_path, "3D preview follows preferred model or its declared fallback")
