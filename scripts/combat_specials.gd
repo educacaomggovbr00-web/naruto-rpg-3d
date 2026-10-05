@@ -139,12 +139,17 @@ func start(kind: String = "") -> bool:
     owner_fighter.animation_action_id += 1
     if owner_fighter.awakening.active and move in ["demon", "rasengan"]:
         move = "rasengan"
-    sphere_visual.call("set_energy_color", Color(1.0, 0.15, 0.05) if owner_fighter.awakening.active else owner_fighter.character_definition.energy_color)
     var audio: Node = owner_fighter.get_parent().get_node_or_null("AudioManager")
     if audio != null:
         audio.call("play", "chakra")
     current = move
     move_definition = owner_fighter.character_definition.find_jutsu(move)
+    var visual_color: Color = owner_fighter.character_definition.energy_color
+    if move_definition != null:
+        visual_color = _effect_color(move_definition.effect, visual_color)
+    if owner_fighter.awakening.active:
+        visual_color = visual_color.lightened(0.12)
+    sphere_visual.call("set_energy_color", visual_color)
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     if move_definition != null:
@@ -346,3 +351,33 @@ func projectile_finished() -> void:
     if current == "demon" and not released:
         return
     duration = minf(duration, elapsed + 0.45)
+
+
+func _effect_color(effect: String, fallback: Color) -> Color:
+    match effect:
+        "fire":
+            return Color(1.0, 0.23, 0.04)
+        "water":
+            return Color(0.08, 0.52, 1.0)
+        "wind":
+            return Color(0.45, 0.94, 0.86)
+        "lightning":
+            return Color(0.45, 0.80, 1.0)
+        "sand", "earth", "oil":
+            return Color(0.86, 0.62, 0.22)
+        "shadow":
+            return Color(0.18, 0.10, 0.30)
+        "mind":
+            return Color(0.96, 0.34, 0.74)
+        "insect":
+            return Color(0.26, 0.22, 0.12)
+        "steel", "puppet", "bone":
+            return Color(0.74, 0.78, 0.86)
+        "snake":
+            return Color(0.38, 0.78, 0.26)
+        "taijutsu":
+            return Color(0.36, 1.0, 0.38)
+        "chakra":
+            return Color(0.22, 0.66, 1.0)
+        _:
+            return fallback
