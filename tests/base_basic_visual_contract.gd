@@ -45,7 +45,7 @@ func run() -> void:
     var flow: Node = root.get_node("GameFlow")
     check(CharacterCatalog.NARUTO.visual_mode == "rig_3d", "Naruto defaults to animated 3D")
     check(is_equal_approx(CharacterCatalog.NARUTO.model_target_height, 1.70), "Naruto keeps tuned mobile character height")
-    check(CharacterCatalog.NARUTO.idle_animation_override == "combat/chakra_charge", "Naruto uses a compact ninja-ready idle instead of the wide generic idle")
+    check(CharacterCatalog.NARUTO.idle_animation_override.is_empty(), "Naruto must use the real combat idle instead of chakra-charge as idle")
     check(CharacterCatalog.SAKURA.display_name == "Sakura" and CharacterCatalog.SAKURA.model_yaw_degrees == 0.0, "Sakura profile must expose corrected name and facing")
     check(flow.start_versus("naruto", "naruto", "training") == OK, "Naruto versus opens")
     await frames(8)
@@ -66,6 +66,7 @@ func run() -> void:
             check(clone.sprite_visual == null and clone.model.visible and clone.skeleton != adapter.skeleton, "Clones have independent visible 3D rigs")
             check(clone.model.position.is_equal_approx(adapter.model_instance.position), "Clones inherit corrected grounding")
     var adapter: Node3D = fighter.rig_adapter
+    check(adapter._animation_for_state("idle") == &"combat/idle", "Naruto idle state must resolve to combat/idle")
     adapter.set_physics_process(false)
     adapter.animation_tree.active = false
     adapter.animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
