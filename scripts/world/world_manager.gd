@@ -1,7 +1,7 @@
 extends Node3D
 const POINTS_PATH: String = "res://assets/world/village_points.json"
-const TARGET_SCALE: Array[float] = [0.70, 0.85, 1.0]
-const MIN_ADAPTIVE_SCALE: Array[float] = [0.58, 0.68, 0.78]
+const TARGET_SCALE: Array[float] = [0.62, 0.76, 0.92]
+const MIN_ADAPTIVE_SCALE: Array[float] = [0.50, 0.58, 0.70]
 var points: Array[Area3D] = []
 var nearest: Area3D = null
 var scan_timer: float = 0.0
@@ -12,7 +12,7 @@ var map_open: bool = false
 var quality: int = 1
 var settings: ConfigFile = ConfigFile.new()
 var adaptive_timer: float = 4.0
-var render_scale: float = 0.85
+var render_scale: float = 0.76
 var status_label: Label
 var objective_label: Label
 var context_label: Label
@@ -73,21 +73,57 @@ func _label(position: Vector2, dimensions: Vector2, font_size: int = 19) -> Labe
     $HUD.add_child(label)
     return label
 
+func _panel_style(background: Color, border: Color, radius: int = 14) -> StyleBoxFlat:
+    var style: StyleBoxFlat = StyleBoxFlat.new()
+    style.bg_color = background
+    style.border_color = border
+    style.set_border_width_all(1)
+    style.corner_radius_top_left = radius
+    style.corner_radius_top_right = radius
+    style.corner_radius_bottom_left = radius
+    style.corner_radius_bottom_right = radius
+    return style
+
 func _build_hud() -> void:
-    status_label = _label(Vector2(20, 16), Vector2(530, 35), 24)
-    objective_label = _label(Vector2(20, 54), Vector2(790, 55), 18)
+    var info_panel: PanelContainer = PanelContainer.new()
+    info_panel.position = Vector2(14, 10)
+    info_panel.size = Vector2(548, 102)
+    info_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    info_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.015, 0.045, 0.065, 0.78), Color(0.28, 0.55, 0.61, 0.42)))
+    $HUD.add_child(info_panel)
+    $HUD.move_child(info_panel, 0)
+
+    status_label = _label(Vector2(28, 18), Vector2(500, 32), 22)
+    status_label.add_theme_color_override("font_color", Color("ffd38a"))
+
+    objective_label = _label(Vector2(28, 52), Vector2(510, 52), 15)
     objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    message_label = _label(Vector2(280, 116), Vector2(720, 80), 20)
+    objective_label.add_theme_color_override("font_color", Color("d7e7e6"))
+
+    message_label = _label(Vector2(290, 118), Vector2(700, 76), 19)
     message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    context_label = _label(Vector2(300, 645), Vector2(650, 55), 18)
+    message_label.add_theme_color_override("font_color", Color("ffe3a8"))
+
+    context_label = _label(Vector2(300, 646), Vector2(650, 48), 17)
     context_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    fps_label = _label(Vector2(1040, 14), Vector2(110, 30), 16)
+    context_label.add_theme_color_override("font_color", Color("fff0d4"))
+
+    fps_label = _label(Vector2(1042, 18), Vector2(118, 28), 14)
+    fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    fps_label.add_theme_color_override("font_color", Color("c8dde3"))
+
     quality_button = Button.new()
-    quality_button.position = Vector2(570, 12)
-    quality_button.custom_minimum_size = Vector2(95, 36)
+    quality_button.position = Vector2(580, 14)
+    quality_button.custom_minimum_size = Vector2(88, 34)
+    quality_button.add_theme_font_size_override("font_size", 13)
+    quality_button.add_theme_color_override("font_color", Color("f7ead0"))
+    quality_button.add_theme_stylebox_override("normal", _panel_style(Color(0.03, 0.12, 0.15, 0.88), Color(0.34, 0.66, 0.69, 0.55), 10))
+    quality_button.add_theme_stylebox_override("hover", _panel_style(Color(0.05, 0.18, 0.21, 0.94), Color("d9903d"), 10))
+    quality_button.add_theme_stylebox_override("pressed", _panel_style(Color(0.02, 0.08, 0.10, 0.94), Color("d9903d"), 10))
     quality_button.pressed.connect(func() -> void: apply_quality((quality + 1) % 3))
     $HUD.add_child(quality_button)
+
     map_panel = Control.new()
     map_panel.set_script(preload("res://scripts/world/world_map.gd"))
     map_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -101,7 +137,7 @@ func apply_quality(level: int, save: bool = true) -> void:
     $Geometry.set_quality(quality)
     $Environment.environment.fog_enabled = quality > 0
     $Sun.shadow_enabled = quality > 0
-    $Sun.directional_shadow_max_distance = [0.0, 24.0, 40.0][quality]
+    $Sun.directional_shadow_max_distance = [0.0, 18.0, 30.0][quality]
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
     render_scale = TARGET_SCALE[quality]
     adaptive_timer = 4.0
@@ -113,7 +149,7 @@ func apply_quality(level: int, save: bool = true) -> void:
         var meshes: Array[MeshInstance3D] = []
         point.actor.rig_adapter.call("_collect_mesh_instances", point.actor.rig_adapter.model_instance, meshes)
         for mesh: MeshInstance3D in meshes:
-            mesh.visibility_range_end = [28.0, 42.0, 65.0][quality]
+            mesh.visibility_range_end = [24.0, 34.0, 52.0][quality]
             mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if quality == 0 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
     if save:
         settings.set_value("graphics", "quality", quality)
@@ -176,10 +212,10 @@ func _physics_process(delta: float) -> void:
     if scan_timer <= 0:
         scan_timer = 0.12
         _find_interaction()
-        fps_label.text = "%d FPS" % Engine.get_frames_per_second()
+        fps_label.text = "%d FPS • %s" % [Engine.get_frames_per_second(), ["LOW", "MED", "HIGH"][quality]]
         for point: Area3D in points:
             if point.actor != null:
-                point.actor.rig_adapter.set_physics_process(point.global_position.distance_squared_to(actor.global_position) < pow([18.0, 25.0, 35.0][quality], 2.0))
+                point.actor.rig_adapter.set_physics_process(point.global_position.distance_squared_to(actor.global_position) < pow([16.0, 22.0, 30.0][quality], 2.0))
     if map_open:
         map_panel.queue_redraw()
 
@@ -189,15 +225,15 @@ func _update_adaptive_resolution(delta: float) -> void:
     adaptive_timer -= delta
     if adaptive_timer > 0.0:
         return
-    adaptive_timer = 1.25
+    adaptive_timer = 1.0
     var fps: float = float(Engine.get_frames_per_second())
     var target: float = TARGET_SCALE[quality]
     var minimum: float = MIN_ADAPTIVE_SCALE[quality]
     var next_scale: float = render_scale
-    if fps > 1.0 and fps < 48.0:
-        next_scale = maxf(render_scale - 0.05, minimum)
+    if fps > 1.0 and fps < 50.0:
+        next_scale = maxf(render_scale - 0.06, minimum)
     elif fps >= 57.0:
-        next_scale = minf(render_scale + 0.025, target)
+        next_scale = minf(render_scale + 0.02, target)
     if not is_equal_approx(next_scale, render_scale):
         render_scale = next_scale
         get_viewport().scaling_3d_scale = render_scale
