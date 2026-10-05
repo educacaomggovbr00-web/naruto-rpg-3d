@@ -46,6 +46,8 @@ var aura_base_scale: Vector3 = Vector3.ONE
 var prefer_native_locomotion: bool = false
 var native_locomotion_count: int = 0
 var combat_retargeted: bool = false
+var character_definition: CharacterDefinition = null
+var roster_accessories: Array[Dictionary] = []
 
 var right_hand_bone: int = -1
 var left_hand_bone: int = -1
@@ -59,19 +61,19 @@ func _ready() -> void:
     process_physics_priority = 10
     fallback_visual = get_node_or_null(fallback_visual_path) as Node3D
     if player.has_method("get_character_definition"):
-        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
-        if definition != null:
-            model_path = definition.model_path
-            if not ResourceLoader.exists(model_path) and not definition.model_fallback_path.is_empty():
-                model_path = definition.model_fallback_path
-            auto_scale_model = definition.model_auto_scale
-            ground_to_collision = definition.model_ground_to_collision
-            model_scale = definition.model_scale_multiplier
-            target_character_height = definition.model_target_height
-            model_offset = definition.model_offset
-            model_yaw_degrees = definition.model_yaw_degrees
-            fallback_import_scale = definition.model_fallback_import_scale
-            prefer_native_locomotion = definition.prefer_native_locomotion
+        character_definition = player.call("get_character_definition") as CharacterDefinition
+        if character_definition != null:
+            model_path = character_definition.model_path
+            if not ResourceLoader.exists(model_path) and not character_definition.model_fallback_path.is_empty():
+                model_path = character_definition.model_fallback_path
+            auto_scale_model = character_definition.model_auto_scale
+            ground_to_collision = character_definition.model_ground_to_collision
+            model_scale = character_definition.model_scale_multiplier
+            target_character_height = character_definition.model_target_height
+            model_offset = character_definition.model_offset
+            model_yaw_degrees = character_definition.model_yaw_degrees
+            fallback_import_scale = character_definition.model_fallback_import_scale
+            prefer_native_locomotion = character_definition.prefer_native_locomotion
     _try_load_rig()
 
 func _physics_process(delta: float) -> void:
@@ -81,6 +83,7 @@ func _physics_process(delta: float) -> void:
     _sync_animation_state(delta)
     animation_tree.advance(delta)
     _update_chakra_aura(delta)
+    _sync_roster_accessories()
 
     var state: String = String(player.call("get_animation_state"))
     if follow_hitbox_to_bones and (state == "attack" or state == "air_attack"):
@@ -127,6 +130,7 @@ func _try_load_rig() -> void:
 
     _cache_combat_bones()
     apply_visual_material(model_instance)
+    _install_roster_visual_identity()
     if animation_player == null or not _install_combat_library():
         rig_status = "RIG: biblioteca real incompleta; confira o log"
         model_instance.queue_free()
@@ -154,6 +158,142 @@ func _try_load_rig() -> void:
         skeleton.get_bone_count(),
         " | RETARGET" if combat_retargeted else ""
     ]
+
+
+func _install_roster_visual_identity() -> void:
+    roster_accessories.clear()
+    if character_definition == null or character_definition.visual_profile == null or skeleton == null:
+        return
+
+    var profile: RosterVisualProfileDefinition = character_definition.visual_profile
+    for tag: String in profile.accessories:
+        match tag:
+            "headband":
+                _add_box_accessory("Head", Vector3(0.34, 0.06, 0.18), Vector3(0.0, 0.09, 0.12), Vector3.ZERO, profile.secondary_color)
+            "ponytail":
+                _add_capsule_accessory("Head", 0.065, 0.34, Vector3(0.0, -0.06, -0.17), Vector3(18.0, 0.0, 0.0), profile.secondary_color)
+            "long_hair":
+                _add_capsule_accessory("Head", 0.15, 0.58, Vector3(0.0, -0.18, -0.13), Vector3(12.0, 0.0, 0.0), profile.secondary_color, Vector3(0.85, 1.0, 0.58))
+            "twin_buns":
+                _add_sphere_accessory("Head", 0.10, Vector3(-0.16, 0.09, -0.01), profile.secondary_color)
+                _add_sphere_accessory("Head", 0.10, Vector3(0.16, 0.09, -0.01), profile.secondary_color)
+            "vest":
+                _add_box_accessory("Spine2", Vector3(0.54, 0.58, 0.28), Vector3(0.0, 0.0, 0.0), Vector3.ZERO, profile.primary_color)
+            "coat":
+                _add_box_accessory("Spine2", Vector3(0.60, 0.78, 0.30), Vector3(0.0, -0.07, -0.01), Vector3.ZERO, profile.primary_color)
+            "cloak":
+                _add_box_accessory("Spine2", Vector3(0.64, 0.86, 0.31), Vector3(0.0, -0.10, -0.02), Vector3.ZERO, profile.primary_color)
+            "armor":
+                _add_box_accessory("Spine2", Vector3(0.60, 0.64, 0.32), Vector3(0.0, 0.0, 0.0), Vector3.ZERO, profile.primary_color)
+                _add_box_accessory("LeftShoulder", Vector3(0.22, 0.12, 0.24), Vector3(0.0, 0.0, 0.0), Vector3.ZERO, profile.secondary_color)
+                _add_box_accessory("RightShoulder", Vector3(0.22, 0.12, 0.24), Vector3(0.0, 0.0, 0.0), Vector3.ZERO, profile.secondary_color)
+            "sash":
+                _add_box_accessory("Hips", Vector3(0.46, 0.10, 0.24), Vector3(0.0, 0.06, 0.0), Vector3.ZERO, profile.accent_color)
+            "rope_belt":
+                _add_cylinder_accessory("Hips", 0.29, 0.29, 0.12, Vector3(0.0, 0.05, 0.0), Vector3.ZERO, profile.accent_color)
+            "hood":
+                _add_cylinder_accessory("Neck", 0.27, 0.24, 0.13, Vector3(0.0, -0.03, -0.02), Vector3.ZERO, profile.secondary_color)
+            "fur_collar":
+                _add_cylinder_accessory("Neck", 0.31, 0.27, 0.12, Vector3(0.0, -0.04, -0.01), Vector3.ZERO, profile.accent_color)
+            "glasses":
+                _add_box_accessory("Head", Vector3(0.32, 0.055, 0.045), Vector3(0.0, 0.035, 0.205), Vector3.ZERO, profile.accent_color)
+            "arm_bands":
+                _add_box_accessory("LeftForeArm", Vector3(0.17, 0.08, 0.18), Vector3.ZERO, Vector3.ZERO, profile.accent_color)
+                _add_box_accessory("RightForeArm", Vector3(0.17, 0.08, 0.18), Vector3.ZERO, Vector3.ZERO, profile.accent_color)
+            "leg_bands":
+                _add_box_accessory("LeftLeg", Vector3(0.19, 0.09, 0.20), Vector3(0.0, -0.10, 0.0), Vector3.ZERO, profile.accent_color)
+                _add_box_accessory("RightLeg", Vector3(0.19, 0.09, 0.20), Vector3(0.0, -0.10, 0.0), Vector3.ZERO, profile.accent_color)
+            "gourd":
+                _add_sphere_accessory("Spine2", 0.31, Vector3(0.28, 0.02, -0.28), profile.accent_color, Vector3(0.82, 1.35, 0.68))
+            "puppet_pack":
+                _add_box_accessory("Spine2", Vector3(0.42, 0.58, 0.22), Vector3(0.0, 0.0, -0.27), Vector3.ZERO, profile.secondary_color)
+            "fan":
+                _add_box_accessory("Spine2", Vector3(0.58, 0.82, 0.055), Vector3(0.24, 0.06, -0.27), Vector3(0.0, 0.0, -18.0), profile.accent_color)
+            "scroll":
+                _add_cylinder_accessory("Spine2", 0.12, 0.12, 0.62, Vector3(0.27, 0.02, -0.26), Vector3(0.0, 0.0, 90.0), profile.accent_color)
+            "staff":
+                _add_cylinder_accessory("Spine2", 0.028, 0.028, 1.50, Vector3(0.28, -0.05, -0.25), Vector3(0.0, 0.0, 18.0), profile.accent_color)
+            "bone_spikes":
+                _add_cylinder_accessory("LeftForeArm", 0.015, 0.055, 0.36, Vector3(0.0, -0.06, -0.05), Vector3(90.0, 0.0, 0.0), profile.accent_color)
+                _add_cylinder_accessory("RightForeArm", 0.015, 0.055, 0.36, Vector3(0.0, -0.06, -0.05), Vector3(90.0, 0.0, 0.0), profile.accent_color)
+            "sword_back":
+                _add_box_accessory("Spine2", Vector3(0.11, 1.12, 0.12), Vector3(0.25, -0.02, -0.26), Vector3(0.0, 0.0, -24.0), profile.accent_color)
+
+    _sync_roster_accessories()
+
+func _accessory_material(color: Color) -> Material:
+    var base: StandardMaterial3D = StandardMaterial3D.new()
+    base.albedo_color = color
+    base.roughness = 0.90
+    return ANIME.textured(base)
+
+func _add_accessory(mesh: PrimitiveMesh, bone_name: String, offset: Vector3, rotation_degrees: Vector3, color: Color, scale: Vector3 = Vector3.ONE) -> void:
+    var bone: int = _find_mixamo_bone(bone_name)
+    if bone < 0:
+        return
+
+    mesh.material = _accessory_material(color)
+    var node: MeshInstance3D = MeshInstance3D.new()
+    node.mesh = mesh
+    node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    add_child(node)
+
+    var rotation: Vector3 = Vector3(
+        deg_to_rad(rotation_degrees.x),
+        deg_to_rad(rotation_degrees.y),
+        deg_to_rad(rotation_degrees.z)
+    )
+    var basis: Basis = Basis.from_euler(rotation).scaled(scale)
+    roster_accessories.append({
+        "node": node,
+        "bone": bone,
+        "offset": Transform3D(basis, offset)
+    })
+
+func _add_box_accessory(bone_name: String, size: Vector3, offset: Vector3, rotation_degrees: Vector3, color: Color, scale: Vector3 = Vector3.ONE) -> void:
+    var mesh: BoxMesh = BoxMesh.new()
+    mesh.size = size
+    _add_accessory(mesh, bone_name, offset, rotation_degrees, color, scale)
+
+func _add_sphere_accessory(bone_name: String, radius: float, offset: Vector3, color: Color, scale: Vector3 = Vector3.ONE) -> void:
+    var mesh: SphereMesh = SphereMesh.new()
+    mesh.radius = radius
+    mesh.height = radius * 2.0
+    mesh.radial_segments = 10
+    mesh.rings = 5
+    _add_accessory(mesh, bone_name, offset, Vector3.ZERO, color, scale)
+
+func _add_capsule_accessory(bone_name: String, radius: float, height: float, offset: Vector3, rotation_degrees: Vector3, color: Color, scale: Vector3 = Vector3.ONE) -> void:
+    var mesh: CapsuleMesh = CapsuleMesh.new()
+    mesh.radius = radius
+    mesh.height = height
+    mesh.radial_segments = 8
+    mesh.rings = 3
+    _add_accessory(mesh, bone_name, offset, rotation_degrees, color, scale)
+
+func _add_cylinder_accessory(bone_name: String, top_radius: float, bottom_radius: float, height: float, offset: Vector3, rotation_degrees: Vector3, color: Color, scale: Vector3 = Vector3.ONE) -> void:
+    var mesh: CylinderMesh = CylinderMesh.new()
+    mesh.top_radius = top_radius
+    mesh.bottom_radius = bottom_radius
+    mesh.height = height
+    mesh.radial_segments = 10
+    _add_accessory(mesh, bone_name, offset, rotation_degrees, color, scale)
+
+func _sync_roster_accessories() -> void:
+    if skeleton == null or roster_accessories.is_empty():
+        return
+
+    for entry: Dictionary in roster_accessories:
+        var node: MeshInstance3D = entry.get("node") as MeshInstance3D
+        var bone: int = int(entry.get("bone", -1))
+        var offset: Transform3D = entry.get("offset", Transform3D())
+        if node == null or bone < 0:
+            continue
+
+        var pose: Transform3D = skeleton.get_bone_global_pose(bone)
+        var world: Transform3D = skeleton.global_transform * pose
+        var anchor: Transform3D = Transform3D(world.basis.orthonormalized(), world.origin)
+        node.global_transform = anchor * offset
 
 func _tint_chakra_aura() -> void:
     if chakra_aura == null:
@@ -246,21 +386,36 @@ func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:
 
 func apply_visual_material(root: Node) -> void:
     var use_toon: bool = model_path.begins_with("res://assets/characters/stylized/")
-    if player.has_method("get_character_definition"):
-        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
-        if definition != null:
-            use_toon = use_toon or definition.stylized_material
+    if character_definition != null:
+        use_toon = use_toon or character_definition.stylized_material
+
+    var profile: RosterVisualProfileDefinition = null
+    if character_definition != null:
+        profile = character_definition.visual_profile
+
     var meshes: Array[MeshInstance3D] = []
     _collect_mesh_instances(root, meshes)
     for mesh: MeshInstance3D in meshes:
         if use_toon:
             mesh.material_override = TOON_MATERIAL
-        else:
-            # Keep the supplied Naruto's individual textures and mesh resources.
-            for index: int in range(mesh.mesh.get_surface_count()):
-                var source: Material = mesh.get_active_material(index)
-                if source is StandardMaterial3D:
-                    mesh.set_surface_override_material(index, ANIME.textured(source))
+            continue
+
+        # Preserve textures, then add a mild per-character tint only for shared-rig slots.
+        for index: int in range(mesh.mesh.get_surface_count()):
+            var source: Material = mesh.get_active_material(index)
+            if source is StandardMaterial3D:
+                var anime_material: Material = ANIME.textured(source)
+                if profile == null or not anime_material is StandardMaterial3D:
+                    mesh.set_surface_override_material(index, anime_material)
+                    continue
+
+                var tinted: StandardMaterial3D = (anime_material as StandardMaterial3D).duplicate(true) as StandardMaterial3D
+                if tinted == null:
+                    mesh.set_surface_override_material(index, anime_material)
+                    continue
+
+                tinted.albedo_color = tinted.albedo_color.lerp(profile.primary_color, profile.tint_strength)
+                mesh.set_surface_override_material(index, tinted)
 
 func _cache_combat_bones() -> void:
     right_hand_bone = _find_mixamo_bone("RightHand")
