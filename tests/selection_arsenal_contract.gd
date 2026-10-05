@@ -148,6 +148,18 @@ func run() -> void:
     check(flow.enter_selection() == OK, "Result flow can return to selection")
     await frames(8)
     check(current_scene.scene_file_path == "res://selection.tscn", "Selection must return after cleanup")
+    var returned_menu: Control = current_scene
+    returned_menu.player_pick.select(2)
+    returned_menu._describe(2)
+    check(returned_menu.player_name.text.contains("SAKURA"), "Sakura must be presented as a first-class fighter")
+    returned_menu._enter_world()
+    await frames(8)
+    var world_player: CharacterBody3D = get_first_node_in_group("world_player") as CharacterBody3D
+    check(world_player != null and world_player.get_character_definition().character_id == "sakura", "Village must use the selected fighter")
+    check(world_player.rig_adapter.model_yaw_degrees == 0.0 and is_equal_approx(world_player.rig_adapter.target_character_height, 1.66), "Sakura must use corrected facing and height")
+    check(world_player.rig_adapter.native_locomotion_count >= 3, "Sakura must use native Idle/Walk/Run in exploration")
+    check(flow.enter_selection() == OK, "Sakura exploration can return to selection")
+    await frames(6)
     current_scene.queue_free()
     await frames(4)
     check(root.get_child_count() == 1, "Selection/rematch must not leak pools or voice nodes")
