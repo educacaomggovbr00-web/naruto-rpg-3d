@@ -19,9 +19,9 @@ func _ready() -> void:
     shape.radius = 0.25
     arm.shape = shape
     arm.margin = 0.18
-    arm.spring_length = 6.1
+    arm.spring_length = 5.25
     arm.add_excluded_object(actor.get_rid())
-    camera.fov = 63.0
+    camera.fov = 60.0
 
     if not OS.has_feature("mobile"):
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -50,8 +50,8 @@ func _physics_process(delta: float) -> void:
 
     var speed: float = Vector2(actor.velocity.x, actor.velocity.z).length()
     var speed_ratio: float = clampf(speed / 13.0, 0.0, 1.0)
-    arm.spring_length = lerpf(arm.spring_length, 6.1 + speed_ratio * 0.55, 1.0 - exp(-4.5 * delta))
-    camera.fov = lerpf(camera.fov, 63.0 + speed_ratio * 3.0, 1.0 - exp(-4.5 * delta))
+    arm.spring_length = lerpf(arm.spring_length, 5.25 + speed_ratio * 0.45, 1.0 - exp(-4.5 * delta))
+    camera.fov = lerpf(camera.fov, 60.0 + speed_ratio * 3.0, 1.0 - exp(-4.5 * delta))
 
 
 func _focus_height() -> float:
