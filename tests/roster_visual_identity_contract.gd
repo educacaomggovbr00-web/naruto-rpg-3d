@@ -54,7 +54,9 @@ func run() -> void:
     check("cloak" in itachi.visual_profile.accessories, "Itachi needs cloak silhouette")
 
     for fighter: CharacterDefinition in [gaara, temari, kisame, kabuto, tenten, itachi]:
-        check(fighter.model_path == "res://assets/characters/rigged.glb", "Procedural identity must not duplicate heavy GLBs: " + fighter.character_id)
+        check(fighter.model_slot != null, "Procedural fighter needs final-model slot metadata: " + fighter.character_id)
+        check(fighter.model_path == RosterModelSlotFactory.expected_path(fighter.character_id), "Preferred model path must be character-owned: " + fighter.character_id)
+        check(fighter.model_fallback_path == RosterModelSlotFactory.SHARED_FALLBACK, "Procedural identity keeps one shared heavy fallback GLB: " + fighter.character_id)
 
     var flow: Node = root.get_node("GameFlow")
     check(flow.start_versus("gaara", "temari", "training") == OK, "Procedural visual runtime battle opens")
@@ -69,8 +71,12 @@ func run() -> void:
     var player_adapter: Node3D = player.get_node("RiggedCharacterAdapter")
     var cpu_adapter: Node3D = cpu.get_node("RiggedCharacterAdapter")
 
-    check(bool(player_adapter.get("rig_loaded")), "Gaara shared rig loads")
-    check(bool(cpu_adapter.get("rig_loaded")), "Temari shared rig loads")
+    check(bool(player_adapter.get("rig_loaded")), "Gaara runtime rig loads")
+    check(bool(cpu_adapter.get("rig_loaded")), "Temari runtime rig loads")
+    check(bool(player_adapter.get("using_model_fallback")), "Gaara uses shared fallback until final GLB arrives")
+    check(bool(cpu_adapter.get("using_model_fallback")), "Temari uses shared fallback until final GLB arrives")
+    check(String(player_adapter.get("resolved_model_path")) == RosterModelSlotFactory.SHARED_FALLBACK, "Gaara resolves fallback path")
+    check(String(cpu_adapter.get("resolved_model_path")) == RosterModelSlotFactory.SHARED_FALLBACK, "Temari resolves fallback path")
 
     var gaara_accessories: Array = player_adapter.get("roster_accessories")
     var temari_accessories: Array = cpu_adapter.get("roster_accessories")
