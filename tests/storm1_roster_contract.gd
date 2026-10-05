@@ -37,13 +37,18 @@ func run() -> void:
         check(not definition.model_path.is_empty(), "Every selectable fighter needs a preview/runtime model path: " + expected_id)
 
         if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
-            check(not definition.jutsus.is_empty(), "Every roster slot must expose at least one character-owned special: " + expected_id)
+            check(definition.jutsus.size() >= 2, "Every roster slot must expose two character-owned specials: " + expected_id)
             for jutsu_id: String in definition.jutsus:
                 var jutsu: JutsuDefinition = definition.find_jutsu(jutsu_id)
                 check(jutsu != null, "Every roster special id must resolve to data: " + expected_id + "/" + jutsu_id)
                 if jutsu != null:
                     check(jutsu.tuning_evidence == "OUR_APPROXIMATION", "Development special tuning must disclose approximation: " + expected_id + "/" + jutsu_id)
-            check(not definition.has_ultimate and not definition.has_awakening, "Placeholder must not inherit Naruto cinematic modes: " + expected_id)
+            check(definition.has_ultimate and definition.has_awakening, "Every roster slot needs its own Ultimate and Awakening capability: " + expected_id)
+            check(definition.ultimate_definition != null and definition.awakening_definition != null, "Every non-Naruto slot needs power-mode data: " + expected_id)
+            if definition.ultimate_definition != null:
+                check(definition.ultimate_definition.evidence == "OUR_APPROXIMATION", "Roster Ultimate must disclose approximation: " + expected_id)
+            if definition.awakening_definition != null:
+                check(definition.awakening_definition.evidence == "OUR_APPROXIMATION", "Roster Awakening must disclose approximation: " + expected_id)
             check(definition.model_path == "res://assets/characters/rigged.glb", "Placeholder should use shared development rig until replaced: " + expected_id)
             check(definition.moveset != CharacterCatalog.NARUTO.moveset, "Roster slot must not borrow Naruto combo data: " + expected_id)
             check(definition.moveset.ground.size() == 4 and definition.moveset.aerial.size() == 4, "Roster slot needs full base ground/air chains: " + expected_id)
@@ -52,9 +57,14 @@ func run() -> void:
 
     check(seen.size() == 25, "All roster ids must be unique")
     for fighter: CharacterDefinition in CharacterCatalog.READY:
-        check(not fighter.jutsus.is_empty(), "All 25 playable fighters need at least one selectable jutsu: " + fighter.character_id)
+        check(fighter.jutsus.size() >= 2, "All 25 playable fighters need at least two selectable jutsus: " + fighter.character_id)
         for jutsu_id: String in fighter.jutsus:
             check(fighter.find_jutsu(jutsu_id) != null, "Selectable jutsu must resolve for " + fighter.character_id + ": " + jutsu_id)
+        check(fighter.has_ultimate, "All 25 playable fighters need an Ultimate: " + fighter.character_id)
+        check(fighter.has_awakening, "All 25 playable fighters need an Awakening: " + fighter.character_id)
+        if fighter.character_id != "naruto":
+            check(fighter.ultimate_definition != null, "Non-Naruto fighter needs generic Ultimate data: " + fighter.character_id)
+            check(fighter.awakening_definition != null, "Non-Naruto fighter needs generic Awakening data: " + fighter.character_id)
     check(CharacterCatalog.find("gaara") != null, "Gaara must now be selectable")
     check(CharacterCatalog.find("itachi") != null, "Itachi must now be selectable")
     check(CharacterCatalog.find("kisame") != null, "Kisame must now be selectable")
