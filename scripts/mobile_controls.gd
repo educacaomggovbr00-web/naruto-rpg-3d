@@ -107,13 +107,22 @@ func _update_layout() -> void:
     lock_center = Vector2(w - 72.0 * ui_scale, 72.0 * ui_scale)
 
     var advanced_y: float = minf(150.0 * ui_scale, h * 0.29)
-    special_center = Vector2(w - 530.0 * ui_scale, advanced_y)
-    clone_center = Vector2(w - 450.0 * ui_scale, advanced_y)
-    barrage_center = Vector2(w - 370.0 * ui_scale, advanced_y)
-    tool_select_center = Vector2(w - 690.0 * ui_scale, advanced_y)
-    tool_use_center = Vector2(w - 610.0 * ui_scale, advanced_y)
-    ultimate_center = Vector2(w - 290.0 * ui_scale, advanced_y)
-    awakening_center = Vector2(w - 210.0 * ui_scale, advanced_y)
+    if clones_enabled:
+        tool_select_center = Vector2(w - 690.0 * ui_scale, advanced_y)
+        tool_use_center = Vector2(w - 610.0 * ui_scale, advanced_y)
+        special_center = Vector2(w - 530.0 * ui_scale, advanced_y)
+        clone_center = Vector2(w - 450.0 * ui_scale, advanced_y)
+        barrage_center = Vector2(w - 370.0 * ui_scale, advanced_y)
+        ultimate_center = Vector2(w - 290.0 * ui_scale, advanced_y)
+        awakening_center = Vector2(w - 210.0 * ui_scale, advanced_y)
+    else:
+        tool_select_center = Vector2(w - 530.0 * ui_scale, advanced_y)
+        tool_use_center = Vector2(w - 450.0 * ui_scale, advanced_y)
+        special_center = Vector2(w - 370.0 * ui_scale, advanced_y)
+        ultimate_center = Vector2(w - 290.0 * ui_scale, advanced_y)
+        awakening_center = Vector2(w - 210.0 * ui_scale, advanced_y)
+        clone_center = Vector2(-1000.0, -1000.0)
+        barrage_center = Vector2(-1000.0, -1000.0)
 
     queue_redraw()
 
@@ -330,8 +339,9 @@ func _draw() -> void:
     _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
     _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), "AWK" if awakening_enabled else "—", 12, text_color)
     _draw_button(special_center, advanced_radius, blue_fill, special_label, 11, text_color)
-    _draw_button(clone_center, advanced_radius, blue_fill if clones_enabled else Color(0.2, 0.2, 0.2, 0.30), "CLONE" if clones_enabled else "—", 10, text_color)
-    _draw_button(barrage_center, advanced_radius, attack_fill if clones_enabled else Color(0.2, 0.2, 0.2, 0.30), "BARR" if clones_enabled else "—", 11, text_color)
+    if clones_enabled:
+        _draw_button(clone_center, advanced_radius, blue_fill, "CLONE", 10, text_color)
+        _draw_button(barrage_center, advanced_radius, attack_fill, "BARR", 11, text_color)
     _draw_button(attack_center, attack_radius, attack_fill, "ATK", 25, text_color)
     _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color)
     _draw_button(dash_center, dash_radius, blue_fill, "DASH", 17, text_color)
@@ -414,4 +424,5 @@ func configure_character(definition: CharacterDefinition) -> void:
         var compact_id: String = first_id.replace("_", "").to_upper()
         var fallback_label: String = compact_id.substr(0, mini(compact_id.length(), 5))
         special_label = String(known_labels.get(first_id, fallback_label))
+    _update_layout()
     queue_redraw()
