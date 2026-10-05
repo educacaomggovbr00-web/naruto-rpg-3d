@@ -87,7 +87,8 @@ func run() -> void:
     check(attempts.size() >= 2, "Invalid primary and fallback both appear in diagnostics")
     check("Skeleton3D ausente" in attempts[0], "Static GLB is rejected for missing skeleton")
     check("OK" in attempts[attempts.size() - 1], "Fallback succeeds after incompatible primary")
-    check(adapter.get("roster_accessories").size() > 0, "Procedural identity remains active only on fallback")
+    var fallback_accessories: Array = adapter.get("roster_accessories")
+    check(fallback_accessories.size() > 0, "Procedural identity remains active only on fallback")
 
     arena.queue_free()
     await frames(4)
