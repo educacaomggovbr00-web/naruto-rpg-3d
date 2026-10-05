@@ -292,3 +292,16 @@ As duas variantes rigadas têm 39998 triângulos e texturas de até 1024 px. Par
 O atlas 2.5D continua como alternativa: defina `visual_mode = "sprite_2_5d"` no mesmo Resource. Para reconstruir o atlas: `python tools/build_naruto_sprite_atlas.py "/caminho/para/Naruto.zip"` (requer Pillow). O teste de sprites ativa essa alternativa explicitamente; o teste de exportação valida o visual 3D padrão.
 
 `tests/base_basic_visual_contract.gd` verifica a deformação real da skin nos 27 clips, modelos do jogador/CPU, independência dos clones, grounding, preview de seleção e exploração. Nenhum Python, rigging ou download é executado no aparelho.
+
+
+## Identidade de combate do elenco — 2026-10-05
+
+O roster agora possui uma camada de identidade além dos stats:
+
+- `AIProfileDefinition` + `RosterAIProfileFactory`: os 25 lutadores têm arquétipo, distância preferida, agressividade, tendência de guarda/esquiva/strafe/jutsu/dash/Ultimate/Awakening e ritmo de decisão próprios. Gaara/Temari/Tenten jogam mais à distância; Lee/Guy/Kiba pressionam; Neji/Hinata/Kakashi defendem/reagem mais; Tsunade/Choji/Kisame buscam trocas pesadas.
+- `RosterJutsuFactory.CLIP_MAP`: jutsus de desenvolvimento escolhem coreografias diferentes dentro da biblioteca de 27 clips existente. Isso melhora a silhueta de cada kit sem fingir que já existem animações finais exclusivas.
+- `RosterVisualStyle`: projéteis, golpes de área e rushes usam formas, cores e movimento diferentes por estilo, misturados com a cor energética do personagem.
+- Awakening dos 24 não-Naruto ganhou aura + MultiMesh orbital leve com 4/7/10 instâncias em LOW/MED/HIGH.
+- O layout touch escala pela altura da viewport, herda a cor do personagem e remove CLONE/BARR nos lutadores que não usam essas ações.
+
+A coreografia continua baseada nos 27 clips CC0 compartilhados; esses perfis não são animações comerciais reproduzidas. O próximo passe visual real é criar/retargetar animações e modelos específicos por personagem sem substituir a camada funcional já testável.
