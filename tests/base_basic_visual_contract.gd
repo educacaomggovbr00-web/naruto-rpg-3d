@@ -44,6 +44,9 @@ func samples(mesh: MeshInstance3D, skeleton: Skeleton3D, model_scale: float) -> 
 func run() -> void:
     var flow: Node = root.get_node("GameFlow")
     check(CharacterCatalog.NARUTO.visual_mode == "rig_3d", "Naruto defaults to animated 3D")
+    check(is_equal_approx(CharacterCatalog.NARUTO.model_target_height, 1.70), "Naruto keeps tuned mobile character height")
+    check(CharacterCatalog.NARUTO.idle_animation_override == "combat/chakra_charge", "Naruto uses a compact ninja-ready idle instead of the wide generic idle")
+    check(CharacterCatalog.SAKURA.display_name == "Sakura" and CharacterCatalog.SAKURA.model_yaw_degrees == 0.0, "Sakura profile must expose corrected name and facing")
     check(flow.start_versus("naruto", "naruto", "training") == OK, "Naruto versus opens")
     await frames(8)
     var fighter: CharacterBody3D = current_scene.get_node("Player")
