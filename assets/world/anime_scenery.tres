@@ -3,6 +3,8 @@
 [resource]
 shader = ExtResource("1")
 shader_parameter/use_vertex_color = true
-shader_parameter/shade_softness = 0.12
-shader_parameter/fill_strength = 0.38
-shader_parameter/rim_strength = 0.025
+shader_parameter/shade_tint = Color(0.48, 0.57, 0.74, 1)
+shader_parameter/shade_threshold = 0.08
+shader_parameter/shade_softness = 0.07
+shader_parameter/fill_strength = 0.08
+shader_parameter/rim_strength = 0.018
