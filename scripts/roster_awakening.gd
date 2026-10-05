@@ -10,7 +10,10 @@ var cooldown: float = 0.0
 var full_charge_hold: float = 0.0
 var aura: MeshInstance3D = null
 var aura_material: StandardMaterial3D = null
+var accent: MultiMeshInstance3D = null
+var accent_material: StandardMaterial3D = null
 var clock: float = 0.0
+var quality_level: int = 1
 
 func _ready() -> void:
     fighter = get_parent() as CharacterBody3D
@@ -43,6 +46,26 @@ func _build_aura() -> void:
     add_child(aura)
     aura.visible = false
 
+    accent = MultiMeshInstance3D.new()
+    var batch: MultiMesh = MultiMesh.new()
+    batch.transform_format = MultiMesh.TRANSFORM_3D
+    batch.instance_count = 10
+    batch.visible_instance_count = 7
+
+    var mote_mesh: PrimitiveMesh = RosterVisualStyle.projectile_mesh(definition.effect if definition != null else "chakra")
+    accent_material = StandardMaterial3D.new()
+    accent_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    accent_material.emission_enabled = true
+    accent_material.albedo_color = color
+    accent_material.emission = color
+    mote_mesh.material = accent_material
+    batch.mesh = mote_mesh
+    batch.custom_aabb = AABB(Vector3(-1.5, -0.5, -1.5), Vector3(3.0, 3.0, 3.0))
+    accent.multimesh = batch
+    accent.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    add_child(accent)
+    accent.visible = false
+
 func eligible() -> bool:
     if definition == null or not fighter.character_definition.has_awakening:
         return false
@@ -72,6 +95,7 @@ func start() -> bool:
     fighter.jutsu_timer = definition.transform_duration + 0.1
     fighter.animation_action_id += 1
     aura.visible = true
+    accent.visible = true
     return true
 
 func _physics_process(delta: float) -> void:
@@ -106,17 +130,14 @@ func _physics_process(delta: float) -> void:
 
     if aura.visible:
         clock += delta
-        var effect_speed: float = 5.0
-        if definition.effect in ["lightning", "taijutsu", "wind"]:
-            effect_speed = 9.0
-        elif definition.effect in ["sand", "earth", "water"]:
-            effect_speed = 3.5
+        var effect_speed: float = RosterVisualStyle.orbit_speed(definition.effect)
         aura.rotation.y += delta * effect_speed
 
         var pulse: float = 1.0 + sin(clock * effect_speed * 1.6) * 0.07
         if transforming:
             pulse += 0.10
         aura.scale = Vector3(1.08, 1.55, 0.92) * pulse
+        _update_accent(effect_speed)
 
 func stop() -> void:
     if transforming:
@@ -131,6 +152,8 @@ func stop() -> void:
 
     if aura != null:
         aura.visible = false
+    if accent != null:
+        accent.visible = false
 
 func reset() -> void:
     stop()
@@ -141,3 +164,28 @@ func movement_multiplier() -> float:
 
 func damage_multiplier() -> float:
     return definition.damage_multiplier if active and definition != null else 1.0
+
+
+func set_quality(level: int) -> void:
+    quality_level = clampi(level, 0, 2)
+    if accent != null and accent.multimesh != null:
+        accent.multimesh.visible_instance_count = [4, 7, 10][quality_level]
+
+func _update_accent(speed: float) -> void:
+    if accent == null or accent.multimesh == null:
+        return
+    var count: int = accent.multimesh.visible_instance_count
+    for i: int in range(count):
+        var phase: float = float(i) * TAU / maxf(float(count), 1.0)
+        var angle: float = clock * speed * (0.45 + float(i % 3) * 0.08) + phase
+        var radius: float = 0.72 + float(i % 2) * 0.20
+        var height: float = 0.25 + fmod(float(i) * 0.31 + clock * 0.55, 1.55)
+        if definition.effect == "shadow":
+            height = 0.10 + float(i % 3) * 0.10
+            radius += 0.18
+        elif definition.effect in ["lightning", "taijutsu"]:
+            height = 0.20 + fmod(float(i) * 0.37 + clock * 1.2, 1.75)
+        var position: Vector3 = Vector3(cos(angle) * radius, height, sin(angle) * radius)
+        var mote_scale: float = 0.12 if definition.effect in ["steel", "bone", "puppet"] else 0.16
+        var basis: Basis = Basis(Vector3.UP, angle).scaled(Vector3.ONE * mote_scale)
+        accent.multimesh.set_instance_transform(i, Transform3D(basis, position))
