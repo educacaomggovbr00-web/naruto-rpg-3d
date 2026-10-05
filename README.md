@@ -253,7 +253,7 @@ A CPU usa agora o modelo existente com AnimationTree independente, locomoção, 
 
 Decisões de aproximação, strafe e recuo têm atraso de 0,18–0,32 s e aleatoriedade própria. Guarda baixa incentiva recuo; guarda não segue mais a regra determinística de cada terceiro ataque. Esses valores são ajustes do projeto, não medidas oficiais do Storm. O alcance foi ajustado para haver contato físico, sem dano por distância.
 
-Ainda não é a CPU Fighter completa: chakra, chakra dash, launcher/pursuit deliberados, jutsus, Ultimate, Awakening e perfis por personagem continuam pendentes. O visual usa o modelo fornecido, sem alegar ser um Naruto final. A validação inclui uma CPU ativa aproximando e acertando via sobreposição real, além dos contratos existentes.
+A CPU evoluiu além deste primeiro incremento: hoje usa chakra, chakra dash, launcher/pursuit, jutsus, Ultimate, Awakening e perfis táticos próprios por personagem. Os 21 slots de rig compartilhado também recebem identidade procedural de paleta/acessórios. Ainda faltam modelos finais, animações exclusivas e polimento competitivo baseado em testes no aparelho.
 
 ### Dados de golpes e branches Storm 1
 
