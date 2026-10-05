@@ -44,9 +44,10 @@ func run() -> void:
     check(fighter.rig_adapter.animation_player.get_animation_library(&"combat") != cpu.rig_adapter.animation_player.get_animation_library(&"combat"), "Different Naruto/Sasuke rest rigs must keep independently prepared clip libraries")
     check(fighter.rig_adapter.animation_tree != cpu.rig_adapter.animation_tree, "Playback state must remain independent")
     var controls: Control = arena.get_node("HUD/MobileControls")
-    check(not controls.ultimate_enabled and not controls.awakening_enabled and not controls.clones_enabled and controls.special_label == "FIRE", "Touchscreen must reflect selected fighter capabilities")
+    check(controls.ultimate_enabled and controls.awakening_enabled and not controls.clones_enabled and controls.special_label == "FIRE", "Touchscreen must reflect selected fighter capabilities")
     check(fighter.specials.clones.is_empty() and cpu.specials.clones.is_empty(), "Sasuke and idle CPU must not allocate Naruto clone rigs")
-    check(not fighter.ultimate.start() and not fighter.awakening.start(), "Sasuke cannot activate Naruto exclusive abilities")
+    check(fighter.ultimate.definition != null and fighter.ultimate.definition.ultimate_id == "sasuke_ultimate", "Sasuke receives own generic Ultimate definition")
+    check(fighter.awakening.definition != null and fighter.awakening.definition.awakening_id == "sasuke_awakening", "Sasuke receives own generic Awakening definition")
     check(not fighter.specials.start("demon"), "Cross-character jutsu must be rejected")
     fighter.chakra = 100.0
     fighter.jutsu_cooldown = 0.0
