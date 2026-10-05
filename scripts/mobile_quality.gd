@@ -69,8 +69,10 @@ func apply(value: int, save: bool = true) -> void:
     emergency_mode = false
 
     var fighter: CharacterBody3D = get_parent().get_node("Player")
-    fighter.specials.sphere_visual.call("set_quality", level)
-    fighter.awakening.aura.call("set_quality", level)
+    if fighter.specials.sphere_visual.has_method("set_quality"):
+        fighter.specials.sphere_visual.call("set_quality", level)
+    if fighter.awakening.aura != null and fighter.awakening.aura.has_method("set_quality"):
+        fighter.awakening.aura.call("set_quality", level)
     _apply_effect_quality(get_parent())
 
     var feedback: Node = get_parent().get_node("CombatFeedback")
