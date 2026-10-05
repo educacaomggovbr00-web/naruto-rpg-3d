@@ -11,6 +11,8 @@ var duration: float = 0.0
 var released: bool = false
 var rasengan_hitbox: Area3D
 var sphere_visual: MeshInstance3D
+var style_visual: MeshInstance3D
+var style_material: StandardMaterial3D
 var active_opened: bool = false
 var confirmed_target: Node3D = null
 var sequence_elapsed: float = 0.0
@@ -44,6 +46,16 @@ func _ready() -> void:
     sphere_visual.set_script(preload("res://scripts/chakra_orb.gd"))
     rasengan_hitbox.add_child(sphere_visual)
     sphere_visual.visible = false
+
+    style_visual = MeshInstance3D.new()
+    style_material = StandardMaterial3D.new()
+    style_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    style_material.emission_enabled = true
+    style_visual.material_override = style_material
+    style_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    rasengan_hitbox.add_child(style_visual)
+    style_visual.visible = false
+
     chidori_visual = MultiMeshInstance3D.new()
     chidori_visual.set_script(preload("res://scripts/chidori_effect.gd"))
     rasengan_hitbox.add_child(chidori_visual)
@@ -150,6 +162,11 @@ func start(kind: String = "") -> bool:
     if owner_fighter.awakening.active:
         visual_color = visual_color.lightened(0.12)
     sphere_visual.call("set_energy_color", visual_color)
+    style_material.albedo_color = visual_color
+    style_material.emission = visual_color
+    if move_definition != null:
+        style_visual.mesh = RosterVisualStyle.projectile_mesh(move_definition.effect)
+        style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius) * 0.72
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     if move_definition != null:
@@ -193,7 +210,9 @@ func _physics_process(delta: float) -> void:
         var hand: Vector3 = owner_fighter.rig_adapter.call("get_hand_world_position")
         rasengan_hitbox.global_position = hand + owner_fighter.global_basis.z * 0.12
         var lightning: bool = move_definition.effect == "lightning"
-        sphere_visual.visible = not lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        var styled_hand: bool = move_definition.effect not in ["chakra", "lightning"] and owner_fighter.character_definition.character_id != "naruto"
+        sphere_visual.visible = not lightning and not styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        style_visual.visible = styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         sphere_visual.scale = Vector3.ONE * minf(1.0, elapsed * 5.0)
         var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
@@ -208,8 +227,13 @@ func _physics_process(delta: float) -> void:
         released = true
         if move_definition != null and move_definition.strategy == "burst":
             rasengan_hitbox.global_position = owner_fighter.global_position + Vector3.UP * 0.65 + owner_fighter.global_basis.z * 0.45
-            sphere_visual.visible = true
-            sphere_visual.scale = Vector3.ONE * clampf(move_definition.hitbox_radius * 0.85, 0.9, 2.4)
+            var generic_burst: bool = owner_fighter.character_definition.character_id != "naruto"
+            sphere_visual.visible = not generic_burst
+            style_visual.visible = generic_burst
+            if generic_burst:
+                style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius)
+            else:
+                sphere_visual.scale = Vector3.ONE * clampf(move_definition.hitbox_radius * 0.85, 0.9, 2.4)
             rasengan_hitbox.call("activate", owner_fighter, move_definition.damage, move_definition.knockback, move_definition.launch_force, move_definition.hitstun, 0.18)
             return
         if move_definition != null and move_definition.strategy == "trap":
@@ -251,6 +275,7 @@ func cancel(stop_clones: bool = true) -> void:
         demon_projectile.call("recycle")
     demon_projectile = null
     sphere_visual.visible = false
+    style_visual.visible = false
     chidori_visual.visible = false
     rasengan_hitbox.call("deactivate")
     barrage_hitbox.call("deactivate")
