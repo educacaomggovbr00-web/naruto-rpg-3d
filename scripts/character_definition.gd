@@ -31,6 +31,8 @@ extends Resource
 @export var max_chakra: float = 100.0
 @export var has_ultimate: bool = true
 @export var has_awakening: bool = true
+@export var ultimate_definition: UltimateDefinition
+@export var awakening_definition: AwakeningDefinition
 @export var energy_color: Color = Color(0.08, 0.55, 1.0)
 
 func find_jutsu(id: String) -> JutsuDefinition:
