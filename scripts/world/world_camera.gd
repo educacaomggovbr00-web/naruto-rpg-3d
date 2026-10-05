@@ -12,7 +12,7 @@ var focus: Vector3
 func _ready() -> void:
     top_level = true
     process_physics_priority = 20
-    focus = actor.global_position + Vector3.UP * 1.18
+    focus = actor.global_position + Vector3.UP * _focus_height()
     position = focus
 
     var shape: SphereShape3D = SphereShape3D.new()
@@ -43,7 +43,7 @@ func _physics_process(delta: float) -> void:
         yaw -= touch.x * 0.0046
         pitch = clampf(pitch - touch.y * 0.0046, -0.30, 0.52)
 
-    var desired_focus: Vector3 = actor.global_position + Vector3.UP * 1.18
+    var desired_focus: Vector3 = actor.global_position + Vector3.UP * _focus_height()
     focus = focus.lerp(desired_focus, 1.0 - exp(-10.0 * delta))
     global_position = focus
     rotation = Vector3(pitch, yaw, 0.0)
@@ -52,3 +52,11 @@ func _physics_process(delta: float) -> void:
     var speed_ratio: float = clampf(speed / 13.0, 0.0, 1.0)
     arm.spring_length = lerpf(arm.spring_length, 6.1 + speed_ratio * 0.55, 1.0 - exp(-4.5 * delta))
     camera.fov = lerpf(camera.fov, 63.0 + speed_ratio * 3.0, 1.0 - exp(-4.5 * delta))
+
+
+func _focus_height() -> float:
+    if actor != null and actor.has_method("get_character_definition"):
+        var definition: CharacterDefinition = actor.call("get_character_definition") as CharacterDefinition
+        if definition != null:
+            return clampf(definition.model_target_height * 0.68, 1.02, 1.20)
+    return 1.14
