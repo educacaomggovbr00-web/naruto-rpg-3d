@@ -13,8 +13,44 @@ extends CanvasLayer
 func _ready() -> void:
     health_bar.max_value = float(player.call("get_max_health"))
     chakra_bar.max_value = float(player.call("get_max_chakra"))
+    _build_backplates()
     _apply_anime_hud_style()
 
+
+func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxFlat:
+    var style: StyleBoxFlat = StyleBoxFlat.new()
+    style.bg_color = background
+    style.border_color = border
+    style.set_border_width_all(1)
+    style.corner_radius_top_left = radius
+    style.corner_radius_top_right = radius
+    style.corner_radius_bottom_left = radius
+    style.corner_radius_bottom_right = radius
+    return style
+
+func _build_backplates() -> void:
+    var vitals: PanelContainer = PanelContainer.new()
+    vitals.position = Vector2(10, 8)
+    vitals.size = Vector2(318, 142)
+    vitals.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    vitals.add_theme_stylebox_override("panel", _hud_panel(Color(0.012, 0.032, 0.052, 0.76), Color(0.25, 0.52, 0.64, 0.42), 14))
+    add_child(vitals)
+    move_child(vitals, 0)
+
+    var info: PanelContainer = PanelContainer.new()
+    info.position = Vector2(10, 152)
+    info.size = Vector2(630, 64)
+    info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    info.add_theme_stylebox_override("panel", _hud_panel(Color(0.012, 0.030, 0.048, 0.66), Color(0.24, 0.45, 0.55, 0.30), 12))
+    add_child(info)
+    move_child(info, 1)
+
+    $Controls.visible = false
+    $Title.add_theme_font_size_override("font_size", 16)
+    status_label.add_theme_font_size_override("font_size", 13)
+    resource_label.add_theme_font_size_override("font_size", 12)
+    rig_label.add_theme_font_size_override("font_size", 11)
+    fps_label.add_theme_font_size_override("font_size", 12)
 
 func _apply_anime_hud_style() -> void:
     var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
@@ -25,7 +61,7 @@ func _apply_anime_hud_style() -> void:
     _style_bar(health_bar, Color("e85846"))
     _style_bar(chakra_bar, chakra_color)
 
-    $Title.add_theme_color_override("font_color", Color("ffd27a"))
+    $Title.add_theme_color_override("font_color", Color("ffd07a"))
     $Title.add_theme_color_override("font_shadow_color", Color(0.02, 0.03, 0.06, 0.95))
     $Title.add_theme_constant_override("shadow_offset_x", 2)
     $Title.add_theme_constant_override("shadow_offset_y", 2)
@@ -40,8 +76,8 @@ func _apply_anime_hud_style() -> void:
     combo_label.add_theme_color_override("font_shadow_color", Color("32150b"))
     combo_label.add_theme_constant_override("shadow_offset_x", 3)
     combo_label.add_theme_constant_override("shadow_offset_y", 3)
-    rig_label.add_theme_color_override("font_color", Color("b7cadb"))
-    fps_label.add_theme_color_override("font_color", Color("d6e4ed"))
+    rig_label.add_theme_color_override("font_color", Color(0.64, 0.76, 0.82, 0.82))
+    fps_label.add_theme_color_override("font_color", Color(0.78, 0.88, 0.92, 0.86))
 
 func _style_bar(bar: ProgressBar, fill_color: Color) -> void:
     var background: StyleBoxFlat = StyleBoxFlat.new()
@@ -77,21 +113,21 @@ func _process(delta: float) -> void:
         lock_text = locked_target.name
 
     var animation_state: String = String(player.call("get_animation_state"))
-    status_label.text = "LOCK: %s | COMBO: %d | ESTADO: %s" % [
+    status_label.text = "%s  •  COMBO %d  •  %s" % [
         lock_text,
         int(player.call("get_combo_step")),
-        animation_state
+        animation_state.to_upper()
     ]
 
     var sub_cd: float = float(player.call("get_substitution_cooldown"))
     var jutsu_cd: float = float(player.call("get_jutsu_cooldown"))
-    resource_label.text = "SUB: %d | CD SUB: %.1f | CD JUTSU: %.1f" % [
+    resource_label.text = "SUB %d  •  GUARDA %d  •  %s  •  CD %.1f/%.1f" % [
         int(player.call("get_substitutions")),
+        int(player.guard_meter),
+        String(player.specials.selected).to_upper(),
         sub_cd,
         jutsu_cd
     ]
-
-    resource_label.text += " | GUARDA: %d | %s" % [int(player.guard_meter), String(player.specials.selected).to_upper()]
     if is_instance_valid(player.cinematic_owner) and player.cinematic_owner.get("phase") == "clash":
         resource_label.text = "ULT DA CPU — TOQUE ATK OU SUB! VOCÊ %d : CPU %d" % [player.cinematic_owner.cpu_presses, player.cinematic_owner.presses]
     elif player.ultimate.phase == "clash":
@@ -106,7 +142,7 @@ func _process(delta: float) -> void:
         controls.tool_label = labels[player.ninja_tools.selected]
         controls.queue_redraw()
     var cpu: Node = get_node("../EnemyDummy")
-    status_label.text += " | %s: %d CHK:%d" % [cpu.character_definition.display_name, int(cpu.health), int(cpu.chakra)]
+    status_label.text += "  •  CPU %dHP" % int(cpu.health)
 
     var combo_hits: int = int(player.call("get_combo_hits"))
     var combo_damage: float = float(player.call("get_combo_damage"))
