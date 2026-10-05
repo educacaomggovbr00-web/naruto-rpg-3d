@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Offline pose fitting, skinning and mobile mesh preparation for supplied GLBs.
 
-Requires numpy, scipy, Pillow and gltfpack 1.3. Original source GLBs stay intact.
+Requires numpy, scipy, Pillow and gltfpack 1.3. Large original source GLBs are
+kept outside the Git repository; pass them explicitly when rebuilding.
 The supplied model has an asymmetric bent-arm pose. Fit joint landmarks in that
 pose, blend adjacent bone influences, then move the mesh to the combat bind pose.
 Animations remain the existing artist-authored CC0 library; no runtime baking.
@@ -263,21 +264,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gltfpack", default="gltfpack")
     parser.add_argument("--texture-size", type=int, default=1024)
+    parser.add_argument("--pbr-source", type=Path, required=True,
+                        help="Path to the original base_basic_pbr.glb supplied by the user")
+    parser.add_argument("--shaded-source", type=Path, required=True,
+                        help="Path to the original base_basic_shaded.glb supplied by the user")
     args = parser.parse_args()
     if not 256 <= args.texture_size <= 2048:
         parser.error("texture size must be between 256 and 2048")
     version = subprocess.run([args.gltfpack, "-v"], check=True, capture_output=True, text=True)
     if (version.stdout + version.stderr).strip() != "gltfpack 1.3":
         raise ValueError("This pipeline is pinned to gltfpack 1.3")
-    originals = {variant: GLB(ASSETS / f"base_basic_{variant}.glb") for variant in VARIANTS}
+    source_paths = {"pbr": args.pbr_source, "shaded": args.shaded_source}
+    originals = {variant: GLB(source_paths[variant]) for variant in VARIANTS}
     rig_source = GLB(ROOT / "assets/characters/rigged.glb")
     registry_path = ROOT / "assets/asset_registry.json"
     registry = json.loads(registry_path.read_text())
     registered = {entry["path"]: entry for entry in registry["assets"]}
+
+    source_manifest = json.loads((ASSETS / "source_manifest.json").read_text())
+    expected_hashes = source_manifest["source_sha256"]
     for variant, glb in originals.items():
-        path = f"assets/characters/base_basic/base_basic_{variant}.glb"
-        if hashlib.sha256(glb.raw).hexdigest() != registered[path]["sha256"]:
-            raise ValueError("Source model changed; review its recorded provenance first: " + path)
+        digest = hashlib.sha256(glb.raw).hexdigest()
+        if digest != expected_hashes[variant]:
+            raise ValueError("Source model hash mismatch; use the original supplied file: " + str(source_paths[variant]))
     body = json.loads((ROOT / "assets/animations/combat_manifest.json").read_text())
     assert hashlib.sha256(rig_source.raw).hexdigest() == body["target_sha256"]
     # Both variants must describe the same geometry/UV layout before sharing skin.
@@ -287,7 +296,7 @@ def main():
     rig = combat_bind(rig_source)
     with tempfile.TemporaryDirectory() as tmp:
         simplified = Path(tmp) / "simplified.glb"
-        subprocess.run([args.gltfpack, "-i", str(ASSETS / "base_basic_shaded.glb"),
+        subprocess.run([args.gltfpack, "-i", str(args.shaded_source),
                         "-o", str(simplified), "-si", "0.04", "-se", "0.008", "-sp", "-sv", "-noq"], check=True)
         source = GLB(simplified)
     primitive = source.data["meshes"][0]["primitives"][0]
@@ -316,9 +325,9 @@ def main():
         entry = {
             "path": output["path"], "status": "DEVELOPMENT_ONLY",
             "author": "Modelo fornecido pelo usuário / rig e preparação pelo projeto",
-            "source": "GLB base_basic original fornecido no ZIP; skeleton corporal de assets/characters/rigged.glb",
+            "source": "GLB base_basic original fornecido externamente; skeleton corporal de assets/characters/rigged.glb",
             "license": "Origem do modelo e skeleton não comprovada; animações CC0 do Quaternius registradas separadamente",
-            "modifications": f"Malha reduzida offline a {output['triangles']} triângulos, texturas {args.texture_size}, ajuste de pose, 65 bones Mixamo e pesos de skin. Originais preservados.",
+            "modifications": f"Malha reduzida offline a {output['triangles']} triângulos, texturas {args.texture_size}, ajuste de pose, 65 bones Mixamo e pesos de skin. Originais mantidos fora do Git para reduzir o download.",
             "sha256": output["sha256"],
             "embedded_images": [{"path": path.with_name(path.stem + "_" + image["name"] + ".png").relative_to(ROOT).as_posix(),
                                  "sha256": hashlib.sha256(glb.image(image)).hexdigest()} for image in glb.data["images"]],
