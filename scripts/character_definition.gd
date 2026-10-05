@@ -34,6 +34,7 @@ extends Resource
 @export var ultimate_definition: UltimateDefinition
 @export var awakening_definition: AwakeningDefinition
 @export var ai_profile: AIProfileDefinition
+@export var visual_profile: RosterVisualProfileDefinition
 @export var energy_color: Color = Color(0.08, 0.55, 1.0)
 
 func find_jutsu(id: String) -> JutsuDefinition:
