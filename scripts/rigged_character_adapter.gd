@@ -67,6 +67,7 @@ func _ready() -> void:
             auto_scale_model = definition.model_auto_scale
             ground_to_collision = definition.model_ground_to_collision
             model_scale = definition.model_scale_multiplier
+            target_character_height = definition.model_target_height
             model_offset = definition.model_offset
             model_yaw_degrees = definition.model_yaw_degrees
             fallback_import_scale = definition.model_fallback_import_scale
@@ -553,6 +554,14 @@ func _animation_for_state(state_name: String) -> StringName:
             return &"native/walk"
         if state_name == "sprint" and animation_player.has_animation(&"native/run"):
             return &"native/run"
+
+    if state_name == "idle" and player.has_method("get_character_definition"):
+        var definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+        if definition != null and not definition.idle_animation_override.is_empty():
+            var override_name: StringName = StringName(definition.idle_animation_override)
+            if animation_player.has_animation(override_name):
+                return override_name
+
     return StringName("combat/" + state_name)
 
 func _setup_animation_tree() -> void:
