@@ -64,6 +64,8 @@ static func initialize() -> void:
         _placeholder("itachi", "Itachi Uchiha"),
         _placeholder("kisame", "Kisame Hoshigaki")
     ]
+    for fighter: CharacterDefinition in ordered:
+        _complete_power_kit(fighter)
     READY = ordered
 
 static func _placeholder(id: String, name: String) -> CharacterDefinition:
@@ -83,9 +85,26 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
 
     definition.jutsus = RosterJutsuFactory.ids_for(id)
     definition.jutsu_definitions = RosterJutsuFactory.definitions_for(id)
-    definition.has_ultimate = false
-    definition.has_awakening = false
+    definition.has_ultimate = true
+    definition.has_awakening = true
+    definition.ultimate_definition = RosterPowerFactory.build_ultimate(id)
+    definition.awakening_definition = RosterPowerFactory.build_awakening(id)
     return definition
+
+static func _complete_power_kit(definition: CharacterDefinition) -> void:
+    if definition == null or definition.character_id == "naruto":
+        return
+
+    if definition.jutsus.size() < 2:
+        var extra: JutsuDefinition = RosterJutsuFactory.build_secondary(definition.character_id)
+        if extra != null and definition.find_jutsu(extra.jutsu_id) == null:
+            definition.jutsu_definitions.append(extra)
+            definition.jutsus.append(extra.jutsu_id)
+
+    definition.ultimate_definition = RosterPowerFactory.build_ultimate(definition.character_id)
+    definition.awakening_definition = RosterPowerFactory.build_awakening(definition.character_id)
+    definition.has_ultimate = definition.ultimate_definition != null
+    definition.has_awakening = definition.awakening_definition != null
 
 static func find(id: String) -> CharacterDefinition:
     initialize()
