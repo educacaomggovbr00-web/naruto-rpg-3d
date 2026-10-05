@@ -58,10 +58,22 @@ func _ready() -> void:
     barrage_hitbox.add_child(barrage_shape)
     add_child(barrage_hitbox)
     barrage_hitbox.top_level = true
-    var projectile_count: int = 3 if "demon" in choices or "fireball" in choices else 0
+    var projectile_script: Script = null
+    if "demon" in choices:
+        projectile_script = preload("res://scripts/chakra_projectile.gd")
+    elif "fireball" in choices:
+        projectile_script = preload("res://scripts/fireball_projectile.gd")
+    else:
+        for jutsu_id: String in choices:
+            var projectile_data: JutsuDefinition = owner_fighter.character_definition.find_jutsu(jutsu_id)
+            if projectile_data != null and projectile_data.strategy == "projectile":
+                projectile_script = preload("res://scripts/generic_jutsu_projectile.gd")
+                break
+
+    var projectile_count: int = 3 if projectile_script != null else 0
     for i: int in range(projectile_count):
         var projectile: Node3D = Node3D.new()
-        projectile.set_script(preload("res://scripts/fireball_projectile.gd") if "fireball" in choices else preload("res://scripts/chakra_projectile.gd"))
+        projectile.set_script(projectile_script)
         owner_fighter.get_parent().add_child.call_deferred(projectile)
         projectiles.append(projectile)
 
@@ -107,7 +119,7 @@ func start(kind: String = "") -> bool:
     var cost: float = data.chakra_cost if data != null else 32.0
     if owner_fighter.chakra < cost:
         return false
-    if move == "booby_trap":
+    if data != null and data.strategy == "trap":
         if not owner_fighter.is_on_floor():
             return false
         var available: bool = false
@@ -135,10 +147,14 @@ func start(kind: String = "") -> bool:
     move_definition = owner_fighter.character_definition.find_jutsu(move)
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
-    if move_definition != null and move_definition.strategy == "hand":
-        duration = float(move_definition.animation_timing(owner_fighter.rig_adapter.manifest).get("duration", 0.95))
+    if move_definition != null:
+        if move_definition.strategy == "hand":
+            duration = float(move_definition.animation_timing(owner_fighter.rig_adapter.manifest).get("duration", 0.95))
+        elif move_definition.strategy == "burst":
+            duration = 0.72
         var hit_shape: SphereShape3D = rasengan_hitbox.get_child(0).shape as SphereShape3D
-        hit_shape.radius = move_definition.hitbox_radius
+        if move_definition.strategy in ["hand", "burst"]:
+            hit_shape.radius = move_definition.hitbox_radius
     confirmed_target = null
     sequence_stage = 0
     sequence_elapsed = 0.0
@@ -165,23 +181,30 @@ func _physics_process(delta: float) -> void:
     elapsed += delta
     if current == "barrage":
         _barrage_timeline(delta)
-    elif current in ["rasengan", "chidori", "raikiri"]:
+    elif move_definition != null and move_definition.strategy == "hand":
         var hand: Vector3 = owner_fighter.rig_adapter.call("get_hand_world_position")
         rasengan_hitbox.global_position = hand + owner_fighter.global_basis.z * 0.12
-        sphere_visual.visible = current == "rasengan" and elapsed > 0.12 and elapsed < 0.84
-        chidori_visual.visible = current in ["chidori", "raikiri"] and elapsed > 0.12 and elapsed < 0.84
+        var lightning: bool = move_definition.effect == "lightning"
+        sphere_visual.visible = not lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         sphere_visual.scale = Vector3.ONE * minf(1.0, elapsed * 5.0)
-        var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest) if move_definition != null else {}
+        var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
         var startup: float = float(timing.get("startup", 0.38))
         var active_time: float = float(timing.get("active", 0.30))
         if elapsed >= startup and not active_opened:
             active_opened = true
-            rasengan_hitbox.call("activate", owner_fighter, move_definition.damage if move_definition != null else 26.0, move_definition.knockback if move_definition != null else 11.0, move_definition.launch_force if move_definition != null else 4.5, move_definition.hitstun if move_definition != null else 0.6, active_time)
+            rasengan_hitbox.call("activate", owner_fighter, move_definition.damage, move_definition.knockback, move_definition.launch_force, move_definition.hitstun, active_time)
         if elapsed >= startup + active_time:
             rasengan_hitbox.call("deactivate")
     elif not released and elapsed >= release_time():
         released = true
-        if current == "booby_trap":
+        if move_definition != null and move_definition.strategy == "burst":
+            rasengan_hitbox.global_position = owner_fighter.global_position + Vector3.UP * 0.65 + owner_fighter.global_basis.z * 0.45
+            sphere_visual.visible = true
+            sphere_visual.scale = Vector3.ONE * clampf(move_definition.hitbox_radius * 0.85, 0.9, 2.4)
+            rasengan_hitbox.call("activate", owner_fighter, move_definition.damage, move_definition.knockback, move_definition.launch_force, move_definition.hitstun, 0.18)
+            return
+        if move_definition != null and move_definition.strategy == "trap":
             for trap: Node3D in traps:
                 if trap.is_inside_tree() and not trap.active:
                     trap.call("arm", owner_fighter, move_definition)
@@ -198,7 +221,11 @@ func _physics_process(delta: float) -> void:
             if projectile.is_inside_tree() and not projectile.active:
                 demon_projectile = projectile
                 transformed = current == "demon"
-                projectile.call("launch", owner_fighter, owner_fighter.locked_target, owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8, owner_fighter.global_basis.z)
+                var origin: Vector3 = owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8
+                if projectile.has_method("launch_jutsu") and move_definition != null:
+                    projectile.call("launch_jutsu", owner_fighter, owner_fighter.locked_target, origin, owner_fighter.global_basis.z, move_definition)
+                else:
+                    projectile.call("launch", owner_fighter, owner_fighter.locked_target, origin, owner_fighter.global_basis.z)
                 break
     if elapsed >= duration:
         # Successful release lets delayed clone attacks finish autonomously.
@@ -248,9 +275,9 @@ func movement_velocity(delta: float) -> Vector3:
     if current == "barrage" and is_instance_valid(confirmed_target) and sequence_elapsed < 0.65:
         var pursuit: Vector3 = confirmed_target.global_position - owner_fighter.global_position - owner_fighter.global_basis.z * 1.0
         return pursuit.limit_length(1.0) * 12.0
-    if current not in ["rasengan", "chidori", "raikiri"]:
+    if move_definition == null or move_definition.strategy != "hand":
         return Vector3.ZERO
-    var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest) if move_definition != null else {}
+    var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
     var startup: float = float(timing.get("startup", 0.38))
     if elapsed < startup - (move_definition.movement_lead if move_definition != null else 0.1) or elapsed > startup + float(timing.get("active", 0.30)):
         return Vector3.ZERO
@@ -308,8 +335,8 @@ func release_time() -> float:
     return float(move_definition.animation_timing(owner_fighter.rig_adapter.manifest).get("impact", 0.24))
 
 func animation_clip() -> String:
-    if current in ["rasengan", "chidori", "raikiri"]:
-        return move_definition.animation_name if move_definition != null else "rasengan"
+    if move_definition != null and move_definition.strategy == "hand":
+        return move_definition.animation_name
     if current == "barrage":
         return "air_attack_4" if sequence_stage >= 2 else "attack_1"
     return "jutsu"
