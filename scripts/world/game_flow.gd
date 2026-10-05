@@ -143,7 +143,8 @@ func start_battle(id: String, position: Vector3, yaw: float) -> Error:
     if not MISSIONS.has(id) or MISSIONS[id].kind != "battle":
         return ERR_INVALID_PARAMETER
     versus_mode = false
-    player_character = CharacterCatalog.NARUTO
+    if player_character == null:
+        player_character = CharacterCatalog.NARUTO
     cpu_character = CharacterCatalog.NARUTO
     arena_id = "training"
     accept_mission(id)
