@@ -27,7 +27,11 @@ func _ready() -> void:
     rig_adapter.name = "RiggedCharacterAdapter"
     rig_adapter.set_script(preload("res://scripts/character_visual_adapter.gd"))
     if player_controlled:
-        rig_adapter.model_path = CharacterCatalog.NARUTO.model_path
+        var definition: CharacterDefinition = get_character_definition()
+        if definition != null:
+            rig_adapter.model_path = definition.model_path
+            move_speed = definition.movement_speed
+            sprint_speed = definition.sprint_speed
     rig_adapter.follow_hitbox_to_bones = false
     add_child(rig_adapter)
     if player_controlled:
@@ -91,4 +95,6 @@ func get_combo_step() -> int:
     return 1
 
 func get_character_definition() -> CharacterDefinition:
-    return CharacterCatalog.NARUTO if player_controlled else null
+    if not player_controlled:
+        return null
+    return GameFlow.player_character if GameFlow.player_character != null else CharacterCatalog.NARUTO
