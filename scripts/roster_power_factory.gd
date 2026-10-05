@@ -58,6 +58,33 @@ const AWAKENINGS: Dictionary = {
     "kisame": ["Shark Skin Surge", "water", Color(0.12, 0.56, 1.0), 1.14, 1.34, 17.0]
 }
 
+const ULTIMATE_CLIPS: Dictionary = {
+    "sasuke": ["chakra_dash", "attack_4"],
+    "sakura": ["attack_4", "air_attack_4"],
+    "shikamaru": ["jutsu", "attack_3"],
+    "choji": ["chakra_dash", "attack_4"],
+    "ino": ["jutsu", "attack_2"],
+    "rock_lee": ["air_attack_2", "air_attack_4"],
+    "neji": ["attack_2", "attack_3"],
+    "tenten": ["jutsu", "air_attack_3"],
+    "shino": ["jutsu", "chakra_charge"],
+    "kiba": ["chakra_dash", "attack_3"],
+    "hinata": ["attack_2", "attack_3"],
+    "gaara": ["jutsu", "attack_4"],
+    "kankuro": ["attack_1", "air_attack_3"],
+    "temari": ["jutsu", "air_attack_3"],
+    "kakashi": ["chakra_dash", "attack_4"],
+    "might_guy": ["air_attack_2", "air_attack_4"],
+    "jiraiya": ["jutsu", "attack_4"],
+    "tsunade": ["attack_4", "air_attack_4"],
+    "hiruzen": ["jutsu", "attack_4"],
+    "orochimaru": ["attack_2", "air_attack_3"],
+    "kabuto": ["rasengan", "attack_3"],
+    "kimimaro": ["attack_3", "air_attack_4"],
+    "itachi": ["jutsu", "air_attack_3"],
+    "kisame": ["jutsu", "attack_4"]
+}
+
 static func build_ultimate(id: String) -> UltimateDefinition:
     var values: Array = ULTIMATES.get(id, [])
     if values.is_empty():
@@ -71,8 +98,9 @@ static func build_ultimate(id: String) -> UltimateDefinition:
     data.entry_damage = 4.0
     data.hitbox_radius = float(values[4])
     data.finisher_knockback = float(values[5])
-    data.entry_clip = "jutsu"
-    data.finisher_clip = "attack_4"
+    var clips: Array = ULTIMATE_CLIPS.get(id, ["jutsu", "attack_4"])
+    data.entry_clip = String(clips[0])
+    data.finisher_clip = String(clips[1])
     data.sequence_duration = 1.10
     data.evidence = "OUR_APPROXIMATION"
     return data
