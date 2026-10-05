@@ -72,9 +72,13 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     var definition: CharacterDefinition = CharacterDefinition.new()
     definition.character_id = id
     definition.display_name = name
-    definition.model_path = "res://assets/characters/rigged.glb"
+    definition.model_slot = RosterModelSlotFactory.build(id)
+    definition.model_path = definition.model_slot.preferred_path
+    definition.model_fallback_path = definition.model_slot.fallback_path
+    definition.model_target_height = definition.model_slot.target_height
+    definition.model_yaw_degrees = definition.model_slot.yaw_degrees
     definition.visual_status = "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG"
-    definition.summary = "%s — slot jogável com rig compartilhado, paleta/acessórios procedurais próprios e kit completo funcional OUR_APPROXIMATION. Modelo, cabelo/roupa detalhados e coreografia final ainda serão substituídos por assets específicos." % name
+    definition.summary = "%s — slot com caminho reservado para modelo mobile próprio e fallback automático para o rig compartilhado. Enquanto o GLB final não existe ou falha na validação, usa paleta/acessórios procedurais e kit completo funcional OUR_APPROXIMATION." % name
     definition.stylized_material = false
 
     var profile: Dictionary = RosterMovesetFactory.profile(id)
