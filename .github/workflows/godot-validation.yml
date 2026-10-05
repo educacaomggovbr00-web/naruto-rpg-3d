@@ -83,6 +83,9 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/storm1_roster_contract.gd 2>&1 | tee /tmp/storm1-roster-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/storm1-roster-contract.log
           grep -F 'STORM 1 ROSTER CONTRACT: PASS' /tmp/storm1-roster-contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/full_roster_specials_contract.gd 2>&1 | tee /tmp/full-roster-specials.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/full-roster-specials.log
+          grep -F 'FULL ROSTER SPECIALS CONTRACT: PASS' /tmp/full-roster-specials.log
       - name: Validate character jutsu data and physical Sakura traps
         shell: bash
         run: |
