@@ -40,8 +40,11 @@ func run() -> void:
     var original_preferred: String = gaara.model_path
     var original_fallback: String = gaara.model_fallback_path
 
-    check(not ResourceLoader.exists(original_preferred), "Gaara final slot should still be empty during this milestone")
     check(ResourceLoader.exists(original_fallback), "Shared fallback rig must exist")
+
+    gaara.model_path = "res://assets/characters/final/__contract_missing__/never_mobile.glb"
+    gaara.model_fallback_path = original_fallback
+    var missing_preferred: String = gaara.model_path
 
     var flow: Node = root.get_node("GameFlow")
     check(flow.start_versus("gaara", "temari", "training") == OK, "Missing-final fallback battle opens")
@@ -54,7 +57,7 @@ func run() -> void:
 
     check(bool(adapter.get("rig_loaded")), "Missing final model must not break runtime")
     check(bool(adapter.get("using_model_fallback")), "Missing final model must activate fallback")
-    check(String(adapter.get("requested_model_path")) == original_preferred, "Adapter preserves requested final path for diagnostics")
+    check(String(adapter.get("requested_model_path")) == missing_preferred, "Adapter preserves requested final path for diagnostics")
     check(String(adapter.get("resolved_model_path")) == original_fallback, "Adapter resolves shared fallback")
     var attempts: PackedStringArray = adapter.get("model_attempt_log")
     check(attempts.size() >= 2, "Adapter records preferred and fallback attempts")
