@@ -54,6 +54,52 @@ const SECONDARY: Dictionary = {
     "kisame": {"id": "water_prison", "name": "Water Prison", "strategy": "burst", "effect": "water", "cost": 32.0, "cooldown": 2.0, "damage": 28.0, "knockback": 7.0, "lift": 2.0, "stun": 0.96, "radius": 1.60, "speed": 0.0, "tracking": 0.0}
 }
 
+const CLIP_MAP: Dictionary = {
+    "shadow_bind": "jutsu",
+    "shadow_sewing": "attack_3",
+    "human_boulder": "chakra_dash",
+    "partial_expansion": "attack_4",
+    "mind_transfer": "jutsu",
+    "chakra_flower_burst": "chakra_charge",
+    "leaf_whirlwind": "air_attack_2",
+    "primary_lotus": "air_attack_4",
+    "rotation": "dodge",
+    "sixty_four_palms": "attack_3",
+    "weapon_volley": "jutsu",
+    "twin_dragons": "air_attack_3",
+    "insect_swarm": "jutsu",
+    "beetle_sphere": "chakra_charge",
+    "fang_over_fang": "chakra_dash",
+    "beast_combo": "attack_3",
+    "gentle_fist": "attack_2",
+    "protective_palms": "guard_break",
+    "sand_coffin": "jutsu",
+    "sand_burial": "attack_4",
+    "puppet_strike": "attack_1",
+    "poison_puppet": "jutsu",
+    "wind_scythe": "jutsu",
+    "great_sickle_wind": "air_attack_3",
+    "dynamic_entry": "air_attack_2",
+    "leaf_hurricane": "attack_3",
+    "toad_oil_bullet": "jutsu",
+    "jiraiya_rasengan": "rasengan",
+    "heaven_kick": "air_attack_4",
+    "ground_smash": "attack_4",
+    "fire_dragon": "jutsu",
+    "earth_dragon": "jutsu",
+    "snake_bind": "jutsu",
+    "striking_snakes": "attack_2",
+    "chakra_scalpel": "rasengan",
+    "nerve_rupture": "attack_3",
+    "bone_dance": "attack_4",
+    "clematis_dance": "air_attack_2",
+    "fire_style": "jutsu",
+    "phoenix_flower": "air_attack_3",
+    "water_shark": "jutsu",
+    "water_prison": "chakra_charge",
+    "cherry_blossom_impact": "attack_4"
+}
+
 static func build(id: String) -> JutsuDefinition:
     return _build_profile(PROFILES.get(id, {}))
 
@@ -68,7 +114,7 @@ static func _build_profile(profile: Dictionary) -> JutsuDefinition:
     data.jutsu_id = String(profile["id"])
     data.display_name = String(profile["name"])
     data.strategy = String(profile["strategy"])
-    data.animation_name = "rasengan" if data.strategy == "hand" else "jutsu"
+    data.animation_name = String(CLIP_MAP.get(data.jutsu_id, "rasengan" if data.strategy == "hand" else "jutsu"))
     data.chakra_cost = float(profile["cost"])
     data.cooldown = float(profile["cooldown"])
     data.damage = float(profile["damage"])
