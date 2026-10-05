@@ -68,9 +68,9 @@ func run() -> void:
     var roof: Dictionary = village.get_world_3d().direct_space_state.intersect_ray(query)
     check(not roof.is_empty() and float(roof.position.y) > 3.0, "Rooftop route must have actual walkable geometry")
     geometry.set_quality(0)
-    check(geometry.sectors[0].visibility_range_end == 70.0, "LOW must limit sector render distance")
+    check(geometry.sectors[0].visibility_range_end == 58.0, "LOW must limit sector render distance")
     geometry.set_quality(2)
-    check(geometry.sectors[0].visibility_range_end == 130.0, "HIGH must restore sector render distance")
+    check(geometry.sectors[0].visibility_range_end == 112.0, "HIGH must restore sector render distance")
     check(geometry.collision_count > 50, "Quality culling cannot remove traversal collision")
     controls.joystick_touch = 2
     controls.sprint_touch = 3
