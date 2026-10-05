@@ -29,8 +29,38 @@ const PROFILES: Dictionary = {
     "kisame": {"id": "water_shark", "name": "Water Shark", "strategy": "projectile", "effect": "water", "cost": 29.0, "cooldown": 1.7, "damage": 25.0, "knockback": 11.0, "lift": 3.0, "stun": 0.64, "radius": 0.78, "speed": 17.0, "tracking": 2.4}
 }
 
+const SECONDARY: Dictionary = {
+    "sakura": {"id": "cherry_blossom_impact", "name": "Cherry Blossom Impact", "strategy": "burst", "effect": "earth", "cost": 26.0, "cooldown": 1.5, "damage": 28.0, "knockback": 13.0, "lift": 4.0, "stun": 0.72, "radius": 1.30, "speed": 0.0, "tracking": 0.0},
+    "shikamaru": {"id": "shadow_sewing", "name": "Shadow Sewing", "strategy": "projectile", "effect": "shadow", "cost": 28.0, "cooldown": 1.9, "damage": 16.0, "knockback": 4.0, "lift": 1.0, "stun": 0.82, "radius": 0.48, "speed": 18.0, "tracking": 4.2},
+    "choji": {"id": "partial_expansion", "name": "Partial Expansion", "strategy": "burst", "effect": "earth", "cost": 28.0, "cooldown": 1.7, "damage": 27.0, "knockback": 13.0, "lift": 4.0, "stun": 0.70, "radius": 1.35, "speed": 0.0, "tracking": 0.0},
+    "ino": {"id": "chakra_flower_burst", "name": "Chakra Flower Burst", "strategy": "burst", "effect": "mind", "cost": 24.0, "cooldown": 1.6, "damage": 18.0, "knockback": 7.0, "lift": 2.0, "stun": 0.62, "radius": 1.20, "speed": 0.0, "tracking": 0.0},
+    "rock_lee": {"id": "primary_lotus", "name": "Primary Lotus", "strategy": "hand", "effect": "taijutsu", "cost": 30.0, "cooldown": 1.8, "damage": 29.0, "knockback": 8.0, "lift": -12.0, "stun": 0.80, "radius": 0.68, "speed": 19.0, "tracking": 8.5},
+    "neji": {"id": "sixty_four_palms", "name": "64 Palms", "strategy": "hand", "effect": "chakra", "cost": 30.0, "cooldown": 1.8, "damage": 27.0, "knockback": 6.0, "lift": 2.0, "stun": 0.92, "radius": 0.58, "speed": 16.0, "tracking": 8.5},
+    "tenten": {"id": "twin_dragons", "name": "Twin Rising Dragons", "strategy": "burst", "effect": "steel", "cost": 28.0, "cooldown": 1.7, "damage": 25.0, "knockback": 10.0, "lift": 4.0, "stun": 0.66, "radius": 1.45, "speed": 0.0, "tracking": 0.0},
+    "shino": {"id": "beetle_sphere", "name": "Beetle Sphere", "strategy": "burst", "effect": "insect", "cost": 29.0, "cooldown": 1.9, "damage": 23.0, "knockback": 8.0, "lift": 2.0, "stun": 0.78, "radius": 1.50, "speed": 0.0, "tracking": 0.0},
+    "kiba": {"id": "beast_combo", "name": "Beast Human Combo", "strategy": "hand", "effect": "wind", "cost": 28.0, "cooldown": 1.6, "damage": 28.0, "knockback": 12.0, "lift": 5.0, "stun": 0.68, "radius": 0.72, "speed": 19.0, "tracking": 7.5},
+    "hinata": {"id": "protective_palms", "name": "Protective Eight Trigrams", "strategy": "burst", "effect": "chakra", "cost": 28.0, "cooldown": 1.8, "damage": 22.0, "knockback": 9.0, "lift": 2.0, "stun": 0.74, "radius": 1.45, "speed": 0.0, "tracking": 0.0},
+    "gaara": {"id": "sand_burial", "name": "Sand Burial", "strategy": "burst", "effect": "sand", "cost": 34.0, "cooldown": 2.2, "damage": 31.0, "knockback": 12.0, "lift": -8.0, "stun": 0.92, "radius": 1.85, "speed": 0.0, "tracking": 0.0},
+    "kankuro": {"id": "poison_puppet", "name": "Poison Puppet Volley", "strategy": "projectile", "effect": "puppet", "cost": 29.0, "cooldown": 1.8, "damage": 24.0, "knockback": 7.0, "lift": 1.0, "stun": 0.82, "radius": 0.58, "speed": 18.0, "tracking": 3.6},
+    "temari": {"id": "great_sickle_wind", "name": "Great Sickle Wind", "strategy": "burst", "effect": "wind", "cost": 31.0, "cooldown": 1.9, "damage": 28.0, "knockback": 14.0, "lift": 4.0, "stun": 0.72, "radius": 1.75, "speed": 0.0, "tracking": 0.0},
+    "might_guy": {"id": "leaf_hurricane", "name": "Leaf Hurricane", "strategy": "hand", "effect": "taijutsu", "cost": 27.0, "cooldown": 1.5, "damage": 27.0, "knockback": 11.0, "lift": 6.0, "stun": 0.65, "radius": 0.70, "speed": 19.0, "tracking": 8.0},
+    "jiraiya": {"id": "jiraiya_rasengan", "name": "Rasengan", "strategy": "hand", "effect": "chakra", "cost": 32.0, "cooldown": 1.8, "damage": 30.0, "knockback": 12.0, "lift": 4.0, "stun": 0.72, "radius": 0.64, "speed": 15.0, "tracking": 7.5},
+    "tsunade": {"id": "ground_smash", "name": "Ground Smash", "strategy": "burst", "effect": "earth", "cost": 31.0, "cooldown": 1.9, "damage": 34.0, "knockback": 15.0, "lift": 5.0, "stun": 0.85, "radius": 1.65, "speed": 0.0, "tracking": 0.0},
+    "hiruzen": {"id": "earth_dragon", "name": "Earth Dragon", "strategy": "projectile", "effect": "earth", "cost": 30.0, "cooldown": 1.8, "damage": 27.0, "knockback": 10.0, "lift": 3.0, "stun": 0.66, "radius": 0.68, "speed": 17.0, "tracking": 2.3},
+    "orochimaru": {"id": "striking_snakes", "name": "Striking Shadow Snakes", "strategy": "hand", "effect": "snake", "cost": 29.0, "cooldown": 1.7, "damage": 26.0, "knockback": 8.0, "lift": 3.0, "stun": 0.82, "radius": 0.66, "speed": 16.0, "tracking": 7.0},
+    "kabuto": {"id": "nerve_rupture", "name": "Nervous System Rupture", "strategy": "hand", "effect": "chakra", "cost": 28.0, "cooldown": 1.7, "damage": 24.0, "knockback": 6.0, "lift": 1.0, "stun": 0.95, "radius": 0.56, "speed": 16.0, "tracking": 7.5},
+    "kimimaro": {"id": "clematis_dance", "name": "Clematis Dance", "strategy": "hand", "effect": "bone", "cost": 31.0, "cooldown": 1.8, "damage": 31.0, "knockback": 12.0, "lift": 6.0, "stun": 0.75, "radius": 0.72, "speed": 17.0, "tracking": 7.5},
+    "itachi": {"id": "phoenix_flower", "name": "Phoenix Flower", "strategy": "projectile", "effect": "fire", "cost": 29.0, "cooldown": 1.7, "damage": 27.0, "knockback": 8.0, "lift": 3.0, "stun": 0.66, "radius": 0.58, "speed": 21.0, "tracking": 2.0},
+    "kisame": {"id": "water_prison", "name": "Water Prison", "strategy": "burst", "effect": "water", "cost": 32.0, "cooldown": 2.0, "damage": 28.0, "knockback": 7.0, "lift": 2.0, "stun": 0.96, "radius": 1.60, "speed": 0.0, "tracking": 0.0}
+}
+
 static func build(id: String) -> JutsuDefinition:
-    var profile: Dictionary = PROFILES.get(id, {})
+    return _build_profile(PROFILES.get(id, {}))
+
+static func build_secondary(id: String) -> JutsuDefinition:
+    return _build_profile(SECONDARY.get(id, {}))
+
+static func _build_profile(profile: Dictionary) -> JutsuDefinition:
     if profile.is_empty():
         return null
 
@@ -54,14 +84,21 @@ static func build(id: String) -> JutsuDefinition:
     return data
 
 static func ids_for(id: String) -> PackedStringArray:
-    var data: JutsuDefinition = build(id)
-    if data == null:
-        return PackedStringArray()
-    return PackedStringArray([data.jutsu_id])
+    var result: PackedStringArray = PackedStringArray()
+    var primary: JutsuDefinition = build(id)
+    var secondary: JutsuDefinition = build_secondary(id)
+    if primary != null:
+        result.append(primary.jutsu_id)
+    if secondary != null:
+        result.append(secondary.jutsu_id)
+    return result
 
 static func definitions_for(id: String) -> Array[JutsuDefinition]:
     var result: Array[JutsuDefinition] = []
-    var data: JutsuDefinition = build(id)
-    if data != null:
-        result.append(data)
+    var primary: JutsuDefinition = build(id)
+    var secondary: JutsuDefinition = build_secondary(id)
+    if primary != null:
+        result.append(primary)
+    if secondary != null:
+        result.append(secondary)
     return result
