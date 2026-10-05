@@ -87,18 +87,21 @@ func run() -> void:
 
     check(cpu.ai_profile != null and cpu.ai_profile.archetype == "zoner", "CPU receives selected Gaara AI profile")
     check(is_equal_approx(cpu.ai_profile.preferred_distance, gaara.ai_profile.preferred_distance), "Runtime CPU uses catalog spacing profile")
-    check(controls.character_accent == player.character_definition.energy_color, "Touch UI uses selected fighter accent")
-    check(not controls.clones_enabled and controls.clone_center.x < 0.0 and controls.barrage_center.x < 0.0, "Non-Naruto mobile layout removes clone-only buttons")
+    check(Color(controls.get("character_accent")) == player.character_definition.energy_color, "Touch UI uses selected fighter accent")
+    var clone_center: Vector2 = Vector2(controls.get("clone_center"))
+    var barrage_center: Vector2 = Vector2(controls.get("barrage_center"))
+    check(not bool(controls.get("clones_enabled")) and clone_center.x < 0.0 and barrage_center.x < 0.0, "Non-Naruto mobile layout removes clone-only buttons")
 
     cpu._decide_neutral(2.0)
     check(cpu.neutral_motion == "retreat", "Gaara CPU retreats when opponent breaches preferred range")
 
     var generic_awakening: Node3D = cpu.awakening
-    check(generic_awakening.get("accent") != null, "Generic Awakening owns pooled accent VFX")
+    var accent: MultiMeshInstance3D = generic_awakening.get("accent") as MultiMeshInstance3D
+    check(accent != null, "Generic Awakening owns pooled accent VFX")
     generic_awakening.call("set_quality", 0)
-    check(generic_awakening.accent.multimesh.visible_instance_count == 4, "LOW limits Awakening accents")
+    check(accent.multimesh.visible_instance_count == 4, "LOW limits Awakening accents")
     generic_awakening.call("set_quality", 2)
-    check(generic_awakening.accent.multimesh.visible_instance_count == 10, "HIGH restores Awakening accents")
+    check(accent.multimesh.visible_instance_count == 10, "HIGH restores Awakening accents")
 
     arena.queue_free()
     await frames(4)
