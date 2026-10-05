@@ -12,6 +12,7 @@ var cooldown: float = 0.0
 var opened: bool = false
 var cinematic_started: bool = false
 var last_result: String = ""
+var power_visual: MeshInstance3D = null
 
 func _ready() -> void:
     fighter = get_parent() as CharacterBody3D
@@ -28,8 +29,15 @@ func _ready() -> void:
     shape.radius = definition.hitbox_radius if definition != null else 0.68
     collision.shape = shape
     entry_box.add_child(collision)
+
+    power_visual = MeshInstance3D.new()
+    power_visual.set_script(preload("res://scripts/chakra_orb.gd"))
+    entry_box.add_child(power_visual)
+    power_visual.visible = false
+
     add_child(entry_box)
     entry_box.top_level = true
+    power_visual.call("set_energy_color", _effect_color(definition.effect if definition != null else "chakra"))
 
 func start() -> bool:
     if definition == null or not fighter.character_definition.has_ultimate:
@@ -62,6 +70,7 @@ func _enter(next_phase: String) -> void:
     fighter.is_guarding = false
     fighter.is_charging_chakra = false
     fighter.jutsu_timer = 0.35
+    power_visual.visible = phase in ["entry", "finish"]
 
     if is_instance_valid(target):
         fighter.camera_rig.call("set_sequence_shot", "clash" if phase == "sequence" else "chain")
@@ -106,6 +115,9 @@ func _physics_process(delta: float) -> void:
         return
 
     if phase == "sequence":
+        power_visual.visible = true
+        entry_box.global_position = (fighter.global_position + target.global_position) * 0.5 + Vector3.UP * 0.65
+        power_visual.scale = Vector3.ONE * (1.3 + sin(elapsed * 10.0) * 0.12)
         if elapsed >= definition.sequence_duration:
             _enter("finish")
         return
@@ -181,6 +193,8 @@ func cancel(reason: String = "cancelled") -> void:
     last_result = reason
     phase = ""
     entry_box.call("deactivate")
+    power_visual.visible = false
+    power_visual.scale = Vector3.ONE
 
     if is_instance_valid(target) and target.has_method("end_cinematic_lock"):
         target.call("end_cinematic_lock", self)
@@ -195,3 +209,31 @@ func cancel(reason: String = "cancelled") -> void:
 func _exit_tree() -> void:
     if is_instance_valid(target) and target.has_method("end_cinematic_lock"):
         target.call("end_cinematic_lock", self)
+
+
+func _effect_color(effect: String) -> Color:
+    match effect:
+        "fire":
+            return Color(1.0, 0.22, 0.04)
+        "water":
+            return Color(0.08, 0.52, 1.0)
+        "wind":
+            return Color(0.44, 0.94, 0.84)
+        "lightning":
+            return Color(0.45, 0.80, 1.0)
+        "sand", "earth":
+            return Color(0.86, 0.61, 0.22)
+        "shadow":
+            return Color(0.20, 0.10, 0.32)
+        "mind":
+            return Color(0.96, 0.34, 0.74)
+        "insect":
+            return Color(0.28, 0.24, 0.12)
+        "steel", "puppet", "bone":
+            return Color(0.74, 0.80, 0.88)
+        "snake":
+            return Color(0.38, 0.80, 0.28)
+        "taijutsu":
+            return Color(0.34, 1.0, 0.38)
+        _:
+            return fighter.character_definition.energy_color if fighter != null else Color(0.20, 0.65, 1.0)
