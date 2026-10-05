@@ -49,7 +49,9 @@ func run() -> void:
                 check(definition.ultimate_definition.evidence == "OUR_APPROXIMATION", "Roster Ultimate must disclose approximation: " + expected_id)
             if definition.awakening_definition != null:
                 check(definition.awakening_definition.evidence == "OUR_APPROXIMATION", "Roster Awakening must disclose approximation: " + expected_id)
-            check(definition.model_path == "res://assets/characters/rigged.glb", "Placeholder should use shared development rig until replaced: " + expected_id)
+            check(definition.model_slot != null, "Placeholder needs a dedicated final-model slot: " + expected_id)
+            check(definition.model_path == RosterModelSlotFactory.expected_path(expected_id), "Placeholder preferred path must target its own final GLB slot: " + expected_id)
+            check(definition.model_fallback_path == RosterModelSlotFactory.SHARED_FALLBACK, "Placeholder must keep shared rig fallback: " + expected_id)
             check(definition.moveset != CharacterCatalog.NARUTO.moveset, "Roster slot must not borrow Naruto combo data: " + expected_id)
             check(definition.moveset.ground.size() == 4 and definition.moveset.aerial.size() == 4, "Roster slot needs full base ground/air chains: " + expected_id)
             check(definition.moveset.ground[0].attack_id.begins_with(expected_id + "_"), "Roster slot attacks must keep character-owned ids: " + expected_id)
