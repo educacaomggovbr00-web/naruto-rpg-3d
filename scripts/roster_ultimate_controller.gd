@@ -37,7 +37,8 @@ func _ready() -> void:
 
     add_child(entry_box)
     entry_box.top_level = true
-    power_visual.call("set_energy_color", RosterVisualStyle.color(definition.effect if definition != null else "chakra", fighter.character_definition.energy_color))
+    var base_color: Color = RosterVisualStyle.color(definition.effect if definition != null else "chakra", fighter.character_definition.energy_color)
+    power_visual.call("set_energy_color", base_color.lerp(fighter.character_definition.energy_color, 0.18))
 
 func start() -> bool:
     if definition == null or not fighter.character_definition.has_ultimate:
