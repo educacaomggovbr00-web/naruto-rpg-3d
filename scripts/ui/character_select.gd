@@ -19,8 +19,8 @@ func _ready() -> void:
     margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     margin.add_theme_constant_override("margin_left", 28)
     margin.add_theme_constant_override("margin_right", 28)
-    margin.add_theme_constant_override("margin_top", 20)
-    margin.add_theme_constant_override("margin_bottom", 20)
+    margin.add_theme_constant_override("margin_top", 14)
+    margin.add_theme_constant_override("margin_bottom", 14)
     add_child(margin)
 
     var column: VBoxContainer = VBoxContainer.new()
@@ -28,7 +28,7 @@ func _ready() -> void:
     margin.add_child(column)
 
     var header: HBoxContainer = HBoxContainer.new()
-    header.custom_minimum_size.y = 62.0
+    header.custom_minimum_size.y = 54.0
     column.add_child(header)
 
     var title_stack: VBoxContainer = VBoxContainer.new()
@@ -62,7 +62,7 @@ func _ready() -> void:
     header.add_child(arena_badge)
 
     var choices_panel: PanelContainer = PanelContainer.new()
-    choices_panel.custom_minimum_size.y = 68.0
+    choices_panel.custom_minimum_size.y = 62.0
     choices_panel.add_theme_stylebox_override("panel", _box(Color(0.025, 0.055, 0.09, 0.93), Color(0.16, 0.33, 0.44, 0.80), 1, 14))
     column.add_child(choices_panel)
 
@@ -81,7 +81,7 @@ func _ready() -> void:
     arena_pick = _arena_choice(choices)
 
     var versus: HBoxContainer = HBoxContainer.new()
-    versus.custom_minimum_size.y = 48.0
+    versus.custom_minimum_size.y = 42.0
     versus.add_theme_constant_override("separation", 14)
     column.add_child(versus)
 
@@ -105,7 +105,7 @@ func _ready() -> void:
 
     var preview_panel: PanelContainer = PanelContainer.new()
     preview_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    preview_panel.custom_minimum_size.y = 310.0
+    preview_panel.custom_minimum_size.y = 255.0
     preview_panel.add_theme_stylebox_override("panel", _box(Color(0.02, 0.07, 0.11, 0.96), Color(0.22, 0.46, 0.58, 0.95), 2, 18))
     column.add_child(preview_panel)
 
@@ -121,7 +121,7 @@ func _ready() -> void:
     preview_margin.add_child(preview)
 
     description = Label.new()
-    description.custom_minimum_size.y = 50.0
+    description.custom_minimum_size.y = 42.0
     description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     description.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
     description.add_theme_font_size_override("font_size", 14)
@@ -131,14 +131,14 @@ func _ready() -> void:
     column.add_child(description)
 
     var actions: HBoxContainer = HBoxContainer.new()
-    actions.custom_minimum_size.y = 62.0
+    actions.custom_minimum_size.y = 56.0
     actions.add_theme_constant_override("separation", 14)
     column.add_child(actions)
 
     start_button = Button.new()
     start_button.text = "LUTAR"
     start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    start_button.custom_minimum_size = Vector2(0, 62)
+    start_button.custom_minimum_size = Vector2(0, 56)
     start_button.pressed.connect(_start)
     _style_action(start_button, Color("e77422"))
     actions.add_child(start_button)
@@ -146,7 +146,7 @@ func _ready() -> void:
     var world: Button = Button.new()
     world.text = "EXPLORAR ALDEIA"
     world.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    world.custom_minimum_size = Vector2(0, 62)
+    world.custom_minimum_size = Vector2(0, 56)
     world.pressed.connect(GameFlow.enter_world)
     _style_action(world, Color("1f7184"))
     actions.add_child(world)
