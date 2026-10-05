@@ -129,6 +129,10 @@ func run() -> void:
                 check(is_equal_approx(adapter.model_instance.rotation_degrees.y, 180.0), "Naruto faces the same combat axis as the other fighters")
             elif definition.character_id == "sakura" and adapter.model_path == definition.model_path:
                 check(meshes.size() == 1 and meshes[0].mesh.get_surface_count() == 1, "User Sakura keeps one optimized skinned surface")
+                check(adapter.native_locomotion_count >= 3, "Sakura must keep native Idle/Walk/Run")
+                check(adapter._animation_for_state("idle") == &"native/idle", "Sakura idle must use her native rig animation")
+                check(adapter._animation_for_state("run") == &"native/walk", "Sakura movement must use her native walk")
+                check(adapter._animation_for_state("sprint") == &"native/run", "Sakura sprint must use her native run")
                 check(meshes[0].mesh.surface_get_array_index_len(0) / 3 <= 50000, "User Sakura stays within the mobile triangle budget")
                 check(meshes[0].material_override == null, "Textured Sakura keeps her embedded material instead of the flat placeholder shader")
                 check(adapter.detected_source_height > 1.0 and adapter.detected_source_height < 2.5, "User Sakura arrives in meter-like source units")
