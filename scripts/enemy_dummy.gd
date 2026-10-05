@@ -2,6 +2,7 @@ extends CharacterBody3D
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
 var character_definition: CharacterDefinition = null
+var ai_profile: AIProfileDefinition = null
 var selected_attack: AttackDefinition = null
 var combo_branch: String = "neutral"
 
@@ -110,6 +111,9 @@ func get_character_definition() -> CharacterDefinition:
 
 func _ready() -> void:
     character_definition = get_character_definition()
+    ai_profile = character_definition.ai_profile
+    if ai_profile == null:
+        ai_profile = RosterAIProfileFactory.build(character_definition.character_id)
     moveset = character_definition.moveset
     max_chakra = character_definition.max_chakra
     chakra = max_chakra
@@ -141,6 +145,9 @@ func _ready() -> void:
     dash_hitbox.add_child(collision)
     add_child(dash_hitbox)
     decision_rng.randomize()
+    var decision_speed: float = maxf(ai_profile.decision_speed, 0.65)
+    decision_interval_min = 0.18 / decision_speed
+    decision_interval_max = 0.32 / decision_speed
     locked_target = player
     health = max_health
     spawn_position = global_position
@@ -230,12 +237,17 @@ func _physics_process(delta: float) -> void:
             _slow_down(delta)
     elif is_charging_chakra or distance > detection_range:
         _slow_down(delta)
-    elif neutral_motion == "retreat" and distance < 6.0:
+    elif neutral_motion == "retreat" and distance < ai_profile.preferred_distance + 1.4:
         _chase_player(-to_player, delta)
     elif neutral_motion == "strafe" and distance > attack_range:
         _chase_player(Vector3(-to_player.z, 0.0, to_player.x) * orbit_side, delta)
-    elif distance > attack_range:
+    elif distance > maxf(attack_range, ai_profile.preferred_distance + 0.7):
         _chase_player(to_player, delta)
+    elif distance > attack_range:
+        if ai_profile.archetype in ["zoner", "controller"]:
+            _slow_down(delta)
+        else:
+            _chase_player(to_player, delta)
     else:
         _slow_down(delta)
         if attack_cooldown <= 0.0 and decision_timer <= decision_interval_min:
@@ -367,13 +379,28 @@ func _chase_player(to_player: Vector3, delta: float) -> void:
 
 func _decide_neutral(distance: float) -> void:
     decision_timer = decision_rng.randf_range(decision_interval_min, decision_interval_max)
-    if guard_meter < 25.0 and distance < 6.0:
+    var preferred: float = ai_profile.preferred_distance
+
+    if guard_meter < 25.0 and distance < preferred + 1.5:
         neutral_motion = "retreat"
-    elif distance > attack_range and distance < 5.0 and decision_rng.randf() < 0.30:
+        return
+
+    if distance < preferred - 0.9 and ai_profile.archetype in ["zoner", "controller", "counter"]:
+        neutral_motion = "retreat"
+        return
+
+    if distance > attack_range and absf(distance - preferred) <= 2.0 and decision_rng.randf() < ai_profile.strafe_bias:
         neutral_motion = "strafe"
         orbit_side = -1.0 if decision_rng.randf() < 0.5 else 1.0
-    else:
+        return
+
+    if distance > preferred + 0.8:
         neutral_motion = "approach"
+        return
+
+    neutral_motion = "approach" if decision_rng.randf() < ai_profile.aggression else "strafe"
+    if neutral_motion == "strafe":
+        orbit_side = -1.0 if decision_rng.randf() < 0.5 else 1.0
 
 func get_cpu_state() -> String:
     if not targetable:
@@ -398,12 +425,21 @@ func get_cpu_state() -> String:
 
 func _choose_close_action() -> void:
     attack_cycle += 1
+    var roll: float = decision_rng.randf()
 
-    if guard_meter > 25.0 and decision_rng.randf() < 0.25:
+    if guard_meter > 25.0 and roll < ai_profile.guard_bias:
         guarding = true
         guard_timer = guard_duration
         attack_cooldown = attack_cooldown_time * 0.80
         _update_labels()
+        return
+
+    if roll < ai_profile.guard_bias + ai_profile.dodge_bias and is_on_floor():
+        var incoming: Vector3 = player.global_position - global_position
+        _start_reaction_dodge(incoming)
+        invulnerable_timer = maxf(invulnerable_timer, dodge_timer + 0.03)
+        animation_action_id += 1
+        attack_cooldown = attack_cooldown_time * 0.55
         return
 
     _start_attack()
@@ -766,27 +802,51 @@ func _dash_motion(delta: float) -> void:
 func _decide_arsenal(distance: float) -> bool:
     if arsenal_delay > 0.0 or not _can_use_movement_action() or distance > detection_range:
         return false
+
     is_charging_chakra = false
-    if health <= max_health * 0.30 and character_definition.has_awakening and chakra >= max_chakra and decision_rng.randf() < 0.40:
+
+    if (
+        health <= max_health * 0.30
+        and character_definition.has_awakening
+        and chakra >= max_chakra
+        and decision_rng.randf() < ai_profile.awakening_bias
+    ):
         arsenal_delay = 1.0
         return awakening.call("start")
-    if chakra < 32.0 and distance > 5.0:
+
+    if chakra < ai_profile.charge_threshold and distance > maxf(4.0, ai_profile.preferred_distance - 0.5):
         is_charging_chakra = true
         neutral_motion = "retreat"
         return false
-    var roll: float = decision_rng.randf()
-    arsenal_delay = decision_rng.randf_range(1.2, 2.2)
-    if distance > 3.0 and distance < 10.0 and chakra >= 80.0 and character_definition.has_ultimate and roll < 0.12:
+
+    arsenal_delay = decision_rng.randf_range(1.15, 2.1) / maxf(ai_profile.decision_speed, 0.70)
+
+    if (
+        distance > 2.5
+        and distance < 10.0
+        and chakra >= 78.0
+        and character_definition.has_ultimate
+        and decision_rng.randf() < ai_profile.ultimate_bias
+    ):
         specials.call("warm_clone_pool")
         return ultimate.call("start")
-    if distance > 2.0 and distance < 12.0 and roll < 0.48 and not character_definition.jutsus.is_empty():
+
+    if (
+        distance > 1.8
+        and distance < 12.0
+        and not character_definition.jutsus.is_empty()
+        and decision_rng.randf() < ai_profile.jutsu_bias
+    ):
         var choice: String = character_definition.jutsus[decision_rng.randi_range(0, character_definition.jutsus.size() - 1)]
         return specials.call("start", choice)
-    if distance > 4.0 and roll < 0.78:
+
+    if distance > 3.0 and decision_rng.randf() < ai_profile.dash_bias:
         return _start_chakra_dash()
-    if distance > 3.0:
+
+    if distance > 3.0 and ai_profile.archetype in ["balanced", "zoner", "controller"]:
         ninja_tools.selected = 0
         return ninja_tools.call("use")
+
     return false
 
 func _observe_projectile() -> Node3D:
