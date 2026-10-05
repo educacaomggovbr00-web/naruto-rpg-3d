@@ -1,7 +1,17 @@
 extends RefCounted
-## Shared visual direction. No combat, rig, physics or save changes.
+## Shared mobile anime direction. Visual-only; gameplay is untouched.
 const SURFACE: Shader = preload("res://assets/vfx/anime_surface.gdshader")
+const OUTLINE: Shader = preload("res://assets/vfx/anime_outline.gdshader")
 static var textured_cache: Dictionary = {}
+static var outline_material: ShaderMaterial = null
+
+static func _outline() -> ShaderMaterial:
+    if outline_material == null:
+        outline_material = ShaderMaterial.new()
+        outline_material.shader = OUTLINE
+        outline_material.set_shader_parameter("outline_color", Color("07101d"))
+        outline_material.set_shader_parameter("outline_width", 0.008)
+    return outline_material
 
 static func textured(source: StandardMaterial3D) -> Material:
     # Transparent imported materials keep their specialized pipeline untouched.
@@ -13,16 +23,18 @@ static func textured(source: StandardMaterial3D) -> Material:
         return textured_cache[key] as Material
 
     # Never mutate the imported GLB material: player, CPU, clones and previews
-    # can share the same source Resource. A deep copy preserves all texture maps.
+    # can share the same source Resource. A deep copy preserves texture maps.
     var result: StandardMaterial3D = source.duplicate(true) as StandardMaterial3D
     if result == null:
         return source
     result.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
     result.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-    result.roughness = maxf(result.roughness, 0.72)
+    result.roughness = maxf(result.roughness, 0.78)
     result.rim_enabled = true
-    result.rim = 0.20
-    result.rim_tint = 0.58
+    result.rim = 0.16
+    result.rim_tint = 0.48
+    if result.next_pass == null:
+        result.next_pass = _outline()
     textured_cache[key] = result
     return result
 
@@ -34,24 +46,27 @@ static func environment(dusk: bool = false, existing: Environment = null) -> Env
     var sky_material: ProceduralSkyMaterial = result.sky.sky_material as ProceduralSkyMaterial
     if sky_material == null:
         sky_material = ProceduralSkyMaterial.new()
-    sky_material.sky_top_color = Color("586da3") if dusk else Color("4b9ed0")
-    sky_material.sky_horizon_color = Color("f5c49d") if dusk else Color("d5eef4")
-    sky_material.ground_bottom_color = Color("4d6575") if dusk else Color("5b7180")
-    sky_material.ground_horizon_color = sky_material.sky_horizon_color
-    sky_material.sun_angle_max = 10.0
-    sky_material.sun_curve = 0.12
+
+    sky_material.sky_top_color = Color("354f85") if dusk else Color("4f9fc8")
+    sky_material.sky_horizon_color = Color("e59f83") if dusk else Color("91c8d8")
+    sky_material.ground_bottom_color = Color("39495d") if dusk else Color("57736d")
+    sky_material.ground_horizon_color = Color("b68073") if dusk else Color("86b9b3")
+    sky_material.sun_angle_max = 8.0
+    sky_material.sun_curve = 0.10
     result.sky.sky_material = sky_material
+
     result.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-    result.ambient_light_color = Color("9eb5d8") if dusk else Color("b3c8df")
-    result.ambient_light_energy = 0.28
+    result.ambient_light_color = Color("728bb1") if dusk else Color("8fa9bf")
+    result.ambient_light_energy = 0.20
     result.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+
     result.fog_enabled = true
     result.fog_light_color = sky_material.sky_horizon_color
-    result.fog_density = 0.0022
+    result.fog_density = 0.00125
     return result
 
 static func sun(light: DirectionalLight3D, dusk: bool = false) -> void:
-    light.light_color = Color("ffcf9f") if dusk else Color("fff0d8")
-    light.light_energy = 1.10
-    light.shadow_bias = 0.08
-    light.shadow_normal_bias = 1.2
+    light.light_color = Color("ffc178") if dusk else Color("ffe0ad")
+    light.light_energy = 1.18
+    light.shadow_bias = 0.10
+    light.shadow_normal_bias = 1.35
