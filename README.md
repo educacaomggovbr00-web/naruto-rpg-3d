@@ -287,7 +287,7 @@ Arquivos brutos ficam em `external/storm1_raw/` e são ignorados pelo Git. O pri
 
 Abra `project.godot` no Godot 4.7.2 e execute com F6 em `main.tscn` para ir direto à arena, ou F5 para selecionar personagens e entrar no mundo. Naruto usa por padrão `assets/characters/base_basic/base_basic_pbr_rigged.glb`: modelo 3D com 65 ossos Mixamo, pesos de skin e os 27 clips reais já usados pelo combate. Seleção, jogador, CPU, clones e exploração usam o mesmo perfil.
 
-As duas variantes rigadas têm 39998 triângulos e texturas de até 1024 px. Para usar o visual shaded, altere apenas `model_path` em `assets/characters/definitions/naruto.tres` para `res://assets/characters/base_basic/base_basic_shaded_rigged.glb`. Os GLBs estáticos originais foram preservados; os detalhes de preparação e limitações estão no [README dos modelos](assets/characters/base_basic/README.md).
+As duas variantes rigadas têm 39998 triângulos e texturas de até 1024 px. Para usar o visual shaded, altere apenas `model_path` em `assets/characters/definitions/naruto.tres` para `res://assets/characters/base_basic/base_basic_shaded_rigged.glb`. Os GLBs estáticos originais foram retirados do Git para reduzir o download mobile; seus hashes permanecem registrados e a reconstrução recebe os arquivos por caminho externo. Os detalhes estão no [README dos modelos](assets/characters/base_basic/README.md).
 
 O atlas 2.5D continua como alternativa: defina `visual_mode = "sprite_2_5d"` no mesmo Resource. Para reconstruir o atlas: `python tools/build_naruto_sprite_atlas.py "/caminho/para/Naruto.zip"` (requer Pillow). O teste de sprites ativa essa alternativa explicitamente; o teste de exportação valida o visual 3D padrão.
 
@@ -327,3 +327,8 @@ Os 21 personagens que ainda usam o rig compartilhado agora têm um caminho final
 O adapter expõe `requested_model_path`, `resolved_model_path`, `using_model_fallback` e `model_attempt_log` para diagnóstico. A identidade procedural de paleta/acessórios só é aplicada quando o fallback está ativo; um GLB final válido usa seus próprios materiais/mesh sem receber o placeholder por cima.
 
 O contrato de arquivos e nomes está em `assets/characters/final/README.md`. Modelos finais só devem entrar com procedência/licença verificável.
+
+
+## Tamanho do repositório — 2026-10-05
+
+Para facilitar o uso no celular, os dois GLBs estáticos de origem do `base_basic` (aprox. 41 MB e 36 MB) foram removidos do Git. Eles não eram carregados pelo jogo; as versões rigadas/mobile de aprox. 4,9 MB e 3,6 MB continuam no projeto. `source_manifest.json` preserva hashes e tamanhos para uma reconstrução verificável usando fontes externas.
