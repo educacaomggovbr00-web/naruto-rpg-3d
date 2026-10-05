@@ -63,7 +63,8 @@ var jutsu_radius: float = 50.0
 var substitution_radius: float = 43.0
 var dodge_radius: float = 43.0
 var charge_radius: float = 46.0
-var guard_radius: float = 40.0\nvar advanced_radius: float = 34.0
+var guard_radius: float = 40.0
+var advanced_radius: float = 34.0
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
