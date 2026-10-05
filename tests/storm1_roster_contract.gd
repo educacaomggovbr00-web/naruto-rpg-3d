@@ -37,7 +37,12 @@ func run() -> void:
         check(not definition.model_path.is_empty(), "Every selectable fighter needs a preview/runtime model path: " + expected_id)
 
         if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
-            check(definition.jutsus.is_empty(), "Placeholder must not inherit Naruto jutsus: " + expected_id)
+            check(not definition.jutsus.is_empty(), "Every roster slot must expose at least one character-owned special: " + expected_id)
+            for jutsu_id: String in definition.jutsus:
+                var jutsu: JutsuDefinition = definition.find_jutsu(jutsu_id)
+                check(jutsu != null, "Every roster special id must resolve to data: " + expected_id + "/" + jutsu_id)
+                if jutsu != null:
+                    check(jutsu.tuning_evidence == "OUR_APPROXIMATION", "Development special tuning must disclose approximation: " + expected_id + "/" + jutsu_id)
             check(not definition.has_ultimate and not definition.has_awakening, "Placeholder must not inherit Naruto cinematic modes: " + expected_id)
             check(definition.model_path == "res://assets/characters/rigged.glb", "Placeholder should use shared development rig until replaced: " + expected_id)
             check(definition.moveset != CharacterCatalog.NARUTO.moveset, "Roster slot must not borrow Naruto combo data: " + expected_id)
@@ -46,6 +51,10 @@ func run() -> void:
             check(definition.moveset.ground[0].evidence == "OUR_APPROXIMATION", "Development roster tuning must disclose approximation: " + expected_id)
 
     check(seen.size() == 25, "All roster ids must be unique")
+    for fighter: CharacterDefinition in CharacterCatalog.READY:
+        check(not fighter.jutsus.is_empty(), "All 25 playable fighters need at least one selectable jutsu: " + fighter.character_id)
+        for jutsu_id: String in fighter.jutsus:
+            check(fighter.find_jutsu(jutsu_id) != null, "Selectable jutsu must resolve for " + fighter.character_id + ": " + jutsu_id)
     check(CharacterCatalog.find("gaara") != null, "Gaara must now be selectable")
     check(CharacterCatalog.find("itachi") != null, "Itachi must now be selectable")
     check(CharacterCatalog.find("kisame") != null, "Kisame must now be selectable")
