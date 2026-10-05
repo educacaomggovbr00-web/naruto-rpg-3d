@@ -73,3 +73,15 @@ Quando `assets/characters/sakura_user/sakura_mobile_rigged.glb` estiver instalad
 5. Fazer o mesmo na aldeia. Observar pop-in, câmera e aquecimento enquanto a resolução adaptativa atua apenas no 3D.
 
 O GLB recebido tinha ~35,7 mil triângulos e três texturas 2048. A variante mobile mantém mesh/skin/animações e reduz as texturas para 1024, caindo de 13,6 MB para ~4,37 MB. Isso ainda não substitui medição real de GPU/temperatura no aparelho.
+
+
+## Roster completo — identidade e performance — 2026-10-05
+
+1. Testar pelo menos Gaara, Rock Lee, Neji, Shikamaru, Temari, Itachi e Kisame como jogador e CPU. Confirmar que a CPU muda de spacing: zoners recuam/strafeiam, rushdown aproxima e counter guarda/esquiva com mais frequência.
+2. Alternar os dois jutsus de cada um. Confirmar mudança de pose/coreografia e silhueta do VFX; nenhum golpe deve causar dano por distância sem hitbox/projétil.
+3. Ativar Ultimate e Awakening dos personagens não-Naruto. Ultimate só deve continuar após entry hit físico; Awakening precisa mostrar aura/accent sem esconder o modelo.
+4. Comparar LOW/MED/HIGH durante Awakening: orbitais devem reduzir para 4/7/10 instâncias sem alterar hitbox/timing.
+5. Em telas 16:9 e mais largas, confirmar que a faixa avançada não sobrepõe ATK/JUTSU/joystick. Personagens sem clones não devem mostrar CLONE/BARR; Naruto deve mantê-los.
+6. Rodar duas lutas de 2 minutos em MED com efeitos intensos (Gaara/Temari/Kisame) e duas de rushdown (Lee/Guy/Kiba). Registrar FPS mínimo, temperatura, input lag e qualquer queda visual.
+
+Essas validações precisam de aparelho real; headless garante contratos de dados/runtime, mas não mede GPU, thermal throttling nem latência do touchscreen.
