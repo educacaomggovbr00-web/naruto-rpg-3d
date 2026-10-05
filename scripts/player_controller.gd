@@ -135,11 +135,20 @@ func _ready() -> void:
     add_child(specials)
     awakening = Node3D.new()
     awakening.name = "Awakening"
-    awakening.set_script(preload("res://scripts/naruto_awakening.gd"))
+    awakening.set_script(
+        preload("res://scripts/naruto_awakening.gd")
+        if character_definition.character_id == "naruto"
+        else preload("res://scripts/roster_awakening.gd")
+    )
     add_child(awakening)
+
     ultimate = Node3D.new()
     ultimate.name = "Ultimate"
-    ultimate.set_script(preload("res://scripts/ultimate_controller.gd"))
+    ultimate.set_script(
+        preload("res://scripts/ultimate_controller.gd")
+        if character_definition.character_id == "naruto"
+        else preload("res://scripts/roster_ultimate_controller.gd")
+    )
     add_child(ultimate)
     ninja_tools = Node3D.new()
     ninja_tools.name = "NinjaTools"
