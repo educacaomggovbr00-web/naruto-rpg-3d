@@ -221,7 +221,9 @@ func _fighter_choice(row: HBoxContainer, title_text: String) -> OptionButton:
     choice.custom_minimum_size = Vector2(0, 40)
     choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     for fighter: CharacterDefinition in CharacterCatalog.READY:
-        var suffix: String = " · BASE" if fighter.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG" else ""
+        var suffix: String = ""
+        if fighter.model_slot != null:
+            suffix = " · FINAL" if ResourceLoader.exists(fighter.model_path) else " · SLOT"
         choice.add_item(fighter.display_name + suffix)
     _style_option(choice)
     group.add_child(choice)
@@ -316,8 +318,8 @@ func _describe(_index: int) -> void:
     cpu_name.add_theme_color_override("font_color", opponent.energy_color.lightened(0.28))
 
     var status: String = "VISUAL PRÓPRIO"
-    if character.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
-        status = "BASE COMPARTILHADA"
+    if character.model_slot != null:
+        status = "MODELO FINAL" if ResourceLoader.exists(character.model_path) else "FALLBACK PROCEDURAL"
 
     description.text = "%s  —  %s
 %s" % [
