@@ -74,7 +74,7 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.display_name = name
     definition.model_path = "res://assets/characters/rigged.glb"
     definition.visual_status = "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG"
-    definition.summary = "%s — slot jogável do elenco original de Storm 1. Visual provisório compartilhado, mas combo-base já possui perfil próprio OUR_APPROXIMATION; jutsus, Ultimate, Awakening e coreografia final ainda serão substituídos." % name
+    definition.summary = "%s — slot jogável com rig compartilhado, paleta/acessórios procedurais próprios e kit completo funcional OUR_APPROXIMATION. Modelo, cabelo/roupa detalhados e coreografia final ainda serão substituídos por assets específicos." % name
     definition.stylized_material = false
 
     var profile: Dictionary = RosterMovesetFactory.profile(id)
