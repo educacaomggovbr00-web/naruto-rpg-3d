@@ -16,10 +16,12 @@ extends Resource
 @export var model_auto_scale: bool = true
 @export var model_ground_to_collision: bool = false
 @export var model_scale_multiplier: float = 1.0
+@export var model_target_height: float = 1.75
 @export var model_offset: Vector3 = Vector3(0.0, -0.95, 0.0)
 @export var model_yaw_degrees: float = 180.0
 @export var model_fallback_import_scale: float = 0.01
 @export var prefer_native_locomotion: bool = false
+@export var idle_animation_override: String = ""
 @export var moveset: MovesetDefinition
 @export var jutsus: PackedStringArray = PackedStringArray(["demon", "rasengan", "clones", "whirlwind", "barrage"])
 @export var jutsu_definitions: Array[JutsuDefinition] = []
