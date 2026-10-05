@@ -6,16 +6,18 @@
 [resource]
 script = ExtResource("1")
 character_id = "sakura"
-display_name = "Sakura (base)"
+display_name = "Sakura"
 model_path = "res://assets/characters/sakura_user/sakura_mobile_rigged.glb"
 model_fallback_path = "res://assets/characters/stylized/sakura.glb"
 visual_status = "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED"
 stylized_material = false
 model_auto_scale = true
 model_ground_to_collision = true
+model_target_height = 1.66
+model_yaw_degrees = 0.0
 model_offset = Vector3(0, 0, 0)
 prefer_native_locomotion = true
-summary = "Sakura com modelo 3D rigado fornecido pelo usuário, otimizado para mobile e compatível com o corpo Mixamo. Usa os 27 clips de combate quando o arquivo novo está instalado; mantém o visual estilizado anterior como fallback. Booby Trap física; Ultimate e coreografias finais ainda pendentes."
+summary = "Sakura 3D rigada e otimizada para mobile, com Idle/Walk/Run nativos, 27 clips de combate retargetados e Booby Trap física."
 moveset = ExtResource("2")
 jutsus = PackedStringArray("booby_trap")
 movement_speed = 7.2
