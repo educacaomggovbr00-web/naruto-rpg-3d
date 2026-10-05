@@ -21,9 +21,9 @@ equivalente ao jogo de referência nem medição no Android. [Detalhes e valida�
 
 ## Seleção e batalha
 
-O jogo abre em seleção de jogador, CPU e arena, com preview 3D. O **elenco jogável completo de 25 lutadores do Storm 1** já aparece na seleção. Naruto, Sasuke, Sakura e Kakashi possuem modelos próprios estilizados e perfis Resources separados; os outros 21 usam temporariamente o rig compartilhado, mas já possuem perfis independentes de combo terrestre/aéreo, velocidade, vida, knockback e launcher. Esses números são OUR_APPROXIMATION; jutsus/Ultimate/Awakening e coreografias próprias ainda serão preenchidos personagem por personagem. As animações reais ainda são compartilhadas e não equivalem às coreografias completas do Storm. As duas variantes da arena têm cenário autoral de treino/pátio com luz de entardecer; nenhum mapa de Storm foi importado. Veja [elenco](docs/STORM1_CHARACTER_ROSTER.md) e [modelos/apresentação](docs/STYLIZED_PRESENTATION.md).
+O jogo abre em seleção de jogador, CPU e arena, com preview 3D. O **elenco jogável completo de 25 lutadores do Storm 1** já aparece na seleção. Naruto, Sasuke, Sakura e Kakashi possuem modelos próprios estilizados e perfis Resources separados; os outros 21 usam temporariamente o rig compartilhado, mas já possuem perfis independentes de combo terrestre/aéreo, velocidade, vida, knockback e launcher. Todos os 25 possuem pelo menos dois jutsus selecionáveis e acesso a Ultimate/Awakening; Naruto preserva os controladores específicos existentes e os demais usam perfis data-driven. Os números, nomes de desenvolvimento e coreografias compartilhadas dos kits novos são OUR_APPROXIMATION e ainda exigem passes autorais específicos por personagem. As animações reais ainda são compartilhadas e não equivalem às coreografias completas do Storm. As duas variantes da arena têm cenário autoral de treino/pátio com luz de entardecer; nenhum mapa de Storm foi importado. Veja [elenco](docs/STORM1_CHARACTER_ROSTER.md) e [modelos/apresentação](docs/STYLIZED_PRESENTATION.md).
 
-Sasuke tem Fireball com sweep e Chidori preso à mão, com VFX elétrico próprio; Sakura tem base de melee pesado e Kakashi base de relâmpago compartilhada com Chidori; coreografias exclusivas, Ultimate e transformação dele estão pendentes. Naruto conserva seu arsenal. A CPU usa os mesmos módulos de chakra/dash/jutsu/clones/Ultimate/Awakening/tools, com decisões atrasadas e probabilísticas. KO em versus abre vitória/derrota, seleção e revanche. A aldeia/treino e o save existente continuam disponíveis.
+Sasuke tem Fireball com sweep e Chidori preso à mão; Sakura combina Booby Trap e Cherry Blossom Impact; Kakashi mantém Raikiri/Fireball. Os três agora também recebem Ultimate/Awakening próprios de desenvolvimento via perfis compartilhados, sem reutilizar a coreografia exclusiva do Naruto. Naruto conserva seu arsenal. A CPU usa os mesmos módulos de chakra/dash/jutsu/clones/Ultimate/Awakening/tools, com decisões atrasadas e probabilísticas. KO em versus abre vitória/derrota, seleção e revanche. A aldeia/treino e o save existente continuam disponíveis.
 
 Áudio CC0 Kenney, oito vozes SFX + um canal de carga; SOM ON/OFF salva a preferência. LOW/MED/HIGH mantém regras de colisão/timing iguais. FPS/DC ajudam a comparar no Moto G22; não houve medição real de FPS/GPU Android nesta sessão. Ver [validação e pendências](docs/SELECTABLE_FIGHTERS.md).
 
@@ -45,7 +45,9 @@ Sasuke tem Fireball com sweep e Chidori preso à mão, com VFX elétrico própri
 - defesa segurando botão
 - esquiva com invulnerabilidade curta
 - substituição com 4 cargas e cooldown
-- primeiro jutsu com custo de chakra, dano e knockback
+- pelo menos dois jutsus selecionáveis por personagem, com custo/cooldown/dano próprios
+- Ultimate confirmado por hit para os 24 não-Naruto; Naruto mantém seu Ultimate específico
+- Awakening temporário para os 25, com multiplicadores e VFX por perfil
 - vida do jogador, stagger, derrota e respawn
 - inimigo rigado com IA de perseguição, combos, defesa, substituição e arsenal compartilhado
 - ataques da IA também usam janela de hitbox
@@ -260,7 +262,7 @@ Combos/projétil Demon Wind agora usam Resources compartilháveis, preservando o
 Referências e aproximações: [STORM_MOVES_DATA](docs/STORM_MOVES_DATA.md) e [matriz de personagens](docs/CHARACTER_IMPLEMENTATION_MATRIX.md). Este incremento não adiciona modelos comerciais nem completa todos os movesets de Storm/Jump Force.
 
 
-Atualização de jutsus (2026-10-03): Sakura agora usa Booby Trap com fio e bola física, pool de três; Kakashi usa Raikiri com dados próprios e Fireball. `JutsuDefinition` configura custo/cooldown para todos os jutsus selecionáveis. [Dados, aproximações e teste Android](docs/STORM_MOVES_DATA.md#sakura-e-kakashi--jutsus-próprios-2026-10-03). Ultimate/Awakening próprios dos três personagens ainda não estão implementados.
+Atualização de roster (2026-10-05): todos os 25 lutadores possuem dois ou mais jutsus selecionáveis. Sakura mantém Booby Trap física e ganhou Cherry Blossom Impact; Kakashi usa Raikiri/Fireball; Sasuke Fireball/Chidori. Os 24 não-Naruto recebem Ultimate e Awakening data-driven com VFX por elemento/estilo; Naruto mantém os controladores específicos. `JutsuDefinition`, `UltimateDefinition` e `AwakeningDefinition` separam dados de gameplay de coreografia. Os kits novos continuam marcados como OUR_APPROXIMATION até o passe específico de animação/VFX de cada personagem.
 
 ## Storm 1 — bridge de pesquisa de arquivos
 
