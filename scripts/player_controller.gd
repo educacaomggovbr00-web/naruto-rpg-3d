@@ -317,7 +317,11 @@ func _consume_mobile_actions() -> void:
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
         specials.call("cycle_selection")
-        mobile_controls.special_label = {"": "—", "rasengan": "RAS", "demon": "DWB", "fireball": "FIRE", "chidori": "CHID", "raikiri": "RAI", "booby_trap": "TRAP", "clones": "CLONE", "whirlwind": "AIR", "barrage": "BARR"}.get(specials.selected, "JUT")
+        var selected_special: String = String(specials.selected)
+        var known_labels: Dictionary = {"": "—", "rasengan": "RAS", "demon": "DWB", "fireball": "FIRE", "chidori": "CHID", "raikiri": "RAI", "booby_trap": "TRAP", "clones": "CLONE", "whirlwind": "AIR", "barrage": "BARR"}
+        var fallback_label: String = selected_special.replace("_", "").to_upper()
+        fallback_label = fallback_label.substr(0, mini(fallback_label.length(), 5))
+        mobile_controls.special_label = String(known_labels.get(selected_special, fallback_label))
         mobile_controls.queue_redraw()
     if mobile_controls.clone_queue > 0:
         mobile_controls.clone_queue = 0
