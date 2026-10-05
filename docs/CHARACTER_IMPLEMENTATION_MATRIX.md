@@ -94,3 +94,14 @@ Jutsus data-driven agora apontam para clips diferentes da biblioteca de 27 anima
 `RosterVisualStyle` fornece silhuetas simples por elemento/estilo e mantém o orçamento mobile baixo. Awakening usa aura + MultiMesh orbital com 4/7/10 instâncias conforme LOW/MED/HIGH. O touch reorganiza a faixa avançada para esconder CLONE/BARR quando não existem e usa a cor energética do lutador.
 
 O contrato `roster_identity_contract.gd` valida perfis dos 25, clips existentes, famílias visuais, spacing da IA, qualidade do Awakening e layout touch.
+
+
+## Identidade visual provisória dos 21 — 2026-10-05
+
+`RosterVisualProfileFactory` atribui aos slots de rig compartilhado uma paleta e uma combinação de acessórios low-poly. `RiggedCharacterAdapter` aplica tint suave ao material existente e cria os acessórios em runtime, seguindo transforms dos bones Mixamo sem alterar hitboxes, skeleton ou animações.
+
+A abordagem evita adicionar 21 GLBs pesados nesta fase. Só existem primitivas simples (Box/Sphere/Capsule/Cylinder), sem sombra, e no máximo alguns acessórios por lutador. A seleção, jogador, CPU e exploração herdam a identidade automaticamente porque usam o mesmo adapter.
+
+O contrato `roster_visual_identity_contract.gd` exige perfil para os 21, silhuetas variadas, marcadores principais (Gaara/cabaça, Temari/leque, Kisame/espada, Kabuto/óculos, Tenten/coques, Itachi/manto), manutenção do GLB compartilhado e criação real dos acessórios em uma luta headless.
+
+Limitação: isso é um placeholder visual **muito melhor**, não modelo final. Proporções faciais, roupas detalhadas, cabelo real, UV/texturas e acessórios deformáveis continuam dependendo de assets 3D próprios.
