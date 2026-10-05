@@ -100,8 +100,15 @@ func run() -> void:
             push_error("Unexpected roster visual status: " + definition.character_id)
             quit(1)
             return
-    if catalog.READY.size() != 25 or authored_visuals != 4 or roster_placeholders != 21 or catalog.SAKURA.jutsus != PackedStringArray(["booby_trap"]) or catalog.KAKASHI.jutsus != PackedStringArray(["raikiri", "fireball"]):
-        push_error("Export lost Storm 1 roster or authored ability restrictions")
+    if (
+        catalog.READY.size() != 25
+        or authored_visuals != 4
+        or roster_placeholders != 21
+        or not catalog.SAKURA.jutsus.has("booby_trap")
+        or not catalog.SAKURA.jutsus.has("cherry_blossom_impact")
+        or catalog.KAKASHI.jutsus != PackedStringArray(["raikiri", "fireball"])
+    ):
+        push_error("Export lost Storm 1 roster or current authored ability data")
         quit(1)
         return
     for definition: Resource in catalog.READY:
@@ -115,7 +122,7 @@ func run() -> void:
         quit(1)
         return
     print("CHARACTER JUTSU DATA ANDROID PACK: PASS")
-    print("FULL STORM 1 ROSTER AND FOUR STYLIZED MODELS ANDROID PACK: PASS")
+    print("FULL STORM 1 ROSTER, MODEL SLOTS AND FOUR AUTHORED VISUALS ANDROID PACK: PASS")
     menu.queue_free()
     await process_frame
     var village: Node = load("res://world.tscn").instantiate()
