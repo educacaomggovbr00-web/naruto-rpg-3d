@@ -81,7 +81,8 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.sprint_speed = float(profile.get("sprint", 12.0))
     definition.max_health = float(profile.get("health", 100.0))
 
-    definition.jutsus = PackedStringArray()
+    definition.jutsus = RosterJutsuFactory.ids_for(id)
+    definition.jutsu_definitions = RosterJutsuFactory.definitions_for(id)
     definition.has_ultimate = false
     definition.has_awakening = false
     return definition
