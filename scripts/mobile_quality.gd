@@ -71,7 +71,9 @@ func apply(value: int, save: bool = true) -> void:
     var fighter: CharacterBody3D = get_parent().get_node("Player")
     if fighter.specials.sphere_visual.has_method("set_quality"):
         fighter.specials.sphere_visual.call("set_quality", level)
-    if fighter.awakening.aura != null and fighter.awakening.aura.has_method("set_quality"):
+    if fighter.awakening.has_method("set_quality"):
+        fighter.awakening.call("set_quality", level)
+    elif fighter.awakening.aura != null and fighter.awakening.aura.has_method("set_quality"):
         fighter.awakening.aura.call("set_quality", level)
     _apply_effect_quality(get_parent())
 
