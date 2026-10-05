@@ -147,7 +147,7 @@ func _ready() -> void:
     world.text = "EXPLORAR ALDEIA"
     world.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     world.custom_minimum_size = Vector2(0, 56)
-    world.pressed.connect(GameFlow.enter_world)
+    world.pressed.connect(_enter_world)
     _style_action(world, Color("1f7184"))
     actions.add_child(world)
 
@@ -342,3 +342,10 @@ func _start() -> void:
     )
     if result != OK:
         description.text = "Não foi possível iniciar a batalha: " + error_string(result)
+
+
+func _enter_world() -> void:
+    if GameFlow.busy:
+        return
+    GameFlow.player_character = CharacterCatalog.READY[player_pick.selected]
+    GameFlow.enter_world()
