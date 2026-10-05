@@ -89,6 +89,8 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.has_awakening = true
     definition.ultimate_definition = RosterPowerFactory.build_ultimate(id)
     definition.awakening_definition = RosterPowerFactory.build_awakening(id)
+    if definition.awakening_definition != null:
+        definition.energy_color = definition.awakening_definition.energy_color
     definition.ai_profile = RosterAIProfileFactory.build(id)
     return definition
 
