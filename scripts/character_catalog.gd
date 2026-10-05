@@ -89,10 +89,16 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.has_awakening = true
     definition.ultimate_definition = RosterPowerFactory.build_ultimate(id)
     definition.awakening_definition = RosterPowerFactory.build_awakening(id)
+    definition.ai_profile = RosterAIProfileFactory.build(id)
     return definition
 
 static func _complete_power_kit(definition: CharacterDefinition) -> void:
-    if definition == null or definition.character_id == "naruto":
+    if definition == null:
+        return
+
+    definition.ai_profile = RosterAIProfileFactory.build(definition.character_id)
+
+    if definition.character_id == "naruto":
         return
 
     if definition.jutsus.size() < 2:
