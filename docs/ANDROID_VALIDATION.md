@@ -85,3 +85,14 @@ O GLB recebido tinha ~35,7 mil triângulos e três texturas 2048. A variante mob
 6. Rodar duas lutas de 2 minutos em MED com efeitos intensos (Gaara/Temari/Kisame) e duas de rushdown (Lee/Guy/Kiba). Registrar FPS mínimo, temperatura, input lag e qualquer queda visual.
 
 Essas validações precisam de aparelho real; headless garante contratos de dados/runtime, mas não mede GPU, thermal throttling nem latência do touchscreen.
+
+
+## Visuais procedurais — teste Android — 2026-10-05
+
+1. Na seleção, percorrer os 21 slots compartilhados e confirmar mudança visível de paleta/silhueta; nenhum acessório deve ficar parado na origem.
+2. Testar Gaara, Temari, Kisame, Tenten, Kabuto, Jiraiya, Itachi e Kimimaro em corrida, dodge, combo aéreo, jutsu e KO. Cabaça/leque/espada/cabelo/coques/óculos/manto/espinhos devem acompanhar o corpo sem "voar".
+3. Rodar Gaara vs Temari e Kisame vs Lee em LOW/MED/HIGH por dois minutos. Verificar FPS e clipping; acessórios têm sombra desligada e não podem alterar colisão/dano.
+4. Abrir aldeia com um slot compartilhado e confirmar que a mesma identidade visual aparece fora da arena.
+5. Se um acessório atravessar demais o corpo, registrar personagem + ação + vídeo; offsets podem ser ajustados sem trocar rig ou combate.
+
+Essa camada não é modelo final. O objetivo deste teste é validar legibilidade, estabilidade dos bone-followers e custo mobile antes de substituir cada slot por um GLB próprio.
