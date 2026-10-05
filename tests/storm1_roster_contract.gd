@@ -40,6 +40,10 @@ func run() -> void:
             check(definition.jutsus.is_empty(), "Placeholder must not inherit Naruto jutsus: " + expected_id)
             check(not definition.has_ultimate and not definition.has_awakening, "Placeholder must not inherit Naruto cinematic modes: " + expected_id)
             check(definition.model_path == "res://assets/characters/rigged.glb", "Placeholder should use shared development rig until replaced: " + expected_id)
+            check(definition.moveset != CharacterCatalog.NARUTO.moveset, "Roster slot must not borrow Naruto combo data: " + expected_id)
+            check(definition.moveset.ground.size() == 4 and definition.moveset.aerial.size() == 4, "Roster slot needs full base ground/air chains: " + expected_id)
+            check(definition.moveset.ground[0].attack_id.begins_with(expected_id + "_"), "Roster slot attacks must keep character-owned ids: " + expected_id)
+            check(definition.moveset.ground[0].evidence == "OUR_APPROXIMATION", "Development roster tuning must disclose approximation: " + expected_id)
 
     check(seen.size() == 25, "All roster ids must be unique")
     check(CharacterCatalog.find("gaara") != null, "Gaara must now be selectable")
