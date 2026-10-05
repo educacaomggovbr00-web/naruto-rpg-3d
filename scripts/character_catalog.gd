@@ -10,9 +10,10 @@ const KAKASHI: CharacterDefinition = preload("res://assets/characters/definition
 # Download research/status is recorded in docs/CHARACTER_MODEL_DOWNLOAD_AUDIT.md.
 const AUTHORED_VISUALS: Array[CharacterDefinition] = [NARUTO, SASUKE, SAKURA, KAKASHI]
 
-# Storm 1 has 25 playable fighters. The remaining entries are activated as
-# development roster slots using the shared rig + shared base combo until each
-# fighter receives its own model, moveset, jutsu, Ultimate and Awakening data.
+# Storm 1 has 25 playable fighters. The remaining entries use the shared
+# development rig for now, but each receives an independent approximation
+# moveset so no roster slot borrows Naruto's combo data. Jutsu/Ultimate/
+# Awakening and final choreography are still filled character by character.
 
 # Original Storm 1 support-only roster. Kept separate from playable selection.
 const SUPPORT_ONLY: PackedStringArray = [
@@ -71,9 +72,15 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.display_name = name
     definition.model_path = "res://assets/characters/rigged.glb"
     definition.visual_status = "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG"
-    definition.summary = "%s — slot jogável do elenco original de Storm 1. Usa temporariamente o rig e combo-base compartilhados; moveset, jutsus, Ultimate, Awakening e visual próprios ainda serão substituídos." % name
+    definition.summary = "%s — slot jogável do elenco original de Storm 1. Visual provisório compartilhado, mas combo-base já possui perfil próprio OUR_APPROXIMATION; jutsus, Ultimate, Awakening e coreografia final ainda serão substituídos." % name
     definition.stylized_material = false
-    definition.moveset = NARUTO.moveset
+
+    var profile: Dictionary = RosterMovesetFactory.profile(id)
+    definition.moveset = RosterMovesetFactory.build_moveset(id)
+    definition.movement_speed = float(profile.get("speed", 7.5))
+    definition.sprint_speed = float(profile.get("sprint", 12.0))
+    definition.max_health = float(profile.get("health", 100.0))
+
     definition.jutsus = PackedStringArray()
     definition.has_ultimate = false
     definition.has_awakening = false
