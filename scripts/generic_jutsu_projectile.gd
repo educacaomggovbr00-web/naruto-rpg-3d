@@ -40,7 +40,12 @@ func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3,
     remaining = maxf(0.6, 1.4 + data.hitbox_radius * 0.35)
     var scale_value: float = clampf(data.hitbox_radius / 0.45, 0.75, 2.2)
     orb.scale = Vector3.ONE * scale_value
-    var color: Color = _effect_color(data.effect, source.character_definition.energy_color)
+    var fallback_color: Color = Color(0.08, 0.55, 1.0)
+    if source.has_method("get_character_definition"):
+        var character: CharacterDefinition = source.call("get_character_definition") as CharacterDefinition
+        if character != null:
+            fallback_color = character.energy_color
+    var color: Color = _effect_color(data.effect, fallback_color)
     material.albedo_color = color
     material.emission = color
     active = true
@@ -54,7 +59,7 @@ func _physics_process(delta: float) -> void:
         recycle()
         return
 
-    if is_instance_valid(target) and bool(target.call("is_targetable")):
+    if is_instance_valid(target) and (not target.has_method("is_defeated") or not bool(target.call("is_defeated"))):
         var aim: Vector3 = target.global_position + Vector3.UP * 0.25 - global_position
         if aim.length_squared() > 0.001:
             direction = direction.slerp(aim.normalized(), minf(delta * definition.tracking_strength, 1.0)).normalized()
