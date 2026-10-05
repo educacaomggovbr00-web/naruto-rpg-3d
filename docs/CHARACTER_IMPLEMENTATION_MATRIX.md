@@ -10,7 +10,7 @@ Atualização: 2026-10-04. Modelos de Naruto/Sasuke/Kakashi/Gaara comerciais nã
 | Kakashi (base) | Selecionável; Resource separado, combos reais compartilhados | Raikiri na mão com Resource próprio; Fireball swept alternativo | Ultimate + Sharingan Focus data-driven (OUR_APPROXIMATION) | Modelo próprio estilizado com máscara/vest/hair; 27 clips e VFX elétrico compartilhados | Faltam coreografia final, hounds, VFX exclusivos e polimento |
 | Gaara | Perfil-base próprio de combo/launcher/aéreo via RosterMovesetFactory (OUR_APPROXIMATION) | Sand Coffin + Sand Burial jogáveis | Sand Burial Finale + Sand Armor Surge data-driven | VFX genérico de areia; sem rig/animações de areia próprios | Já possui kit completo funcional; ainda precisa de hitboxes/VFX/coreografia de areia específicos |
 | Sakura (base) | Selecionável; Resource com melee pesado, finalizador 17 em vez de 15 (OUR_APPROXIMATION) | Booby Trap física + Cherry Blossom Impact | Cherry Blossom Crash + Inner Strength data-driven | Novo GLB texturizado fornecido pelo usuário: 27-bone Mixamo compacto, ~35,7k triângulos, texturas mobile 1024; Idle/Walk/Run nativos + 27 clips CC0 retargetados por Bone Rest para combate; fallback autoral se o arquivo não estiver instalado | Novo visual integrado tecnicamente e com grounding/autoescala. Origem/licença ainda UNKNOWN, então é desenvolvimento apenas. Faltam Fairy Tale, Great Sakura, Maiden’s Anger e coreografia final |
-| CPU atual | Humanoide selecionável; profile/moveset, branches, dash/pursuit, charge, guarda/sub/KO | Shared CombatSpecials/clones, jutsu profile, tools reais | Naruto: shared Ultimate com entry física/clash e Awakening; Sasuke/Sakura/Kakashi desabilitados | AnimationTree independente, clips preparados compartilhados | Estratégia probabilística atrasada; observação de projéteis lançados com guarda/esquiva/falha implementada; faltam perfis táticos específicos e polimento competitivo |
+| CPU atual | Humanoide selecionável; moveset, branches, dash/pursuit, charge, guarda/sub/KO | Mesmo arsenal de jutsus/tools do personagem selecionado | Ultimate/Awakening conforme CharacterDefinition | AnimationTree independente + coreografia de jutsu/Ultimate por perfil | 25 perfis táticos data-driven: rushdown/zoner/controller/counter/power/balanced, com spacing/agressão/defesa/arsenal próprios; tuning OUR_APPROXIMATION |
 
 ## Contratos e integração
 
@@ -83,3 +83,14 @@ Naruto continua usando `ultimate_controller.gd` e `naruto_awakening.gd`, pois po
 O Ultimate genérico exige hit físico de entrada antes da sequência e abre uma segunda hitbox física no finisher. Awakening só entra com vida baixa e chakra cheio, possui transformação vulnerável, duração/cooldown e multiplicadores próprios.
 
 Esses 24 kits são uma camada funcional `OUR_APPROXIMATION`, não reprodução final de Storm 1. O próximo passe por personagem é animação dedicada, VFX exclusivo, comportamento específico e coreografia própria de Ultimate/Awakening.
+
+
+## Passe de identidade — 2026-10-05
+
+`AIProfileDefinition` separa personalidade da CPU do controlador. Os 25 personagens recebem perfil via `RosterAIProfileFactory` e a CPU usa distância preferida, agressividade, guarda, dodge, strafe, jutsu, dash, Ultimate, Awakening, carga de chakra e velocidade de decisão para escolher ações.
+
+Jutsus data-driven agora apontam para clips diferentes da biblioteca de 27 animações por `RosterJutsuFactory.CLIP_MAP`. Ultimates dos 24 não-Naruto também escolhem entry/finisher diferentes. Isso é **coreografia diferenciada com clips compartilhados**, não animação exclusiva final.
+
+`RosterVisualStyle` fornece silhuetas simples por elemento/estilo e mantém o orçamento mobile baixo. Awakening usa aura + MultiMesh orbital com 4/7/10 instâncias conforme LOW/MED/HIGH. O touch reorganiza a faixa avançada para esconder CLONE/BARR quando não existem e usa a cor energética do lutador.
+
+O contrato `roster_identity_contract.gd` valida perfis dos 25, clips existentes, famílias visuais, spacing da IA, qualidade do Awakening e layout touch.
