@@ -305,3 +305,12 @@ O roster agora possui uma camada de identidade além dos stats:
 - O layout touch escala pela altura da viewport, herda a cor do personagem e remove CLONE/BARR nos lutadores que não usam essas ações.
 
 A coreografia continua baseada nos 27 clips CC0 compartilhados; esses perfis não são animações comerciais reproduzidas. O próximo passe visual real é criar/retargetar animações e modelos específicos por personagem sem substituir a camada funcional já testável.
+
+
+## Visuais procedurais dos 21 slots compartilhados — 2026-10-05
+
+Os 21 lutadores que ainda usam `assets/characters/rigged.glb` ganharam `RosterVisualProfileDefinition`: paleta, tint leve e acessórios procedurais próprios presos aos ossos em runtime. O objetivo é eliminar a sensação de "mesmo boneco com nome diferente" sem duplicar GLBs pesados no APK.
+
+Exemplos: Gaara usa cabaça/sash, Temari leque, Kisame espada nas costas, Kabuto óculos, Tenten coques, Shikamaru/Ino rabo de cavalo, Jiraiya cabelo longo/rolo, Hiruzen armadura/cajado, Kimimaro espinhos ósseos e Itachi manto/faixa. Os acessórios são primitivas low-poly com material anime e sombra desligada, sincronizadas aos bones do mesmo rig.
+
+Essa camada é `OUR_APPROXIMATION` e **não substitui modelos finais**. Ela funciona como identidade visual mobile-first enquanto modelos próprios e animações realmente exclusivas são produzidos/fornecidos. Naruto, Sasuke, Sakura e Kakashi continuam usando seus visuais dedicados.
