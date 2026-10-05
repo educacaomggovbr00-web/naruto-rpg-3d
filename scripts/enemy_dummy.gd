@@ -117,8 +117,18 @@ func _ready() -> void:
         max_health = character_definition.max_health
         move_speed = character_definition.movement_speed
     specials = _ability("CombatSpecials", preload("res://scripts/combat_specials.gd"))
-    awakening = _ability("Awakening", preload("res://scripts/naruto_awakening.gd"))
-    ultimate = _ability("Ultimate", preload("res://scripts/ultimate_controller.gd"))
+    var awakening_script: Script = (
+        preload("res://scripts/naruto_awakening.gd")
+        if character_definition.character_id == "naruto"
+        else preload("res://scripts/roster_awakening.gd")
+    )
+    var ultimate_script: Script = (
+        preload("res://scripts/ultimate_controller.gd")
+        if character_definition.character_id == "naruto"
+        else preload("res://scripts/roster_ultimate_controller.gd")
+    )
+    awakening = _ability("Awakening", awakening_script)
+    ultimate = _ability("Ultimate", ultimate_script)
     ninja_tools = _ability("NinjaTools", preload("res://scripts/ninja_tools.gd"))
     dash_hitbox = Area3D.new()
     dash_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
