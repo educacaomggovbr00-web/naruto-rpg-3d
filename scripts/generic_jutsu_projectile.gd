@@ -15,16 +15,10 @@ func _ready() -> void:
     process_physics_priority = 15
     shape = SphereShape3D.new()
     orb = MeshInstance3D.new()
-    var mesh: SphereMesh = SphereMesh.new()
-    mesh.radius = 0.38
-    mesh.height = 0.76
-    mesh.radial_segments = 10
-    mesh.rings = 5
     material = StandardMaterial3D.new()
     material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
     material.emission_enabled = true
-    mesh.material = material
-    orb.mesh = mesh
+    material.roughness = 0.55
     orb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     add_child(orb)
     visible = false
@@ -38,14 +32,16 @@ func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3,
     hit_mask = 8 if source.collision_layer == 4 else 16
     shape.radius = data.hitbox_radius
     remaining = maxf(0.6, 1.4 + data.hitbox_radius * 0.35)
-    var scale_value: float = clampf(data.hitbox_radius / 0.45, 0.75, 2.2)
-    orb.scale = Vector3.ONE * scale_value
+    var visual_mesh: PrimitiveMesh = RosterVisualStyle.projectile_mesh(data.effect)
+    visual_mesh.material = material
+    orb.mesh = visual_mesh
+    orb.scale = RosterVisualStyle.projectile_scale(data.effect, data.hitbox_radius)
     var fallback_color: Color = Color(0.08, 0.55, 1.0)
     if source.has_method("get_character_definition"):
         var character: CharacterDefinition = source.call("get_character_definition") as CharacterDefinition
         if character != null:
             fallback_color = character.energy_color
-    var color: Color = _effect_color(data.effect, fallback_color)
+    var color: Color = RosterVisualStyle.color(data.effect, fallback_color)
     material.albedo_color = color
     material.emission = color
     active = true
@@ -104,8 +100,9 @@ func _physics_process(delta: float) -> void:
         recycle()
         return
 
-    orb.rotation.y += delta * 7.0
-    orb.rotation.x += delta * 3.0
+    var spin: float = RosterVisualStyle.orbit_speed(definition.effect)
+    orb.rotation.y += delta * spin
+    orb.rotation.x += delta * (spin * 0.45)
 
 func recycle() -> void:
     active = false
@@ -114,25 +111,3 @@ func recycle() -> void:
     target = null
     definition = null
 
-func _effect_color(effect: String, fallback: Color) -> Color:
-    match effect:
-        "shadow":
-            return Color(0.16, 0.10, 0.24)
-        "mind":
-            return Color(0.95, 0.35, 0.75)
-        "steel", "puppet", "bone":
-            return Color(0.72, 0.76, 0.82)
-        "insect":
-            return Color(0.22, 0.18, 0.12)
-        "wind":
-            return Color(0.55, 0.92, 0.92)
-        "sand", "earth", "oil":
-            return Color(0.82, 0.62, 0.28)
-        "fire":
-            return Color(1.0, 0.24, 0.04)
-        "snake":
-            return Color(0.35, 0.72, 0.28)
-        "water":
-            return Color(0.10, 0.52, 0.95)
-        _:
-            return fallback
