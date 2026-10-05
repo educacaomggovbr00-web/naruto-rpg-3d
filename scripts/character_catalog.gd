@@ -92,6 +92,7 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     if definition.awakening_definition != null:
         definition.energy_color = definition.awakening_definition.energy_color
     definition.ai_profile = RosterAIProfileFactory.build(id)
+    definition.visual_profile = RosterVisualProfileFactory.build(id)
     return definition
 
 static func _complete_power_kit(definition: CharacterDefinition) -> void:
