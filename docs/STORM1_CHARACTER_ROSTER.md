@@ -12,7 +12,7 @@ Asuma Sarutobi; Kurenai Yuhi; Anko Mitarashi; Shizune; Hashirama Senju; Tobirama
 
 ## Estado no projeto
 
-Os **25 jogáveis acima já estão presentes na seleção** como jogador e CPU. Naruto, Sasuke, Sakura e Kakashi mantêm os perfis próprios já existentes. Os outros 21 usam temporariamente `assets/characters/rigged.glb`, combo-base compartilhado, sem jutsus, Ultimate ou Awakening emprestados de outro personagem. Isso torna o roster selecionável e testável sem fingir que o moveset final já foi concluído.
+Os **25 jogáveis acima já estão presentes na seleção** como jogador e CPU. Naruto, Sasuke, Sakura e Kakashi mantêm os perfis próprios já existentes. Os outros 21 usam temporariamente `assets/characters/rigged.glb`, mas não compartilham mais o moveset do Naruto: cada slot recebe um perfil independente de combo terrestre/aéreo, velocidade, vida, knockback e launcher gerado por `RosterMovesetFactory`. Esses valores são `OUR_APPROXIMATION`; jutsus, Ultimate, Awakening, modelos e coreografias finais ainda precisam ser implementados.
 
 Os 10 nomes de suporte permanecem separados em `CharacterCatalog.SUPPORT_ONLY` e não viraram lutadores completos.
 
@@ -24,6 +24,6 @@ Os 10 nomes de suporte permanecem separados em `CharacterCatalog.SUPPORT_ONLY` e
 | Sasuke (criança) | Próximo após framework de Naruto consolidado | Pesquisar seção específica Storm 1: todos combos, Chidori/alternativas, Ultimate e formas; não usar moveset Shippuden |
 | Sakura (criança) | Próxima após Sasuke | Confirmar combos, força/alcance, jutsu, Ultimate, modo despertado e suporte na edição 1 |
 | Kakashi | Próximo após Sakura | Confirmar combos, jutsus selecionáveis, Ultimate, Sharingan/modo, efeitos e suporte na edição 1 |
-| Outros 21 | Slots jogáveis já ativos no catálogo/seleção, com rig e combo-base temporários | Preencher cada ficha durante sua fase; substituir placeholder por modelo/moveset/jutsus/Ultimate/Awakening próprios sem inventar stats ou atribuir Ultimates de Storm 4 |
+| Outros 21 | Slots jogáveis já ativos; cada um possui agora ataques-base independentes marcados como OUR_APPROXIMATION | Refinar cada ficha com pesquisa, modelo, jutsus, Ultimate/Awakening, VFX e coreografia próprios; não tratar o perfil-base como reprodução final de Storm 1 |
 
 Ficha obrigatória por personagem: modelo/skeleton/biblioteca/tree; combo neutro/direcional/launcher/aéreo; jutsus; Ultimate; Awakening; velocidade/alcance/estilo; particularidades; suporte; animações/VFX/áudio necessários; CPU profile; fonte e confiança. O framework configura todos os 25 IDs sem duplicar o controlador. A presença no roster não significa conclusão individual: 21 ainda são slots de desenvolvimento até receberem implementação própria.
