@@ -67,10 +67,10 @@ func run() -> void:
     arena.queue_free()
     await frames(4)
 
-    # Existing but incompatible GLB: static source intentionally has no skin/skeleton.
-    gaara.model_path = "res://assets/characters/base_basic/base_basic_pbr.glb"
+    # Existing but incompatible scene: tiny fixture intentionally has no Skeleton3D.
+    gaara.model_path = "res://tests/fixtures/no_skeleton_model.tscn"
     gaara.model_fallback_path = original_fallback
-    check(ResourceLoader.exists(gaara.model_path), "Static incompatible GLB must exist for fallback test")
+    check(ResourceLoader.exists(gaara.model_path), "Tiny incompatible model fixture must exist for fallback test")
 
     check(flow.start_versus("gaara", "temari", "training") == OK, "Invalid-final fallback battle opens")
     await frames(14)
@@ -85,7 +85,7 @@ func run() -> void:
     check(String(adapter.get("resolved_model_path")) == original_fallback, "Invalid primary resolves shared fallback")
     attempts = adapter.get("model_attempt_log")
     check(attempts.size() >= 2, "Invalid primary and fallback both appear in diagnostics")
-    check("Skeleton3D ausente" in attempts[0], "Static GLB is rejected for missing skeleton")
+    check("Skeleton3D ausente" in attempts[0], "Invalid model fixture is rejected for missing skeleton")
     check("OK" in attempts[attempts.size() - 1], "Fallback succeeds after incompatible primary")
     var fallback_accessories: Array = adapter.get("roster_accessories")
     check(fallback_accessories.size() > 0, "Procedural identity remains active only on fallback")
