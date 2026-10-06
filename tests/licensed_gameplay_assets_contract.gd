@@ -47,6 +47,12 @@ func run() -> void:
     var meshes: Array[MeshInstance3D] = []
     npc.rig_adapter._collect_mesh_instances(npc.rig_adapter.model_instance, meshes)
     check(not meshes.is_empty(), "Licensed NPC has visible 3D mesh")
+    if not meshes.is_empty():
+        var posed_bounds: AABB = npc.rig_adapter.posed_mesh_bounds(meshes[0])
+        var world_bounds: AABB = npc.rig_adapter.model_instance.global_transform * posed_bounds
+        check(absf(world_bounds.position.y - npc.global_position.y) < 0.15, "Native idle skin stays grounded rather than using bind-pose AABB")
+        var npc_material: StandardMaterial3D = meshes[0].get_surface_override_material(0)
+        check(npc_material.next_pass == null, "Scaled FBX ninja avoids fragmented outline hull and extra draw pass")
     village.apply_quality(0, false)
     check(meshes[0].visibility_range_end == 24.0, "NPC render culling preserves interaction")
     check(village.get_node("Player").rig_adapter.real_animation_count == 27, "Exploration retains player combat rig")
