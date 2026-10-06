@@ -193,14 +193,19 @@ func _finalize_loaded_rig() -> void:
     rig_loaded = true
     attack_hitbox.top_level = true
 
-    # Use the included CC0 ninja pack as the visible combat skin. The existing
-    # Mixamo rig stays loaded and animated for hitboxes, hand sockets, combat
-    # timing, clone choreography and the full roster animation state machine.
-    if player.name in ["Player", "EnemyDummy"]:
+    # Keep authored/configured character models visible. The generic CC0 ninja
+    # skin is only a visual fallback for roster slots that still use the shared
+    # placeholder rig; it must never cover Naruto's configured 3D model.
+    var use_licensed_placeholder_skin: bool = false
+    if player.name in ["Player", "EnemyDummy"] and player.has_method("get_character_definition"):
+        var visible_definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+        use_licensed_placeholder_skin = (
+            visible_definition != null
+            and visible_definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG"
+        )
+    if use_licensed_placeholder_skin:
         var licensed_visual: Node3D = Node3D.new()
         licensed_visual.name = "LicensedCombatNinja"
-        # Runtime load keeps this visual-only script out of the base rig's
-        # inheritance graph (the menu and world adapters extend this script).
         licensed_visual.set_script(load("res://scripts/licensed_combat_ninja.gd") as Script)
         add_child(licensed_visual)
 
