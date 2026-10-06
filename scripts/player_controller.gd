@@ -114,6 +114,7 @@ var is_charging_chakra: bool = false
 var defeated: bool = false
 var mobile_controls: Node = null
 var combat_state: Node = null
+var rpg_damage_multiplier: float = 1.0
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
@@ -1178,7 +1179,11 @@ func get_special_animation() -> String:
     return String(specials.call("animation_clip"))
 
 func get_damage_multiplier() -> float:
-    return float(awakening.call("damage_multiplier")) * (float(ninja_tools.call("damage_multiplier")) if ninja_tools != null else 1.0)
+    return (
+        float(awakening.call("damage_multiplier"))
+        * (float(ninja_tools.call("damage_multiplier")) if ninja_tools != null else 1.0)
+        * rpg_damage_multiplier
+    )
 
 func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
     if awakening.active:
