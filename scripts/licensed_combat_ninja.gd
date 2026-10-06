@@ -37,7 +37,11 @@ func _ready() -> void:
 	var bounds: AABB = _get_bounds(feminine)
 	var factor: float = 1.75 / maxf(bounds.size.y, 0.001)
 	model_instance.scale = Vector3.ONE * factor
-	model_instance.position.y = -bounds.position.y * factor
+	var floor_y: float = 0.0
+	var collision: CollisionShape3D = source_actor.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if collision != null and collision.shape is CapsuleShape3D:
+		floor_y = collision.position.y - (collision.shape as CapsuleShape3D).height * 0.5
+	model_instance.position.y = floor_y - bounds.position.y * factor
 	model_instance.rotation_degrees.y = 180.0
 	# Keep imported materials, but use one cheap toon pass with mobile-friendly
 	# rough surfaces. Meshes and animation data remain shared between fighters.
