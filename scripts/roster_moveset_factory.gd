@@ -37,7 +37,7 @@ static func build_moveset(id: String) -> MovesetDefinition:
         return null
 
     var values: Array = data["damage"]
-    var set: MovesetDefinition = MovesetDefinition.new()
+    var moveset: MovesetDefinition = MovesetDefinition.new()
 
     var light_event: CameraEventDefinition = _camera_event(0.065, 1.0, 0.032, "normal")
     var heavy_event: CameraEventDefinition = _camera_event(0.14, 3.0, 0.052, "normal")
@@ -56,14 +56,14 @@ static func build_moveset(id: String) -> MovesetDefinition:
     aerial.append(_attack(id + "_air3", "air_attack_3", float(values[2]), 3.0, 0.0, float(data["stun"]), light_event))
     aerial.append(_attack(id + "_air4", "air_attack_4", float(values[3]), 5.0, -13.0, float(data["stun"]) + 0.22, slam_event))
 
-    set.ground = ground
-    set.aerial = aerial
-    set.neutral_finisher = ground[3]
-    set.up_finisher = _attack(id + "_up_finisher", "attack_4", float(values[3]), 5.0, float(data["lift"]), float(data["stun"]) + 0.18, launch_event)
-    set.down_finisher = _attack(id + "_down_finisher", "attack_4", float(values[3]), 5.0, -4.0, float(data["stun"]) + 0.42, slam_event)
-    set.side_finisher = _attack(id + "_side_finisher", "attack_4", float(values[3]), float(data["knockback"]) + 2.0, 2.0, float(data["stun"]) + 0.18, launch_event)
-    set.branch_step = 3
-    return set
+    moveset.ground = ground
+    moveset.aerial = aerial
+    moveset.neutral_finisher = ground[3]
+    moveset.up_finisher = _attack(id + "_up_finisher", "attack_4", float(values[3]), 5.0, float(data["lift"]), float(data["stun"]) + 0.18, launch_event)
+    moveset.down_finisher = _attack(id + "_down_finisher", "attack_4", float(values[3]), 5.0, -4.0, float(data["stun"]) + 0.42, slam_event)
+    moveset.side_finisher = _attack(id + "_side_finisher", "attack_4", float(values[3]), float(data["knockback"]) + 2.0, 2.0, float(data["stun"]) + 0.18, launch_event)
+    moveset.branch_step = 3
+    return moveset
 
 static func _attack(id: String, clip: String, damage: float, knockback: float, lift: float, hitstun: float, camera: CameraEventDefinition) -> AttackDefinition:
     var attack: AttackDefinition = AttackDefinition.new()
