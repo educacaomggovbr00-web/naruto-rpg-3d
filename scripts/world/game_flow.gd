@@ -45,6 +45,7 @@ var save_writable: bool = true
 var save_message: String = ""
 var return_message: String = ""
 var result_layer: CanvasLayer = null
+var story_dialogue_seen: Dictionary = {}
 
 func _ready() -> void:
     CharacterCatalog.initialize()
@@ -154,6 +155,33 @@ func story_objective_text() -> String:
         String(mission.get("title", "Missão")),
         StoryCampaign.region_label(String(mission.get("region", "konoha")))
     ]
+
+func story_objective_detail() -> String:
+    var mission: Dictionary = current_story_mission()
+    if mission.is_empty():
+        return "Explore, treine e fortaleça seu ninja."
+    return String(mission.get("objective", mission.get("summary", "Siga o objetivo da missão.")))
+
+func story_dialogue(phase: String, mission_id: String = "") -> Array:
+    var mission: Dictionary = current_story_mission() if mission_id.is_empty() else StoryCampaign.find(mission_id)
+    if mission.is_empty():
+        return []
+    var key: String = phase + "_dialogue"
+    var value: Variant = mission.get(key, [])
+    return value as Array if value is Array else []
+
+func story_dialogue_key(phase: String, mission_id: String = "") -> String:
+    var mission: Dictionary = current_story_mission() if mission_id.is_empty() else StoryCampaign.find(mission_id)
+    return "" if mission.is_empty() else String(mission.get("id", "")) + ":" + phase
+
+func story_dialogue_was_seen(phase: String, mission_id: String = "") -> bool:
+    var key: String = story_dialogue_key(phase, mission_id)
+    return not key.is_empty() and bool(story_dialogue_seen.get(key, false))
+
+func mark_story_dialogue_seen(phase: String, mission_id: String = "") -> void:
+    var key: String = story_dialogue_key(phase, mission_id)
+    if not key.is_empty():
+        story_dialogue_seen[key] = true
 
 func _transition(path: String) -> Error:
     if busy:
@@ -352,6 +380,7 @@ func _complete_story_mission(id: String) -> Dictionary:
     if bool(mission.get("boss", false)) and not progress.bosses.has(id):
         progress.bosses.append(id)
     progress.story_index = mini(int(progress.story_index) + 1, StoryCampaign.count())
+    story_dialogue_seen.erase(id + ":intro")
     save_progress()
     progress_changed.emit()
     return {
