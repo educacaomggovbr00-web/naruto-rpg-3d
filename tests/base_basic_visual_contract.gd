@@ -57,6 +57,7 @@ func run() -> void:
     for actor: CharacterBody3D in [fighter, cpu]:
         var adapter: Node3D = actor.rig_adapter
         check(adapter.rig_loaded and adapter.model_instance.visible, "Each team shows its animated model")
+        check(adapter.get_node_or_null("LicensedCombatNinja") == null, "Naruto keeps its configured 3D model instead of the generic ninja skin")
         check(adapter.skeleton.get_bone_count() == 65 and adapter.real_animation_count == 27, "Complete skeleton and library load")
         var meshes: Array[MeshInstance3D] = []
         adapter._collect_mesh_instances(adapter.model_instance, meshes)
