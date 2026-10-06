@@ -1,10 +1,10 @@
 extends SceneTree
 
-const SCRIPT_PATHS: PackedStringArray = PackedStringArray([
+const SCRIPT_PATHS = [
 	"res://scripts/rigged_character_adapter.gd",
 	"res://scripts/character_visual_adapter.gd",
 	"res://scripts/licensed_combat_ninja.gd",
-])
+]
 
 func _initialize() -> void:
 	var failures: int = 0
