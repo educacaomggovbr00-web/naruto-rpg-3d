@@ -32,8 +32,12 @@ def validate(root=ROOT, release=False):
         if entry.get('status') not in STATUSES or not path.is_file():
             errors.append(f'invalid status or missing file: {relative}')
             continue
-        if hashlib.sha256(path.read_bytes()).hexdigest() != entry.get('sha256'):
-            errors.append(f'changed asset must be reviewed: {relative}')
+        actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual_sha256 != entry.get('sha256'):
+            errors.append(
+                f'changed asset must be reviewed: {relative} '
+                f'(expected {entry.get("sha256")}, actual {actual_sha256})'
+            )
         if entry['status'] in {'DEVELOPMENT_ONLY', 'UNKNOWN_LICENSE'}:
             blocked.append(relative)
         elif not all(entry.get(field) for field in ('author', 'source', 'license', 'modifications')):
@@ -47,7 +51,11 @@ def validate(root=ROOT, release=False):
             continue
         relative = path.relative_to(root).as_posix()
         if relative not in registered:
-            errors.append(f'unregistered runtime asset: {relative}')
+            actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+            errors.append(
+                f'unregistered runtime asset: {relative} '
+                f'(sha256 {actual_sha256})'
+            )
     if release:
         errors += [f'not cleared for release: {path}' for path in blocked]
         if not registry.get('presentation_distribution_authorized', False):
