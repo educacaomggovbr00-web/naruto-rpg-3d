@@ -51,6 +51,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
     var locked_target: Node3D = player.call("get_locked_target") as Node3D
+    var combat_profile: Dictionary = (
+        player.call("get_camera_state_profile") as Dictionary
+        if player.has_method("get_camera_state_profile")
+        else {}
+    )
+    var state_fov_offset: float = float(combat_profile.get("fov_offset", 0.0))
+    var state_distance_offset: float = float(combat_profile.get("distance_offset", 0.0))
+    var state_roll_degrees: float = float(combat_profile.get("roll_degrees", 0.0))
 
     if not is_instance_valid(locked_target) and is_instance_valid(mobile_controls):
         var touch_value: Variant = mobile_controls.call("consume_camera_delta")
@@ -77,7 +85,11 @@ func _process(delta: float) -> void:
             0.42
         )
 
-        var desired_length: float = clampf(5.6 + flat.length() * 0.48 + absf(to_target.y) * 0.25, 5.6, 18.0)
+        var desired_length: float = clampf(
+            5.6 + flat.length() * 0.48 + absf(to_target.y) * 0.25 + state_distance_offset,
+            5.2,
+            18.5
+        )
         spring_arm.spring_length = lerp(
             spring_arm.spring_length,
             desired_length,
@@ -86,7 +98,7 @@ func _process(delta: float) -> void:
     else:
         spring_arm.spring_length = lerp(
             spring_arm.spring_length,
-            5.5,
+            5.5 + state_distance_offset,
             1.0 - exp(-6.0 * delta)
         )
 
@@ -95,7 +107,11 @@ func _process(delta: float) -> void:
     var separation: float = player.global_position.distance_to(locked_target.global_position) if is_instance_valid(locked_target) else 0.0
     var dash_active: bool = float(player.call("get_chakra_dash_timer")) > 0.0
     var dash_fov: float = 5.0 if dash_active else 0.0
-    var desired_fov: float = clampf(base_fov + separation * 0.35 + dash_fov + fov_kick, 56.0, 82.0)
+    var desired_fov: float = clampf(
+        base_fov + separation * 0.35 + dash_fov + fov_kick + state_fov_offset,
+        54.0,
+        84.0
+    )
     camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-8.0 * delta))
     cinematic_remaining = maxf(cinematic_remaining - delta, 0.0)
     if cinematic_remaining > 0.0 and is_instance_valid(cinematic_target):
@@ -121,7 +137,7 @@ func _process(delta: float) -> void:
     ) * shake_strength
 
     smoothed_focus = smoothed_focus.lerp(follow_position, 1.0 - exp(-12.0 * delta))
-    var desired_roll: float = deg_to_rad(-1.15) if dash_active else 0.0
+    var desired_roll: float = (deg_to_rad(-1.15) if dash_active else 0.0) + deg_to_rad(state_roll_degrees)
     dash_roll = lerpf(dash_roll, desired_roll, 1.0 - exp(-10.0 * delta))
     global_position = smoothed_focus
     global_rotation = Vector3(pitch, yaw, dash_roll)
