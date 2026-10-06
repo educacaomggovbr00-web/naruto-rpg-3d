@@ -1,0 +1,162 @@
+{
+  "acquired_on": "2026-10-06",
+  "godot_conversion": "4.7.2.stable.official.ed1daf0bf",
+  "archives": {
+    "weapons": {
+      "sha256": "300d824110b9e3eacb4cb24b72b94dfff74e39832a8c312d31b933ccecaaae45",
+      "bytes": 4480229
+    },
+    "characters": {
+      "sha256": "0295062cbc72da52ee804f39ac38694901a40458011f9b2638fc7ef13ed509da",
+      "bytes": 48430012
+    },
+    "particles": {
+      "sha256": "b631d4b07f7002549fdcf155f01141ad482f79f3440e4e301eed49ce5f1d8958",
+      "bytes": 15001764
+    },
+    "nature": {
+      "sha256": "fa7974a0d342bfe63c38664ba9f8ec1a4aab8ea25f099bdc56870e33588c4d9d",
+      "bytes": 10537521
+    }
+  },
+  "assets": [
+    {
+      "path": "assets/vendor/kenney_nature/plant_bushDetailed.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": "Original GLB geometry/materials; height normalization, spatial MultiMesh batching and culling in runtime.",
+      "sha256": "2e0487020d68ccf664435db9d829c78ae00e6d2785ee3ec10b9f89cc70a10406",
+      "bytes": 10172,
+      "triangles": 104
+    },
+    {
+      "path": "assets/vendor/kenney_nature/rock_largeA.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": "Original GLB geometry/materials; height normalization, spatial MultiMesh batching and culling in runtime.",
+      "sha256": "6dd15390fd96501dcd1454765a17ba61dbbd8d47705dfe5149c8dd92b353ce25",
+      "bytes": 7552,
+      "triangles": 80
+    },
+    {
+      "path": "assets/vendor/kenney_nature/rock_largeC.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": "Original GLB geometry/materials; height normalization, spatial MultiMesh batching and culling in runtime.",
+      "sha256": "23aee8b727adeaf260207af3e0615dc69aa766c6d87de1d44cbc8c2711d74dd1",
+      "bytes": 7004,
+      "triangles": 72
+    },
+    {
+      "path": "assets/vendor/kenney_nature/tree_detailed.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": "Original GLB geometry/materials; height normalization, spatial MultiMesh batching and culling in runtime.",
+      "sha256": "c041daf2f0fb1d49e4325227cbcd58667adbe51e9b55e8c1f0a94b74cc521b3b",
+      "bytes": 31412,
+      "triangles": 402
+    },
+    {
+      "path": "assets/vendor/kenney_nature/tree_oak.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": "Original GLB geometry/materials; height normalization, spatial MultiMesh batching and culling in runtime.",
+      "sha256": "d7fd8773674928c50c11b66d12c636d49bdcc15a8b1c7fbb98e6f63a3439a3f3",
+      "bytes": 14644,
+      "triangles": 196
+    },
+    {
+      "path": "assets/vendor/kenney_nature/tree_pineTallA_detailed.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/nature-kit",
+      "license": "CC0-1.0",
+      "modifications": "Original GLB geometry/materials; height normalization, spatial MultiMesh batching and culling in runtime.",
+      "sha256": "9ba6337460e718b8baf165b23c02f39455e3d5757b1911505410c46bc88a86b5",
+      "bytes": 10708,
+      "triangles": 134
+    },
+    {
+      "path": "assets/vendor/kenney_particles/smoke_01.png",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/particle-pack",
+      "license": "CC0-1.0",
+      "modifications": "Original 512px transparent PNGs; depth-tested billboard pool and lifetime tint/fade in runtime.",
+      "sha256": "e8724c219e8d35859167fc0a7e207e13c72ccf0c29704909b9bb3d3dc71c6cf7",
+      "bytes": 97452
+    },
+    {
+      "path": "assets/vendor/kenney_particles/star_01.png",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/particle-pack",
+      "license": "CC0-1.0",
+      "modifications": "Original 512px transparent PNGs; depth-tested billboard pool and lifetime tint/fade in runtime.",
+      "sha256": "3ba3999c944a0767677449412d306c1f230daa1743b31f929533cf77a22ecf5d",
+      "bytes": 42118
+    },
+    {
+      "path": "assets/vendor/mehrasaur_weapons/aim-board.obj",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "mehrasaur",
+      "source": "https://opengameart.org/content/3d-shuriken-pack",
+      "license": "CC0-1.0",
+      "modifications": "Original OBJ geometry; unsupported ambient Ka terms removed from MTL; runtime metal override for kunai/shuriken, scale normalization.",
+      "sha256": "43b4def2551c4ca5c726650b3f4efc355c110a81dc01792a3c430deca1ee111e",
+      "bytes": 23093
+    },
+    {
+      "path": "assets/vendor/mehrasaur_weapons/kunai-gata-01.obj",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "mehrasaur",
+      "source": "https://opengameart.org/content/3d-shuriken-pack",
+      "license": "CC0-1.0",
+      "modifications": "Original OBJ geometry; unsupported ambient Ka terms removed from MTL; runtime metal override for kunai/shuriken, scale normalization.",
+      "sha256": "ff3590b5e90ddde1d2b86daf5114b74c64c56e9ec29da5957b7e166ddc622a2c",
+      "bytes": 11883
+    },
+    {
+      "path": "assets/vendor/mehrasaur_weapons/shaken-juji.obj",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "mehrasaur",
+      "source": "https://opengameart.org/content/3d-shuriken-pack",
+      "license": "CC0-1.0",
+      "modifications": "Original OBJ geometry; unsupported ambient Ka terms removed from MTL; runtime metal override for kunai/shuriken, scale normalization.",
+      "sha256": "59b2179929b1d5b12a02bd41f8050270d7ebed52ee4398689298994acbf5c6b5",
+      "bytes": 3029
+    },
+    {
+      "path": "assets/vendor/quaternius_ninjas/Ninja_Female.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius",
+      "source": "https://opengameart.org/content/animated-characters-pack",
+      "license": "CC0-1.0",
+      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native Idle and rig preserved; runtime height normalized to 1.72m for noncombat NPCs.",
+      "sha256": "0b75104932555f320aa1a40646e2ef0720e010b54584580ceafa4750cb27941a",
+      "bytes": 1058260,
+      "triangles": 7104
+    },
+    {
+      "path": "assets/vendor/quaternius_ninjas/Ninja_Male.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius",
+      "source": "https://opengameart.org/content/animated-characters-pack",
+      "license": "CC0-1.0",
+      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native Idle and rig preserved; runtime height normalized to 1.72m for noncombat NPCs.",
+      "sha256": "c0c5ceed48681e4ee8140906df17d47bf0d4f494c9506a11b490298e2e3b653e",
+      "bytes": 654624,
+      "triangles": 2720
+    }
+  ]
+}

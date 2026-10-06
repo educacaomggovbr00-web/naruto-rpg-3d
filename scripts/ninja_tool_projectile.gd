@@ -20,53 +20,11 @@ func _ready() -> void:
     sweep_shape.radius = 0.15
     shuriken = Node3D.new()
     add_child(shuriken)
-    var metal: StandardMaterial3D = StandardMaterial3D.new()
-    metal.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    metal.albedo_color = Color(0.55, 0.65, 0.75)
-    for i: int in range(4):
-        var blade: MeshInstance3D = MeshInstance3D.new()
-        var mesh: PrismMesh = PrismMesh.new()
-        mesh.size = Vector3(0.09, 0.04, 0.30)
-        mesh.material = metal
-        blade.mesh = mesh
-        blade.rotation.y = float(i) * PI * 0.5
-        blade.position = Vector3(sin(blade.rotation.y), 0, cos(blade.rotation.y)) * 0.10
-        blade.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-        shuriken.add_child(blade)
+    var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
+    shuriken.add_child(tools.create(tools.SHURIKEN, 0.38))
     kunai = Node3D.new()
     add_child(kunai)
-    var point: MeshInstance3D = MeshInstance3D.new()
-    var blade_mesh: PrismMesh = PrismMesh.new()
-    blade_mesh.size = Vector3(0.085, 0.26, 0.045)
-    blade_mesh.material = metal
-    point.mesh = blade_mesh
-    point.rotation.x = PI * 0.5
-    point.position.z = 0.08
-    point.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-    kunai.add_child(point)
-    var grip: MeshInstance3D = MeshInstance3D.new()
-    var grip_mesh: CylinderMesh = CylinderMesh.new()
-    grip_mesh.top_radius = 0.025
-    grip_mesh.bottom_radius = 0.025
-    grip_mesh.height = 0.15
-    grip_mesh.radial_segments = 6
-    grip_mesh.material = metal
-    grip.mesh = grip_mesh
-    grip.rotation.x = PI * 0.5
-    grip.position.z = -0.13
-    grip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-    kunai.add_child(grip)
-    var handle: MeshInstance3D = MeshInstance3D.new()
-    var ring: TorusMesh = TorusMesh.new()
-    ring.inner_radius = 0.025
-    ring.outer_radius = 0.045
-    ring.rings = 8
-    ring.ring_segments = 4
-    ring.material = metal
-    handle.mesh = ring
-    handle.position.z = -0.24
-    handle.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-    kunai.add_child(handle)
+    kunai.add_child(tools.create(tools.KUNAI, 0.40))
     bomb = MeshInstance3D.new()
     var ball: SphereMesh = SphereMesh.new()
     ball.radius = 0.17

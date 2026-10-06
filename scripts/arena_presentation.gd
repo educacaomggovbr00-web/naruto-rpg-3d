@@ -69,13 +69,25 @@ func build() -> void:
             for slat: float in [-1.1, 0.0, 1.1]:
                 box(Vector3(x + window + slat, 3.5, -33.8), Vector3(0.1, 2.7, 0.1), timber)
         box(Vector3(x, 5.7, -33.75), Vector3(17.6, 0.22, 0.25), timber)
-    # Trees use original cylinder helper without its combat collider.
-    for i: int in range(14):
-        var angle: float = TAU * float(i) / 14.0
-        var origin: Vector3 = Vector3(cos(angle), 0, sin(angle)) * (42.0 + float(i % 3) * 4.0)
-        cylinder(origin + Vector3.UP * 3, 0.5, 6, timber, 7)
-        cylinder(origin + Vector3.UP * 7, 3.6, 6, Color("527b54"), 10, 1.0)
-        cylinder(origin + Vector3.UP * 9, 2.8, 5, Color("759655"), 10, 0.1)
+    licensed_scenery = Node3D.new()
+    licensed_scenery.name = "LicensedScenery"
+    licensed_scenery.set_script(preload("res://scripts/licensed_scenery.gd"))
+    add_child(licensed_scenery)
+    var trees: Array[Vector3] = []
+    var rocks: Array[Vector3] = []
+    for i: int in range(18):
+        var angle: float = TAU * float(i) / 18.0
+        trees.append(Vector3(cos(angle), 0, sin(angle)) * (40.0 + float(i % 3) * 4.0))
+        if i % 3 == 0:
+            rocks.append(Vector3(cos(angle), 0, sin(angle)) * 34.0)
+    licensed_scenery.scatter("pine", trees, 11.0)
+    licensed_scenery.scatter("boulder", rocks, 1.8)
+    for x: float in [-14.0, 14.0]:
+        var target: MeshInstance3D = preload("res://scripts/licensed_ninja_tools.gd").create(preload("res://assets/vendor/mehrasaur_weapons/aim-board.obj"), 1.8, false)
+        target.rotation.x = PI * 0.5
+        target.position += Vector3(x, 1.2, 30.5)
+        target.visibility_range_end = 52.0
+        add_child(target)
     var material: ShaderMaterial = preload("res://assets/world/anime_scenery.tres")
     for key: Vector2i in batches:
         var surface: SurfaceTool = batches[key]
@@ -93,6 +105,8 @@ func build() -> void:
     batches.clear()
 
 func set_quality(value: int) -> void:
+    if licensed_scenery != null:
+        licensed_scenery.set_quality(value)
     for instance: MeshInstance3D in detail:
         instance.visible = value > 0
     environment.environment.fog_enabled = value > 0

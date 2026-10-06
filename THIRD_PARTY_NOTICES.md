@@ -56,3 +56,15 @@ A geometria runtime da Booby Trap e configurações JutsuDefinition foram criada
 O atlas `assets/characters/sprites/naruto_part1/battle_atlas.png` foi criado a partir do ZIP fornecido pelo usuário, identificado como conteúdo de **The Spriters Resource** para **Naruto Online / Recruitable Characters / Naruto Uzumaki (Part 1)**. Foram selecionadas 16 poses de batalha e normalizadas em células 192×192 para teste de personagem `Sprite3D`/2.5D.
 
 A licença de redistribuição pública desses sprites **não foi estabelecida**. Por isso o atlas está marcado como `DEVELOPMENT_ONLY` em `assets/asset_registry.json` e não deve ser tratado como asset liberado para uma build pública. O mapeamento para os arquivos originais do ZIP está em `assets/characters/sprites/naruto_part1/source_manifest.json`.
+
+
+## Licensed gameplay packs — 2026-10-06
+
+- Kenney Nature Kit 2.1: https://kenney.nl/assets/nature-kit — CC0-1.0. Six original GLBs, normalized and spatially instanced in arena/village/regions.
+- Kenney Particle Pack 1.1: https://kenney.nl/assets/particle-pack — CC0-1.0. Original `star_01.png` and `smoke_01.png`, used by bounded combat billboard pools.
+- mehrasaur 3D Shuriken Pack v2: https://opengameart.org/content/3d-shuriken-pack — CC0-1.0. `shaken-juji`, `kunai-gata-01`, `aim-board`; OBJ geometry unchanged, unsupported MTL ambient terms removed.
+- Quaternius Ultimate Animated Character Pack (Nov 2019 author upload): https://opengameart.org/content/animated-characters-pack — CC0-1.0. `Ninja_Male` and `Ninja_Female`, FBX converted to GLB using Godot 4.7.2, native rig/animations preserved. Used for noncombat village NPCs.
+
+Original Kenney license files and author-upload CC0 evidence notices are in `assets/vendor/*/LICENSE.txt`. Source/archive/runtime hashes and changes are in `assets/vendor/sources.json` and the asset registry. CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/.
+
+No Storm 4 or Shinobi Striker game files were acquired or included by this change. The pre-existing public-release restrictions remain in force.

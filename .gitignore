@@ -36,3 +36,7 @@ external/storm1_raw/
 
 # User-supplied/licensed local character models; do not redistribute as standalone files
 external/character_assets/
+
+# Recreated from embedded supplied Sakura GLB during import
+assets/characters/sakura_user/sakura_mobile_rigged_*.png
+assets/characters/sakura_user/sakura_mobile_rigged_*.png.import

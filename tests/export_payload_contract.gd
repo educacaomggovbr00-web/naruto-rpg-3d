@@ -55,6 +55,16 @@ func run() -> void:
             push_error("Animation-ready material variant missing from Android payload")
             quit(1)
             return
+    for asset: String in ["res://assets/vendor/quaternius_ninjas/Ninja_Male.glb", "res://assets/vendor/quaternius_ninjas/Ninja_Female.glb", "res://assets/vendor/kenney_particles/smoke_01.png", "res://assets/vendor/mehrasaur_weapons/kunai-gata-01.obj", "res://assets/vendor/kenney_nature/tree_oak.glb"]:
+        if not ResourceLoader.exists(asset):
+            push_error("Licensed gameplay asset missing from Android payload: " + asset)
+            quit(1)
+            return
+    if not FileAccess.file_exists("res://assets/vendor/sources.json") or not FileAccess.file_exists("res://assets/vendor/quaternius_ninjas/LICENSE.txt"):
+        push_error("Licensed asset provenance lost from Android payload")
+        quit(1)
+        return
+    print("LICENSED GAMEPLAY ASSETS ANDROID PACK: PASS")
     var cpu: Node = game.get_node("EnemyDummy")
     if not cpu.rig_adapter.rig_loaded or fighter.moveset != cpu.moveset or fighter.moveset.neutral_finisher.launch_force != 0.0 or fighter.specials.projectiles[0].definition.speed != 19.0:
         push_error("Development export lost shared moveset, CPU rig or projectile definition")

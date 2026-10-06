@@ -19,13 +19,15 @@ func _ready() -> void:
     normal_time_scale = Engine.time_scale
     for i: int in range(32):
         var effect: MeshInstance3D = MeshInstance3D.new()
-        var mesh: SphereMesh = SphereMesh.new()
-        mesh.radius = 0.5
-        mesh.height = 1.0
-        mesh.radial_segments = 8
-        mesh.rings = 4
+        var mesh: QuadMesh = QuadMesh.new()
+        mesh.size = Vector2(2.0, 2.0)
         var material: StandardMaterial3D = StandardMaterial3D.new()
         material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+        material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+        material.cull_mode = BaseMaterial3D.CULL_DISABLED
+        material.albedo_texture = preload("res://assets/vendor/kenney_particles/star_01.png")
+        material.no_depth_test = false
         mesh.material = material
         effect.mesh = mesh
         effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -44,6 +46,8 @@ func _process(delta: float) -> void:
         var phase: float = 1.0 - lifetimes[i] / durations[i]
         flashes[i].scale = Vector3.ONE * sizes[i] * (1.0 + phase) * (1.0 - phase * phase)
         flashes[i].visible = lifetimes[i] > 0.0
+        var material: StandardMaterial3D = flashes[i].mesh.material as StandardMaterial3D
+        material.albedo_color.a = 1.0 - phase
     trail_timer -= delta
     if trail_timer <= 0.0:
         trail_timer = trail_interval
@@ -119,7 +123,8 @@ func spawn_substitution(world_position: Vector3) -> void:
             world_position + offset,
             0.44,
             Color(0.82, 0.87, 0.92, 1.0),
-            0.22
+            0.22,
+            true
         )
 
 func spawn_dash_burst(world_position: Vector3) -> void:
@@ -146,12 +151,14 @@ func _spawn_flash(
     world_position: Vector3,
     start_scale: float,
     flash_color: Color,
-    lifetime: float
+    lifetime: float,
+    smoke: bool = false
 ) -> void:
     var index: int = pool_cursor
     pool_cursor = (pool_cursor + 1) % mini(effect_budget, flashes.size())
     var effect: MeshInstance3D = flashes[index]
     var material: StandardMaterial3D = effect.mesh.material as StandardMaterial3D
+    material.albedo_texture = preload("res://assets/vendor/kenney_particles/smoke_01.png") if smoke else preload("res://assets/vendor/kenney_particles/star_01.png")
     material.albedo_color = flash_color
     effect.global_position = world_position
     effect.visible = true

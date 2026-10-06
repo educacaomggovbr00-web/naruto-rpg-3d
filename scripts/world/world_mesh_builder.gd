@@ -6,6 +6,8 @@ var sectors: Array[MeshInstance3D] = []
 var triangles: int = 0
 var footprints: Array[Dictionary] = []
 var collision_count: int = 0
+var licensed_trees: Array[Vector3] = []
+var licensed_scenery: Node3D
 var plaster: Color = Color("d9c59a")
 var timber: Color = Color("49362e")
 var tile: Color = Color("3e727a")
@@ -143,10 +145,8 @@ func stairs(origin: Vector3, width: float, height: float, length: float) -> void
         Vector3(-width * 0.5, height, -length), Vector3(width * 0.5, height, -length)
     ]))
 
-func tree(origin: Vector3, radius: float = 2.2) -> void:
-    cylinder(origin + Vector3.UP * 1.4, 0.24, 2.8, timber, 7)
-    cylinder(origin + Vector3.UP * 3.2, radius, 2.7, Color("609b64"), 9, radius * 0.38)
-    cylinder(origin + Vector3.UP * 4.0, radius * 0.8, 2.2, Color("91be72"), 9, radius * 0.20)
+func tree(origin: Vector3, _radius: float = 2.2) -> void:
+    licensed_trees.append(origin)
     collider(origin + Vector3.UP * 1.1, Vector3(0.4, 2.2, 0.4))
 
 func lantern(origin: Vector3, accent: Color = Color("d86b34")) -> void:
@@ -265,7 +265,20 @@ func build() -> void:
         add_child(instance)
         sectors.append(instance)
     batches.clear()
+    licensed_scenery = Node3D.new()
+    licensed_scenery.name = "LicensedScenery"
+    licensed_scenery.set_script(preload("res://scripts/licensed_scenery.gd"))
+    add_child(licensed_scenery)
+    licensed_scenery.scatter("oak", licensed_trees, 5.5)
+    var shrubs: Array[Vector3] = []
+    for point: Vector3 in licensed_trees:
+        shrubs.append(point + Vector3(2.8, 0, 1.2))
+    licensed_scenery.scatter("bush", shrubs, 0.9)
+    var stones: Array[Vector3] = [Vector3(41, 0, 43), Vector3(42, 0, -40)]
+    licensed_scenery.scatter("rock", stones, 1.0)
 
 func set_quality(level: int) -> void:
+    if licensed_scenery != null:
+        licensed_scenery.set_quality(level)
     for sector: MeshInstance3D in sectors:
         sector.visibility_range_end = [58.0, 82.0, 112.0][clampi(level, 0, 2)]

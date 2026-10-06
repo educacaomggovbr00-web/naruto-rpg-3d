@@ -76,28 +76,14 @@ func _make_multimesh(mesh: PrimitiveMesh, transforms: Array[Transform3D], name: 
     draw_instances += 1
 
 func _forest_multimesh(points: Array[Vector3]) -> void:
-    var trunk: CylinderMesh = CylinderMesh.new()
-    trunk.top_radius = 0.23
-    trunk.bottom_radius = 0.32
-    trunk.height = 3.4
-    trunk.radial_segments = 6
-    trunk.material = _material(Color("4f392c"))
-
-    var crown: SphereMesh = SphereMesh.new()
-    crown.radius = 1.45
-    crown.height = 2.9
-    crown.radial_segments = 8
-    crown.rings = 4
-    crown.material = _material(Color("4e8957"))
-
-    var trunks: Array[Transform3D] = []
-    var crowns: Array[Transform3D] = []
+    var scenery: Node3D = Node3D.new()
+    scenery.name = "LicensedForest"
+    scenery.set_script(preload("res://scripts/licensed_scenery.gd"))
+    add_child(scenery)
+    scenery.scatter("canopy", points, 5.0, 48.0)
     for point: Vector3 in points:
-        trunks.append(Transform3D(Basis.IDENTITY, point + Vector3.UP * 1.7))
-        crowns.append(Transform3D(Basis.IDENTITY, point + Vector3.UP * 4.1))
         _box_collision(point + Vector3.UP * 1.25, Vector3(0.75, 2.5, 0.75))
-    _make_multimesh(trunk, trunks, "TreeTrunks")
-    _make_multimesh(crown, crowns, "TreeCrowns")
+    draw_instances += scenery.batches.size()
 
 func _build_forest() -> void:
     var points: Array[Vector3] = []
@@ -146,5 +132,7 @@ func _build_valley() -> void:
 func set_quality(level: int) -> void:
     var visibility: float = [48.0, 66.0, 86.0][clampi(level, 0, 2)]
     for child: Node in get_children():
+        if child.has_method("set_quality"):
+            child.set_quality(level)
         if child is GeometryInstance3D:
             child.visibility_range_end = visibility

@@ -139,6 +139,13 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/mobile_combat_readability_contract.gd 2>&1 | tee /tmp/mobile-readability.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/mobile-readability.log
           grep -F 'MOBILE COMBAT READABILITY: PASS' /tmp/mobile-readability.log
+      - name: Validate licensed gameplay assets and mobile budgets
+        shell: bash
+        run: |
+          set -o pipefail
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/licensed_gameplay_assets_contract.gd 2>&1 | tee /tmp/licensed-assets.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/licensed-assets.log
+          grep -F 'LICENSED GAMEPLAY ASSETS: PASS' /tmp/licensed-assets.log
       - name: Compile anime shaders in OpenGL Compatibility
         shell: bash
         env:
@@ -147,9 +154,24 @@ jobs:
           set -o pipefail
           sudo apt-get update -qq
           sudo apt-get install -y xvfb libgl1-mesa-dri
-          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/anime_presentation_contract.gd 2>&1 | tee /tmp/anime-opengl.log
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/anime_presentation_contract.gd -- --capture --capture-dir=/tmp/mobile-captures 2>&1 | tee /tmp/anime-opengl.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/anime-opengl.log
           grep -F 'ANIME PRESENTATION CONTRACT: PASS' /tmp/anime-opengl.log
+      - name: Compile licensed effects and NPC materials in OpenGL
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          set -o pipefail
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/licensed_gameplay_assets_contract.gd 2>&1 | tee /tmp/licensed-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/licensed-opengl.log
+          grep -F 'LICENSED GAMEPLAY ASSETS: PASS' /tmp/licensed-opengl.log
+      - name: Upload gameplay presentation captures
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-presentation-captures
+          path: /tmp/mobile-captures/*.png
+          if-no-files-found: error
       - name: Validate Storm research bridges
         run: |
           python -m unittest discover -s tests -p 'test_storm1_research_tools.py'

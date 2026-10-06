@@ -25,14 +25,18 @@ func _ready() -> void:
     add_child(hitbox)
     rig_adapter = Node3D.new()
     rig_adapter.name = "RiggedCharacterAdapter"
-    rig_adapter.set_script(preload("res://scripts/character_visual_adapter.gd"))
+    if player_controlled:
+        rig_adapter.set_script(preload("res://scripts/character_visual_adapter.gd"))
+    else:
+        rig_adapter.set_script(preload("res://scripts/world/licensed_ninja_actor.gd"))
     if player_controlled:
         var definition: CharacterDefinition = get_character_definition()
         if definition != null:
             rig_adapter.model_path = definition.model_path
             move_speed = definition.movement_speed
             sprint_speed = definition.sprint_speed
-    rig_adapter.follow_hitbox_to_bones = false
+    if player_controlled:
+        rig_adapter.follow_hitbox_to_bones = false
     add_child(rig_adapter)
     if player_controlled:
         add_to_group("world_player")
