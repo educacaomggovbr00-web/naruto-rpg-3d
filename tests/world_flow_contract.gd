@@ -30,7 +30,7 @@ func run() -> void:
     var actor: CharacterBody3D = village.get_node("Player")
     check(village.scene_file_path == "res://world.tscn" and actor.rig_adapter.rig_loaded, "World transition must finish with animated character")
     check(actor.global_position.distance_to(Vector3(0, 0.9, 42)) < 0.2, "Saved position inside geometry must recover at the gate")
-    check(village.points.size() == 7, "All data-driven world points must instantiate")
+    check(village.points.size() == 10, "All data-driven world points, including story/shop/travel, must instantiate")
     check(not flow.collect_scroll("roof_south", "roof_scrolls"), "Quest collection must require accepting the mission")
     actor.global_position = Vector3(-21,0.95,-30)
     await frames(6)
