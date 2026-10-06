@@ -10,6 +10,8 @@ var quality_button: Button
 var toast_label: Label
 var toast_timer: float = 0.0
 var settings: ConfigFile = ConfigFile.new()
+var story_dialogue: CanvasLayer
+var pending_story_start: bool = false
 
 @onready var actor: CharacterBody3D = $Player
 @onready var controls: Control = $HUD/WorldControls
@@ -26,6 +28,11 @@ func _ready() -> void:
     actor.camera_rig.focus = actor.global_position + Vector3.UP * 0.8
     actor.camera_rig.global_position = actor.camera_rig.focus
     _build_hud()
+    story_dialogue = CanvasLayer.new()
+    story_dialogue.name = "StoryDialogue"
+    story_dialogue.set_script(preload("res://scripts/world/story_dialogue.gd"))
+    add_child(story_dialogue)
+    story_dialogue.finished.connect(_on_story_dialogue_finished)
     GameFlow.progress_changed.connect(_refresh_hud)
     settings.load("user://graphics.cfg")
     apply_quality(clampi(int(settings.get_value("graphics", "quality", 1)), 0, 2), false)
@@ -119,7 +126,7 @@ func _refresh_hud() -> void:
         mission_button.text = "CONCLUÍDO"
         return
     var target_region: String = String(mission.get("region", "konoha"))
-    mission_label.text = GameFlow.story_objective_text() + "\n" + String(mission.get("summary", ""))
+    mission_label.text = GameFlow.story_objective_text() + "\n" + GameFlow.story_objective_detail()
     mission_button.disabled = target_region != GameFlow.world_region
     mission_button.text = "INICIAR MISSÃO" if not mission_button.disabled else "MISSÃO EM " + StoryCampaign.region_label(target_region).to_upper()
 
@@ -133,6 +140,24 @@ func start_story() -> void:
         toast("Esta missão começa em " + StoryCampaign.region_label(target_region) + ".")
         return
     controls.release_all()
+    if not GameFlow.story_dialogue_was_seen("intro"):
+        pending_story_start = true
+        GameFlow.mark_story_dialogue_seen("intro")
+        if story_dialogue.call(
+            "play",
+            GameFlow.story_dialogue("intro"),
+            "CAP. %d • %s" % [int(mission.get("chapter", 1)), String(mission.get("title", "MISSÃO"))]
+        ):
+            return
+        pending_story_start = false
+    var result: Error = GameFlow.start_story_battle()
+    if result != OK:
+        toast("Não foi possível abrir a missão.")
+
+func _on_story_dialogue_finished() -> void:
+    if not pending_story_start:
+        return
+    pending_story_start = false
     var result: Error = GameFlow.start_story_battle()
     if result != OK:
         toast("Não foi possível abrir a missão.")
