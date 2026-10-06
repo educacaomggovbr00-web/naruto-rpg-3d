@@ -6,7 +6,13 @@ const SOURCES: Dictionary = {
     "canopy": preload("res://assets/vendor/kenney_nature/tree_detailed.glb"),
     "bush": preload("res://assets/vendor/kenney_nature/plant_bushDetailed.glb"),
     "rock": preload("res://assets/vendor/kenney_nature/rock_largeA.glb"),
-    "boulder": preload("res://assets/vendor/kenney_nature/rock_largeC.glb")
+    "boulder": preload("res://assets/vendor/kenney_nature/rock_largeC.glb"),
+    "town_lantern": preload("res://assets/vendor/kenney_fantasy_town/lantern.glb"),
+    "town_stall": preload("res://assets/vendor/kenney_fantasy_town/stall-red.glb"),
+    "town_bench": preload("res://assets/vendor/kenney_fantasy_town/stall-bench.glb"),
+    "town_banner": preload("res://assets/vendor/kenney_fantasy_town/banner-red.glb"),
+    "town_cart": preload("res://assets/vendor/kenney_fantasy_town/cart.glb"),
+    "town_gate": preload("res://assets/vendor/kenney_fantasy_town/fence-gate.glb")
 }
 const ARCH_SOURCES: Dictionary = {
     "torii": preload("res://assets/vendor/quaternius_japan/torii.gltf"),
