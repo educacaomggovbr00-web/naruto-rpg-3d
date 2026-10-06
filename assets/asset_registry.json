@@ -166,7 +166,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado; sprites 2.5D mantidos como opção.",
-      "sha256": "8684f7c3b5e8a61742ce80bbc3c0481bf6756813b2f68a0724290406f18c58ab"
+      "sha256": "a3b83afa333ee7605e478a40e6790ab5201533a921a2c4c06afaa4d69334fa5d"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -175,7 +175,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource/shader original; parâmetros OUR_APPROXIMATION",
-      "sha256": "dc7d6a95672ed8644312e6feb29fb36297b4a7b4e4dcada4af98440155ada1f7"
+      "sha256": "c348783224fbdb98b1aa978fc103da1423b4790cd9185e21d9fa567195163d40"
     },
     {
       "path": "assets/combat/sasuke_moveset.tres",
@@ -291,7 +291,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Resource de gameplay atualizado para preferir o modelo Sakura rigado fornecido pelo usuário, usar Idle/Run nativos quando disponíveis e manter fallback seguro para o visual autoral anterior.",
-      "sha256": "e4e733b0eb164803eeb4624c55c5f831b99fb6de78f84d762afdd74e05c917ae"
+      "sha256": "14ee1927d9cf5b8c71761e0bba4e8aa0bb5c75d68ec6225257ea5685c4af06df"
     },
     {
       "path": "assets/characters/definitions/kakashi.tres",
@@ -300,7 +300,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "91c292f40f4442fab43251a2a174fe2b5acb1f326651f6d39fa054339a6ab9b6"
+      "sha256": "86ffc41e9145fa7e3248566a7756f01eac67d6f29aced83f14438023148a6356"
     },
     {
       "path": "assets/combat/sakura_moveset.tres",
@@ -336,7 +336,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "42d28a3a09c17452745f56aac9fd161e664cef94afccbdd8075426bb608b2ec9"
+      "sha256": "e736232d18198761f764046c37d6c62c754e209e967c4638be20c62c8df3ca6b"
     },
     {
       "path": "assets/characters/stylized/naruto.glb",
@@ -482,7 +482,7 @@
       "source": "Código original neste repositório",
       "license": "Original project content",
       "modifications": "Iluminação anime original em passagem opaca única, sem assets de Genshin Impact",
-      "sha256": "3aa3c594c9f11ef709c038326c47e0ee971e97f6233c2471de11bf089e0ea1cc"
+      "sha256": "cb6d9fce5f1741831a9feea961c2bae6f18bcc82e1fda767980e07786b9a39c1"
     },
     {
       "path": "assets/vfx/anime_surface.gdshader",
@@ -491,7 +491,7 @@
       "source": "Código original neste repositório",
       "license": "Original project content",
       "modifications": "Iluminação anime original em passagem opaca única, sem assets de Genshin Impact",
-      "sha256": "6844bdd41c554d8424afb82e807e2853064d0a18c2f0cd575297e71226d2b442"
+      "sha256": "b65c9f0055f44590450c4bca60202dd58b71e46f6450862a3df8915869061bbf"
     },
     {
       "path": "assets/characters/sprites/naruto_part1/battle_atlas.png",
@@ -537,6 +537,38 @@
         {
           "path": "assets/characters/base_basic/base_basic_shaded_rigged_shaded.png",
           "sha256": "2667c83ed13ca235bfb4761a1cc3ef1302a6216ba91ae419c73754e0a6d2eec8"
+        }
+      ]
+    },
+    {
+      "path": "assets/vfx/anime_outline.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Código original neste repositório",
+      "license": "Original project content",
+      "modifications": "Passe de outline autoral em geometria expandida, sem textura externa; otimizado para Compatibility/mobile.",
+      "sha256": "0810167f9cafbdc00dfc0275f5bc3315aca2881465c2f8bcf87a0c585e4b5082"
+    },
+    {
+      "path": "assets/characters/sakura_user/sakura_mobile_rigged.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Usuário / origem não comprovada",
+      "source": "Arquivo fornecido pelo usuário; inspeção técnica registrada em assets/characters/sakura_user/README.md",
+      "license": "UNKNOWN; não liberado para redistribuição pública",
+      "modifications": "Versão mobile preparada pelo projeto: três texturas embutidas reduzidas de 2048 para 1024; mesh, skin, UVs, joints, pesos e animações preservados.",
+      "sha256": "fc02718a9e9409603cae00087cb1f8525f628c7f0f3c6f45f19c1e3f013cc997",
+      "embedded_images": [
+        {
+          "path": "assets/characters/sakura_user/sakura_mobile_rigged_0.png",
+          "sha256": "dca6f45a392bd70c218897b1bcbd8b6494174ede193d149adc168f9640d736d8"
+        },
+        {
+          "path": "assets/characters/sakura_user/sakura_mobile_rigged_1.png",
+          "sha256": "57947748a86351dc7c93592cc2c283d938d42eadf16f3c89391e1563b5fceb4c"
+        },
+        {
+          "path": "assets/characters/sakura_user/sakura_mobile_rigged_2.png",
+          "sha256": "1c96e3e6ce5154d2d40c9443d6e99826a151a91ced117059645b800ef34fe18f"
         }
       ]
     }
