@@ -142,7 +142,7 @@
       "author": "Quaternius",
       "source": "https://opengameart.org/content/animated-characters-pack",
       "license": "CC0-1.0",
-      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native Idle and rig preserved; runtime height normalized to 1.72m for noncombat NPCs. Native NPC materials use a shared single-pass toon palette lifted 12% for readability; no fixed-width outline hull. Native Idle skin bounds sampled and cached for grounding and height normalization.",
+      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native rig and animations preserved; runtime height normalized to 1.72m for NPCs and 1.75m for battle skins. Shared single-pass toon palette lifted 12%; fixed-width outline hull omitted on the centimeter-scale meshes. Posed NPC skin bounds and combat bind-pose bounds are cached for grounding/scale normalization.",
       "sha256": "0b75104932555f320aa1a40646e2ef0720e010b54584580ceafa4750cb27941a",
       "bytes": 1058260,
       "triangles": 7104
@@ -153,7 +153,7 @@
       "author": "Quaternius",
       "source": "https://opengameart.org/content/animated-characters-pack",
       "license": "CC0-1.0",
-      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native Idle and rig preserved; runtime height normalized to 1.72m for noncombat NPCs. Native NPC materials use a shared single-pass toon palette lifted 12% for readability; no fixed-width outline hull. Native Idle skin bounds sampled and cached for grounding and height normalization.",
+      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native rig and animations preserved; runtime height normalized to 1.72m for NPCs and 1.75m for battle skins. Shared single-pass toon palette lifted 12%; fixed-width outline hull omitted on the centimeter-scale meshes. Posed NPC skin bounds and combat bind-pose bounds are cached for grounding/scale normalization.",
       "sha256": "c0c5ceed48681e4ee8140906df17d47bf0d4f494c9506a11b490298e2e3b653e",
       "bytes": 654624,
       "triangles": 2720

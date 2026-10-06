@@ -29,11 +29,11 @@ Nenhum asset proprietário novo foi adquirido. Clones compartilham o modelo prev
 
 ## Revisão Ultimate/Awakening/ferramentas
 
-Nenhum conteúdo externo adicional foi distribuído. Shaders/meshes/VFX/configurações novos são originais do projeto. Animações e cópias do personagem reutilizam as fontes já declaradas acima. O modelo e imagens nele embutidas têm status UNKNOWN_LICENSE para publicação até comprovação. Registro com hashes: `assets/asset_registry.json`. Kenney Modular Buildings/KayKit Medieval Hexagon foram pesquisados sob CC0, sem importação. [Godot Engine — licença MIT](https://godotengine.org/license) deve constar nos créditos da distribuição.
+Os efeitos usam `star_01.png` e `smoke_01.png` do Kenney Particle Pack (CC0 1.0), incluídos em `assets/vendor/sources.json`; os shaders e a geometria da arena são originais deste projeto. Animações e cópias do personagem reutilizam as fontes acima. O modelo fornecido e as imagens embutidas nele continuam `UNKNOWN_LICENSE` para publicação até comprovação. Registro com hashes: `assets/asset_registry.json`. Kenney Modular Buildings/KayKit Medieval Hexagon foram pesquisados sob CC0, sem importação. [Godot Engine — licença MIT](https://godotengine.org/license) deve constar nos créditos da distribuição.
 
 ## Aldeia autoral e dados de mundo
 
-A geometria de aldeia em `scripts/world/world_mesh_builder.gd`, pontos/missões em `assets/world`, mapa/UI e prévia diagnóstica em `docs/images/village_layout_preview.png` são conteúdo original deste projeto. A prévia renderiza apenas a geometria original em CPU; não contém imagem do Storm nem modelo fornecido. Nenhuma textura, áudio ou mesh do jogo original foi incorporada. NPCs continuam usando o rig já fornecido, com a proveniência UNKNOWN_LICENSE registrada anteriormente. A autorização de distribuição pública da apresentação/personagens permanece pendente; o gate não foi removido.
+A geometria de aldeia em `scripts/world/world_mesh_builder.gd` e `scripts/arena_presentation.gd`, pontos/missões em `assets/world`, mapa/UI e prévia diagnóstica em `docs/images/village_layout_preview.png` são conteúdo original deste projeto. A prévia renderiza apenas geometria original em CPU; não contém imagem do Storm nem modelo fornecido. Os ninjas de batalha e NPCs usam os modelos Quaternius CC0 listados abaixo. Nenhuma textura, áudio ou mesh do jogo original foi incorporada. A proveniência dos modelos de personagem fornecidos permanece `UNKNOWN_LICENSE` e o gate público segue ativo.
 
 ## Referências técnicas (sem código/asset redistribuído)
 
@@ -63,7 +63,7 @@ A licença de redistribuição pública desses sprites **não foi estabelecida**
 - Kenney Nature Kit 2.1: https://kenney.nl/assets/nature-kit — CC0-1.0. Six original GLBs, normalized and spatially instanced in arena/village/regions.
 - Kenney Particle Pack 1.1: https://kenney.nl/assets/particle-pack — CC0-1.0. Original `star_01.png` and `smoke_01.png`, used by bounded combat billboard pools.
 - mehrasaur 3D Shuriken Pack v2: https://opengameart.org/content/3d-shuriken-pack — CC0-1.0. `shaken-juji`, `kunai-gata-01`, `aim-board`; OBJ geometry unchanged, unsupported MTL ambient terms removed.
-- Quaternius Ultimate Animated Character Pack (Nov 2019 author upload): https://opengameart.org/content/animated-characters-pack — CC0-1.0. `Ninja_Male` and `Ninja_Female`, FBX converted to GLB using Godot 4.7.2, native rig/animations preserved. Used for noncombat village NPCs.
+- Quaternius Ultimate Animated Character Pack (Nov 2019 author upload): https://opengameart.org/content/animated-characters-pack — CC0-1.0. `Ninja_Male` and `Ninja_Female`, FBX converted to GLB using Godot 4.7.2, native rig/animations preserved. Used for visible player/CPU battle skins and village NPCs.
 
 Original Kenney license files and author-upload CC0 evidence notices are in `assets/vendor/*/LICENSE.txt`. Source/archive/runtime hashes and changes are in `assets/vendor/sources.json` and the asset registry. CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/.
 

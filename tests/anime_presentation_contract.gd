@@ -109,6 +109,12 @@ func run() -> void:
             tool.call("launch", fighter, rival, weapon_origin, (rival.global_position - weapon_origin).normalized(), "kunai")
             check(tool.visible and tool.kunai.visible and not tool.shuriken.visible, "The licensed kunai mesh renders when the kunai is thrown")
             await capture("training_live_kunai")
+            var camera: Camera3D = fighter.get_node("CameraRig/SpringArm3D/Camera3D") as Camera3D
+            var vfx_position: Vector3 = rival.global_position + camera.global_basis.x * 0.7 + Vector3.UP * 1.0
+            feedback.call("spawn_chakra_impact", vfx_position, Color("36d8ff"))
+            check(feedback.flashes.any(func(flash: MeshInstance3D) -> bool: return flash.visible), "Jutsu impact billboards remain visibly pooled")
+            await physics_frame
+            await capture("training_live_jutsu_vfx")
     change_scene_to_file("res://world.tscn")
     await settle()
     var village: Node = current_scene

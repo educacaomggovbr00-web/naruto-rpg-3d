@@ -9,7 +9,7 @@ Baseline: main `3c119544eeaf06482338d757b83c981119ff105b`; latest Actions run 37
 | Nature Kit 2.1 / Kenney | CC0-1.0 | oak + shrubs + rocks in village, tall pines/boulders behind arena boundary, detailed broadleaf trees in forest/river |
 | Particle Pack 1.1 / Kenney | CC0-1.0 | star impact/trails and smoke substitution, depth-tested billboards |
 | 3D Shuriken Pack v2 / mehrasaur | CC0-1.0 | pooled kunai and four-point shuriken projectiles, arena target boards |
-| Ultimate Animated Character Pack Nov 2019 / Quaternius | CC0-1.0 | male/female ninja village NPCs, original rigs and looping native Idle |
+| Ultimate Animated Character Pack Nov 2019 / Quaternius | CC0-1.0 | male/female ninja battle skins and village NPCs, original rigs and native animations |
 
 Exact file names, byte sizes, triangle counts, source URLs, archive hashes and runtime hashes: `assets/vendor/sources.json`. Total new runtime source assets: 1,971,951 bytes (~1.88 MiB). Kenney vegetation meshes: 72–402 triangles each. NPC meshes: male 2,720, female 7,104 triangles. Particles are 512x512; no large texture pack is bundled.
 

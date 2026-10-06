@@ -143,9 +143,11 @@ func spawn_chakra_impact(world_position: Vector3, energy_color: Color) -> void:
     if audio != null:
         audio.call("play", "heavy", -19.0)
 
-    _spawn_flash(world_position, 0.74, energy_color.lightened(0.14), 0.16)
-    _spawn_flash(world_position + Vector3(0.24, 0.10, 0.0), 0.46, Color(0.88, 0.96, 1.0, 1.0), 0.11)
-    _spawn_flash(world_position + Vector3(-0.18, -0.08, 0.16), 0.38, energy_color, 0.13)
+    # Spread the same bounded billboard burst beyond the body silhouette so
+    # the contact reads clearly on compact phone screens.
+    _spawn_flash(world_position, 1.02, energy_color.lightened(0.14), 0.16)
+    _spawn_flash(world_position + Vector3(0.42, 0.16, 0.0), 0.68, Color(0.88, 0.96, 1.0, 1.0), 0.11)
+    _spawn_flash(world_position + Vector3(-0.38, -0.08, 0.16), 0.56, energy_color, 0.13)
 
 func _spawn_flash(
     world_position: Vector3,
