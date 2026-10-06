@@ -40,6 +40,17 @@ func run() -> void:
     var camera: Camera3D = player.get_node("CameraRig/SpringArm3D/Camera3D") as Camera3D
     var spring: SpringArm3D = player.get_node("CameraRig/SpringArm3D") as SpringArm3D
     var hud: CanvasLayer = battle.get_node("HUD") as CanvasLayer
+    var feedback: Node3D = battle.get_node("CombatFeedback") as Node3D
+    var manga_overlay: ColorRect = hud.get_node_or_null("MangaImpactOverlay") as ColorRect
+
+    check(manga_overlay != null, "Combat HUD must include the manga impact overlay")
+    if manga_overlay != null:
+        check(not manga_overlay.visible, "Manga impact overlay must stay dormant outside impacts")
+        feedback.call("spawn_impact", cpu.global_position + Vector3.UP, "slam")
+        await frames(1)
+        check(manga_overlay.visible, "Heavy combat impacts must activate the manga overlay")
+        var manga_material: ShaderMaterial = manga_overlay.material as ShaderMaterial
+        check(manga_material != null and float(manga_material.get_shader_parameter("impact")) > 0.20, "Heavy hits must drive visible manga impact strength")
 
     check(not cpu.get_node("HealthLabel").visible, "Enemy 3D health text must stay hidden during normal combat")
     check(hud.get("enemy_health_bar") != null, "HUD must expose a readable enemy health bar")
