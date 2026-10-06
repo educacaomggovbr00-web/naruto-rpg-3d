@@ -166,7 +166,7 @@
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
       "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado.",
-      "sha256": "a3b83afa333ee7605e478a40e6790ab5201533a921a2c4c06afaa4d69334fa5d"
+      "sha256": "0de1c30047d457e44d686a1a24771e8768cf3dc1d99697674f23bdb8d5ba030f"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
