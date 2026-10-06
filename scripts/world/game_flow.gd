@@ -552,10 +552,13 @@ func _show_result(won: bool) -> void:
         panel.add_child(story_box)
         mark_story_dialogue_seen("victory", completed_story_id)
 
-    var titles: Array[String] = ["SELEÇÃO", "REVANCHE"] if versus_mode else [
-        "VOLTAR À REGIÃO" if world_region != "konoha" else "VOLTAR À ALDEIA",
-        "REPETIR MISSÃO" if is_story_battle() else "REPETIR TREINO"
-    ]
+    var titles: Array[String] = []
+    if versus_mode:
+        titles.append("SELEÇÃO")
+        titles.append("REVANCHE")
+    else:
+        titles.append("VOLTAR À REGIÃO" if world_region != "konoha" else "VOLTAR À ALDEIA")
+        titles.append("REPETIR MISSÃO" if is_story_battle() else "REPETIR TREINO")
     for title: String in titles:
         var button: Button = Button.new()
         button.text = title
