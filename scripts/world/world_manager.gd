@@ -23,6 +23,8 @@ var message_label: Label
 var fps_label: Label
 var map_panel: Control
 var quality_button: Button
+var skill_button: Button
+var skill_menu: CanvasLayer
 var story_dialogue: CanvasLayer
 var pending_story_start: bool = false
 @onready var actor: CharacterBody3D = $Player
@@ -60,6 +62,13 @@ func _ready() -> void:
     story_dialogue.set_script(preload("res://scripts/world/story_dialogue.gd"))
     add_child(story_dialogue)
     story_dialogue.finished.connect(_on_story_dialogue_finished)
+
+    skill_menu = CanvasLayer.new()
+    skill_menu.name = "SkillMenu"
+    skill_menu.set_script(preload("res://scripts/world/skill_menu.gd"))
+    add_child(skill_menu)
+    skill_menu.closed.connect(_on_skill_menu_closed)
+
     GameFlow.progress_changed.connect(_refresh_progress)
     _refresh_progress()
     settings.load("user://graphics.cfg")
@@ -134,6 +143,17 @@ func _build_hud() -> void:
     quality_button.pressed.connect(func() -> void: apply_quality((quality + 1) % 3))
     $HUD.add_child(quality_button)
 
+    skill_button = Button.new()
+    skill_button.text = "NINJA"
+    skill_button.position = Vector2(680, 14)
+    skill_button.custom_minimum_size = Vector2(112, 34)
+    skill_button.add_theme_font_size_override("font_size", 13)
+    skill_button.add_theme_color_override("font_color", Color("f7ead0"))
+    skill_button.add_theme_stylebox_override("normal", _panel_style(Color(0.03, 0.12, 0.15, 0.88), Color(0.34, 0.66, 0.69, 0.55), 10))
+    skill_button.add_theme_stylebox_override("pressed", _panel_style(Color(0.02, 0.08, 0.10, 0.94), Color("d9903d"), 10))
+    skill_button.pressed.connect(toggle_skills)
+    $HUD.add_child(skill_button)
+
     map_panel = Control.new()
     map_panel.set_script(preload("res://scripts/world/world_map.gd"))
     map_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -171,11 +191,12 @@ func apply_quality(level: int, save: bool = true) -> void:
 func _refresh_progress() -> void:
     GameFlow.ensure_rpg_progress()
     var hero_name: String = GameFlow.player_character.display_name.to_upper() if GameFlow.player_character != null else "NARUTO"
-    status_label.text = "ALDEIA DA FOLHA  •  %s  •  NV %d %s  •  %d ryō" % [
+    status_label.text = "ALDEIA DA FOLHA  •  %s  •  NV %d %s  •  %d ryō  •  SP %d" % [
         hero_name,
         int(GameFlow.progress.level),
         GameFlow.ninja_rank(),
-        int(GameFlow.progress.ryo)
+        int(GameFlow.progress.ryo),
+        int(GameFlow.progress.skill_points)
     ]
     if not GameFlow.progress.completed.has("roof_scrolls"):
         if GameFlow.progress.accepted.has("roof_scrolls"):
@@ -216,10 +237,11 @@ func _physics_process(delta: float) -> void:
             toast("Retornamos ao portão: o ponto anterior está ocupado.")
     if controls.map_queue > 0:
         controls.map_queue = 0
-        toggle_map()
+        if not skill_menu.visible:
+            toggle_map()
     if controls.interact_queue > 0:
         controls.interact_queue = 0
-        if not map_open:
+        if not map_open and not skill_menu.visible:
             interact()
             if GameFlow.busy or not is_inside_tree():
                 return
@@ -419,6 +441,24 @@ func toast(text: String) -> void:
     message_label.text = text
     toast_timer = 6.0
     message_label.visible = true
+
+func toggle_skills() -> void:
+    if skill_menu == null:
+        return
+    if skill_menu.visible:
+        skill_menu.call("close")
+        return
+    if map_open:
+        toggle_map()
+    controls.release_all()
+    actor.input_enabled = false
+    actor.velocity = Vector3.ZERO
+    skill_menu.call("open")
+
+func _on_skill_menu_closed() -> void:
+    actor.input_enabled = not map_open
+    controls.release_all()
+    _refresh_progress()
 
 func toggle_map() -> void:
     map_open = not map_open
