@@ -93,6 +93,7 @@ Runtime files: `assets/vendor/quaternius_japan/torii.gltf`, `temple_small.gltf`,
 - Torii: Quaternius Sushi Restaurant Kit, CC0 1.0 — https://quaternius.com/packs/sushirestaurantkit.html
 - Temples: Quaternius Ultimate Fantasy RTS, CC0 1.0 — https://quaternius.com/packs/ultimatefantasyrts.html
 - Shrine: Kay Lousberg / KayKit Halloween Bits 1.0, CC0 1.0. License copy/source mirror recorded in `assets/vendor/quaternius_japan/SOURCE.md`.
+- Sakura tree and bamboo: Quaternius Sushi Restaurant Kit, CC0 1.0 — https://quaternius.com/packs/sushirestaurantkit.html
 
 The game normalizes scale, applies culling and the anime material pass at runtime. The old meshopt-compressed bundle was removed for Godot 4.7.2 compatibility. No Naruto/Shinobi Striker meshes or textures are included.
 
