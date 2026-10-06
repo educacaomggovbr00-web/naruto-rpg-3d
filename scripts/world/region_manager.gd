@@ -58,10 +58,10 @@ func _panel_style(background: Color, border: Color, radius: int = 12) -> StyleBo
     style.corner_radius_bottom_right = radius
     return style
 
-func _make_button(title: String, position: Vector2, width: float) -> Button:
+func _make_button(title: String, screen_position: Vector2, width: float) -> Button:
     var button: Button = Button.new()
     button.text = title
-    button.position = position
+    button.position = screen_position
     button.custom_minimum_size = Vector2(width, 44)
     button.add_theme_font_size_override("font_size", 15)
     button.add_theme_stylebox_override("normal", _panel_style(Color(0.02, 0.10, 0.13, 0.90), Color(0.35, 0.68, 0.70, 0.65)))
