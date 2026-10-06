@@ -446,6 +446,9 @@ func _show_result(won: bool) -> void:
     result_layer.layer = 80
     add_child(result_layer)
 
+    var completed_story_id: String = pending_story_id
+    var victory_dialogue: Array = story_dialogue("victory", completed_story_id) if won and not completed_story_id.is_empty() else []
+
     var shade: ColorRect = ColorRect.new()
     shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     shade.color = Color(0.02, 0.05, 0.08, 0.88)
@@ -463,6 +466,20 @@ func _show_result(won: bool) -> void:
     label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     label.add_theme_font_size_override("font_size", 22)
     panel.add_child(label)
+
+    if not victory_dialogue.is_empty():
+        var story_box: Label = Label.new()
+        var dialogue_text: PackedStringArray = PackedStringArray()
+        for value: Variant in victory_dialogue:
+            if value is Dictionary:
+                var line: Dictionary = value
+                dialogue_text.append("%s: %s" % [String(line.get("speaker", "")), String(line.get("text", ""))])
+        story_box.text = "\n".join(dialogue_text)
+        story_box.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        story_box.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        story_box.add_theme_font_size_override("font_size", 15)
+        panel.add_child(story_box)
+        mark_story_dialogue_seen("victory", completed_story_id)
 
     var titles: Array[String] = ["SELEÇÃO", "REVANCHE"] if versus_mode else [
         "VOLTAR À REGIÃO" if world_region != "konoha" else "VOLTAR À ALDEIA",
