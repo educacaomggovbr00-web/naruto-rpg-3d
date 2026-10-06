@@ -56,7 +56,7 @@ A geometria runtime da Booby Trap e configurações JutsuDefinition foram criada
 - Kenney Nature Kit 2.1: https://kenney.nl/assets/nature-kit — CC0-1.0. Six original GLBs, normalized and spatially instanced in arena/village/regions.
 - Kenney Particle Pack 1.1: https://kenney.nl/assets/particle-pack — CC0-1.0. Original `star_01.png` and `smoke_01.png`, used by bounded combat billboard pools.
 - mehrasaur 3D Shuriken Pack v2: https://opengameart.org/content/3d-shuriken-pack — CC0-1.0. `shaken-juji`, `kunai-gata-01`, `aim-board`; OBJ geometry unchanged, unsupported MTL ambient terms removed.
-- Quaternius Ultimate Animated Character Pack (Nov 2019 author upload): https://opengameart.org/content/animated-characters-pack — CC0-1.0. `Ninja_Male` and `Ninja_Female`, FBX converted to GLB using Godot 4.7.2, native rig/animations preserved. Used for visible player/CPU battle skins and village NPCs.
+- Quaternius Ultimate Animated Character Pack (Nov 2019 author upload): https://opengameart.org/content/animated-characters-pack — CC0-1.0. `Ninja_Male` and `Ninja_Female`, FBX converted to GLB using Godot 4.7.2, native rig/animations preserved. Used only for village/background NPCs; roster fighters keep their own configured 3D models.
 
 Original Kenney license files and author-upload CC0 evidence notices are in `assets/vendor/*/LICENSE.txt`. Source/archive/runtime hashes and changes are in `assets/vendor/sources.json` and the asset registry. CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/.
 
@@ -84,3 +84,14 @@ Author: Kenney. Source: https://opengameart.org/content/fantasy-town-kit
 License: CC0 1.0 Universal.
 
 Selected original GLB models and the shared colormap are vendored unchanged under `assets/vendor/kenney_fantasy_town`. The village and combat arena now instantiate the gate, market stalls, carts, benches, lanterns and banners directly in visible gameplay. Runtime changes are limited to scale, placement, culling and the project's anime material adaptation for mobile.
+
+
+## Japanese architecture — Quaternius / Kay Lousberg
+
+Runtime bundle: `assets/vendor/quaternius_japan/arch.glb`.
+
+- Torii gate and temple pieces: Quaternius, CC0 1.0. Original Torii source: https://poly.pizza/m/7SyXZ62xR5
+- Shrine piece: Kay Lousberg, CC0 1.0. Original source recorded by the optimized bundle at https://github.com/Mangluu/ninja-way/blob/main/public/models/LICENSES.md
+- Optimized bundle source: https://github.com/Mangluu/ninja-way/blob/main/public/models/arch.glb
+
+The game selects the named `torii`, `temple`, `temple_small` and `shrine` nodes at runtime, normalizes scale, applies culling and the project's anime material pass. These are instantiated in both the battle arena and village; no Naruto/Shinobi Striker meshes or textures are included.
