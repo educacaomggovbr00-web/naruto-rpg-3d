@@ -196,6 +196,11 @@ func run() -> void:
         var valid_preview_path: bool = preview_path == definition.model_path or (not definition.model_fallback_path.is_empty() and preview_path == definition.model_fallback_path)
         check(menu.preview.fighters.size() == 2 and valid_preview_path, "3D preview follows preferred model or its declared fallback")
         check(menu.start_button.get_global_rect().end.y <= 720, "Preview cannot displace touch start button")
+    check(flow.start_versus("shikamaru", "choji", "training") == OK, "Placeholder roster fighters can enter versus")
+    await frames(8)
+    for actor: CharacterBody3D in [current_scene.get_node("Player"), current_scene.get_node("EnemyDummy")]:
+        check(actor.rig_adapter.rig_loaded and actor.rig_adapter.model_instance.visible, "Placeholder fighter keeps the roster-selected 3D rig visible")
+        check(actor.rig_adapter.get_node_or_null("LicensedCombatNinja") == null, "Generic ninja skin must not replace any roster fighter")
     current_scene.queue_free()
     await frames(5)
     check(root.get_child_count() == 1, "No leaked preview, pool or environment nodes")
