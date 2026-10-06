@@ -494,7 +494,7 @@
       "source": "https://github.com/albanogiovanni/godot-anime-sdf-shader",
       "license": "MIT",
       "modifications": "Outline refeito em clip-space para espessura consistente entre modelos em metros/centímetros e crescimento limitado por distância.",
-      "sha256": "d2653726d7cec387a06c9221ad66020d6a745d58eb85c9476831dfe324048ad2",
+      "sha256": "81fded11a5a7bec839dd2ee58175af80f57c55783c01ee2b64ae6a106be9531c",
       "credit": "Dynamic anime outline adapted from godot-anime-sdf-shader by albanogiovanni (MIT)."
     },
     {
