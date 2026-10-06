@@ -76,3 +76,11 @@ Source: https://godotshaders.com/shader/screen-sampled-black-and-white-manga-hit
 License: CC0 1.0 for the shader code/snippets.
 
 `assets/vfx/manga_impact.gdshader` is a lightweight adaptation for short combat impacts and chakra dash emphasis. It preserves scene colour, generates radial lines procedurally, uses no external art, and is only made visible for brief impact windows to keep the mobile cost bounded.
+
+
+## Kenney — Fantasy Town Kit 2.0
+
+Author: Kenney. Source: https://opengameart.org/content/fantasy-town-kit  
+License: CC0 1.0 Universal.
+
+Selected original GLB models and the shared colormap are vendored unchanged under `assets/vendor/kenney_fantasy_town`. The village and combat arena now instantiate the gate, market stalls, carts, benches, lanterns and banners directly in visible gameplay. Runtime changes are limited to scale, placement, culling and the project's anime material adaptation for mobile.
