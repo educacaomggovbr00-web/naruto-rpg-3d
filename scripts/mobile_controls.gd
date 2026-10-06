@@ -138,79 +138,79 @@ func _input(event: InputEvent) -> void:
     elif event is InputEventScreenDrag:
         _touch_dragged(event.index, event.position)
 
-func _touch_pressed(touch_id: int, position: Vector2) -> void:
-    if _inside_circle(position, quality_center, 43.0 * ui_scale):
+func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
+    if _inside_circle(screen_position, quality_center, 43.0 * ui_scale):
         quality_queue += 1
         return
-    if _inside_circle(position, advanced_toggle_center, 43.0 * ui_scale):
+    if _inside_circle(screen_position, advanced_toggle_center, 43.0 * ui_scale):
         advanced_open = not advanced_open
         queue_redraw()
         return
-    if advanced_open and _inside_circle(position, tool_select_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, tool_select_center, advanced_radius):
         tool_select_queue += 1
         return
-    if advanced_open and _inside_circle(position, tool_use_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, tool_use_center, advanced_radius):
         tool_use_queue += 1
         return
-    if advanced_open and _inside_circle(position, ultimate_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, ultimate_center, advanced_radius):
         if ultimate_enabled:
             ultimate_queue += 1
         return
-    if advanced_open and _inside_circle(position, awakening_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, awakening_center, advanced_radius):
         if awakening_enabled:
             awakening_queue += 1
         return
-    if advanced_open and _inside_circle(position, special_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, special_center, advanced_radius):
         if jutsu_enabled:
             special_queue += 1
         return
-    if advanced_open and _inside_circle(position, clone_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, clone_center, advanced_radius):
         if clones_enabled:
             clone_queue += 1
         return
-    if advanced_open and _inside_circle(position, barrage_center, advanced_radius):
+    if advanced_open and _inside_circle(screen_position, barrage_center, advanced_radius):
         if clones_enabled:
             barrage_queue += 1
         return
-    if _inside_circle(position, attack_center, attack_radius):
+    if _inside_circle(screen_position, attack_center, attack_radius):
         attack_queue += 1
         return
-    if _inside_circle(position, jump_center, jump_radius):
+    if _inside_circle(screen_position, jump_center, jump_radius):
         jump_queue += 1
         return
-    if _inside_circle(position, dash_center, dash_radius):
+    if _inside_circle(screen_position, dash_center, dash_radius):
         chakra_dash_queue += 1
         return
-    if _inside_circle(position, lock_center, lock_radius):
+    if _inside_circle(screen_position, lock_center, lock_radius):
         lock_queue += 1
         return
-    if _inside_circle(position, jutsu_center, jutsu_radius):
+    if _inside_circle(screen_position, jutsu_center, jutsu_radius):
         if jutsu_enabled:
             jutsu_queue += 1
         return
-    if _inside_circle(position, substitution_center, substitution_radius):
+    if _inside_circle(screen_position, substitution_center, substitution_radius):
         substitution_queue += 1
         return
-    if _inside_circle(position, dodge_center, dodge_radius):
+    if _inside_circle(screen_position, dodge_center, dodge_radius):
         dodge_queue += 1
         return
-    if _inside_circle(position, charge_center, charge_radius) and charge_touch == -1:
+    if _inside_circle(screen_position, charge_center, charge_radius) and charge_touch == -1:
         charge_touch = touch_id
         queue_redraw()
         return
-    if _inside_circle(position, guard_center, guard_radius) and guard_touch == -1:
+    if _inside_circle(screen_position, guard_center, guard_radius) and guard_touch == -1:
         guard_touch = touch_id
         queue_redraw()
         return
 
-    if joystick_touch == -1 and position.x < size.x * 0.40 and position.y > size.y * 0.40:
+    if joystick_touch == -1 and screen_position.x < size.x * 0.40 and screen_position.y > size.y * 0.40:
         joystick_touch = touch_id
-        _update_joystick(position)
+        _update_joystick(screen_position)
         return
 
-    if camera_touch == -1 and position.x >= size.x * 0.38:
+    if camera_touch == -1 and screen_position.x >= size.x * 0.38:
         camera_touch = touch_id
-        camera_last_position = position
+        camera_last_position = screen_position
 
 func _touch_released(touch_id: int) -> void:
     if touch_id == joystick_touch:
@@ -230,17 +230,17 @@ func _touch_released(touch_id: int) -> void:
 
     queue_redraw()
 
-func _touch_dragged(touch_id: int, position: Vector2) -> void:
+func _touch_dragged(touch_id: int, screen_position: Vector2) -> void:
     if touch_id == joystick_touch:
-        _update_joystick(position)
+        _update_joystick(screen_position)
         return
 
     if touch_id == camera_touch:
-        camera_delta += position - camera_last_position
-        camera_last_position = position
+        camera_delta += screen_position - camera_last_position
+        camera_last_position = screen_position
 
-func _update_joystick(position: Vector2) -> void:
-    var offset: Vector2 = position - joystick_center
+func _update_joystick(screen_position: Vector2) -> void:
+    var offset: Vector2 = screen_position - joystick_center
     if offset.length() > joystick_radius:
         offset = offset.normalized() * joystick_radius
 
@@ -252,8 +252,8 @@ func _update_joystick(position: Vector2) -> void:
 
     queue_redraw()
 
-func _inside_circle(position: Vector2, center: Vector2, radius: float) -> bool:
-    return position.distance_squared_to(center) <= radius * radius
+func _inside_circle(screen_position: Vector2, center: Vector2, radius: float) -> bool:
+    return screen_position.distance_squared_to(center) <= radius * radius
 
 func get_move_vector() -> Vector2:
     return move_vector
