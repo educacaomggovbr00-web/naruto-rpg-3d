@@ -133,6 +133,15 @@ func spawn_dash_burst(world_position: Vector3) -> void:
         0.16
     )
 
+func spawn_chakra_impact(world_position: Vector3, energy_color: Color) -> void:
+    var audio: Node = get_node_or_null("../AudioManager")
+    if audio != null:
+        audio.call("play", "heavy", -19.0)
+
+    _spawn_flash(world_position, 0.74, energy_color.lightened(0.14), 0.16)
+    _spawn_flash(world_position + Vector3(0.24, 0.10, 0.0), 0.46, Color(0.88, 0.96, 1.0, 1.0), 0.11)
+    _spawn_flash(world_position + Vector3(-0.18, -0.08, 0.16), 0.38, energy_color, 0.13)
+
 func _spawn_flash(
     world_position: Vector3,
     start_scale: float,
