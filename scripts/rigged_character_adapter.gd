@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 11039)
+Total output lines: 984
+
 extends Node3D
 
 const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
@@ -192,6 +195,15 @@ func _try_load_rig_candidate(candidate_path: String) -> bool:
 func _finalize_loaded_rig() -> void:
     rig_loaded = true
     attack_hitbox.top_level = true
+
+    # Use the included CC0 ninja pack as the visible combat skin. The existing
+    # Mixamo rig stays loaded and animated for hitboxes, hand sockets, combat
+    # timing, clone choreography and the full roster animation state machine.
+    if player.name in ["Player", "EnemyDummy"]:
+        var licensed_visual: Node3D = Node3D.new()
+        licensed_visual.name = "LicensedCombatNinja"
+        licensed_visual.set_script(preload("res://scripts/licensed_combat_ninja.gd"))
+        add_child(licensed_visual)
 
     if is_instance_valid(fallback_visual):
         chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
@@ -426,109 +438,7 @@ func _calculate_model_height() -> float:
     var bounds_min_y: float = INF
     var bounds_max_y: float = -INF
     var found_mesh: bool = false
-    var root_inverse: Transform3D = model_instance.global_transform.affine_inverse()
-    var mesh_nodes: Array[MeshInstance3D] = []
-    _collect_mesh_instances(model_instance, mesh_nodes)
-
-    for mesh_instance: MeshInstance3D in mesh_nodes:
-        if mesh_instance.mesh == null:
-            continue
-
-        var aabb: AABB = mesh_instance.get_aabb()
-        var p: Vector3 = aabb.position
-        var s: Vector3 = aabb.size
-        var corners: Array[Vector3] = [
-            p,
-            p + Vector3(s.x, 0.0, 0.0),
-            p + Vector3(0.0, s.y, 0.0),
-            p + Vector3(0.0, 0.0, s.z),
-            p + Vector3(s.x, s.y, 0.0),
-            p + Vector3(s.x, 0.0, s.z),
-            p + Vector3(0.0, s.y, s.z),
-            p + s
-        ]
-
-        for local_point: Vector3 in corners:
-            var world_point: Vector3 = mesh_instance.global_transform * local_point
-            var root_point: Vector3 = root_inverse * world_point
-            bounds_min_y = minf(bounds_min_y, root_point.y)
-            bounds_max_y = maxf(bounds_max_y, root_point.y)
-            found_mesh = true
-
-    if not found_mesh:
-        return 0.0
-
-    detected_source_min_y = bounds_min_y
-    return maxf(bounds_max_y - bounds_min_y, 0.0)
-
-func _collect_mesh_instances(root: Node, output: Array[MeshInstance3D]) -> void:
-    if root is MeshInstance3D:
-        output.append(root as MeshInstance3D)
-
-    for child: Node in root.get_children():
-        _collect_mesh_instances(child, output)
-
-func apply_visual_material(root: Node) -> void:
-    var use_toon: bool = model_path.begins_with("res://assets/characters/stylized/")
-    if character_definition != null:
-        use_toon = use_toon or character_definition.stylized_material
-
-    var profile: RosterVisualProfileDefinition = null
-    if _should_use_procedural_identity():
-        profile = character_definition.visual_profile
-
-    var meshes: Array[MeshInstance3D] = []
-    _collect_mesh_instances(root, meshes)
-    for mesh: MeshInstance3D in meshes:
-        if use_toon:
-            mesh.material_override = TOON_MATERIAL
-            continue
-
-        # Preserve textures, then add a mild per-character tint only for shared-rig slots.
-        for index: int in range(mesh.mesh.get_surface_count()):
-            var source: Material = mesh.get_active_material(index)
-            if source is StandardMaterial3D:
-                var anime_material: Material = ANIME.textured(source)
-                if profile == null or not anime_material is StandardMaterial3D:
-                    mesh.set_surface_override_material(index, anime_material)
-                    continue
-
-                var tinted: StandardMaterial3D = (anime_material as StandardMaterial3D).duplicate(true) as StandardMaterial3D
-                if tinted == null:
-                    mesh.set_surface_override_material(index, anime_material)
-                    continue
-
-                tinted.albedo_color = tinted.albedo_color.lerp(profile.primary_color, profile.tint_strength)
-                mesh.set_surface_override_material(index, tinted)
-
-func _cache_combat_bones() -> void:
-    right_hand_bone = _find_mixamo_bone("RightHand")
-    left_hand_bone = _find_mixamo_bone("LeftHand")
-    right_foot_bone = _find_mixamo_bone("RightFoot")
-    left_foot_bone = _find_mixamo_bone("LeftFoot")
-
-func _find_mixamo_bone(short_name: String) -> int:
-    var index: int = skeleton.find_bone("mixamorig_" + short_name)
-    if index < 0:
-        index = skeleton.find_bone("mixamorig:" + short_name)
-    return index
-
-func _install_combat_library() -> bool:
-    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
-    if not parsed is Dictionary:
-        return false
-    manifest = parsed
-    var clips: Dictionary = manifest.get("clips", {})
-    if not _has_required_combat_bones():
-        push_error("Combat rig is missing a required body bone")
-        return false
-    if not _ensure_reference_rest_cache():
-        push_error("Combat retarget reference rig is unavailable")
-        return false
-
-    var animation_root: Node = animation_player.get_node(animation_player.root_node)
-    var skeleton_path: String = String(animation_root.get_path_to(skeleton))
-    var bone_names: PackedStringArray = []
+    var root_inverse: Transform3D = model_instance.global_transform.…1039 tokens truncated… PackedStringArray = []
     for index: int in range(skeleton.get_bone_count()):
         bone_names.append(String(skeleton.get_bone_name(index)))
 

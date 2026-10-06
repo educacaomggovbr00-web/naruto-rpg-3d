@@ -34,6 +34,8 @@ func run() -> void:
         if not adapter.sprite_mode:
             continue
         check(not adapter.model_instance.visible, "No 3D mesh overlaps the sprite")
+        var licensed_3d: Node3D = adapter.get_node_or_null("LicensedCombatNinja") as Node3D
+        check(licensed_3d == null or not licensed_3d.visible, "3D ninja skin stays hidden in explicit sprite mode")
         check(adapter.real_animation_count == 27, "Bone timing remains available to combat")
         for key: String in adapter.SPRITE_LAYOUT:
             var frame: AtlasTexture = adapter.sprite_frames[key]

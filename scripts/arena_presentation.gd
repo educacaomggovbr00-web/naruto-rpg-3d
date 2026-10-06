@@ -69,6 +69,33 @@ func build() -> void:
             for slat: float in [-1.1, 0.0, 1.1]:
                 box(Vector3(x + window + slat, 3.5, -33.8), Vector3(0.1, 2.7, 0.1), timber)
         box(Vector3(x, 5.7, -33.75), Vector3(17.6, 0.22, 0.25), timber)
+    # Compact Japanese village frontage: layered eaves, timber shop frames,
+    # indigo noren and stone lanterns sit outside the combat lanes.
+    for z: float in [-18.0, -6.0, 6.0, 18.0]:
+        for side: float in [-1.0, 1.0]:
+            var x: float = side * 35.0
+            box(Vector3(x, 2.3, z), Vector3(4.4, 4.6, 5.4), plaster)
+            box(Vector3(x, 4.7, z), Vector3(5.6, 0.25, 6.5), timber)
+            roof(Vector3(x, 4.8, z), 6.2, 7.0, 1.0, tile)
+            box(Vector3(x, 1.8, z - side * 2.72), Vector3(3.5, 3.0, 0.12), dark)
+            for post_x: float in [-1.85, 1.85]:
+                box(Vector3(x + post_x, 2.1, z - side * 2.82), Vector3(0.18, 4.0, 0.22), timber)
+            for awning: float in [-0.85, 0.0, 0.85]:
+                box(Vector3(x + awning, 3.55, z - side * 2.94), Vector3(0.82, 1.0, 0.12), red if awning == 0.0 else Color("293f59"))
+            # Lantern glazing and dark timber hood make the facade readable at
+            # the wide mobile combat camera without adding dynamic lights.
+            for height: float in [0.35, 2.8]:
+                box(Vector3(x - side * 2.9, height, z + 2.9), Vector3(0.16, 0.16, 0.8), timber)
+            box(Vector3(x - side * 2.9, 1.6, z + 2.9), Vector3(0.12, 1.2, 0.66), Color("f4b94f"))
+            box(Vector3(x - side * 2.9, 2.3, z + 2.9), Vector3(0.48, 0.18, 1.05), timber)
+            box(Vector3(x - side * 2.9, 0.15, z + 2.9), Vector3(0.68, 0.30, 1.1), Color("74716a"))
+    # Additional torii crossbars and ridge ornaments reinforce the skyline.
+    for y: float in [6.9, 8.9]:
+        box(Vector3(0, y, -32), Vector3(20, 0.24, 2.15), timber)
+    for x: float in [-22.0, 22.0]:
+        box(Vector3(x, 8.2, -39), Vector3(18.8, 0.3, 1.2), red)
+        for crest: float in [-7.0, -3.5, 0.0, 3.5, 7.0]:
+            box(Vector3(x + crest, 8.42, -39), Vector3(0.16, 0.24, 1.0), Color("dac18d"))
     licensed_scenery = Node3D.new()
     licensed_scenery.name = "LicensedScenery"
     licensed_scenery.set_script(preload("res://scripts/licensed_scenery.gd"))

@@ -31,6 +31,14 @@ func capture(label: String) -> void:
     check(root.get_texture().get_image().save_png(output) == OK, "Capture saves: " + label)
     print("ANIME CAPTURE: ", ProjectSettings.globalize_path(output))
 
+func has_visible_mesh(node: Node) -> bool:
+    if node is MeshInstance3D and node.visible and node.mesh != null:
+        return true
+    for child: Node in node.get_children():
+        if has_visible_mesh(child):
+            return true
+    return false
+
 func run() -> void:
     root.size = Vector2i(1280, 720)
     var source: StandardMaterial3D = StandardMaterial3D.new()
@@ -51,6 +59,19 @@ func run() -> void:
         check(flow.start_versus("naruto", "sasuke", arena_id) == OK, "Anime arena opens")
         await settle()
         var arena: Node = current_scene
+        var fighter: CharacterBody3D = arena.get_node("Player") as CharacterBody3D
+        var rival: CharacterBody3D = arena.get_node("EnemyDummy") as CharacterBody3D
+        var fighter_skin: Node3D = fighter.rig_adapter.get_node_or_null("LicensedCombatNinja") as Node3D
+        var rival_skin: Node3D = rival.rig_adapter.get_node_or_null("LicensedCombatNinja") as Node3D
+        check(fighter_skin != null and fighter_skin.rig_loaded, "Player battle skin is the licensed animated ninja")
+        check(rival_skin != null and rival_skin.rig_loaded, "CPU battle skin is the licensed animated ninja")
+        if fighter_skin != null and rival_skin != null:
+            check(fighter_skin.model_instance.name == "LicensedNinja_Male", "Player has the new visible male ninja model")
+            check(rival_skin.model_instance.name == "LicensedNinja_Female", "CPU has the new visible female ninja model")
+            check(not has_visible_mesh(fighter.rig_adapter.model_instance), "Original player placeholder mesh no longer renders")
+            check(not has_visible_mesh(rival.rig_adapter.model_instance), "Original CPU placeholder mesh no longer renders")
+            check(fighter.rig_adapter.real_animation_count == 27 and rival.rig_adapter.real_animation_count == 27, "Both original combat rigs retain all 27 clips")
+            check(not fighter_skin.call("_clip_for_state", "attack_2").is_empty(), "Licensed ninja has an attack animation mapped")
         var quality: Node = arena.get_node("MobileQuality")
         for level: int in [0, 1, 2]:
             quality.apply(level, false)
@@ -58,6 +79,19 @@ func run() -> void:
             check(arena.get_node("ArenaPresentation").environment.environment.fog_enabled == (level > 0), "Arena quality controls haze")
         await settle()
         await capture(arena_id)
+        if arena_id == "training" and fighter_skin != null:
+            fighter.call("_try_attack")
+            var tool: Node = fighter.ninja_tools.projectiles[0]
+            tool.call("launch", fighter, rival, fighter.rig_adapter.call("get_hand_world_position"), Vector3(0, 0, 1), "shuriken")
+            check(tool.visible and tool.shuriken.visible, "A live kunai/shuriken projectile renders in the combat arena")
+            var feedback: Node = arena.get_node("CombatFeedback")
+            feedback.call("spawn_chakra_impact", rival.global_position + Vector3.UP, Color("36d8ff"))
+            check(feedback.flashes.any(func(flash: MeshInstance3D) -> bool: return flash.visible), "A jutsu impact VFX is visible during gameplay")
+            await capture("training_live_shuriken")
+            tool.call("recycle")
+            tool.call("launch", fighter, rival, fighter.rig_adapter.call("get_hand_world_position"), Vector3(0, 0, 1), "kunai")
+            check(tool.visible and tool.kunai.visible and not tool.shuriken.visible, "The licensed kunai mesh renders when the kunai is thrown")
+            await capture("training_live_kunai")
     change_scene_to_file("res://world.tscn")
     await settle()
     var village: Node = current_scene

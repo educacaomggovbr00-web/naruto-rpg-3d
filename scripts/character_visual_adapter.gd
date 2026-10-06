@@ -75,6 +75,10 @@ func _setup_sprite(definition: CharacterDefinition) -> void:
 
     if model_instance != null:
         model_instance.visible = false
+    var licensed_combat_ninja: Node3D = get_node_or_null("LicensedCombatNinja") as Node3D
+    if licensed_combat_ninja != null:
+        licensed_combat_ninja.visible = false
+        licensed_combat_ninja.process_mode = Node.PROCESS_MODE_DISABLED
     sprite_mode = true
     sprite_status = "SPRITE 2.5D: OK | %d poses" % sprite_frames.size()
     _sync_sprite_state()
