@@ -777,6 +777,26 @@
       "source": "KayKit Halloween Bits 1.0; texture dependency for shrine.gltf",
       "license": "CC0-1.0",
       "modifications": "Unmodified source texture; sampled by mobile anime material at runtime."
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/sakura_tree.gltf",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius",
+      "source": "https://quaternius.com/packs/sushirestaurantkit.html; GitHub mirror agentkaerf/FreeModels",
+      "license": "CC0-1.0",
+      "modifications": "Original uncompressed glTF with embedded atlas; rendered through MultiMesh with mobile visibility culling.",
+      "sha256": "8bc64c9bd97f8e4988b9f4f40dfeab86d715ecf74876f22f3b5f76118cd41c9d",
+      "bytes": 383813
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/bamboo.gltf",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius",
+      "source": "https://quaternius.com/packs/sushirestaurantkit.html; GitHub mirror agentkaerf/FreeModels",
+      "license": "CC0-1.0",
+      "modifications": "Original uncompressed glTF with embedded atlas; rendered through MultiMesh with mobile visibility culling.",
+      "sha256": "2a631ac3c8cf4ecdf46ca0e7ffb52400a2ed09285fc0af5826aab1a1487280ae",
+      "bytes": 59581
     }
   ]
 }
