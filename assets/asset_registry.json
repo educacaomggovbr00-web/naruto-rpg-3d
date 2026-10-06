@@ -654,6 +654,69 @@
       "license": "CC0-1.0",
       "modifications": "Rewritten as a lightweight color-preserving mobile hit/dash overlay with procedural radial lines and no external textures.",
       "sha256": "f996f85edec591629bc1a0b7a214f93b5b5243e1b0bea783d4b06cba9b216f52"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/lantern.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Lantern prop is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "f270637e3083d6e84a30626ee05df2b09597a642985a7f5c3e4ab5bb1c7a8d55"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/banner-red.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Red banner prop is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "4e4a83de16e5979d2b34bb206d3bf3703a9039711bc658b37e3738d43090703d"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/cart.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Village cart prop is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "63503cd0a7398310e01aabc8e3663f711a7517394d23d179d0695157fee99d40"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/stall-red.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Market stall prop is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "aa20a630f417032c46aaefbc779fd2b3355b451bf05d31acc36fd664146866b1"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/stall-bench.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Market bench prop is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "5a4b379488241394916991c4b482ec4863c05bb548ca8751f5c3935f1f6e5b9c"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/fence-gate.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Village gate prop is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "cee58694ea5fdcca18e01318b355bfcd38eac6fad21b83f860039c287b150cc6"
+    },
+    {
+      "path": "assets/vendor/kenney_fantasy_town/Textures/colormap.png",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Kenney",
+      "source": "https://opengameart.org/content/fantasy-town-kit",
+      "license": "CC0-1.0",
+      "modifications": "Vendored unchanged; Shared palette texture is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
+      "sha256": "4aac939dc33195e35caf8c382ee3cb170054da763577f22d3c22692ec6afccdf"
     }
   ]
 }
