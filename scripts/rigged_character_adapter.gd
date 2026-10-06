@@ -193,21 +193,8 @@ func _finalize_loaded_rig() -> void:
     rig_loaded = true
     attack_hitbox.top_level = true
 
-    # Keep authored/configured character models visible. The generic CC0 ninja
-    # skin is only a visual fallback for roster slots that still use the shared
-    # placeholder rig; it must never cover Naruto's configured 3D model.
-    var use_licensed_placeholder_skin: bool = false
-    if player.name in ["Player", "EnemyDummy"] and player.has_method("get_character_definition"):
-        var visible_definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
-        use_licensed_placeholder_skin = (
-            visible_definition != null
-            and visible_definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG"
-        )
-    if use_licensed_placeholder_skin:
-        var licensed_visual: Node3D = Node3D.new()
-        licensed_visual.name = "LicensedCombatNinja"
-        licensed_visual.set_script(load("res://scripts/licensed_combat_ninja.gd") as Script)
-        add_child(licensed_visual)
+    # Always keep the character model selected by the roster definition visible.
+    # Generic CC0 ninja skins are not injected over Player/CPU anymore.
 
     if is_instance_valid(fallback_visual):
         chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
