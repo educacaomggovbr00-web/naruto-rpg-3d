@@ -100,6 +100,19 @@ func build() -> void:
             rocks.append(Vector3(cos(angle), 0, sin(angle)) * 34.0)
     licensed_scenery.scatter("pine", trees, 11.0)
     licensed_scenery.scatter("boulder", rocks, 1.8)
+
+    # Visible CC0 street dressing around the combat ring. These stay outside
+    # the playable core so they improve the shot without changing combat flow.
+    for x: float in [-20.0, 20.0]:
+        licensed_scenery.place("town_stall", Vector3(x, 0, -31.0), 3.0, 180.0, 72.0)
+        licensed_scenery.place("town_lantern", Vector3(x * 0.72, 0, -27.0), 3.2, 180.0, 76.0)
+        licensed_scenery.place("town_banner", Vector3(x * 0.55, 0, 29.5), 3.3, 0.0, 76.0)
+    licensed_scenery.place("town_cart", Vector3(-24.0, 0, 24.5), 1.9, 35.0, 62.0)
+    licensed_scenery.place("town_cart", Vector3(23.0, 0, 23.0), 1.8, -25.0, 62.0)
+    licensed_scenery.place("town_bench", Vector3(-9.0, 0, 30.2), 1.0, 0.0, 58.0)
+    licensed_scenery.place("town_bench", Vector3(9.0, 0, 30.2), 1.0, 180.0, 58.0)
+    licensed_scenery.place("town_gate", Vector3(0, 0, -30.5), 4.8, 0.0, 82.0)
+
     for x: float in [-14.0, 14.0]:
         var target: MeshInstance3D = preload("res://scripts/licensed_ninja_tools.gd").create(preload("res://assets/vendor/mehrasaur_weapons/aim-board.obj"), 1.8, false)
         target.rotation.x = PI * 0.5
