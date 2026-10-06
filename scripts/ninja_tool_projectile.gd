@@ -21,10 +21,10 @@ func _ready() -> void:
     shuriken = Node3D.new()
     add_child(shuriken)
     var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
-    shuriken.add_child(tools.create(tools.SHURIKEN, 0.38))
+    shuriken.add_child(tools.create(tools.SHURIKEN, 0.48))
     kunai = Node3D.new()
     add_child(kunai)
-    kunai.add_child(tools.create(tools.KUNAI, 0.40))
+    kunai.add_child(tools.create(tools.KUNAI, 0.48))
     bomb = MeshInstance3D.new()
     var ball: SphereMesh = SphereMesh.new()
     ball.radius = 0.17
@@ -59,7 +59,8 @@ func launch(fighter: CharacterBody3D, victim: Node3D, origin: Vector3, direction
     target = victim
     kind = tool
     heading = direction.normalized()
-    global_position = origin
+    # Clear the fist/torso silhouette immediately in the mobile camera view.
+    global_position = origin + heading * 0.38 + Vector3.UP * 0.12
     remaining = 1.5
     hit_targets.clear()
     active = true

@@ -97,11 +97,11 @@ func run() -> void:
             fighter.call("_try_attack")
             await physics_frame
             var tool: Node = fighter.ninja_tools.projectiles[0]
-            var weapon_origin: Vector3 = fighter.global_position - fighter.global_basis.z * 1.2 + Vector3.UP * 1.3
+            var weapon_origin: Vector3 = fighter.rig_adapter.call("get_hand_world_position")
             tool.call("launch", fighter, rival, weapon_origin, (rival.global_position - weapon_origin).normalized(), "shuriken")
             check(tool.visible and tool.shuriken.visible, "A live kunai/shuriken projectile renders in the combat arena")
             var feedback: Node = arena.get_node("CombatFeedback")
-            feedback.call("spawn_chakra_impact", fighter.global_position - fighter.global_basis.z * 1.2 + Vector3.UP * 1.3, Color("36d8ff"))
+            feedback.call("spawn_chakra_impact", rival.global_position + Vector3.UP * 0.9, Color("36d8ff"))
             check(feedback.flashes.any(func(flash: MeshInstance3D) -> bool: return flash.visible), "A jutsu impact VFX is visible during gameplay")
             await physics_frame
             await capture("training_live_shuriken")
