@@ -265,12 +265,12 @@ top_level = true
 script = ExtResource("2")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
-spring_length = 4.8
+spring_length = 4.35
 collision_mask = 1
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
 current = true
-fov = 62.0
+fov = 60.0
 
 [node name="EnemyDummy" type="CharacterBody3D" parent="." groups=["lock_targets"]]
 position = Vector3(0, 1, -3)
