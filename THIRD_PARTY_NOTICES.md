@@ -61,3 +61,18 @@ A geometria runtime da Booby Trap e configurações JutsuDefinition foram criada
 Original Kenney license files and author-upload CC0 evidence notices are in `assets/vendor/*/LICENSE.txt`. Source/archive/runtime hashes and changes are in `assets/vendor/sources.json` and the asset registry. CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/.
 
 No Storm 4 or Shinobi Striker game files were acquired or included by this change. The pre-existing public-release restrictions remain in force.
+
+
+## Anime outline — albanogiovanni
+
+Source: https://github.com/albanogiovanni/godot-anime-sdf-shader  
+License: MIT. Copyright (c) 2026 albanogiovanni.
+
+The combat character outline in `assets/vfx/anime_outline.gdshader` adapts the source project's distance-aware inverted-hull idea into a clip-space, mobile-oriented pass so outline thickness stays readable across differently scaled imported rigs. The full MIT notice is preserved in `docs/licenses/albanogiovanni-godot-anime-sdf-shader-MIT.txt`.
+
+## Manga combat impact — hailyn / GodotShaders.com
+
+Source: https://godotshaders.com/shader/screen-sampled-black-and-white-manga-hit-impact-post-process-shader/  
+License: CC0 1.0 for the shader code/snippets.
+
+`assets/vfx/manga_impact.gdshader` is a lightweight adaptation for short combat impacts and chakra dash emphasis. It preserves scene colour, generates radial lines procedurally, uses no external art, and is only made visible for brief impact windows to keep the mobile cost bounded.
