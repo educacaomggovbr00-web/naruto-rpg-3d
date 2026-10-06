@@ -88,10 +88,11 @@ Selected original GLB models and the shared colormap are vendored unchanged unde
 
 ## Japanese architecture — Quaternius / Kay Lousberg
 
-Runtime bundle: `assets/vendor/quaternius_japan/arch.glb`.
+Runtime files: `assets/vendor/quaternius_japan/torii.gltf`, `temple_small.gltf`, `temple.gltf`, and the KayKit `shrine.gltf` dependencies.
 
-- Torii gate and temple pieces: Quaternius, CC0 1.0. Original Torii source: https://poly.pizza/m/7SyXZ62xR5
-- Shrine piece: Kay Lousberg, CC0 1.0. Original source recorded by the optimized bundle at https://github.com/Mangluu/ninja-way/blob/main/public/models/LICENSES.md
-- Optimized bundle source: https://github.com/Mangluu/ninja-way/blob/main/public/models/arch.glb
+- Torii: Quaternius Sushi Restaurant Kit, CC0 1.0 — https://quaternius.com/packs/sushirestaurantkit.html
+- Temples: Quaternius Ultimate Fantasy RTS, CC0 1.0 — https://quaternius.com/packs/ultimatefantasyrts.html
+- Shrine: Kay Lousberg / KayKit Halloween Bits 1.0, CC0 1.0. License copy/source mirror recorded in `assets/vendor/quaternius_japan/SOURCE.md`.
 
-The game selects the named `torii`, `temple`, `temple_small` and `shrine` nodes at runtime, normalizes scale, applies culling and the project's anime material pass. These are instantiated in both the battle arena and village; no Naruto/Shinobi Striker meshes or textures are included.
+The game normalizes scale, applies culling and the anime material pass at runtime. The old meshopt-compressed bundle was removed for Godot 4.7.2 compatibility. No Naruto/Shinobi Striker meshes or textures are included.
+
