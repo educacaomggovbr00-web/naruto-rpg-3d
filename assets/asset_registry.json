@@ -726,7 +726,13 @@
       "author": "Quaternius",
       "source": "https://quaternius.com/packs/sushirestaurantkit.html; GitHub mirror agentkaerf/FreeModels",
       "license": "CC0-1.0",
-      "modifications": "Original uncompressed glTF with embedded geometry/atlas; runtime height normalization, culling and anime material adaptation."
+      "modifications": "Original uncompressed glTF with embedded geometry/atlas; runtime height normalization, culling and anime material adaptation. Godot may extract the embedded Sushi atlas during import; the generated PNG hash is registered as an embedded image.",
+      "embedded_images": [
+        {
+          "path": "assets/vendor/quaternius_japan/torii_Sushi_Atlas.png",
+          "sha256": "62118ccee997298c33fcaf2d301ae82bdccdbc5a9c8f0e2719b7ad32032793df"
+        }
+      ]
     },
     {
       "path": "assets/vendor/quaternius_japan/temple_small.gltf",
@@ -784,9 +790,15 @@
       "author": "Quaternius",
       "source": "https://quaternius.com/packs/sushirestaurantkit.html; GitHub mirror agentkaerf/FreeModels",
       "license": "CC0-1.0",
-      "modifications": "Original uncompressed glTF with embedded atlas; rendered through MultiMesh with mobile visibility culling.",
+      "modifications": "Original uncompressed glTF with embedded atlas; rendered through MultiMesh with mobile visibility culling. Godot may extract the embedded Sushi atlas during import; the generated PNG hash is registered as an embedded image.",
       "sha256": "8bc64c9bd97f8e4988b9f4f40dfeab86d715ecf74876f22f3b5f76118cd41c9d",
-      "bytes": 383813
+      "bytes": 383813,
+      "embedded_images": [
+        {
+          "path": "assets/vendor/quaternius_japan/sakura_tree_Sushi_Atlas.png",
+          "sha256": "62118ccee997298c33fcaf2d301ae82bdccdbc5a9c8f0e2719b7ad32032793df"
+        }
+      ]
     },
     {
       "path": "assets/vendor/quaternius_japan/bamboo.gltf",
@@ -794,9 +806,15 @@
       "author": "Quaternius",
       "source": "https://quaternius.com/packs/sushirestaurantkit.html; GitHub mirror agentkaerf/FreeModels",
       "license": "CC0-1.0",
-      "modifications": "Original uncompressed glTF with embedded atlas; rendered through MultiMesh with mobile visibility culling.",
+      "modifications": "Original uncompressed glTF with embedded atlas; rendered through MultiMesh with mobile visibility culling. Godot may extract the embedded Sushi atlas during import; the generated PNG hash is registered as an embedded image.",
       "sha256": "2a631ac3c8cf4ecdf46ca0e7ffb52400a2ed09285fc0af5826aab1a1487280ae",
-      "bytes": 59581
+      "bytes": 59581,
+      "embedded_images": [
+        {
+          "path": "assets/vendor/quaternius_japan/bamboo_Sushi_Atlas.png",
+          "sha256": "62118ccee997298c33fcaf2d301ae82bdccdbc5a9c8f0e2719b7ad32032793df"
+        }
+      ]
     }
   ]
 }
