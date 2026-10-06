@@ -13,7 +13,11 @@ var pitch: float = deg_to_rad(-10.0)
 var mobile_controls: Node = null
 var shake_strength: float = 0.0
 var fov_kick: float = 0.0
-var base_fov: float = 68.0
+var base_fov: float = 62.0
+var lock_base_distance: float = 4.35
+var lock_distance_factor: float = 0.24
+var lock_max_distance: float = 11.5
+var free_distance: float = 4.8
 var smoothed_focus: Vector3 = Vector3.ZERO
 var cinematic_target: Node3D = null
 var cinematic_remaining: float = 0.0
@@ -86,9 +90,12 @@ func _process(delta: float) -> void:
         )
 
         var desired_length: float = clampf(
-            5.6 + flat.length() * 0.48 + absf(to_target.y) * 0.25 + state_distance_offset,
-            5.2,
-            18.5
+            lock_base_distance
+            + flat.length() * lock_distance_factor
+            + absf(to_target.y) * 0.14
+            + state_distance_offset,
+            4.1,
+            lock_max_distance
         )
         spring_arm.spring_length = lerp(
             spring_arm.spring_length,
@@ -98,7 +105,7 @@ func _process(delta: float) -> void:
     else:
         spring_arm.spring_length = lerp(
             spring_arm.spring_length,
-            5.5 + state_distance_offset,
+            free_distance + state_distance_offset,
             1.0 - exp(-6.0 * delta)
         )
 
@@ -108,9 +115,9 @@ func _process(delta: float) -> void:
     var dash_active: bool = float(player.call("get_chakra_dash_timer")) > 0.0
     var dash_fov: float = 5.0 if dash_active else 0.0
     var desired_fov: float = clampf(
-        base_fov + separation * 0.35 + dash_fov + fov_kick + state_fov_offset,
-        54.0,
-        84.0
+        base_fov + separation * 0.18 + dash_fov + fov_kick + state_fov_offset,
+        52.0,
+        76.0
     )
     camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-8.0 * delta))
     cinematic_remaining = maxf(cinematic_remaining - delta, 0.0)
