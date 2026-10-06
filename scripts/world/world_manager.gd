@@ -162,18 +162,25 @@ func apply_quality(level: int, save: bool = true) -> void:
         settings.save("user://graphics.cfg")
 
 func _refresh_progress() -> void:
+    GameFlow.ensure_rpg_progress()
     var hero_name: String = GameFlow.player_character.display_name.to_upper() if GameFlow.player_character != null else "NARUTO"
-    status_label.text = "ALDEIA DA FOLHA  •  %s  •  %d ryō" % [hero_name, int(GameFlow.progress.ryo)]
-    if GameFlow.progress.completed.has("roof_scrolls"):
-        objective_label.text = "Percurso concluído. Treine na praça ou visite a loja de ferramentas."
-    elif GameFlow.progress.accepted.has("roof_scrolls"):
-        var collected: int = 0
-        for id: String in GameFlow.MISSIONS.roof_scrolls.required_collectibles:
-            if GameFlow.progress.collected.has(id):
-                collected += 1
-        objective_label.text = "Pergaminhos nos telhados: %d / 3 — %s" % [collected, "volte ao instrutor" if collected == 3 else "consulte o MAPA"]
+    status_label.text = "ALDEIA DA FOLHA  •  %s  •  NV %d %s  •  %d ryō" % [
+        hero_name,
+        int(GameFlow.progress.level),
+        GameFlow.ninja_rank(),
+        int(GameFlow.progress.ryo)
+    ]
+    if not GameFlow.progress.completed.has("roof_scrolls"):
+        if GameFlow.progress.accepted.has("roof_scrolls"):
+            var collected: int = 0
+            for id: String in GameFlow.MISSIONS.roof_scrolls.required_collectibles:
+                if GameFlow.progress.collected.has(id):
+                    collected += 1
+            objective_label.text = "Pergaminhos nos telhados: %d / 3 — %s" % [collected, "volte ao instrutor" if collected == 3 else "consulte o MAPA"]
+        else:
+            objective_label.text = "Fale com o instrutor na academia. Depois, o ponto CAMPANHA abre a história principal."
     else:
-        objective_label.text = "Fale com o instrutor na academia ao norte. MAPA mostra os pontos da aldeia."
+        objective_label.text = GameFlow.story_objective_text()
     if is_instance_valid(map_panel):
         map_panel.queue_redraw()
 
@@ -307,7 +314,17 @@ func _find_interaction() -> void:
             continue
         best = distance
         nearest = point
-    controls.context_label = "FALAR" if nearest != null else "AÇÃO"
+    if nearest != null:
+        var kind: String = String(nearest.data.get("kind", "talk"))
+        controls.context_label = {
+            "story": "MISSÃO",
+            "travel": "VIAJAR",
+            "shop": "COMPRAR",
+            "item_shop": "COMPRAR",
+            "battle": "LUTAR"
+        }.get(kind, "FALAR")
+    else:
+        controls.context_label = "AÇÃO"
     controls.queue_redraw()
     context_label.text = "AÇÃO / E: " + String(nearest.data.label) if nearest != null else "PULO duas vezes para saltar entre telhados"
     context_label.visible = not map_open
@@ -320,9 +337,9 @@ func interact() -> void:
     var data: Dictionary = nearest.data
     if data.kind == "quest":
         if GameFlow.claim_collection(data.mission):
-            toast("Percurso concluído! +150 ryō.")
+            toast("Percurso concluído! +150 ryō. A campanha principal está disponível.")
         elif GameFlow.progress.completed.has(data.mission):
-            toast("Bom trabalho. O treinador na praça tem um desafio para você.")
+            toast("Bom trabalho. O ponto CAMPANHA perto da torre mostra sua próxima missão.")
         elif GameFlow.accept_mission(data.mission):
             toast("Recolha os três pergaminhos nos telhados e volte aqui. As escadas e o salto duplo ajudam no percurso.")
     elif data.kind == "battle":
@@ -331,6 +348,41 @@ func interact() -> void:
         if result == OK:
             return
         toast("Não foi possível abrir o treino. Tente novamente.")
+    elif data.kind == "story":
+        var mission: Dictionary = GameFlow.current_story_mission()
+        if mission.is_empty():
+            toast("Campanha Parte 1 concluída. Continue explorando e treinando.")
+        else:
+            var region: String = String(mission.get("region", "konoha"))
+            controls.release_all()
+            var result: Error = (
+                GameFlow.start_story_battle(actor.last_safe_position, actor.rotation.y)
+                if region == "konoha"
+                else GameFlow.enter_region(region)
+            )
+            if result == OK:
+                return
+            toast("Não foi possível abrir a próxima missão.")
+    elif data.kind == "travel":
+        var mission: Dictionary = GameFlow.current_story_mission()
+        if mission.is_empty():
+            toast("A campanha atual já foi concluída.")
+        else:
+            var region: String = String(mission.get("region", "konoha"))
+            if region == "konoha":
+                toast("Sua próxima missão ainda acontece na Aldeia da Folha.")
+            else:
+                controls.release_all()
+                if GameFlow.enter_region(region) == OK:
+                    return
+                toast("A rota está indisponível agora.")
+    elif data.kind == "item_shop":
+        var item_id: String = String(data.get("item", "ramen"))
+        var price: int = int(data.get("price", 20))
+        if GameFlow.buy_item(item_id, price):
+            toast("%s comprado. Estoque: %d." % [String(data.label), GameFlow.inventory_count(item_id)])
+        else:
+            toast(String(data.text) + " Saldo: %d ryō." % int(GameFlow.progress.ryo))
     elif data.kind == "shop":
         toast("Suprimento comprado para o próximo treino." if GameFlow.buy_supplies(int(data.price)) else String(data.text) + " Limite: 3. Saldo: %d ryō." % int(GameFlow.progress.ryo))
     else:
