@@ -147,11 +147,11 @@ func spawn_dash_burst(world_position: Vector3) -> void:
         audio.call("play", "dash", -21.0)
     _spawn_flash(
         world_position + Vector3.UP * 0.55,
-        0.48,
+        0.62,
         Color(0.10, 0.55, 1.0, 1.0),
-        0.16
+        0.18
     )
-    _trigger_manga_impact(world_position + Vector3.UP * 0.55, 0.12, Color(0.10, 0.55, 1.0, 1.0))
+    _trigger_manga_impact(world_position + Vector3.UP * 0.55, 0.20, Color(0.10, 0.55, 1.0, 1.0))
 
 func spawn_chakra_impact(world_position: Vector3, energy_color: Color) -> void:
     var audio: Node = get_node_or_null("../AudioManager")
