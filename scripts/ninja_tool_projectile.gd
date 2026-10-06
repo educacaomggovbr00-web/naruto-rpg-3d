@@ -21,10 +21,10 @@ func _ready() -> void:
     shuriken = Node3D.new()
     add_child(shuriken)
     var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
-    shuriken.add_child(tools.create(tools.SHURIKEN, 0.48))
+    shuriken.add_child(tools.create(tools.SHURIKEN, 0.72))
     kunai = Node3D.new()
     add_child(kunai)
-    kunai.add_child(tools.create(tools.KUNAI, 0.48))
+    kunai.add_child(tools.create(tools.KUNAI, 0.72))
     bomb = MeshInstance3D.new()
     var ball: SphereMesh = SphereMesh.new()
     ball.radius = 0.17

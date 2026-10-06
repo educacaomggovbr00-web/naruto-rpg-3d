@@ -7,9 +7,11 @@ static var metal: StandardMaterial3D
 static func create(mesh: Mesh, length: float, use_metal: bool = true) -> MeshInstance3D:
     if metal == null:
         metal = StandardMaterial3D.new()
-        metal.albedo_color = Color("a6bed0")
-        metal.metallic = 0.45
-        metal.roughness = 0.6
+        # Bright matte steel stays legible in the small mobile gameplay view;
+        # metallic materials otherwise render almost black without reflections.
+        metal.albedo_color = Color("e6f4ff")
+        metal.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+        metal.roughness = 0.4
     var node: MeshInstance3D = MeshInstance3D.new()
     node.mesh = mesh
     if use_metal:
