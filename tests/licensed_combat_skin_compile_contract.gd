@@ -2,7 +2,6 @@ extends SceneTree
 
 const SCRIPT_PATHS = [
 	"res://scripts/rigged_character_adapter.gd",
-	"res://scripts/character_visual_adapter.gd",
 	"res://scripts/licensed_combat_ninja.gd",
 ]
 
