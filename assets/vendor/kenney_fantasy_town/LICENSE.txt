@@ -1,0 +1,8 @@
+Kenney Fantasy Town Kit 2.0
+Author: Kenney
+Source: https://opengameart.org/content/fantasy-town-kit
+License: CC0 1.0 Universal (public domain dedication)
+CC0: https://creativecommons.org/publicdomain/zero/1.0/
+
+Selected original GLB models and the shared colormap are vendored unchanged for
+mobile village scenery. Credit to Kenney.nl is appreciated but not required.
