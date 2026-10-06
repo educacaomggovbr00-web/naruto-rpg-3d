@@ -21,7 +21,7 @@ Exact file names, byte sizes, triangle counts, source URLs, archive hashes and r
 
 `combat_feedback.gd` replaces faceted spherical flashes with camera-facing textured quads in the same 32-slot pool. Active budgets remain 8/16/28. Smoke/impact textures respect depth and fade over their original lifetimes. No particle emitter or unbounded allocation per hit is introduced.
 
-`licensed_ninja_actor.gd` is a dedicated NPC adapter with original native animation. It normalizes height to 1.72m, shares source resources, retains per-instance AnimationPlayer playback, and preserves world-manager mesh culling and interactions. It does not replace the 65-bone player/CPU Mixamo rig. Retargeting these generic ninjas into the full playable roster still requires a separate bone mapping and pose validation. No Naruto/Sasuke/Sakura/Kakashi model or combat library was relabeled as CC0.
+`licensed_ninja_actor.gd` is a dedicated NPC adapter with original native animation. It normalizes height to 1.72m, shares source resources, retains per-instance AnimationPlayer playback, and preserves world-manager mesh culling and interactions. Native skeleton evaluation pauses outside the existing 16/22/30m proximity budget, including its emergency reduction. It does not replace the 65-bone player/CPU Mixamo rig. Retargeting these generic ninjas into the full playable roster still requires a separate bone mapping and pose validation. No Naruto/Sasuke/Sakura/Kakashi model or combat library was relabeled as CC0.
 
 ## Rebuild / validation
 

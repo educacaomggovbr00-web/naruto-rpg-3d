@@ -40,6 +40,10 @@ func run() -> void:
     var npc: Node = village.get_node("academy_guide").actor
     check(npc.rig_adapter.rig_loaded, "Licensed ninja NPC imports its own rig")
     check(npc.rig_adapter.animation_player.is_playing(), "Ninja NPC plays native animation")
+    npc.rig_adapter.set_active(false)
+    check(not npc.rig_adapter.animation_player.active, "Distant NPC skeleton evaluation can pause")
+    npc.rig_adapter.set_active(true)
+    check(npc.rig_adapter.animation_player.active, "Nearby NPC native animation resumes")
     var meshes: Array[MeshInstance3D] = []
     npc.rig_adapter._collect_mesh_instances(npc.rig_adapter.model_instance, meshes)
     check(not meshes.is_empty(), "Licensed NPC has visible 3D mesh")

@@ -266,6 +266,8 @@ func _physics_process(delta: float) -> void:
             if point.actor != null:
                 var active_radius: float = [16.0, 22.0, 30.0][quality] * (0.72 if emergency_mode else 1.0)
                 var active: bool = point.global_position.distance_squared_to(actor.global_position) < active_radius * active_radius
+                if point.actor.rig_adapter.has_method("set_active"):
+                    point.actor.rig_adapter.set_active(active)
                 point.actor.rig_adapter.set_physics_process(active)
                 point.actor.rig_adapter.set_process(active)
     if map_open:

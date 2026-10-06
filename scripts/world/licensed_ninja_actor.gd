@@ -37,6 +37,11 @@ func _ready() -> void:
                 break
     rig_loaded = not meshes.is_empty() and animation_player != null
 
+func set_active(enabled: bool) -> void:
+    # World proximity updates pause native skeleton evaluation outside the budget.
+    if animation_player != null:
+        animation_player.active = enabled
+
 func _find_player(node: Node) -> void:
     if node is AnimationPlayer:
         animation_player = node
