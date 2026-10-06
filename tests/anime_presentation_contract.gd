@@ -70,22 +70,18 @@ func run() -> void:
         var arena: Node = current_scene
         var fighter: CharacterBody3D = arena.get_node("Player") as CharacterBody3D
         var rival: CharacterBody3D = arena.get_node("EnemyDummy") as CharacterBody3D
-        var fighter_skin: Node3D = fighter.rig_adapter.get_node_or_null("LicensedCombatNinja") as Node3D
-        var rival_skin: Node3D = rival.rig_adapter.get_node_or_null("LicensedCombatNinja") as Node3D
-        check(fighter_skin != null and fighter_skin.rig_loaded, "Player battle skin is the licensed animated ninja")
-        check(rival_skin != null and rival_skin.rig_loaded, "CPU battle skin is the licensed animated ninja")
-        if fighter_skin != null and rival_skin != null:
-            check(fighter_skin.model_instance.name == "LicensedNinja_Male", "Player has the new visible male ninja model")
-            check(rival_skin.model_instance.name == "LicensedNinja_Female", "CPU has the new visible female ninja model")
-            check(not has_visible_mesh(fighter.rig_adapter.model_instance), "Original player placeholder mesh no longer renders")
-            check(not has_visible_mesh(rival.rig_adapter.model_instance), "Original CPU placeholder mesh no longer renders")
-            check(fighter.rig_adapter.real_animation_count == 27 and rival.rig_adapter.real_animation_count == 27, "Both original combat rigs retain all 27 clips")
-            check(not fighter_skin.call("_clip_for_state", "attack_2").is_empty(), "Licensed ninja has an attack animation mapped")
-            var visible_ninja_mesh: MeshInstance3D = first_visible_mesh(fighter_skin.model_instance)
-            check(visible_ninja_mesh != null, "Licensed player mesh is instantiated and visible")
-            if visible_ninja_mesh != null:
-                var ninja_material: StandardMaterial3D = visible_ninja_mesh.get_active_material(0) as StandardMaterial3D
-                check(ninja_material != null and ninja_material.diffuse_mode == BaseMaterial3D.DIFFUSE_TOON and ninja_material.next_pass == null, "Combat ninjas keep mobile single-pass toon materials without scale artifacts")
+        check(fighter.rig_adapter.get_node_or_null("LicensedCombatNinja") == null, "Player keeps the roster-selected 3D model instead of a generic ninja skin")
+        check(rival.rig_adapter.get_node_or_null("LicensedCombatNinja") == null, "CPU keeps the roster-selected 3D model instead of a generic ninja skin")
+        check(fighter.rig_adapter.rig_loaded and has_visible_mesh(fighter.rig_adapter.model_instance), "Naruto configured 3D model is instantiated and visible")
+        check(rival.rig_adapter.rig_loaded and has_visible_mesh(rival.rig_adapter.model_instance), "Sasuke configured 3D model is instantiated and visible")
+        check(fighter.rig_adapter.model_path == fighter.get_character_definition().model_path, "Player renders Naruto's configured model path")
+        check(rival.rig_adapter.model_path == rival.get_character_definition().model_path, "CPU renders Sasuke's configured model path")
+        check(fighter.rig_adapter.real_animation_count == 27 and rival.rig_adapter.real_animation_count == 27, "Both roster combat rigs retain all 27 clips")
+        var visible_player_mesh: MeshInstance3D = first_visible_mesh(fighter.rig_adapter.model_instance)
+        check(visible_player_mesh != null, "Configured player mesh remains visible with anime presentation")
+        if visible_player_mesh != null:
+            var player_material: Material = visible_player_mesh.get_active_material(0)
+            check(player_material != null, "Configured player mesh keeps a valid runtime material")
         var quality: Node = arena.get_node("MobileQuality")
         for level: int in [0, 1, 2]:
             quality.apply(level, false)
