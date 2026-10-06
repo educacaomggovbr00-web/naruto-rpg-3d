@@ -15,6 +15,8 @@ var camera_delta: Vector2 = Vector2.ZERO
 var quality_queue: int = 0
 var quality_center: Vector2 = Vector2.ZERO
 var quality_label: String = "MED"
+var advanced_open: bool = false
+var advanced_toggle_center: Vector2 = Vector2.ZERO
 var tool_select_queue: int = 0
 var tool_use_queue: int = 0
 var tool_select_center: Vector2 = Vector2.ZERO
@@ -104,6 +106,7 @@ func _update_layout() -> void:
     charge_center = Vector2(w - 444.0 * ui_scale, h - 100.0 * ui_scale)
     guard_center = Vector2(w - 444.0 * ui_scale, h - 190.0 * ui_scale)
     quality_center = Vector2(w - 190.0 * ui_scale, 72.0 * ui_scale)
+    advanced_toggle_center = Vector2(w - 310.0 * ui_scale, 72.0 * ui_scale)
     lock_center = Vector2(w - 72.0 * ui_scale, 72.0 * ui_scale)
 
     var advanced_y: float = minf(150.0 * ui_scale, h * 0.29)
@@ -139,29 +142,33 @@ func _touch_pressed(touch_id: int, position: Vector2) -> void:
     if _inside_circle(position, quality_center, 43.0 * ui_scale):
         quality_queue += 1
         return
-    if _inside_circle(position, tool_select_center, advanced_radius):
+    if _inside_circle(position, advanced_toggle_center, 43.0 * ui_scale):
+        advanced_open = not advanced_open
+        queue_redraw()
+        return
+    if advanced_open and _inside_circle(position, tool_select_center, advanced_radius):
         tool_select_queue += 1
         return
-    if _inside_circle(position, tool_use_center, advanced_radius):
+    if advanced_open and _inside_circle(position, tool_use_center, advanced_radius):
         tool_use_queue += 1
         return
-    if _inside_circle(position, ultimate_center, advanced_radius):
+    if advanced_open and _inside_circle(position, ultimate_center, advanced_radius):
         if ultimate_enabled:
             ultimate_queue += 1
         return
-    if _inside_circle(position, awakening_center, advanced_radius):
+    if advanced_open and _inside_circle(position, awakening_center, advanced_radius):
         if awakening_enabled:
             awakening_queue += 1
         return
-    if _inside_circle(position, special_center, advanced_radius):
+    if advanced_open and _inside_circle(position, special_center, advanced_radius):
         if jutsu_enabled:
             special_queue += 1
         return
-    if _inside_circle(position, clone_center, advanced_radius):
+    if advanced_open and _inside_circle(position, clone_center, advanced_radius):
         if clones_enabled:
             clone_queue += 1
         return
-    if _inside_circle(position, barrage_center, advanced_radius):
+    if advanced_open and _inside_circle(position, barrage_center, advanced_radius):
         if clones_enabled:
             barrage_queue += 1
         return
@@ -334,14 +341,16 @@ func _draw() -> void:
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
     _draw_button(quality_center, advanced_radius, base_fill, quality_label, maxi(10, int(12.0 * ui_scale)), text_color)
-    _draw_button(tool_select_center, advanced_radius, base_fill, "ITEM", 11, text_color)
-    _draw_button(tool_use_center, advanced_radius, blue_fill, tool_label, 10, text_color)
-    _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
-    _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), "AWK" if awakening_enabled else "—", 12, text_color)
-    _draw_button(special_center, advanced_radius, blue_fill, special_label, 11, text_color)
-    if clones_enabled:
-        _draw_button(clone_center, advanced_radius, blue_fill, "CLONE", 10, text_color)
-        _draw_button(barrage_center, advanced_radius, attack_fill, "BARR", 11, text_color)
+    _draw_button(advanced_toggle_center, advanced_radius, blue_fill if advanced_open else base_fill, "NINJA", 9, text_color)
+    if advanced_open:
+        _draw_button(tool_select_center, advanced_radius, base_fill, "ITEM", 11, text_color)
+        _draw_button(tool_use_center, advanced_radius, blue_fill, tool_label, 10, text_color)
+        _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
+        _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), "AWK" if awakening_enabled else "—", 12, text_color)
+        _draw_button(special_center, advanced_radius, blue_fill, special_label, 11, text_color)
+        if clones_enabled:
+            _draw_button(clone_center, advanced_radius, blue_fill, "CLONE", 10, text_color)
+            _draw_button(barrage_center, advanced_radius, attack_fill, "BARR", 11, text_color)
     _draw_button(attack_center, attack_radius, attack_fill, "ATK", 25, text_color)
     _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color)
     _draw_button(dash_center, dash_radius, blue_fill, "DASH", 17, text_color)
@@ -402,6 +411,7 @@ func _notification(what: int) -> void:
 
 func configure_character(definition: CharacterDefinition) -> void:
     character_accent = definition.energy_color
+    advanced_open = false
     jutsu_enabled = not definition.jutsus.is_empty()
     ultimate_enabled = definition.has_ultimate
     awakening_enabled = definition.has_awakening
