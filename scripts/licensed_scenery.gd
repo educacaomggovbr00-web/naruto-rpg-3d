@@ -68,6 +68,10 @@ func place(
     if scene == null:
         return null
 
+    # Mesh bounds rely on global transforms. Parent the imported scene first so
+    # Godot never queries global_transform on nodes outside the SceneTree.
+    add_child(scene)
+
     var meshes: Array[MeshInstance3D] = []
     _collect_mesh_nodes(scene, meshes)
     var bounds: AABB = AABB()
@@ -84,11 +88,15 @@ func place(
             if source_material is StandardMaterial3D:
                 mesh.set_surface_override_material(surface, preload("res://scripts/anime_presentation.gd").textured(source_material))
 
+    if first:
+        scene.queue_free()
+        return null
+
     var scale_factor: float = target_height / maxf(bounds.size.y, 0.01)
     scene.scale = Vector3.ONE * scale_factor
     scene.rotation_degrees.y = yaw_degrees
     scene.position = world_position - Vector3(0.0, bounds.position.y * scale_factor, 0.0)
-    add_child(scene)
+    scene.set_meta("base_visibility_range", visibility_end)
     props.append(scene)
     instance_total += 1
     return scene
