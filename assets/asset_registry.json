@@ -719,14 +719,64 @@
       "sha256": "4aac939dc33195e35caf8c382ee3cb170054da763577f22d3c22692ec6afccdf"
     },
     {
-      "path": "assets/vendor/quaternius_japan/arch.glb",
+      "path": "assets/vendor/quaternius_japan/torii.gltf",
       "status": "SAFE_FOR_RELEASE",
-      "author": "Quaternius / Kay Lousberg",
-      "source": "https://github.com/Mangluu/ninja-way public/models/arch.glb; original Torii https://poly.pizza/m/7SyXZ62xR5 and Shrine https://poly.pizza/m/tFxdxO5clk",
+      "sha256": "58c2ba9cc71a95c58f4db827b40a6c87acf423d7ddc8d41fb4e29511fad69f57",
+      "bytes": 22198,
+      "author": "Quaternius",
+      "source": "https://quaternius.com/packs/sushirestaurantkit.html; GitHub mirror agentkaerf/FreeModels",
       "license": "CC0-1.0",
-      "modifications": "Re-encoded/optimized bundle from ninja-way; runtime selects named torii, temple, temple_small and shrine nodes, scales them and applies the project's mobile anime material.",
-      "sha256": "4e6ea1f824dfa6562359da2bf5205d0e440615beafddf6ac160c6fd86b1570e0",
-      "bytes": 74532
+      "modifications": "Original uncompressed glTF with embedded geometry/atlas; runtime height normalization, culling and anime material adaptation."
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/temple_small.gltf",
+      "status": "SAFE_FOR_RELEASE",
+      "sha256": "9cea5004f25c9717b005dcec1ae87ae383b9be2abe0ed790c20c982810e6e172",
+      "bytes": 36372,
+      "author": "Quaternius",
+      "source": "https://quaternius.com/packs/ultimatefantasyrts.html; GitHub mirror laoniutoushx/TD-demo-2024-04-03",
+      "license": "CC0-1.0",
+      "modifications": "Original uncompressed glTF with embedded geometry; runtime height normalization, culling and anime material adaptation."
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/temple.gltf",
+      "status": "SAFE_FOR_RELEASE",
+      "sha256": "c8c4471660b773e560036e2a36567db63d88a9bff56a2d7d331580e9c4086424",
+      "bytes": 168851,
+      "author": "Quaternius",
+      "source": "https://quaternius.com/packs/ultimatefantasyrts.html; GitHub mirror laoniutoushx/TD-demo-2024-04-03",
+      "license": "CC0-1.0",
+      "modifications": "Original uncompressed glTF with embedded geometry; runtime height normalization, culling and anime material adaptation."
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/shrine.gltf",
+      "status": "SAFE_FOR_RELEASE",
+      "sha256": "7d0afbfe26614d2e9e01a41852f7f3161e7ea0b4fea814f92abd41e9060115b1",
+      "bytes": 3035,
+      "author": "Kay Lousberg",
+      "source": "KayKit Halloween Bits 1.0; GitHub mirror marinho/godot-visual-effects",
+      "license": "CC0-1.0",
+      "modifications": "Original glTF; runtime height normalization, culling and anime material adaptation."
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/shrine.bin",
+      "status": "SAFE_FOR_RELEASE",
+      "sha256": "d8774d8b6768397e588745841b378f1d13c2a6047a1cb8670b2351b6dc1f3b3b",
+      "bytes": 6196,
+      "author": "Kay Lousberg",
+      "source": "KayKit Halloween Bits 1.0; geometry buffer for shrine.gltf",
+      "license": "CC0-1.0",
+      "modifications": "Unmodified geometry dependency."
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/halloweenbits_texture.png",
+      "status": "SAFE_FOR_RELEASE",
+      "sha256": "1e671e9b176b290a35ce8f5f22c773b3f5e9c7a9cf0e1991de51e44dd3a23e7c",
+      "bytes": 15093,
+      "author": "Kay Lousberg",
+      "source": "KayKit Halloween Bits 1.0; texture dependency for shrine.gltf",
+      "license": "CC0-1.0",
+      "modifications": "Unmodified source texture; sampled by mobile anime material at runtime."
     }
   ]
 }
