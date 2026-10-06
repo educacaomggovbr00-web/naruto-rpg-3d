@@ -265,12 +265,12 @@ top_level = true
 script = ExtResource("2")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraRig"]
-spring_length = 5.5
+spring_length = 4.8
 collision_mask = 1
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraRig/SpringArm3D"]
 current = true
-fov = 68.0
+fov = 62.0
 
 [node name="EnemyDummy" type="CharacterBody3D" parent="." groups=["lock_targets"]]
 position = Vector3(0, 1, -3)
@@ -312,6 +312,7 @@ fallback_visual_path = NodePath("../Visual")
 [node name="HealthLabel" type="Label3D" parent="EnemyDummy"]
 position = Vector3(0, 1.65, 0)
 billboard = 1
+visible = false
 text = "ENEMY 120 / 120"
 font_size = 28
 outline_size = 8
