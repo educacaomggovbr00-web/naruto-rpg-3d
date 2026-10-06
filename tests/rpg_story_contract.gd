@@ -119,7 +119,15 @@ func run() -> void:
     cpu.health = cpu.max_health * 0.30
     await frames(3)
     check(bridge.boss_phase_triggered, "Boss must enter a second phase at low health")
-    check(float(cpu.move_speed) > speed_before_phase and float(cpu.chakra) >= float(cpu.max_chakra) - 0.01, "Boss phase must increase pressure and refill chakra")
+    check(
+        float(cpu.move_speed) > speed_before_phase
+        and (
+            bool(cpu.awakening.transforming)
+            or bool(cpu.awakening.active)
+            or float(cpu.chakra) >= float(cpu.max_chakra) - 0.01
+        ),
+        "Boss phase must increase pressure and either transform or refill chakra"
+    )
     battle.queue_free()
     await frames(4)
 
