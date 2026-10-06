@@ -135,6 +135,20 @@ A biblioteca `assets/animations/combat_mixamo.tres` contém movimentos reais em 
 ## Arquitetura de hitbox/hurtbox
 O jogador e o inimigo usam `Area3D` separadas para ataque e dano. A hitbox só processa acertos durante uma janela curta aberta pelo golpe. Cada alvo só pode ser acertado uma vez por janela. As hitboxes do jogador e dos clones já acompanham mãos/pés do Skeleton3D após avaliação da pose.
 
+## Naruto Combat State Machine v1
+
+Player e CPU agora usam a mesma máquina lógica de estados de combate, separada do controller principal. Ela diferencia **hit leve, knockback, launcher, slam, knockdown, recovery, substituição, dash confirm** e as fases **startup → drive → impact → recovery** do Rasengan.
+
+A camada lógica é mais detalhada que a biblioteca atual de 27 clips. No mobile, estados novos são mapeados para animações já disponíveis (`hit`, `knockback`, `land`, `dodge`, `rasengan`) em vez de duplicar assets pesados. A câmera lê o mesmo estado para ajustar FOV, distância e inclinação durante dash, substituição, lançamento, slam e Rasengan.
+
+O chakra dash preserva o contato sem dano e abre uma janela de confirmação para ATK já bufferado, permitindo entrada fluida no combo sem transformar o dash em ataque automático. Launcher/slam/knockdown armam recovery de chão e a CPU usa as mesmas regras de reação/estado do jogador.
+
+Validação dedicada:
+
+```sh
+godot --headless --path . --script res://tests/combat_state_machine_contract.gd
+```
+
 ## Combat Polish
 O feedback de combate agora é disparado pelo acerto real da hitbox. Golpes no vazio não aumentam o contador nem acionam hit-stop.
 
