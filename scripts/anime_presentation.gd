@@ -10,8 +10,8 @@ static func _outline() -> ShaderMaterial:
         outline_material = ShaderMaterial.new()
         outline_material.shader = OUTLINE
         outline_material.set_shader_parameter("outline_color", Color("07101a"))
-        outline_material.set_shader_parameter("outline_width", 0.0030)
-        outline_material.set_shader_parameter("distance_growth", 0.35)
+        outline_material.set_shader_parameter("outline_width", 0.0036)
+        outline_material.set_shader_parameter("distance_growth", 0.42)
     return outline_material
 
 static func textured(source: StandardMaterial3D) -> Material:
@@ -59,16 +59,21 @@ static func environment(dusk: bool = false, existing: Environment = null) -> Env
 
     result.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     result.ambient_light_color = Color("657ba4") if dusk else Color("748fa3")
-    result.ambient_light_energy = 0.24
+    result.ambient_light_energy = 0.30
     result.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+
+    result.adjustment_enabled = true
+    result.adjustment_brightness = 1.03
+    result.adjustment_contrast = 1.10
+    result.adjustment_saturation = 1.14
 
     result.fog_enabled = true
     result.fog_light_color = sky_material.sky_horizon_color
-    result.fog_density = 0.00075
+    result.fog_density = 0.00105
     return result
 
 static func sun(light: DirectionalLight3D, dusk: bool = false) -> void:
     light.light_color = Color("ffb76e") if dusk else Color("ffd49c")
-    light.light_energy = 1.02
-    light.shadow_bias = 0.11
-    light.shadow_normal_bias = 1.25
+    light.light_energy = 1.12
+    light.shadow_bias = 0.075
+    light.shadow_normal_bias = 0.92
