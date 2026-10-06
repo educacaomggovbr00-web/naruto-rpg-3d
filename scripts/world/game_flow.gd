@@ -241,15 +241,16 @@ func story_dialogue_key(phase: String, mission_id: String = "") -> String:
     return "" if mission.is_empty() else String(mission.get("id", "")) + ":" + phase
 
 func story_dialogue_was_seen(phase: String, mission_id: String = "") -> bool:
+    ensure_rpg_progress()
     var key: String = story_dialogue_key(phase, mission_id)
     return not key.is_empty() and bool(story_dialogue_seen.get(key, false))
 
 func mark_story_dialogue_seen(phase: String, mission_id: String = "") -> void:
+    ensure_rpg_progress()
     var key: String = story_dialogue_key(phase, mission_id)
     if key.is_empty():
         return
     story_dialogue_seen[key] = true
-    ensure_rpg_progress()
     if not progress.dialogue_seen.has(key):
         progress.dialogue_seen.append(key)
         save_progress()
