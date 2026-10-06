@@ -277,6 +277,22 @@ func build() -> void:
     var stones: Array[Vector3] = [Vector3(41, 0, 43), Vector3(42, 0, -40)]
     licensed_scenery.scatter("rock", stones, 1.0)
 
+    # CC0 Kenney Fantasy Town props are actually instantiated in the village,
+    # not just stored under assets. They add readable silhouettes and street
+    # detail while staying lightweight enough for mobile.
+    licensed_scenery.place("town_gate", Vector3(0, 0, 53.8), 4.4, 0.0, 86.0)
+    licensed_scenery.place("town_stall", Vector3(-16.2, 0, 18.0), 2.9, 180.0, 62.0)
+    licensed_scenery.place("town_stall", Vector3(18.5, 0, 13.3), 2.8, 180.0, 62.0)
+    licensed_scenery.place("town_cart", Vector3(8.2, 0, 18.5), 1.9, -20.0, 58.0)
+    licensed_scenery.place("town_cart", Vector3(-7.8, 0, -9.0), 1.8, 28.0, 58.0)
+    licensed_scenery.place("town_bench", Vector3(-10.5, 0, 8.7), 1.0, 90.0, 54.0)
+    licensed_scenery.place("town_bench", Vector3(10.8, 0, 29.5), 1.0, -90.0, 54.0)
+    for z: float in [-34.0, -16.0, 4.0, 24.0, 44.0]:
+        licensed_scenery.place("town_lantern", Vector3(-7.7, 0, z), 3.0, 0.0, 70.0)
+        licensed_scenery.place("town_lantern", Vector3(7.7, 0, z + 5.0), 3.0, 180.0, 70.0)
+    for x: float in [-8.5, 8.5]:
+        licensed_scenery.place("town_banner", Vector3(x, 0, 49.8), 3.2, 0.0, 72.0)
+
 func set_quality(level: int) -> void:
     if licensed_scenery != null:
         licensed_scenery.set_quality(level)
