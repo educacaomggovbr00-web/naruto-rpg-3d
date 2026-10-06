@@ -89,7 +89,7 @@ func run() -> void:
             check(arena.get_node("ArenaPresentation").environment.environment.fog_enabled == (level > 0), "Arena quality controls haze")
         await settle()
         await capture(arena_id)
-        if arena_id == "training" and fighter_skin != null:
+        if arena_id == "training" and fighter.rig_adapter.rig_loaded:
             fighter.call("_try_attack")
             await physics_frame
             var tool: Node = fighter.ninja_tools.projectiles[0]
