@@ -111,7 +111,14 @@ func build() -> void:
     licensed_scenery.place("town_cart", Vector3(23.0, 0, 23.0), 1.8, -25.0, 62.0)
     licensed_scenery.place("town_bench", Vector3(-9.0, 0, 30.2), 1.0, 0.0, 58.0)
     licensed_scenery.place("town_bench", Vector3(9.0, 0, 30.2), 1.0, 180.0, 58.0)
-    licensed_scenery.place("town_gate", Vector3(0, 0, -30.5), 4.8, 0.0, 82.0)
+
+    # Real CC0 Japanese architecture from Quaternius/KayKit. These replace the
+    # generic gate silhouette as the dominant skyline while staying outside the
+    # combat collider so gameplay remains unchanged.
+    licensed_scenery.place_arch("torii", Vector3(0, 0, -31.2), 10.5, 0.0, 108.0)
+    licensed_scenery.place_arch("temple", Vector3(-22.5, 0, -39.0), 10.0, 8.0, 122.0)
+    licensed_scenery.place_arch("temple_small", Vector3(22.0, 0, -38.0), 8.0, -10.0, 116.0)
+    licensed_scenery.place_arch("shrine", Vector3(0, 0, 34.0), 6.0, 180.0, 88.0)
 
     for x: float in [-14.0, 14.0]:
         var target: MeshInstance3D = preload("res://scripts/licensed_ninja_tools.gd").create(preload("res://assets/vendor/mehrasaur_weapons/aim-board.obj"), 1.8, false)
