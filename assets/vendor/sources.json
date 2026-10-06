@@ -142,7 +142,7 @@
       "author": "Quaternius",
       "source": "https://opengameart.org/content/animated-characters-pack",
       "license": "CC0-1.0",
-      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native rig and animations preserved; runtime height normalized to 1.72m for NPCs and 1.75m for battle skins. Shared single-pass toon palette lifted 12%; fixed-width outline hull omitted on the centimeter-scale meshes. Posed NPC skin bounds and combat bind-pose bounds are cached for grounding/scale normalization.",
+      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native rig and animations preserved; runtime height normalized to 1.72m for NPCs. Shared single-pass toon palette lifted 12%; fixed-width outline hull omitted on the centimeter-scale meshes. NPC skin bounds are cached for grounding/scale normalization.",
       "sha256": "0b75104932555f320aa1a40646e2ef0720e010b54584580ceafa4750cb27941a",
       "bytes": 1058260,
       "triangles": 7104
@@ -153,10 +153,20 @@
       "author": "Quaternius",
       "source": "https://opengameart.org/content/animated-characters-pack",
       "license": "CC0-1.0",
-      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native rig and animations preserved; runtime height normalized to 1.72m for NPCs and 1.75m for battle skins. Shared single-pass toon palette lifted 12%; fixed-width outline hull omitted on the centimeter-scale meshes. Posed NPC skin bounds and combat bind-pose bounds are cached for grounding/scale normalization.",
+      "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native rig and animations preserved; runtime height normalized to 1.72m for NPCs. Shared single-pass toon palette lifted 12%; fixed-width outline hull omitted on the centimeter-scale meshes. NPC skin bounds are cached for grounding/scale normalization.",
       "sha256": "c0c5ceed48681e4ee8140906df17d47bf0d4f494c9506a11b490298e2e3b653e",
       "bytes": 654624,
       "triangles": 2720
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/arch.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius / Kay Lousberg",
+      "source": "https://github.com/Mangluu/ninja-way/blob/main/public/models/LICENSES.md",
+      "license": "CC0-1.0",
+      "modifications": "Named Japanese architecture bundle (torii, temple, temple_small, shrine); height normalized, culled and anime-shaded in runtime.",
+      "sha256": "4e6ea1f824dfa6562359da2bf5205d0e440615beafddf6ac160c6fd86b1570e0",
+      "bytes": 74532
     }
   ]
 }
