@@ -26,7 +26,7 @@ func _ready() -> void:
     rig_adapter = Node3D.new()
     rig_adapter.name = "RiggedCharacterAdapter"
     if player_controlled:
-        rig_adapter.set_script(preload("res://scripts/character_visual_adapter.gd"))
+        rig_adapter.set_script(preload("res://scripts/rigged_character_adapter.gd"))
     else:
         rig_adapter.set_script(preload("res://scripts/world/licensed_ninja_actor.gd"))
     if player_controlled:

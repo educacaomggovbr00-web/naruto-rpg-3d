@@ -63,13 +63,6 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/combat_state_machine_contract.gd 2>&1 | tee /tmp/combat-state-machine.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/combat-state-machine.log
           grep -F 'COMBAT STATE MACHINE: PASS' /tmp/combat-state-machine.log
-      - name: Validate Naruto sprite import, poses, grounding and clones
-        shell: bash
-        run: |
-          set -o pipefail
-          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/sprite_visual_contract.gd 2>&1 | tee /tmp/sprite-contract.log
-          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/sprite-contract.log
-          grep -F 'SPRITE VISUAL CONTRACT: PASS' /tmp/sprite-contract.log
       - name: Validate supplied 3D mesh skin in all combat clips
         shell: bash
         run: |

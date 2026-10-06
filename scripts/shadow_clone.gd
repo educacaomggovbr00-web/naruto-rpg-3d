@@ -8,7 +8,6 @@ var source: CharacterBody3D
 var target: Node3D
 var model: Node3D
 var animation_player: AnimationPlayer
-var sprite_visual: Sprite3D
 var skeleton: Skeleton3D
 var hitbox: Area3D
 var lifetime: float = 0.0
@@ -73,10 +72,6 @@ func prepare(actor: CharacterBody3D) -> void:
     # Same imported hierarchy/root paths, shared immutable baked clip data.
     animation_player.add_animation_library(&"combat", adapter.animation_player.get_animation_library(&"combat"))
     animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
-    if adapter.get("sprite_mode") == true:
-        sprite_visual = adapter.sprite_visual.duplicate() as Sprite3D
-        add_child(sprite_visual)
-        model.visible = false
 
 func summon(victim: Node3D, origin: Vector3, approach_offset: Vector3, delay: float, clip: String, lift: float = 0.0, power: float = 6.0, sequence: Node = null) -> void:
     if model == null:
@@ -105,7 +100,6 @@ func summon(victim: Node3D, origin: Vector3, approach_offset: Vector3, delay: fl
 func _physics_process(delta: float) -> void:
     if not active:
         return
-    _sync_sprite_pose()
     elapsed += delta
     lifetime -= delta
     if support_pose:
@@ -175,14 +169,3 @@ func present(origin: Vector3, heading: float, lifetime_seconds: float, clip: Str
 func get_damage_multiplier() -> float:
     return source.call("get_damage_multiplier")
 
-func _sync_sprite_pose() -> void:
-    if sprite_visual == null or not is_instance_valid(source):
-        return
-    var key: String = clip_name.trim_prefix("air_") if attack_started or support_pose else "run"
-    var poses: Dictionary = source.rig_adapter.sprite_frames
-    sprite_visual.texture = poses.get(key, poses["jutsu"])
-    var camera: Camera3D = get_viewport().get_camera_3d()
-    if camera != null:
-        var facing: float = global_basis.z.dot(camera.global_basis.x)
-        if absf(facing) > 0.1:
-            sprite_visual.flip_h = facing < 0.0

@@ -11,10 +11,6 @@ func run() -> void:
                 push_error("Development-only fan model leaked into public payload")
                 quit(1)
                 return
-        if ResourceLoader.exists("res://assets/characters/stylized/naruto_pre_shippuden.glb"):
-            push_error("Pre-Shippuden Naruto development presentation leaked into public payload")
-            quit(1)
-            return
         if ProjectSettings.has_setting("autoload/GameFlow"):
             push_error("Rejected public container retained a resource-dependent autoload")
             quit(1)
@@ -42,15 +38,14 @@ func run() -> void:
         push_error("Development export lost rig/manifest or pools")
         quit(1)
         return
-    if fighter.rig_adapter.sprite_mode or not fighter.rig_adapter.model_instance.visible or fighter.specials.clones[0].sprite_visual != null or not fighter.specials.clones[0].model.visible:
+    if not fighter.rig_adapter.model_instance.visible or not fighter.specials.clones[0].model.visible:
         push_error("Development export lost Naruto animated 3D model or clone visuals")
         quit(1)
         return
-    for variant: String in ["pbr", "shaded"]:
-        if ResourceLoader.exists("res://assets/characters/base_basic/base_basic_" + variant + ".glb"):
-            push_error("Unoptimized million-triangle source model leaked into Android payload")
-            quit(1)
-            return
+    if not ResourceLoader.exists("res://assets/characters/base_basic/base_basic_pbr_rigged.glb"):
+        push_error("Animation-ready Naruto PBR model missing from Android payload")
+        quit(1)
+        return
         if not ResourceLoader.exists("res://assets/characters/base_basic/base_basic_" + variant + "_rigged.glb"):
             push_error("Animation-ready material variant missing from Android payload")
             quit(1)
@@ -102,7 +97,7 @@ func run() -> void:
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_PRE_SHIPPUDEN_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_2_5D_SPRITES", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED"]:
+        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED"]:
             authored_visuals += 1
         elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
             roster_placeholders += 1

@@ -43,7 +43,7 @@ func samples(mesh: MeshInstance3D, skeleton: Skeleton3D, model_scale: float) -> 
 
 func run() -> void:
     var flow: Node = root.get_node("GameFlow")
-    check(CharacterCatalog.NARUTO.visual_mode == "rig_3d", "Naruto defaults to animated 3D")
+    check(CharacterCatalog.NARUTO.model_path == "res://assets/characters/base_basic/base_basic_pbr_rigged.glb", "Naruto uses the single animated 3D model")
     check(is_equal_approx(CharacterCatalog.NARUTO.model_target_height, 1.70), "Naruto keeps tuned mobile character height")
     check(CharacterCatalog.NARUTO.idle_animation_override.is_empty(), "Naruto must use the real combat idle instead of chakra-charge as idle")
     check(CharacterCatalog.SAKURA.display_name == "Sakura" and CharacterCatalog.SAKURA.model_yaw_degrees == 0.0, "Sakura profile must expose corrected name and facing")
@@ -56,14 +56,14 @@ func run() -> void:
     cpu.enable_arsenal = false
     for actor: CharacterBody3D in [fighter, cpu]:
         var adapter: Node3D = actor.rig_adapter
-        check(adapter.rig_loaded and not adapter.sprite_mode and adapter.model_instance.visible, "Each team shows its animated model")
+        check(adapter.rig_loaded and adapter.model_instance.visible, "Each team shows its animated model")
         check(adapter.skeleton.get_bone_count() == 65 and adapter.real_animation_count == 27, "Complete skeleton and library load")
         var meshes: Array[MeshInstance3D] = []
         adapter._collect_mesh_instances(adapter.model_instance, meshes)
         check(meshes.size() == 1 and meshes[0].skin != null, "Optimized imported mesh has real skin")
         check(meshes[0].mesh.surface_get_array_index_len(0) / 3 <= 60000, "Geometry fits the configured mobile budget")
         for clone: Node3D in actor.specials.clones:
-            check(clone.sprite_visual == null and clone.model.visible and clone.skeleton != adapter.skeleton, "Clones have independent visible 3D rigs")
+            check(clone.model.visible and clone.skeleton != adapter.skeleton, "Clones have independent visible 3D rigs")
             check(clone.model.position.is_equal_approx(adapter.model_instance.position), "Clones inherit corrected grounding")
     var adapter: Node3D = fighter.rig_adapter
     check(adapter._animation_for_state("idle") == &"combat/idle", "Naruto idle state must resolve to combat/idle")
@@ -98,21 +98,13 @@ func run() -> void:
         if name in [&"run", &"sprint", &"attack_1", &"attack_2", &"defeat"]:
             check(maximum_motion > 0.03, "Clip visibly deforms the supplied mesh: " + String(name))
     check(adapter.skeleton != cpu.rig_adapter.skeleton and adapter.animation_tree != cpu.rig_adapter.animation_tree, "CPU playback is independent")
-    var pbr_path: String = CharacterCatalog.NARUTO.model_path
-    var naruto_definition: CharacterDefinition = CharacterCatalog.NARUTO
-    naruto_definition.model_path = "res://assets/characters/base_basic/base_basic_shaded_rigged.glb"
-    check(flow.start_versus("naruto", "naruto", "training") == OK, "Shaded variant opens")
-    await frames(8)
-    for actor: CharacterBody3D in [current_scene.get_node("Player"), current_scene.get_node("EnemyDummy")]:
-        check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 27 and actor.rig_adapter.model_instance.visible, "Shaded variant uses the same complete animation pipeline")
-    naruto_definition.model_path = pbr_path
     check(flow.enter_selection() == OK, "Selection opens")
     await frames(5)
     for preview: CharacterBody3D in current_scene.preview.fighters:
-        check(preview.rig_adapter.rig_loaded and not preview.rig_adapter.sprite_mode, "Menu previews animate the configured model")
+        check(preview.rig_adapter.rig_loaded and preview.rig_adapter.model_instance.visible, "Menu previews animate the configured model")
     check(flow.enter_world() == OK, "Exploration opens")
     await frames(8)
     var world_player: Node = get_first_node_in_group("world_player")
-    check(world_player != null and world_player.rig_adapter.rig_loaded and not world_player.rig_adapter.sprite_mode, "Exploration uses the same animated 3D model")
+    check(world_player != null and world_player.rig_adapter.rig_loaded and world_player.rig_adapter.model_instance.visible, "Exploration uses the same animated 3D model")
     print("BASE BASIC VISUAL CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(0 if failures == 0 else 1)

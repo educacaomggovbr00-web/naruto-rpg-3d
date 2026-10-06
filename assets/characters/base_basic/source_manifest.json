@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "note": "Large original static GLBs are intentionally kept outside Git to reduce mobile/source downloads. Keep local copies if rebuilding rigged outputs.",
+  "note": "Large original static GLBs stay outside Git. Only the PBR rigged runtime output is tracked; the shaded source metadata is kept only for reproducibility.",
   "source": "ZIP fornecido pelo usuário: 635d8c0a-27cc-4eb0-90b0-2f3ba33d2bfc (1).zip",
   "license": "UNKNOWN",
   "source_sha256": {
@@ -16,7 +16,6 @@
     "shaded": "base_basic_shaded.glb"
   },
   "generated_outputs": [
-    "assets/characters/base_basic/base_basic_pbr_rigged.glb",
-    "assets/characters/base_basic/base_basic_shaded_rigged.glb"
+    "assets/characters/base_basic/base_basic_pbr_rigged.glb"
   ]
 }

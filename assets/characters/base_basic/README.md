@@ -7,11 +7,11 @@ Os dois GLBs estáticos originais do ZIP `635d8c0a-27cc-4eb0-90b0-2f3ba33d2bfc (
 | `base_basic_pbr.glb` | 42975656 | Diffuse, normal e metallic/roughness |
 | `base_basic_shaded.glb` | 37620980 | Shaded |
 
-Ambos são GLB 2.0, com uma malha/material e sem skin, esqueleto ou animações. As versões que permanecem no repositório e são usadas pelo jogo são `base_basic_pbr_rigged.glb` (padrão do Naruto) e `base_basic_shaded_rigged.glb` (alternativa de material).
+Ambos os arquivos-fonte são GLB 2.0, com uma malha/material e sem skin, esqueleto ou animações. Para evitar duplicação no runtime, apenas `base_basic_pbr_rigged.glb` permanece no repositório e é usado pelo Naruto; a variante shaded pode ser regenerada localmente para comparação, mas não faz parte do jogo.
 
 ## Preparação para animações
 
-Cada versão rigada usa uma superfície, 46513 vértices, 39998 triângulos, texturas de até 1024 px e os 65 ossos corporais Mixamo compatíveis com `assets/animations/combat_mixamo.tres`. O ajuste de pose e os pesos são feitos offline, antes da importação. Os 27 clips existentes controlam o modelo pela mesma AnimationTree, com hitboxes seguindo os ossos, instâncias independentes para a CPU/clones e apoio visual na cápsula física.
+A versão PBR rigada usa uma superfície, 46513 vértices, 39998 triângulos, texturas de até 1024 px e os 65 ossos corporais Mixamo compatíveis com `assets/animations/combat_mixamo.tres`. O ajuste de pose e os pesos são feitos offline, antes da importação. Os 27 clips existentes controlam o modelo pela mesma AnimationTree, com hitboxes seguindo os ossos, instâncias independentes para a CPU/clones e apoio visual na cápsula física.
 
 Para reconstruir, instale numpy, scipy e Pillow e disponibilize **gltfpack 1.3** (MIT, ferramenta externa de desenvolvimento). Execute:
 

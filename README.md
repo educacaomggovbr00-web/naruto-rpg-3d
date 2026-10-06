@@ -310,9 +310,7 @@ Arquivos brutos ficam em `external/storm1_raw/` e são ignorados pelo Git. O pri
 
 Abra `project.godot` no Godot 4.7.2 e execute com F6 em `main.tscn` para ir direto à arena, ou F5 para selecionar personagens e entrar no mundo. Naruto usa por padrão `assets/characters/base_basic/base_basic_pbr_rigged.glb`: modelo 3D com 65 ossos Mixamo, pesos de skin e os 27 clips reais já usados pelo combate. Seleção, jogador, CPU, clones e exploração usam o mesmo perfil.
 
-As duas variantes rigadas têm 39998 triângulos e texturas de até 1024 px. Para usar o visual shaded, altere apenas `model_path` em `assets/characters/definitions/naruto.tres` para `res://assets/characters/base_basic/base_basic_shaded_rigged.glb`. Os GLBs estáticos originais foram retirados do Git para reduzir o download mobile; seus hashes permanecem registrados e a reconstrução recebe os arquivos por caminho externo. Os detalhes estão no [README dos modelos](assets/characters/base_basic/README.md).
-
-O atlas 2.5D continua como alternativa: defina `visual_mode = "sprite_2_5d"` no mesmo Resource. Para reconstruir o atlas: `python tools/build_naruto_sprite_atlas.py "/caminho/para/Naruto.zip"` (requer Pillow). O teste de sprites ativa essa alternativa explicitamente; o teste de exportação valida o visual 3D padrão.
+O Naruto usa somente `assets/characters/base_basic/base_basic_pbr_rigged.glb` no runtime. A variante shaded duplicada e o caminho 2.5D legado foram removidos para reduzir tamanho, importações e caminhos de apresentação concorrentes. O modelo PBR mantém 39998 triângulos, texturas de até 1024 px e o pipeline completo de 27 animações. Os GLBs estáticos originais continuam fora do Git; hashes e instruções de reconstrução ficam no [README dos modelos](assets/characters/base_basic/README.md).
 
 `tests/base_basic_visual_contract.gd` verifica a deformação real da skin nos 27 clips, modelos do jogador/CPU, independência dos clones, grounding, preview de seleção e exploração. Nenhum Python, rigging ou download é executado no aparelho.
 
