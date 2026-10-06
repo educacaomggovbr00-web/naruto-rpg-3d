@@ -14,7 +14,32 @@
       "reward_ryo": 120,
       "reward_xp": 90,
       "boss": false,
-      "unlock_jutsu": "clones"
+      "unlock_jutsu": "clones",
+      "objective": "Vá até a Academia e mostre que está pronto para seu primeiro duelo.",
+      "intro_dialogue": [
+        {
+          "speaker": "Instrutor",
+          "text": "O treino acabou. Agora quero ver como você reage contra alguém da sua idade."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Beleza! Eu vou mostrar meu caminho ninja sem fugir da luta."
+        },
+        {
+          "speaker": "Sasuke",
+          "text": "Então venha preparado. Eu não vou facilitar."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Instrutor",
+          "text": "Força sem controle não basta. Continue treinando e aprendendo a lutar com inteligência."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Essa foi só a primeira. Eu ainda vou muito mais longe."
+        }
+      ]
     },
     {
       "id": "bell_test",
@@ -27,7 +52,24 @@
       "reward_ryo": 180,
       "reward_xp": 130,
       "boss": true,
-      "unlock_jutsu": "barrage"
+      "unlock_jutsu": "barrage",
+      "objective": "Encontre Kakashi no campo e sobreviva ao teste de trabalho em equipe.",
+      "intro_dialogue": [
+        {
+          "speaker": "Kakashi",
+          "text": "Uma missão não é vencida só com golpes. Observe, pense e escolha a hora de avançar."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Entendi. Dessa vez eu vou provar que consigo acompanhar o time."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Kakashi",
+          "text": "Melhor. Você começou a perceber que um ninja precisa ler a batalha."
+        }
+      ]
     },
     {
       "id": "forest_exam",
@@ -40,7 +82,24 @@
       "reward_ryo": 240,
       "reward_xp": 180,
       "boss": true,
-      "unlock_jutsu": ""
+      "unlock_jutsu": "",
+      "objective": "Atravesse a Floresta de Treino e enfrente a ameaça que bloqueia a rota.",
+      "intro_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Esse lugar está quieto demais... tem alguém esperando pela gente."
+        },
+        {
+          "speaker": "Orochimaru",
+          "text": "Mostre quanto vale sua determinação quando o caminho fica perigoso."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Não importa quem apareça. Eu não vou abandonar meus companheiros."
+        }
+      ]
     },
     {
       "id": "chunin_neji",
@@ -53,7 +112,24 @@
       "reward_ryo": 260,
       "reward_xp": 200,
       "boss": false,
-      "unlock_jutsu": ""
+      "unlock_jutsu": "",
+      "objective": "Retorne à Folha e vença o duelo do torneio.",
+      "intro_dialogue": [
+        {
+          "speaker": "Neji",
+          "text": "Alguns caminhos parecem decididos antes mesmo da luta começar."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Então eu vou abrir outro caminho com minhas próprias mãos."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Ninguém precisa aceitar um destino só porque disseram que ele era inevitável."
+        }
+      ]
     },
     {
       "id": "gaara_showdown",
@@ -66,7 +142,24 @@
       "reward_ryo": 340,
       "reward_xp": 260,
       "boss": true,
-      "unlock_jutsu": ""
+      "unlock_jutsu": "",
+      "objective": "Siga para a floresta e impeça que a ameaça alcance a aldeia.",
+      "intro_dialogue": [
+        {
+          "speaker": "Gaara",
+          "text": "Se quer me deter, terá que provar sua força."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Eu luto porque tenho gente que quero proteger."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Força de verdade não precisa deixar todo mundo sozinho."
+        }
+      ]
     },
     {
       "id": "search_tsunade",
@@ -79,7 +172,24 @@
       "reward_ryo": 360,
       "reward_xp": 280,
       "boss": true,
-      "unlock_jutsu": "rasengan"
+      "unlock_jutsu": "rasengan",
+      "objective": "Viaje até a fronteira do rio e proteja a missão.",
+      "intro_dialogue": [
+        {
+          "speaker": "Kabuto",
+          "text": "Você chegou longe. Vamos ver se consegue manter esse ritmo sob pressão."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Eu treinei uma técnica nova justamente para momentos assim."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Agora eu entendi melhor como concentrar chakra. O Rasengan é meu próximo passo."
+        }
+      ]
     },
     {
       "id": "retrieval_kimimaro",
@@ -92,7 +202,24 @@
       "reward_ryo": 420,
       "reward_xp": 330,
       "boss": true,
-      "unlock_jutsu": ""
+      "unlock_jutsu": "",
+      "objective": "Avance pelo vale antes que a rota de perseguição seja fechada.",
+      "intro_dialogue": [
+        {
+          "speaker": "Kimimaro",
+          "text": "Minha missão termina quando sua perseguição parar aqui."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Eu não atravessei tudo isso para desistir agora."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Ainda dá tempo. Eu preciso continuar seguindo em frente."
+        }
+      ]
     },
     {
       "id": "final_valley",
@@ -105,7 +232,24 @@
       "reward_ryo": 600,
       "reward_xp": 500,
       "boss": true,
-      "unlock_jutsu": "whirlwind"
+      "unlock_jutsu": "whirlwind",
+      "objective": "Chegue ao Vale do Fim e enfrente o último duelo desta parte da campanha.",
+      "intro_dialogue": [
+        {
+          "speaker": "Sasuke",
+          "text": "Se continuar me seguindo, terá que lutar com tudo o que tem."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Então é isso que eu vou fazer. Eu não vou desistir de você."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Naruto",
+          "text": "Esse caminho ainda não terminou. Eu vou continuar ficando mais forte."
+        }
+      ]
     }
   ]
 }
