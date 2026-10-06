@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "title": "Naruto — Caminho Ninja: Parte 1",
+  "note": "Campanha jogável autoral inspirada nos principais confrontos da fase clássica; não reproduz roteiro, diálogos ou assets do anime/jogos.",
+  "missions": [
+    {
+      "id": "academy_spar",
+      "chapter": 1,
+      "title": "Primeiro Rival",
+      "summary": "Depois do treino na Academia, prove que consegue acompanhar um rival em combate.",
+      "opponent": "sasuke",
+      "arena": "training",
+      "region": "konoha",
+      "reward_ryo": 120,
+      "reward_xp": 90,
+      "boss": false,
+      "unlock_jutsu": "clones"
+    },
+    {
+      "id": "bell_test",
+      "chapter": 2,
+      "title": "Teste do Sino",
+      "summary": "Enfrente Kakashi em um teste de equipe e sobrevivência.",
+      "opponent": "kakashi",
+      "arena": "courtyard",
+      "region": "konoha",
+      "reward_ryo": 180,
+      "reward_xp": 130,
+      "boss": true,
+      "unlock_jutsu": "barrage"
+    },
+    {
+      "id": "forest_exam",
+      "chapter": 3,
+      "title": "Perigo na Floresta",
+      "summary": "Atravesse a rota da floresta e enfrente Orochimaru.",
+      "opponent": "orochimaru",
+      "arena": "training",
+      "region": "forest",
+      "reward_ryo": 240,
+      "reward_xp": 180,
+      "boss": true,
+      "unlock_jutsu": ""
+    },
+    {
+      "id": "chunin_neji",
+      "chapter": 4,
+      "title": "Destino Contra Vontade",
+      "summary": "Vença Neji e avance no torneio.",
+      "opponent": "neji",
+      "arena": "courtyard",
+      "region": "konoha",
+      "reward_ryo": 260,
+      "reward_xp": 200,
+      "boss": false,
+      "unlock_jutsu": ""
+    },
+    {
+      "id": "gaara_showdown",
+      "chapter": 5,
+      "title": "Defesa da Folha",
+      "summary": "Interrompa a ameaça de Gaara em uma batalha de alto risco.",
+      "opponent": "gaara",
+      "arena": "training",
+      "region": "forest",
+      "reward_ryo": 340,
+      "reward_xp": 260,
+      "boss": true,
+      "unlock_jutsu": ""
+    },
+    {
+      "id": "search_tsunade",
+      "chapter": 6,
+      "title": "A Busca por Tsunade",
+      "summary": "Na fronteira do rio, enfrente Kabuto enquanto a missão se complica.",
+      "opponent": "kabuto",
+      "arena": "courtyard",
+      "region": "river",
+      "reward_ryo": 360,
+      "reward_xp": 280,
+      "boss": true,
+      "unlock_jutsu": "rasengan"
+    },
+    {
+      "id": "retrieval_kimimaro",
+      "chapter": 7,
+      "title": "Resgate em Movimento",
+      "summary": "Abra caminho no vale derrotando Kimimaro.",
+      "opponent": "kimimaro",
+      "arena": "training",
+      "region": "valley",
+      "reward_ryo": 420,
+      "reward_xp": 330,
+      "boss": true,
+      "unlock_jutsu": ""
+    },
+    {
+      "id": "final_valley",
+      "chapter": 8,
+      "title": "Vale do Fim",
+      "summary": "Alcance Sasuke e enfrente o duelo decisivo desta campanha.",
+      "opponent": "sasuke",
+      "arena": "courtyard",
+      "region": "valley",
+      "reward_ryo": 600,
+      "reward_xp": 500,
+      "boss": true,
+      "unlock_jutsu": "whirlwind"
+    }
+  ]
+}
