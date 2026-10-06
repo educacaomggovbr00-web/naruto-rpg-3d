@@ -8,7 +8,12 @@ const SOURCES: Dictionary = {
     "rock": preload("res://assets/vendor/kenney_nature/rock_largeA.glb"),
     "boulder": preload("res://assets/vendor/kenney_nature/rock_largeC.glb")
 }
-const ARCH_SOURCE: PackedScene = preload("res://assets/vendor/quaternius_japan/arch.glb")
+const ARCH_SOURCES: Dictionary = {
+    "torii": preload("res://assets/vendor/quaternius_japan/torii.gltf"),
+    "temple_small": preload("res://assets/vendor/quaternius_japan/temple_small.gltf"),
+    "temple": preload("res://assets/vendor/quaternius_japan/temple.gltf"),
+    "shrine": preload("res://assets/vendor/quaternius_japan/shrine.gltf")
+}
 const PROP_SOURCES: Dictionary = {
     "lantern": preload("res://assets/vendor/kenney_fantasy_town/lantern.glb"),
     "stall_red": preload("res://assets/vendor/kenney_fantasy_town/stall-red.glb"),
@@ -164,21 +169,15 @@ func place_arch(
     yaw_degrees: float = 0.0,
     visibility_range: float = 96.0
 ) -> Node3D:
-    var bundle: Node3D = ARCH_SOURCE.instantiate() as Node3D
-    if bundle == null:
-        push_warning("Japanese architecture bundle could not be instantiated")
+    var packed: PackedScene = ARCH_SOURCES.get(part_name) as PackedScene
+    if packed == null:
+        push_warning("Unknown Japanese architecture id: " + part_name)
         return null
 
-    var selected: Node3D = bundle.find_child(part_name, true, false) as Node3D
+    var selected: Node3D = packed.instantiate() as Node3D
     if selected == null:
-        push_warning("Japanese architecture part not found: " + part_name)
-        bundle.free()
+        push_warning("Japanese architecture could not be instantiated: " + part_name)
         return null
-
-    var selected_transform: Transform3D = selected.global_transform
-    selected.get_parent().remove_child(selected)
-    selected.transform = selected_transform
-    bundle.free()
 
     selected.name = "Japan_" + part_name + "_" + str(props.size())
     add_child(selected)
