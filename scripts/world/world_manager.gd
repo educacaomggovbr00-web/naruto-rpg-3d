@@ -23,6 +23,8 @@ var message_label: Label
 var fps_label: Label
 var map_panel: Control
 var quality_button: Button
+var story_dialogue: CanvasLayer
+var pending_story_start: bool = false
 @onready var actor: CharacterBody3D = $Player
 @onready var controls: Control = $HUD/WorldControls
 
@@ -53,6 +55,11 @@ func _ready() -> void:
         add_child(point)
         points.append(point)
     _build_hud()
+    story_dialogue = CanvasLayer.new()
+    story_dialogue.name = "StoryDialogue"
+    story_dialogue.set_script(preload("res://scripts/world/story_dialogue.gd"))
+    add_child(story_dialogue)
+    story_dialogue.finished.connect(_on_story_dialogue_finished)
     GameFlow.progress_changed.connect(_refresh_progress)
     _refresh_progress()
     settings.load("user://graphics.cfg")
@@ -180,7 +187,7 @@ func _refresh_progress() -> void:
         else:
             objective_label.text = "Fale com o instrutor na academia. Depois, o ponto CAMPANHA abre a história principal."
     else:
-        objective_label.text = GameFlow.story_objective_text()
+        objective_label.text = GameFlow.story_objective_text() + "\n" + GameFlow.story_objective_detail()
     if is_instance_valid(map_panel):
         map_panel.queue_redraw()
 
@@ -355,6 +362,16 @@ func interact() -> void:
         else:
             var region: String = String(mission.get("region", "konoha"))
             controls.release_all()
+            if region == "konoha" and not GameFlow.story_dialogue_was_seen("intro"):
+                pending_story_start = true
+                GameFlow.mark_story_dialogue_seen("intro")
+                if story_dialogue.call(
+                    "play",
+                    GameFlow.story_dialogue("intro"),
+                    "CAP. %d • %s" % [int(mission.get("chapter", 1)), String(mission.get("title", "MISSÃO"))]
+                ):
+                    return
+                pending_story_start = false
             var result: Error = (
                 GameFlow.start_story_battle(actor.last_safe_position, actor.rotation.y)
                 if region == "konoha"
@@ -389,6 +406,14 @@ func interact() -> void:
         toast(String(data.text))
     if not GameFlow.save_message.is_empty():
         toast(GameFlow.save_message)
+
+func _on_story_dialogue_finished() -> void:
+    if not pending_story_start:
+        return
+    pending_story_start = false
+    var result: Error = GameFlow.start_story_battle(actor.last_safe_position, actor.rotation.y)
+    if result != OK:
+        toast("Não foi possível abrir a próxima missão.")
 
 func toast(text: String) -> void:
     message_label.text = text
