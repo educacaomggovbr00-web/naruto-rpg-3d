@@ -47,12 +47,17 @@ func run() -> void:
     check(flow.story_dialogue("intro", "academy_spar").size() >= 2, "GameFlow must expose intro dialogue by mission id")
     check(not flow.story_dialogue_was_seen("intro", "academy_spar"), "Story dialogue starts unseen")
     flow.mark_story_dialogue_seen("intro", "academy_spar")
-    check(flow.story_dialogue_was_seen("intro", "academy_spar"), "Story dialogue session state must prevent accidental replay before battle")
+    check(flow.story_dialogue_was_seen("intro", "academy_spar"), "Story dialogue must prevent accidental replay before battle")
+    check(flow.progress.dialogue_seen.has("academy_spar:intro"), "Seen dialogue must be stored in save progress")
     check(int(flow.progress.level) == 1 and flow.progress.inventory is Dictionary, "Legacy v1 save must gain RPG fields without reset")
+    check(flow.progress.skills is Dictionary and flow.progress.dialogue_seen is Array, "Legacy save must migrate skills and dialogue state")
 
     var gained: int = flow.add_xp(80, false)
     check(gained == 1 and int(flow.progress.level) == 2 and int(flow.progress.skill_points) == 1, "XP must level the ninja and award a skill point")
     check(flow.ninja_rank() == "GENIN", "Early progression must remain Genin")
+    check(flow.upgrade_skill("power"), "Skill point must be spendable on a valid ninja upgrade")
+    check(flow.skill_rank("power") == 1 and int(flow.progress.skill_points) == 0, "Skill purchase must persist rank and consume one point")
+    check(not flow.upgrade_skill("invalid"), "Unknown skill ids must be rejected")
 
     check(flow.buy_item("ramen", 20) and int(flow.progress.ryo) == 80, "RPG shop must spend ryō")
     check(flow.inventory_count("ramen") == 1, "Purchased item must enter persistent inventory")
@@ -106,13 +111,27 @@ func run() -> void:
     check(bridge.boss_banner != null and String(bridge.boss_banner.text).begins_with("BOSS"), "Boss story battle must show cinematic boss presentation")
     check(float(cpu.max_health) > float(flow.cpu_character.max_health), "Boss encounter must scale CPU durability")
     check(is_instance_valid(fighter.camera_rig.cinematic_target), "Boss intro must use the existing combat camera sequence")
+    check(is_equal_approx(float(fighter.rpg_damage_multiplier), 1.04), "Power skill must affect real combat damage multiplier")
+    check(not fighter.specials.call("_available_choices").has("rasengan"), "Locked story jutsu cannot be selected before its chapter reward")
+    check(fighter.specials.call("_available_choices").has("clones"), "Previously unlocked story jutsu must remain available")
+
+    var speed_before_phase: float = float(cpu.move_speed)
+    cpu.health = cpu.max_health * 0.30
+    await frames(3)
+    check(bridge.boss_phase_triggered, "Boss must enter a second phase at low health")
+    check(float(cpu.move_speed) > speed_before_phase and float(cpu.chakra) >= float(cpu.max_chakra) - 0.01, "Boss phase must increase pressure and refill chakra")
     battle.queue_free()
     await frames(4)
 
     check(flow.save_progress() == OK, "RPG progress must remain atomically saveable")
     var saved_level: int = int(flow.progress.level)
+    var saved_power: int = flow.skill_rank("power")
     flow.progress.level = 1
+    flow.progress.skills.power = 0
+    flow.story_dialogue_seen.clear()
     check(flow.load_progress() and int(flow.progress.level) == saved_level, "RPG level must survive save reload")
+    check(flow.skill_rank("power") == saved_power, "Skill ranks must survive save reload")
+    check(flow.story_dialogue_was_seen("intro", "academy_spar"), "Dialogue seen state must survive save reload")
 
     DirAccess.remove_absolute(flow.save_path)
     DirAccess.remove_absolute(flow.save_path + ".tmp")
