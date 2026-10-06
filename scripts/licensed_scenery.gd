@@ -8,8 +8,17 @@ const SOURCES: Dictionary = {
     "rock": preload("res://assets/vendor/kenney_nature/rock_largeA.glb"),
     "boulder": preload("res://assets/vendor/kenney_nature/rock_largeC.glb")
 }
+const PROP_SOURCES: Dictionary = {
+    "lantern": preload("res://assets/vendor/kenney_fantasy_town/lantern.glb"),
+    "stall_red": preload("res://assets/vendor/kenney_fantasy_town/stall-red.glb"),
+    "stall_bench": preload("res://assets/vendor/kenney_fantasy_town/stall-bench.glb"),
+    "banner_red": preload("res://assets/vendor/kenney_fantasy_town/banner-red.glb"),
+    "cart": preload("res://assets/vendor/kenney_fantasy_town/cart.glb"),
+    "fence_gate": preload("res://assets/vendor/kenney_fantasy_town/fence-gate.glb")
+}
 static var mesh_cache: Dictionary = {}
 var batches: Array[MultiMeshInstance3D] = []
+var props: Array[Node3D] = []
 var instance_total: int = 0
 
 static func parts(id: String) -> Array[Dictionary]:
@@ -72,7 +81,50 @@ func scatter(id: String, points: Array[Vector3], height: float, cell_size: float
         instance_total += cells[cell].size()
     set_quality(1)
 
+func place_prop(
+    id: String,
+    world_position: Vector3,
+    yaw_degrees: float = 0.0,
+    uniform_scale: float = 1.0,
+    visibility_range: float = 72.0
+) -> Node3D:
+    var packed: PackedScene = PROP_SOURCES.get(id) as PackedScene
+    if packed == null:
+        push_warning("Unknown licensed scenery prop: " + id)
+        return null
+
+    var instance: Node3D = packed.instantiate() as Node3D
+    if instance == null:
+        push_warning("Licensed scenery prop has no Node3D root: " + id)
+        return null
+
+    instance.name = "Kenney_" + id + "_" + str(props.size())
+    instance.position = world_position
+    instance.rotation_degrees.y = yaw_degrees
+    instance.scale = Vector3.ONE * uniform_scale
+    instance.set_meta("base_visibility_range", visibility_range)
+    _prepare_prop_meshes(instance, visibility_range)
+    add_child(instance)
+    props.append(instance)
+    return instance
+
+
+func _prepare_prop_meshes(node: Node, visibility_range: float) -> void:
+    if node is MeshInstance3D:
+        var mesh_instance: MeshInstance3D = node as MeshInstance3D
+        mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+        mesh_instance.visibility_range_end = visibility_range
+        mesh_instance.visibility_range_end_margin = 4.0
+    for child: Node in node.get_children():
+        _prepare_prop_meshes(child, visibility_range)
+
+
 func set_quality(level: int) -> void:
+    var quality_index: int = clampi(level, 0, 2)
     for batch: MultiMeshInstance3D in batches:
-        batch.visibility_range_end = [48.0, 78.0, 112.0][clampi(level, 0, 2)]
+        batch.visibility_range_end = [48.0, 78.0, 112.0][quality_index]
         batch.visibility_range_end_margin = 4.0
+    var prop_range_factor: float = [0.65, 1.0, 1.28][quality_index]
+    for prop: Node3D in props:
+        var base_range: float = float(prop.get_meta("base_visibility_range", 72.0))
+        _prepare_prop_meshes(prop, base_range * prop_range_factor)
