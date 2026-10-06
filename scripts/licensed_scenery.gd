@@ -8,6 +8,7 @@ const SOURCES: Dictionary = {
     "rock": preload("res://assets/vendor/kenney_nature/rock_largeA.glb"),
     "boulder": preload("res://assets/vendor/kenney_nature/rock_largeC.glb")
 }
+const ARCH_SOURCE: PackedScene = preload("res://assets/vendor/quaternius_japan/arch.glb")
 const PROP_SOURCES: Dictionary = {
     "lantern": preload("res://assets/vendor/kenney_fantasy_town/lantern.glb"),
     "stall_red": preload("res://assets/vendor/kenney_fantasy_town/stall-red.glb"),
@@ -154,6 +155,65 @@ func place_prop(
     add_child(instance)
     props.append(instance)
     return instance
+
+
+func place_arch(
+    part_name: String,
+    world_position: Vector3,
+    target_height: float,
+    yaw_degrees: float = 0.0,
+    visibility_range: float = 96.0
+) -> Node3D:
+    var bundle: Node3D = ARCH_SOURCE.instantiate() as Node3D
+    if bundle == null:
+        push_warning("Japanese architecture bundle could not be instantiated")
+        return null
+
+    var selected: Node3D = bundle.find_child(part_name, true, false) as Node3D
+    if selected == null:
+        push_warning("Japanese architecture part not found: " + part_name)
+        bundle.free()
+        return null
+
+    var selected_transform: Transform3D = selected.global_transform
+    selected.get_parent().remove_child(selected)
+    selected.transform = selected_transform
+    bundle.free()
+
+    selected.name = "Japan_" + part_name + "_" + str(props.size())
+    add_child(selected)
+
+    var meshes: Array[MeshInstance3D] = []
+    _collect_mesh_nodes(selected, meshes)
+    var bounds: AABB = AABB()
+    var first: bool = true
+    for mesh: MeshInstance3D in meshes:
+        var part_bounds: AABB = mesh.global_transform * mesh.get_aabb()
+        bounds = part_bounds if first else bounds.merge(part_bounds)
+        first = false
+        mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+        mesh.visibility_range_end = visibility_range
+        mesh.visibility_range_end_margin = 5.0
+        for surface: int in range(mesh.mesh.get_surface_count()):
+            var source_material: Material = mesh.get_active_material(surface)
+            if source_material is StandardMaterial3D:
+                mesh.set_surface_override_material(
+                    surface,
+                    preload("res://scripts/anime_presentation.gd").textured(source_material)
+                )
+
+    if first:
+        selected.queue_free()
+        return null
+
+    var scale_factor: float = target_height / maxf(bounds.size.y, 0.01)
+    selected.scale = Vector3.ONE * scale_factor
+    selected.rotation_degrees.y = yaw_degrees
+    selected.position = world_position - Vector3(0.0, bounds.position.y * scale_factor, 0.0)
+    selected.set_meta("base_visibility_range", visibility_range)
+    props.append(selected)
+    instance_total += 1
+    return selected
 
 
 func _prepare_prop_meshes(node: Node, visibility_range: float) -> void:
