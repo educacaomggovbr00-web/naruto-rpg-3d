@@ -46,10 +46,6 @@ func run() -> void:
         push_error("Animation-ready Naruto PBR model missing from Android payload")
         quit(1)
         return
-        if not ResourceLoader.exists("res://assets/characters/base_basic/base_basic_" + variant + "_rigged.glb"):
-            push_error("Animation-ready material variant missing from Android payload")
-            quit(1)
-            return
     for asset: String in ["res://assets/vendor/quaternius_ninjas/Ninja_Male.glb", "res://assets/vendor/quaternius_ninjas/Ninja_Female.glb", "res://assets/vendor/kenney_particles/smoke_01.png", "res://assets/vendor/mehrasaur_weapons/kunai-gata-01.obj", "res://assets/vendor/kenney_nature/tree_oak.glb"]:
         if not ResourceLoader.exists(asset):
             push_error("Licensed gameplay asset missing from Android payload: " + asset)
