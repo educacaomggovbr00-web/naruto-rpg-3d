@@ -27,6 +27,15 @@ Sasuke tem Fireball com sweep e Chidori preso à mão; Sakura combina Booby Trap
 
 Áudio CC0 Kenney, oito vozes SFX + um canal de carga; SOM ON/OFF salva a preferência. LOW/MED/HIGH mantém regras de colisão/timing iguais. FPS/DC ajudam a comparar no Moto G22; não houve medição real de FPS/GPU Android nesta sessão. Ver [validação e pendências](docs/SELECTABLE_FIGHTERS.md).
 
+## Naruto Combat Polish v1
+
+Passe de sensação e legibilidade focado primeiro no Naruto, sem aumentar o custo gráfico de forma pesada:
+- hitbox melee acompanha o golpe durante toda a janela ativa;
+- chakra dash recebe impulso inicial de FOV, leve inclinação de câmera e impacto ao conectar;
+- Rasengan usa avanço com aceleração, pulsação visual, enquadramento curto dedicado e impacto de chakra em pool;
+- controles avançados mobile ficam recolhidos atrás do botão **NINJA**, mantendo ATK/JUTSU/DASH/PULO/ESQ/SUB/CHK/DEF sempre acessíveis;
+- os efeitos novos reutilizam pools e primitivas já existentes para preservar o orçamento mobile.
+
 ## Combate atual
 - movimentação 3D e corrida
 - pulo
