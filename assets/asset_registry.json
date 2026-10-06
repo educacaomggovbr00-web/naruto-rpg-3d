@@ -335,8 +335,8 @@
       "author": "Projeto / Codex",
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
-      "modifications": "Original authored presentation/profile data",
-      "sha256": "e736232d18198761f764046c37d6c62c754e209e967c4638be20c62c8df3ca6b"
+      "modifications": "Original toon material retuned to use the new distance-aware mobile outline.",
+      "sha256": "295e81b82a4bd511e7b038c04d27317488ca4e460e04985c371520b0d6946fe3"
     },
     {
       "path": "assets/characters/stylized/sasuke.glb",
@@ -489,12 +489,13 @@
     },
     {
       "path": "assets/vfx/anime_outline.gdshader",
-      "status": "SAFE_FOR_RELEASE",
-      "author": "Projeto naruto-rpg-3d",
-      "source": "Código original neste repositório",
-      "license": "Original project content",
-      "modifications": "Passe de outline autoral em geometria expandida, sem textura externa; otimizado para Compatibility/mobile.",
-      "sha256": "0810167f9cafbdc00dfc0275f5bc3315aca2881465c2f8bcf87a0c585e4b5082"
+      "status": "NEEDS_ATTRIBUTION",
+      "author": "albanogiovanni / adaptação naruto-rpg-3d",
+      "source": "https://github.com/albanogiovanni/godot-anime-sdf-shader",
+      "license": "MIT",
+      "modifications": "Outline refeito em clip-space para espessura consistente entre modelos em metros/centímetros e crescimento limitado por distância.",
+      "sha256": "d2653726d7cec387a06c9221ad66020d6a745d58eb85c9476831dfe324048ad2",
+      "credit": "Dynamic anime outline adapted from godot-anime-sdf-shader by albanogiovanni (MIT)."
     },
     {
       "path": "assets/characters/sakura_user/sakura_mobile_rigged.glb",
@@ -644,6 +645,15 @@
       "license": "CC0-1.0",
       "modifications": "FBX converted losslessly to GLB with Godot 4.7.2 FBXDocument/GLTFDocument; native Idle and rig preserved; runtime height normalized to 1.72m for noncombat NPCs. Native NPC materials use a shared single-pass toon palette lifted 12% for readability; no fixed-width outline hull. Native Idle skin bounds sampled and cached for grounding and height normalization.",
       "sha256": "c0c5ceed48681e4ee8140906df17d47bf0d4f494c9506a11b490298e2e3b653e"
+    },
+    {
+      "path": "assets/vfx/manga_impact.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "hailyn / adaptação naruto-rpg-3d",
+      "source": "https://godotshaders.com/shader/screen-sampled-black-and-white-manga-hit-impact-post-process-shader/",
+      "license": "CC0-1.0",
+      "modifications": "Rewritten as a lightweight color-preserving mobile hit/dash overlay with procedural radial lines and no external textures.",
+      "sha256": "f996f85edec591629bc1a0b7a214f93b5b5243e1b0bea783d4b06cba9b216f52"
     }
   ]
 }
