@@ -122,6 +122,13 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/world_flow_contract.gd 2>&1 | tee /tmp/world-flow-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/world-flow-contract.log
           grep -F 'WORLD FLOW CONTRACT: PASS' /tmp/world-flow-contract.log
+      - name: Validate RPG story, regions and progression
+        shell: bash
+        run: |
+          set -o pipefail
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/rpg_story_contract.gd 2>&1 | tee /tmp/rpg-story-contract.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/rpg-story-contract.log
+          grep -F 'RPG STORY CONTRACT: PASS' /tmp/rpg-story-contract.log
       - name: Validate anime presentation and mobile quality
         shell: bash
         run: |
