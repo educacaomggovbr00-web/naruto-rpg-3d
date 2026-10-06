@@ -40,6 +40,53 @@ static func _collect(node: Node, parent_transform: Transform3D, result: Array[Di
     for child: Node in node.get_children():
         _collect(child, transform, result)
 
+func place(
+    id: String,
+    world_position: Vector3,
+    target_height: float,
+    yaw_degrees: float = 0.0,
+    visibility_end: float = 72.0
+) -> Node3D:
+    if not SOURCES.has(id):
+        push_error("Unknown licensed scenery id: " + id)
+        return null
+    var scene: Node3D = (SOURCES[id] as PackedScene).instantiate() as Node3D
+    if scene == null:
+        return null
+
+    var meshes: Array[MeshInstance3D] = []
+    _collect_mesh_nodes(scene, meshes)
+    var bounds: AABB = AABB()
+    var first: bool = true
+    for mesh: MeshInstance3D in meshes:
+        var part_bounds: AABB = mesh.global_transform * mesh.get_aabb()
+        bounds = part_bounds if first else bounds.merge(part_bounds)
+        first = false
+        mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+        mesh.visibility_range_end = visibility_end
+        mesh.visibility_range_end_margin = 4.0
+        for surface: int in range(mesh.mesh.get_surface_count()):
+            var source_material: Material = mesh.get_active_material(surface)
+            if source_material is StandardMaterial3D:
+                mesh.set_surface_override_material(surface, preload("res://scripts/anime_presentation.gd").textured(source_material))
+
+    var scale_factor: float = target_height / maxf(bounds.size.y, 0.01)
+    scene.scale = Vector3.ONE * scale_factor
+    scene.rotation_degrees.y = yaw_degrees
+    scene.position = world_position - Vector3(0.0, bounds.position.y * scale_factor, 0.0)
+    add_child(scene)
+    props.append(scene)
+    instance_total += 1
+    return scene
+
+
+static func _collect_mesh_nodes(node: Node, output: Array[MeshInstance3D]) -> void:
+    if node is MeshInstance3D:
+        output.append(node as MeshInstance3D)
+    for child: Node in node.get_children():
+        _collect_mesh_nodes(child, output)
+
+
 func scatter(id: String, points: Array[Vector3], height: float, cell_size: float = 24.0) -> void:
     if points.is_empty():
         return
