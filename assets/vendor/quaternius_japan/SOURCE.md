@@ -1,12 +1,11 @@
-# Japanese architecture bundle
+# Japanese architecture sources
 
-Runtime file: `arch.glb`
+All runtime files in this folder are CC0 and are kept in Godot-compatible, uncompressed glTF form.
 
-- `torii`, `temple`, `temple_small`: Quaternius, CC0 1.0. Original Torii source: https://poly.pizza/m/7SyXZ62xR5
-- `shrine`: Kay Lousberg, CC0 1.0. Original Shrine source: https://poly.pizza/m/tFxdxO5clk
-- Optimized bundle source: https://github.com/Mangluu/ninja-way/blob/main/public/models/arch.glb
-- Source provenance: https://github.com/Mangluu/ninja-way/blob/main/public/models/LICENSES.md
+- `torii.gltf` — Quaternius, Sushi Restaurant Kit, CC0 1.0. Official pack: https://quaternius.com/packs/sushirestaurantkit.html. The exact glTF was mirrored from `agentkaerf/FreeModels`.
+- `temple_small.gltf` and `temple.gltf` — Quaternius, Ultimate Fantasy RTS, CC0 1.0. Official pack: https://quaternius.com/packs/ultimatefantasyrts.html. Exact glTF mirrors were taken from `laoniutoushx/TD-demo-2024-04-03`.
+- `shrine.gltf`, `shrine.bin`, `halloweenbits_texture.png` — Kay Lousberg, KayKit Halloween Bits 1.0, CC0 1.0. Exact source/license mirror: `marinho/godot-visual-effects/addons/kaykit_halloween_bits/Assets`.
 
-CC0 permits copying, modification, redistribution and commercial use without attribution. The project still records the authors and source for auditability.
+The previous optimized `arch.glb` bundle was removed because it required `EXT_meshopt_compression`, which Godot 4.7.2's importer rejected in CI.
 
-Runtime modifications in this project are limited to selecting named nodes, placement, scale normalization, visibility/culling and anime material adaptation.
+Runtime changes are placement, scale normalization, visibility culling and the project's anime material adaptation. No Naruto/Shinobi Striker meshes or textures are present in this folder.
