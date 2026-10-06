@@ -134,12 +134,12 @@
     },
     {
       "path": "assets/world/village_points.json",
-      "sha256": "d5907c39455a93d8adf2deaf14baf9834d64a13976f26f03e4b5488bc58dd7a9",
+      "sha256": "c1172dda9d6059d48bcafef4f8b8586475bcc875775db0da87e916306e959318",
       "status": "SAFE_FOR_RELEASE",
       "author": "Projeto naruto-rpg-3d",
       "source": "Dados originais neste repositório",
       "license": "Conteúdo original do projeto",
-      "modifications": "Missões e posicionamento autoral; não extraídos do Storm"
+      "modifications": "Pontos autorais de Konoha atualizados com campanha, loja de ramen e acesso às regiões de aventura."
     },
     {
       "path": "assets/combat/naruto_moveset.tres",
@@ -571,6 +571,15 @@
           "sha256": "1c96e3e6ce5154d2d40c9443d6e99826a151a91ced117059645b800ef34fe18f"
         }
       ]
+    },
+    {
+      "path": "assets/world/story_campaign.json",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Dados narrativos e de progressão originais deste repositório",
+      "license": "Original project content",
+      "modifications": "Campanha data-driven inspirada em confrontos da fase clássica; não reproduz roteiro, diálogos, mapas ou assets comerciais.",
+      "sha256": "3a35acd9202e6a25c43e8017482e51b05b6fe4b51fb67201aa6417cf8651afb2"
     }
   ]
 }
