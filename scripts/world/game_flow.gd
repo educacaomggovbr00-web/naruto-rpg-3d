@@ -5,6 +5,8 @@ signal progress_changed
 
 const SAVE_VERSION: int = 1
 const MAX_LEVEL: int = 50
+const MAX_SKILL_RANK: int = 5
+const SKILL_IDS: PackedStringArray = ["vitality", "chakra", "power", "agility"]
 const VALID_REGIONS: PackedStringArray = ["konoha", "forest", "river", "valley"]
 const MISSIONS: Dictionary = {
     "roof_scrolls": preload("res://assets/world/roof_scrolls.tres"),
@@ -34,7 +36,9 @@ var progress: Dictionary = {
     "story_completed": [],
     "bosses": [],
     "unlocked_jutsus": ["demon"],
-    "inventory": {"ramen": 0, "food_pill": 0, "bomb": 0, "kunai_pack": 0}
+    "inventory": {"ramen": 0, "food_pill": 0, "bomb": 0, "kunai_pack": 0},
+    "skills": {"vitality": 0, "chakra": 0, "power": 0, "agility": 0},
+    "dialogue_seen": []
 }
 
 var busy: bool = false
@@ -70,7 +74,9 @@ func ensure_rpg_progress() -> void:
         "story_completed": [],
         "bosses": [],
         "unlocked_jutsus": ["demon"],
-        "inventory": {"ramen": 0, "food_pill": 0, "bomb": 0, "kunai_pack": 0}
+        "inventory": {"ramen": 0, "food_pill": 0, "bomb": 0, "kunai_pack": 0},
+        "skills": {"vitality": 0, "chakra": 0, "power": 0, "agility": 0},
+        "dialogue_seen": []
     }
     for key: String in defaults:
         if not progress.has(key):
@@ -80,6 +86,21 @@ func ensure_rpg_progress() -> void:
     for item_id: String in defaults.inventory:
         if not progress.inventory.has(item_id):
             progress.inventory[item_id] = 0
+
+    if not progress.get("skills") is Dictionary:
+        progress.skills = defaults.skills.duplicate(true)
+    for skill_id: String in SKILL_IDS:
+        if not progress.skills.has(skill_id):
+            progress.skills[skill_id] = 0
+        progress.skills[skill_id] = clampi(int(progress.skills[skill_id]), 0, MAX_SKILL_RANK)
+
+    if not progress.get("dialogue_seen") is Array:
+        progress.dialogue_seen = []
+    story_dialogue_seen.clear()
+    for key_value: Variant in progress.dialogue_seen:
+        if key_value is String:
+            story_dialogue_seen[String(key_value)] = true
+
     progress.level = clampi(int(progress.get("level", 1)), 1, MAX_LEVEL)
     progress.xp = maxi(int(progress.get("xp", 0)), 0)
     progress.skill_points = maxi(int(progress.get("skill_points", 0)), 0)
@@ -118,6 +139,51 @@ func ninja_rank() -> String:
     if level >= 8:
         return "GENIN+"
     return "GENIN"
+
+func skill_rank(skill_id: String) -> int:
+    ensure_rpg_progress()
+    if skill_id not in SKILL_IDS:
+        return 0
+    return int(progress.skills.get(skill_id, 0))
+
+func upgrade_skill(skill_id: String) -> bool:
+    ensure_rpg_progress()
+    if skill_id not in SKILL_IDS or int(progress.skill_points) <= 0:
+        return false
+    var rank: int = skill_rank(skill_id)
+    if rank >= MAX_SKILL_RANK:
+        return false
+    progress.skills[skill_id] = rank + 1
+    progress.skill_points -= 1
+    save_progress()
+    progress_changed.emit()
+    return true
+
+func skill_label(skill_id: String) -> String:
+    return {
+        "vitality": "VIDA",
+        "chakra": "CHAKRA",
+        "power": "PODER",
+        "agility": "AGILIDADE"
+    }.get(skill_id, skill_id.to_upper())
+
+func skill_bonus_text(skill_id: String) -> String:
+    var rank: int = skill_rank(skill_id)
+    match skill_id:
+        "vitality":
+            return "+%d HP" % (rank * 6)
+        "chakra":
+            return "+%d chakra" % (rank * 5)
+        "power":
+            return "+%d%% dano" % (rank * 4)
+        "agility":
+            return "+%.1f movimento" % (float(rank) * 0.3)
+        _:
+            return ""
+
+func is_story_jutsu_unlocked(jutsu_id: String) -> bool:
+    ensure_rpg_progress()
+    return progress.unlocked_jutsus.has(jutsu_id)
 
 func buy_item(item_id: String, price: int, max_stock: int = 9) -> bool:
     ensure_rpg_progress()
@@ -180,8 +246,13 @@ func story_dialogue_was_seen(phase: String, mission_id: String = "") -> bool:
 
 func mark_story_dialogue_seen(phase: String, mission_id: String = "") -> void:
     var key: String = story_dialogue_key(phase, mission_id)
-    if not key.is_empty():
-        story_dialogue_seen[key] = true
+    if key.is_empty():
+        return
+    story_dialogue_seen[key] = true
+    ensure_rpg_progress()
+    if not progress.dialogue_seen.has(key):
+        progress.dialogue_seen.append(key)
+        save_progress()
 
 func _transition(path: String) -> Error:
     if busy:
@@ -380,7 +451,6 @@ func _complete_story_mission(id: String) -> Dictionary:
     if bool(mission.get("boss", false)) and not progress.bosses.has(id):
         progress.bosses.append(id)
     progress.story_index = mini(int(progress.story_index) + 1, StoryCampaign.count())
-    story_dialogue_seen.erase(id + ":intro")
     save_progress()
     progress_changed.emit()
     return {
@@ -567,11 +637,14 @@ func load_progress() -> bool:
         save_writable = false
         return false
 
-    for optional_array: String in ["story_completed", "bosses", "unlocked_jutsus"]:
+    for optional_array: String in ["story_completed", "bosses", "unlocked_jutsus", "dialogue_seen"]:
         if parsed.has(optional_array) and not parsed[optional_array] is Array:
             save_writable = false
             return false
     if parsed.has("inventory") and not parsed.inventory is Dictionary:
+        save_writable = false
+        return false
+    if parsed.has("skills") and not parsed.skills is Dictionary:
         save_writable = false
         return false
 
