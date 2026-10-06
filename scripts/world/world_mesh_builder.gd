@@ -276,6 +276,16 @@ func build() -> void:
     licensed_scenery.scatter("bush", shrubs, 0.9)
     var stones: Array[Vector3] = [Vector3(41, 0, 43), Vector3(42, 0, -40)]
     licensed_scenery.scatter("rock", stones, 1.0)
+    licensed_scenery.scatter("sakura", [
+        Vector3(-21, 0, 7), Vector3(21, 0, 11),
+        Vector3(-35, 0, 31), Vector3(34, 0, 35),
+        Vector3(-28, 0, -27), Vector3(30, 0, -24),
+        Vector3(-7, 0, 47), Vector3(9, 0, 48)
+    ], 6.8)
+    licensed_scenery.scatter("bamboo", [
+        Vector3(-38, 0, -18), Vector3(-40, 0, -15), Vector3(-42, 0, -12),
+        Vector3(39, 0, 18), Vector3(41, 0, 15), Vector3(43, 0, 12)
+    ], 4.6)
 
     # CC0 Kenney Fantasy Town props are actually instantiated in the village,
     # not just stored under assets. They add readable silhouettes and street
