@@ -100,16 +100,18 @@ func build() -> void:
             rocks.append(Vector3(cos(angle), 0, sin(angle)) * 34.0)
     licensed_scenery.scatter("pine", trees, 11.0)
     licensed_scenery.scatter("boulder", rocks, 1.8)
-    licensed_scenery.scatter("sakura", [
+    var sakura_points: Array[Vector3] = [
         Vector3(-31, 0, -27), Vector3(31, 0, -27),
         Vector3(-32, 0, 24), Vector3(32, 0, 24),
         Vector3(-13, 0, -37), Vector3(13, 0, -37)
-    ], 7.4)
-    licensed_scenery.scatter("bamboo", [
+    ]
+    var bamboo_points: Array[Vector3] = [
         Vector3(-26, 0, -34), Vector3(-23, 0, -35),
         Vector3(26, 0, -34), Vector3(23, 0, -35),
         Vector3(-27, 0, 31), Vector3(27, 0, 31)
-    ], 4.8)
+    ]
+    licensed_scenery.scatter("sakura", sakura_points, 7.4)
+    licensed_scenery.scatter("bamboo", bamboo_points, 4.8)
 
     # Visible CC0 street dressing around the combat ring. These stay outside
     # the playable core so they improve the shot without changing combat flow.
