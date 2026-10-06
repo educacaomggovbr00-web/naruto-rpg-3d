@@ -23,7 +23,13 @@ func _has_named_child(root_node: Node, prefix: String) -> bool:
     return false
 
 func run() -> void:
-    check(ResourceLoader.exists("res://assets/vendor/quaternius_japan/arch.glb"), "CC0 Japanese architecture bundle must ship")
+    for path: String in [
+        "res://assets/vendor/quaternius_japan/torii.gltf",
+        "res://assets/vendor/quaternius_japan/temple_small.gltf",
+        "res://assets/vendor/quaternius_japan/temple.gltf",
+        "res://assets/vendor/quaternius_japan/shrine.gltf"
+    ]:
+        check(ResourceLoader.exists(path), "CC0 Japanese architecture must ship: " + path)
 
     var battle: Node3D = load("res://main.tscn").instantiate() as Node3D
     root.add_child(battle)
