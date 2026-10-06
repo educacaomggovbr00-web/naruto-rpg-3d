@@ -10,7 +10,8 @@ static func _outline() -> ShaderMaterial:
         outline_material = ShaderMaterial.new()
         outline_material.shader = OUTLINE
         outline_material.set_shader_parameter("outline_color", Color("07101a"))
-        outline_material.set_shader_parameter("outline_width", 0.006)
+        outline_material.set_shader_parameter("outline_width", 0.0030)
+        outline_material.set_shader_parameter("distance_growth", 0.35)
     return outline_material
 
 static func textured(source: StandardMaterial3D) -> Material:
