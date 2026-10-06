@@ -9,12 +9,28 @@ extends CanvasLayer
 @onready var rig_label: Label = $RigStatus
 @onready var rig_adapter: Node = $"../Player/RiggedCharacterAdapter"
 @onready var fps_label: Label = $FPS
+@onready var enemy: Node = $"../EnemyDummy"
+
+var enemy_health_bar: ProgressBar
+var enemy_name_label: Label
 
 func _ready() -> void:
     health_bar.max_value = float(player.call("get_max_health"))
     chakra_bar.max_value = float(player.call("get_max_chakra"))
     _build_backplates()
     _apply_anime_hud_style()
+
+    var player_definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
+    var enemy_definition: CharacterDefinition = enemy.call("get_character_definition") as CharacterDefinition
+    if player_definition != null and enemy_definition != null:
+        $Title.text = "%s  VS  %s" % [
+            player_definition.display_name.to_upper(),
+            enemy_definition.display_name.to_upper()
+        ]
+
+    if _is_mobile_runtime():
+        rig_label.visible = false
+        fps_label.visible = false
 
 
 func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxFlat:
@@ -39,11 +55,38 @@ func _build_backplates() -> void:
 
     var info: PanelContainer = PanelContainer.new()
     info.position = Vector2(10, 152)
-    info.size = Vector2(630, 64)
+    info.size = Vector2(555, 64)
     info.mouse_filter = Control.MOUSE_FILTER_IGNORE
     info.add_theme_stylebox_override("panel", _hud_panel(Color(0.012, 0.030, 0.048, 0.66), Color(0.24, 0.45, 0.55, 0.30), 12))
     add_child(info)
     move_child(info, 1)
+
+    var enemy_panel: PanelContainer = PanelContainer.new()
+    enemy_panel.anchor_left = 1.0
+    enemy_panel.anchor_right = 1.0
+    enemy_panel.offset_left = -395.0
+    enemy_panel.offset_right = -20.0
+    enemy_panel.offset_top = 128.0
+    enemy_panel.offset_bottom = 205.0
+    enemy_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    enemy_panel.add_theme_stylebox_override("panel", _hud_panel(Color(0.012, 0.032, 0.052, 0.78), Color(0.62, 0.28, 0.24, 0.48), 14))
+    add_child(enemy_panel)
+
+    var enemy_box: VBoxContainer = VBoxContainer.new()
+    enemy_box.add_theme_constant_override("separation", 5)
+    enemy_panel.add_child(enemy_box)
+
+    enemy_name_label = Label.new()
+    enemy_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    enemy_name_label.add_theme_font_size_override("font_size", 15)
+    enemy_name_label.add_theme_color_override("font_color", Color("ffd9c8"))
+    enemy_box.add_child(enemy_name_label)
+
+    enemy_health_bar = ProgressBar.new()
+    enemy_health_bar.custom_minimum_size = Vector2(350, 22)
+    enemy_health_bar.show_percentage = false
+    enemy_box.add_child(enemy_health_bar)
+    _style_bar(enemy_health_bar, Color("d84d43"))
 
     $Controls.visible = false
     $Title.add_theme_font_size_override("font_size", 16)
@@ -142,8 +185,21 @@ func _process(delta: float) -> void:
     if controls.tool_label != labels[player.ninja_tools.selected]:
         controls.tool_label = labels[player.ninja_tools.selected]
         controls.queue_redraw()
-    var cpu: Node = get_node("../EnemyDummy")
-    status_label.text += "  •  CPU %dHP" % int(cpu.health)
+    var cpu: Node = enemy
+    enemy_health_bar.max_value = maxf(float(cpu.max_health), 1.0)
+    enemy_health_bar.value = clampf(float(cpu.health), 0.0, enemy_health_bar.max_value)
+    var enemy_definition: CharacterDefinition = cpu.call("get_character_definition") as CharacterDefinition
+    var enemy_state: String = ""
+    if bool(cpu.get("guarding")):
+        enemy_state = "  •  DEF"
+    elif is_instance_valid(cpu.get("awakening")) and bool(cpu.awakening.active):
+        enemy_state = "  •  AWK"
+    enemy_name_label.text = "%s  %d/%d%s" % [
+        enemy_definition.display_name.to_upper() if enemy_definition != null else "CPU",
+        int(cpu.health),
+        int(cpu.max_health),
+        enemy_state
+    ]
 
     var combo_hits: int = int(player.call("get_combo_hits"))
     var combo_damage: float = float(player.call("get_combo_damage"))
@@ -155,3 +211,11 @@ func _process(delta: float) -> void:
         rig_label.text = String(rig_adapter.call("get_rig_status"))
 
     fps_label.text = "FPS:%d DC:%d" % [Engine.get_frames_per_second(), Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)]
+
+func _is_mobile_runtime() -> bool:
+    return (
+        OS.has_feature("android")
+        or OS.has_feature("ios")
+        or OS.has_feature("web_android")
+        or OS.has_feature("web_ios")
+    )
