@@ -18,6 +18,7 @@ var smoothed_focus: Vector3 = Vector3.ZERO
 var cinematic_target: Node3D = null
 var cinematic_remaining: float = 0.0
 var sequence_shot: String = ""
+var dash_roll: float = 0.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -92,19 +93,22 @@ func _process(delta: float) -> void:
     shake_strength = move_toward(shake_strength, 0.0, delta * 0.85)
     fov_kick = move_toward(fov_kick, 0.0, delta * 18.0)
     var separation: float = player.global_position.distance_to(locked_target.global_position) if is_instance_valid(locked_target) else 0.0
-    var dash_fov: float = 5.0 if float(player.call("get_chakra_dash_timer")) > 0.0 else 0.0
+    var dash_active: bool = float(player.call("get_chakra_dash_timer")) > 0.0
+    var dash_fov: float = 5.0 if dash_active else 0.0
     var desired_fov: float = clampf(base_fov + separation * 0.35 + dash_fov + fov_kick, 56.0, 82.0)
     camera.fov = lerpf(camera.fov, desired_fov, 1.0 - exp(-8.0 * delta))
     cinematic_remaining = maxf(cinematic_remaining - delta, 0.0)
     if cinematic_remaining > 0.0 and is_instance_valid(cinematic_target):
         follow_position = (player.global_position + cinematic_target.global_position) * 0.5 + Vector3.UP
-        var shot_distance: float = 8.0 if sequence_shot == "chain" else 5.2 if sequence_shot == "clash" else 6.4
+        var shot_distance: float = 8.0 if sequence_shot == "chain" else 5.2 if sequence_shot == "clash" else 5.8 if sequence_shot == "jutsu" else 6.4
         spring_arm.spring_length = lerpf(spring_arm.spring_length, shot_distance, 1.0 - exp(-6.0 * delta))
         if not sequence_shot.is_empty():
             var axis: Vector3 = cinematic_target.global_position - player.global_position
-            var shot_yaw: float = atan2(-axis.x, -axis.z) + 0.55
+            var side_angle: float = 0.34 if sequence_shot == "jutsu" else 0.55
+            var shot_yaw: float = atan2(-axis.x, -axis.z) + side_angle
             yaw = lerp_angle(yaw, shot_yaw, 1.0 - exp(-5.0 * delta))
-            camera.fov = lerpf(camera.fov, 60.0, 1.0 - exp(-6.0 * delta))
+            var sequence_fov: float = 63.0 if sequence_shot == "jutsu" else 60.0
+            camera.fov = lerpf(camera.fov, sequence_fov, 1.0 - exp(-6.0 * delta))
     else:
         cinematic_target = null
         sequence_shot = ""
@@ -117,12 +121,18 @@ func _process(delta: float) -> void:
     ) * shake_strength
 
     smoothed_focus = smoothed_focus.lerp(follow_position, 1.0 - exp(-12.0 * delta))
+    var desired_roll: float = deg_to_rad(-1.15) if dash_active else 0.0
+    dash_roll = lerpf(dash_roll, desired_roll, 1.0 - exp(-10.0 * delta))
     global_position = smoothed_focus
-    global_rotation = Vector3(pitch, yaw, 0.0)
+    global_rotation = Vector3(pitch, yaw, dash_roll)
 
 func add_combat_impact(strength: float, zoom_amount: float) -> void:
     shake_strength = maxf(shake_strength, strength)
     fov_kick = minf(fov_kick, -absf(zoom_amount))
+
+func begin_dash_impulse(amount: float = 3.0) -> void:
+    fov_kick = maxf(fov_kick, absf(amount))
+    shake_strength = maxf(shake_strength, 0.028)
 
 func add_impact_shake(strength: float) -> void:
     shake_strength = maxf(shake_strength, strength)
