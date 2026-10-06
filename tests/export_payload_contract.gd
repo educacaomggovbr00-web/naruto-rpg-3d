@@ -129,11 +129,18 @@ func run() -> void:
     root.add_child(village)
     for i: int in range(8):
         await physics_frame
-    if village.points.size() != 7 or not village.get_node("Player").rig_adapter.rig_loaded or not ResourceLoader.exists("res://assets/world/training.tres"):
-        push_error("Development export lost village point JSON or mission/rig resources")
+    if (
+        village.points.size() != 10
+        or not village.get_node("Player").rig_adapter.rig_loaded
+        or not ResourceLoader.exists("res://assets/world/training.tres")
+        or not FileAccess.file_exists("res://assets/world/story_campaign.json")
+        or not ResourceLoader.exists("res://region.tscn")
+    ):
+        push_error("Development export lost village/story/region mission or rig resources")
         quit(1)
         return
     print("WORLD ANDROID PACK: PASS")
+    print("RPG STORY AND REGIONS ANDROID PACK: PASS")
     village.queue_free()
     print("ANDROID PHASE 1 PACK: PASS")
     await process_frame
