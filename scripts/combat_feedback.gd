@@ -14,9 +14,15 @@ var trail_timer: float = 0.0
 var hit_stop_end_msec: int = 0
 var normal_time_scale: float = 1.0
 
+var manga_overlay: ColorRect = null
+var manga_material: ShaderMaterial = null
+var manga_impact: float = 0.0
+var manga_center: Vector2 = Vector2(0.5, 0.5)
+
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
     normal_time_scale = Engine.time_scale
+    _setup_manga_impact()
     for i: int in range(32):
         var effect: MeshInstance3D = MeshInstance3D.new()
         var mesh: QuadMesh = QuadMesh.new()
@@ -60,6 +66,8 @@ func _process(delta: float) -> void:
                     _actor_energy_color(actor),
                     0.16
                 )
+    _update_manga_impact(delta)
+
     if hit_stop_end_msec <= 0:
         return
 
@@ -86,27 +94,33 @@ func spawn_impact(world_position: Vector3, impact_kind: String = "normal") -> vo
     var scale_value: float = 0.34
     var color_value: Color = Color(1.0, 0.78, 0.22, 1.0)
     var lifetime: float = 0.10
+    var manga_strength: float = 0.14
 
     if impact_kind == "guard":
         scale_value = 0.42
         color_value = Color(0.35, 0.85, 1.0, 1.0)
+        manga_strength = 0.20
     elif impact_kind == "launcher":
         scale_value = 0.52
         color_value = Color(1.0, 0.42, 0.12, 1.0)
         lifetime = 0.13
+        manga_strength = 0.40
     elif impact_kind == "slam":
         scale_value = 0.62
         color_value = Color(1.0, 0.18, 0.08, 1.0)
         lifetime = 0.15
+        manga_strength = 0.68
     elif impact_kind == "bounce":
         scale_value = 0.58
         color_value = Color(1.0, 0.58, 0.15, 1.0)
         lifetime = 0.14
+        manga_strength = 0.52
 
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
         audio.call("play", "guard" if impact_kind == "guard" else "heavy" if impact_kind in ["slam", "launcher", "bounce"] else "normal")
     _spawn_flash(world_position, scale_value, color_value, lifetime)
+    _trigger_manga_impact(world_position, manga_strength, color_value)
 
 func spawn_substitution(world_position: Vector3) -> void:
     var audio: Node = get_node_or_null("../AudioManager")
@@ -137,6 +151,7 @@ func spawn_dash_burst(world_position: Vector3) -> void:
         Color(0.10, 0.55, 1.0, 1.0),
         0.16
     )
+    _trigger_manga_impact(world_position + Vector3.UP * 0.55, 0.12, Color(0.10, 0.55, 1.0, 1.0))
 
 func spawn_chakra_impact(world_position: Vector3, energy_color: Color) -> void:
     var audio: Node = get_node_or_null("../AudioManager")
@@ -148,6 +163,64 @@ func spawn_chakra_impact(world_position: Vector3, energy_color: Color) -> void:
     _spawn_flash(world_position, 1.02, energy_color.lightened(0.14), 0.16)
     _spawn_flash(world_position + Vector3(0.42, 0.16, 0.0), 0.68, Color(0.88, 0.96, 1.0, 1.0), 0.11)
     _spawn_flash(world_position + Vector3(-0.38, -0.08, 0.16), 0.56, energy_color, 0.13)
+    _trigger_manga_impact(world_position, 0.58, energy_color)
+
+func _setup_manga_impact() -> void:
+    var hud: CanvasLayer = get_node_or_null("../HUD") as CanvasLayer
+    if hud == null:
+        return
+    manga_overlay = ColorRect.new()
+    manga_overlay.name = "MangaImpactOverlay"
+    manga_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    manga_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    manga_material = ShaderMaterial.new()
+    manga_material.shader = preload("res://assets/vfx/manga_impact.gdshader")
+    manga_material.set_shader_parameter("impact", 0.0)
+    manga_overlay.material = manga_material
+    manga_overlay.visible = false
+    hud.add_child(manga_overlay)
+    hud.move_child(manga_overlay, 0)
+
+
+func _screen_uv(world_position: Vector3) -> Vector2:
+    var camera: Camera3D = get_viewport().get_camera_3d()
+    if camera == null or camera.is_position_behind(world_position):
+        return manga_center
+    var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+    if viewport_size.x <= 1.0 or viewport_size.y <= 1.0:
+        return manga_center
+    var screen_position: Vector2 = camera.unproject_position(world_position)
+    return Vector2(
+        clampf(screen_position.x / viewport_size.x, 0.06, 0.94),
+        clampf(screen_position.y / viewport_size.y, 0.08, 0.92)
+    )
+
+
+func _trigger_manga_impact(world_position: Vector3, strength: float, flash_color: Color) -> void:
+    if manga_material == null:
+        return
+    manga_impact = maxf(manga_impact, clampf(strength, 0.0, 1.0))
+    manga_center = _screen_uv(world_position)
+    manga_material.set_shader_parameter("impact_center", manga_center)
+    manga_material.set_shader_parameter("flash_color", flash_color.lightened(0.24))
+
+
+func _update_manga_impact(delta: float) -> void:
+    if manga_overlay == null or manga_material == null:
+        return
+
+    var dash_strength: float = 0.0
+    var actor: Node3D = get_node_or_null("../Player") as Node3D
+    if actor != null and float(actor.get("chakra_dash_timer")) > 0.05:
+        dash_strength = 0.10
+        manga_center = _screen_uv(actor.global_position + Vector3.UP * 0.9)
+        manga_material.set_shader_parameter("impact_center", manga_center)
+
+    manga_impact = move_toward(manga_impact, 0.0, delta * 5.6)
+    var visible_strength: float = maxf(manga_impact, dash_strength)
+    manga_material.set_shader_parameter("impact", visible_strength)
+    manga_overlay.visible = visible_strength > 0.015
+
 
 func _spawn_flash(
     world_position: Vector3,
