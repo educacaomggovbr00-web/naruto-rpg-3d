@@ -37,6 +37,9 @@ jobs:
           set -o pipefail
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --editor --import 2>&1 | tee /tmp/import.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/import.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/licensed_combat_skin_compile_contract.gd 2>&1 | tee /tmp/combat-skin-compile.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/combat-skin-compile.log
+          grep -F 'LICENSED COMBAT SKIN COMPILE: PASS' /tmp/combat-skin-compile.log
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/animation_contract.gd 2>&1 | tee /tmp/contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/contract.log
           grep -F 'ANIMATION CONTRACT: PASS' /tmp/contract.log
