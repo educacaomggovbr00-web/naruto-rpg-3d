@@ -39,6 +39,15 @@ func has_visible_mesh(node: Node) -> bool:
             return true
     return false
 
+func first_visible_mesh(node: Node) -> MeshInstance3D:
+    if node is MeshInstance3D and node.visible and node.mesh != null:
+        return node as MeshInstance3D
+    for child: Node in node.get_children():
+        var result: MeshInstance3D = first_visible_mesh(child)
+        if result != null:
+            return result
+    return null
+
 func run() -> void:
     root.size = Vector2i(1280, 720)
     var source: StandardMaterial3D = StandardMaterial3D.new()
@@ -72,6 +81,11 @@ func run() -> void:
             check(not has_visible_mesh(rival.rig_adapter.model_instance), "Original CPU placeholder mesh no longer renders")
             check(fighter.rig_adapter.real_animation_count == 27 and rival.rig_adapter.real_animation_count == 27, "Both original combat rigs retain all 27 clips")
             check(not fighter_skin.call("_clip_for_state", "attack_2").is_empty(), "Licensed ninja has an attack animation mapped")
+            var visible_ninja_mesh: MeshInstance3D = first_visible_mesh(fighter_skin.model_instance)
+            check(visible_ninja_mesh != null, "Licensed player mesh is instantiated and visible")
+            if visible_ninja_mesh != null:
+                var ninja_material: StandardMaterial3D = visible_ninja_mesh.get_active_material(0) as StandardMaterial3D
+                check(ninja_material != null and ninja_material.diffuse_mode == BaseMaterial3D.DIFFUSE_TOON and ninja_material.next_pass == null, "Combat ninjas keep mobile single-pass toon materials without scale artifacts")
         var quality: Node = arena.get_node("MobileQuality")
         for level: int in [0, 1, 2]:
             quality.apply(level, false)
@@ -81,15 +95,18 @@ func run() -> void:
         await capture(arena_id)
         if arena_id == "training" and fighter_skin != null:
             fighter.call("_try_attack")
+            await physics_frame
             var tool: Node = fighter.ninja_tools.projectiles[0]
-            tool.call("launch", fighter, rival, fighter.rig_adapter.call("get_hand_world_position"), Vector3(0, 0, 1), "shuriken")
+            var weapon_origin: Vector3 = fighter.global_position - fighter.global_basis.z * 1.2 + Vector3.UP * 1.3
+            tool.call("launch", fighter, rival, weapon_origin, (rival.global_position - weapon_origin).normalized(), "shuriken")
             check(tool.visible and tool.shuriken.visible, "A live kunai/shuriken projectile renders in the combat arena")
             var feedback: Node = arena.get_node("CombatFeedback")
-            feedback.call("spawn_chakra_impact", rival.global_position + Vector3.UP, Color("36d8ff"))
+            feedback.call("spawn_chakra_impact", fighter.global_position - fighter.global_basis.z * 1.2 + Vector3.UP * 1.3, Color("36d8ff"))
             check(feedback.flashes.any(func(flash: MeshInstance3D) -> bool: return flash.visible), "A jutsu impact VFX is visible during gameplay")
+            await physics_frame
             await capture("training_live_shuriken")
             tool.call("recycle")
-            tool.call("launch", fighter, rival, fighter.rig_adapter.call("get_hand_world_position"), Vector3(0, 0, 1), "kunai")
+            tool.call("launch", fighter, rival, weapon_origin, (rival.global_position - weapon_origin).normalized(), "kunai")
             check(tool.visible and tool.kunai.visible and not tool.shuriken.visible, "The licensed kunai mesh renders when the kunai is thrown")
             await capture("training_live_kunai")
     change_scene_to_file("res://world.tscn")

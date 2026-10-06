@@ -4,7 +4,6 @@ extends Node3D
 ## clips, bone queries and CPU logic; this native rig mirrors its broad state.
 const MALE: PackedScene = preload("res://assets/vendor/quaternius_ninjas/Ninja_Male.glb")
 const FEMALE: PackedScene = preload("res://assets/vendor/quaternius_ninjas/Ninja_Female.glb")
-const BODY_SHADER: Script = preload("res://scripts/anime_presentation.gd")
 var model_instance: Node3D
 var animation_player: AnimationPlayer
 var source_adapter: Node
@@ -13,6 +12,7 @@ var current_clip: StringName = &""
 var clip_names: PackedStringArray = PackedStringArray()
 var rig_loaded: bool = false
 static var bounds_by_type: Dictionary = {}
+static var material_cache: Dictionary = {}
 
 func _ready() -> void:
 	set_process(false)
@@ -53,7 +53,18 @@ func _ready() -> void:
 		for surface: int in range(mesh.mesh.get_surface_count()):
 			var source: StandardMaterial3D = mesh.mesh.surface_get_material(surface) as StandardMaterial3D
 			if source != null:
-				mesh.set_surface_override_material(surface, BODY_SHADER.textured(source))
+				var key: RID = source.get_rid()
+				if not material_cache.has(key):
+					var toon: StandardMaterial3D = source.duplicate(true) as StandardMaterial3D
+					toon.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+					toon.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
+					toon.roughness = 0.9
+					toon.albedo_color = toon.albedo_color.lightened(0.12)
+					# The imported FBX mesh coordinates are extremely small. A fixed
+					# local-space outline expands into the black fragments seen at 1.75m.
+					toon.next_pass = null
+					material_cache[key] = toon
+				mesh.set_surface_override_material(surface, material_cache[key])
 		# The full Mixamo rig still evaluates underneath this licensed visual.
 		# Hiding only its mesh nodes retains bone poses used by combat systems.
 	var old_meshes: Array[MeshInstance3D] = []
