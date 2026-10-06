@@ -113,6 +113,7 @@ var is_guarding: bool = false
 var is_charging_chakra: bool = false
 var defeated: bool = false
 var mobile_controls: Node = null
+var combat_state: Node = null
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
@@ -173,6 +174,12 @@ func _ready() -> void:
     add_child(dash_hitbox)
     dash_hitbox.position = Vector3(0, 0, 0.45)
 
+    combat_state = Node.new()
+    combat_state.name = "CombatStateMachine"
+    combat_state.set_script(preload("res://scripts/combat_state_machine.gd"))
+    add_child(combat_state)
+    combat_state.call("configure", self)
+
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and not _is_mobile_runtime():
         if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -212,6 +219,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
     _consume_mobile_actions()
     _update_timers(delta)
+    if is_instance_valid(combat_state):
+        combat_state.call("tick", delta)
     if is_instance_valid(cinematic_owner):
         cinematic_watchdog -= delta
         if cinematic_watchdog > 0.0 and not defeated and invulnerable_timer <= 0.0:
@@ -660,6 +669,9 @@ func on_attack_contact(target: Node, _damage: float) -> void:
         if attack_buffer > 0.0:
             _try_attack()
 
+    if is_instance_valid(combat_state):
+        combat_state.call("mark_dash_confirm", dash_blocked)
+
     if camera_rig.has_method("add_combat_impact"):
         camera_rig.call("add_combat_impact", 0.035 if dash_blocked else 0.055, 0.6 if dash_blocked else 1.0)
 
@@ -733,6 +745,9 @@ func _try_substitution() -> void:
     if is_instance_valid(combat_feedback) and combat_feedback.has_method("spawn_substitution"):
         combat_feedback.call("spawn_substitution", substitution_origin)
         combat_feedback.call("spawn_substitution", global_position)
+
+    if is_instance_valid(combat_state):
+        combat_state.call("mark_substitution")
 
     if camera_rig.has_method("add_combat_impact"):
         camera_rig.call("add_combat_impact", 0.10, 1.4)
@@ -858,6 +873,8 @@ func receive_combat_hit(
 
     var applied_damage: float = damage
     var applied_knockback: float = knockback
+    var was_guarding: bool = is_guarding
+    var guard_broken: bool = false
 
     if is_guarding:
         guard_meter = maxf(guard_meter - damage * 1.8 - knockback, 0.0)
@@ -865,6 +882,7 @@ func receive_combat_hit(
         guard_stun = 0.14
         if guard_meter <= 0.0:
             is_guarding = false
+            guard_broken = true
             stagger_timer = 1.0
             animation_action_id += 1
             if is_instance_valid(combat_feedback):
@@ -877,6 +895,16 @@ func receive_combat_hit(
         _cancel_jutsu()
         animation_action_id += 1
         stagger_timer = hitstun
+
+    if is_instance_valid(combat_state):
+        combat_state.call(
+            "mark_hit",
+            applied_knockback,
+            launch_velocity,
+            hitstun,
+            was_guarding,
+            guard_broken
+        )
 
     health = maxf(health - applied_damage, 0.0)
 
@@ -970,6 +998,11 @@ func extend_combo_feedback(extra_time: float) -> void:
     combo_timer = maxf(combo_timer, minf(extra_time, combo_reset_time))
 
 func _update_animation_state() -> void:
+    if is_instance_valid(combat_state):
+        combat_state.call("resolve")
+        animation_state = String(combat_state.call("get_visual_state"))
+        return
+
     if defeated:
         animation_state = "defeat"
     elif stagger_timer > 0.0:
@@ -995,6 +1028,8 @@ func _update_animation_state() -> void:
 
 func _defeat() -> void:
     awakening.call("stop")
+    if is_instance_valid(combat_state):
+        combat_state.call("clear_transient")
     defeated = true
     respawn_timer = 2.5
     combo_hits = 0
@@ -1014,6 +1049,8 @@ func _defeat() -> void:
 
 func _respawn() -> void:
     _cancel_jutsu()
+    if is_instance_valid(combat_state):
+        combat_state.call("clear_transient")
     awakening.call("reset")
     ultimate.cooldown = 0.0
     ninja_tools.call("reset")
@@ -1039,8 +1076,13 @@ func _respawn() -> void:
     defeated = false
 
 func _can_use_movement_action() -> bool:
+    var state_allows: bool = (
+        not is_instance_valid(combat_state)
+        or bool(combat_state.call("allows_action", "movement"))
+    )
     return (
-        not defeated
+        state_allows
+        and not defeated
         and stagger_timer <= 0.0
         and dodge_timer <= 0.0
         and not is_instance_valid(cinematic_owner)
@@ -1052,6 +1094,16 @@ func _can_use_movement_action() -> bool:
 
 func get_locked_target() -> Node3D:
     return locked_target
+
+func get_combat_state() -> String:
+    if not is_instance_valid(combat_state):
+        return animation_state
+    return String(combat_state.call("get_state"))
+
+func get_camera_state_profile() -> Dictionary:
+    if not is_instance_valid(combat_state):
+        return {}
+    return combat_state.call("camera_profile") as Dictionary
 
 func get_max_health() -> float:
     return max_health
