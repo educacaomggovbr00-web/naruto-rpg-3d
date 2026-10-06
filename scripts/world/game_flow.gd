@@ -5,7 +5,7 @@ signal progress_changed
 
 const SAVE_VERSION: int = 1
 const MAX_LEVEL: int = 50
-const VALID_REGIONS: PackedStringArray = PackedStringArray(["konoha", "forest", "river", "valley"])
+const VALID_REGIONS: PackedStringArray = ["konoha", "forest", "river", "valley"]
 const MISSIONS: Dictionary = {
     "roof_scrolls": preload("res://assets/world/roof_scrolls.tres"),
     "training": preload("res://assets/world/training.tres")
