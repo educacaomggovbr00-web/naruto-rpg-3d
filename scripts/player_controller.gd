@@ -415,6 +415,12 @@ func _update_attack_timeline(delta: float) -> void:
     if not attack_hit_triggered and attack_elapsed >= attack_startup:
         attack_hit_triggered = true
         _open_attack_hitbox()
+
+    # Keep the active hit volume attached to the animated strike instead of
+    # freezing it at the first impact frame.
+    if attack_hit_triggered and float(attack_hitbox.get("remaining_time")) > 0.0 and is_instance_valid(rig_adapter):
+        rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
+
     if attack_elapsed >= attack_duration:
         attack_active = false
         attack_hitbox.call("deactivate")
@@ -636,19 +642,26 @@ func _start_chakra_dash() -> void:
     if is_instance_valid(combat_feedback) and combat_feedback.has_method("spawn_dash_burst"):
         combat_feedback.call("spawn_dash_burst", global_position)
 
+    if camera_rig.has_method("begin_dash_impulse"):
+        camera_rig.call("begin_dash_impulse", 3.2)
+
 func on_attack_contact(target: Node, _damage: float) -> void:
     if chakra_dash_timer <= 0.0:
         return
     chakra_dash_timer = 0.0
     dash_hitbox.call("deactivate")
     velocity = Vector3.ZERO
-    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+    var dash_blocked: bool = target.has_method("get_is_guarding") and bool(target.call("get_is_guarding"))
+    if dash_blocked:
         stagger_timer = 0.22
         velocity = -chakra_dash_direction * 5.0
     else:
         attack_cooldown = 0.0
         if attack_buffer > 0.0:
             _try_attack()
+
+    if camera_rig.has_method("add_combat_impact"):
+        camera_rig.call("add_combat_impact", 0.035 if dash_blocked else 0.055, 0.6 if dash_blocked else 1.0)
 
 func _start_dodge() -> void:
     if defeated or stagger_timer > 0.0 or dodge_cooldown > 0.0 or chakra_dash_timer > 0.0:
