@@ -3,6 +3,8 @@ extends Node
 var finished: bool = false
 var boss_intro_timer: float = 0.0
 var boss_banner: Label = null
+var boss_phase_triggered: bool = false
+var boss_phase_threshold: float = 0.32
 
 func _ready() -> void:
     var audio: Node = Node.new()
@@ -41,10 +43,18 @@ func _apply_rpg_battle_setup() -> void:
     var level: int = int(GameFlow.progress.level)
 
     # Small persistent bonuses: progression matters without invalidating character kits.
-    fighter.max_health += float(maxi(level - 1, 0)) * 2.0
+    var vitality_rank: int = GameFlow.skill_rank("vitality")
+    var chakra_rank: int = GameFlow.skill_rank("chakra")
+    var power_rank: int = GameFlow.skill_rank("power")
+    var agility_rank: int = GameFlow.skill_rank("agility")
+
+    fighter.max_health += float(maxi(level - 1, 0)) * 2.0 + float(vitality_rank) * 6.0
     fighter.health = fighter.max_health
-    fighter.max_chakra += float(maxi(level - 1, 0)) * 1.25
+    fighter.max_chakra += float(maxi(level - 1, 0)) * 1.25 + float(chakra_rank) * 5.0
     fighter.chakra = fighter.max_chakra
+    fighter.rpg_damage_multiplier = 1.0 + float(power_rank) * 0.04
+    fighter.move_speed += float(agility_rank) * 0.30
+    fighter.run_speed += float(agility_rank) * 0.45
 
     var inventory: Dictionary = GameFlow.progress.inventory
     var stock_map: Dictionary = {
@@ -71,6 +81,7 @@ func _apply_rpg_battle_setup() -> void:
     if mission.is_empty():
         return
 
+    boss_phase_triggered = false
     if bool(mission.get("boss", false)):
         var chapter: int = int(mission.get("chapter", 1))
         var boss_multiplier: float = 1.22 + minf(float(chapter) * 0.025, 0.18)
@@ -120,6 +131,60 @@ func _physics_process(_delta: float) -> void:
         return
     var fighter: Node = get_parent().get_node("Player")
     var cpu: Node = get_parent().get_node("EnemyDummy")
+
+    if GameFlow.is_story_battle() and not boss_phase_triggered and cpu.targetable:
+        var mission: Dictionary = GameFlow.current_story_battle_data()
+        if (
+            bool(mission.get("boss", false))
+            and cpu.health <= cpu.max_health * boss_phase_threshold
+        ):
+            _trigger_boss_phase(cpu, fighter, mission)
+
     if fighter.defeated or not cpu.targetable:
         finished = true
         GameFlow.finish_battle(not cpu.targetable and not fighter.defeated)
+
+func _trigger_boss_phase(cpu: Node, fighter: Node, mission: Dictionary) -> void:
+    boss_phase_triggered = true
+    cpu.chakra = cpu.max_chakra
+    cpu.guard_meter = 100.0
+    cpu.attack_cooldown = 0.0
+    cpu.arsenal_delay = 0.0
+    cpu.decision_interval_min = maxf(cpu.decision_interval_min * 0.78, 0.10)
+    cpu.decision_interval_max = maxf(cpu.decision_interval_max * 0.78, 0.16)
+    cpu.move_speed *= 1.08
+
+    if cpu.has_method("_cancel_abilities"):
+        cpu.call("_cancel_abilities")
+    cpu.stagger_timer = 0.0
+    cpu.invulnerable_timer = maxf(cpu.invulnerable_timer, 0.30)
+
+    if is_instance_valid(cpu.awakening) and cpu.awakening.has_method("start"):
+        cpu.awakening.call("start")
+
+    _show_phase_banner("FASE 2 • " + String(mission.get("title", "BOSS")).to_upper())
+
+    if is_instance_valid(fighter.camera_rig):
+        if fighter.camera_rig.has_method("begin_sequence"):
+            fighter.camera_rig.call("begin_sequence", cpu, 0.70)
+            fighter.camera_rig.call("set_sequence_shot", "clash")
+        if fighter.camera_rig.has_method("add_combat_impact"):
+            fighter.camera_rig.call("add_combat_impact", 0.14, 2.8)
+
+    var feedback: Node = get_parent().get_node_or_null("CombatFeedback")
+    if feedback != null and feedback.has_method("spawn_dash_burst"):
+        feedback.call("spawn_dash_burst", cpu.global_position)
+
+func _show_phase_banner(text_value: String) -> void:
+    if is_instance_valid(boss_banner):
+        boss_banner.queue_free()
+    var layer: CanvasLayer = get_child(0) as CanvasLayer
+    boss_banner = Label.new()
+    boss_banner.text = text_value
+    boss_banner.position = Vector2(250, 86)
+    boss_banner.size = Vector2(780, 58)
+    boss_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    boss_banner.add_theme_font_size_override("font_size", 28)
+    boss_banner.add_theme_color_override("font_color", Color("ffbd69"))
+    layer.add_child(boss_banner)
+    boss_intro_timer = 0.95
