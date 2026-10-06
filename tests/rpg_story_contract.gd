@@ -39,6 +39,15 @@ func run() -> void:
     check(StoryCampaign.count() == 8, "Part 1 campaign must expose eight ordered story battles")
     check(String(StoryCampaign.mission_at(0).id) == "academy_spar", "Campaign must start at Academy rival battle")
     check(String(StoryCampaign.mission_at(7).id) == "final_valley", "Campaign must end at Final Valley")
+    for value: Variant in StoryCampaign.missions():
+        var story_mission: Dictionary = value as Dictionary
+        check(not String(story_mission.get("objective", "")).is_empty(), "Every story chapter must expose an exploration objective")
+        check((story_mission.get("intro_dialogue", []) as Array).size() >= 2, "Every story chapter must have an original intro dialogue beat")
+        check((story_mission.get("victory_dialogue", []) as Array).size() >= 1, "Every story chapter must have victory dialogue")
+    check(flow.story_dialogue("intro", "academy_spar").size() >= 2, "GameFlow must expose intro dialogue by mission id")
+    check(not flow.story_dialogue_was_seen("intro", "academy_spar"), "Story dialogue starts unseen")
+    flow.mark_story_dialogue_seen("intro", "academy_spar")
+    check(flow.story_dialogue_was_seen("intro", "academy_spar"), "Story dialogue session state must prevent accidental replay before battle")
     check(int(flow.progress.level) == 1 and flow.progress.inventory is Dictionary, "Legacy v1 save must gain RPG fields without reset")
 
     var gained: int = flow.add_xp(80, false)
