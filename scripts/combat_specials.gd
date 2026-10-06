@@ -187,6 +187,13 @@ func start(kind: String = "") -> bool:
     active_opened = false
     released = false
 
+    if move == "rasengan":
+        var state_machine: Node = _combat_state_machine()
+        if state_machine != null:
+            var rasengan_timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest) if move_definition != null else {}
+            var rasengan_startup: float = float(rasengan_timing.get("startup", 0.38))
+            state_machine.call("mark_special_phase", "rasengan_startup", maxf(rasengan_startup, 0.12))
+
     # Brief, readable camera emphasis for Naruto's close-range Rasengan.
     # It uses the existing combat camera instead of a separate cinematic camera.
     if move == "rasengan" and not owner_fighter.has_method("is_cpu_controlled") and is_instance_valid(owner_fighter.locked_target):
@@ -228,6 +235,17 @@ func _physics_process(delta: float) -> void:
         var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
         var startup: float = float(timing.get("startup", 0.38))
         var active_time: float = float(timing.get("active", 0.30))
+        if current == "rasengan":
+            var state_machine: Node = _combat_state_machine()
+            if state_machine != null:
+                var movement_lead: float = move_definition.movement_lead
+                var movement_start: float = maxf(0.0, startup - movement_lead)
+                if elapsed < movement_start:
+                    state_machine.call("mark_special_phase", "rasengan_startup", maxf(movement_start - elapsed, 0.03))
+                elif elapsed <= startup + active_time:
+                    state_machine.call("mark_special_phase", "rasengan_drive", maxf(startup + active_time - elapsed, 0.03))
+                else:
+                    state_machine.call("mark_special_phase", "rasengan_recovery", maxf(duration - elapsed, 0.03))
         if elapsed >= startup and not active_opened:
             active_opened = true
             rasengan_hitbox.call("activate", owner_fighter, move_definition.damage, move_definition.knockback, move_definition.launch_force, move_definition.hitstun, active_time)
@@ -281,6 +299,10 @@ func cancel(stop_clones: bool = true) -> void:
     var ended_kind: String = current
     current = ""
     transformed = false
+    if ended_kind == "rasengan" and not owner_fighter.defeated and owner_fighter.stagger_timer <= 0.0:
+        var state_machine: Node = _combat_state_machine()
+        if state_machine != null:
+            state_machine.call("mark_special_phase", "rasengan_recovery", 0.16)
     if is_instance_valid(demon_projectile) and demon_projectile.active and (stop_clones or ended_kind == "demon"):
         demon_projectile.call("recycle")
     demon_projectile = null
@@ -342,6 +364,9 @@ func movement_velocity(delta: float) -> Vector3:
 
 func contact(target: Node, dealt: float, blocked: bool = false) -> void:
     if current == "rasengan" and dealt > 0.0:
+        var state_machine: Node = _combat_state_machine()
+        if state_machine != null:
+            state_machine.call("mark_special_phase", "rasengan_impact", 0.18)
         var rasengan_target: Node3D = target as Node3D
         var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
         if rasengan_target != null and feedback != null and feedback.has_method("spawn_chakra_impact"):
@@ -409,6 +434,9 @@ func projectile_finished() -> void:
         return
     duration = minf(duration, elapsed + 0.45)
 
+
+func _combat_state_machine() -> Node:
+    return owner_fighter.get_node_or_null("CombatStateMachine")
 
 func _effect_color(effect: String, fallback: Color) -> Color:
     return RosterVisualStyle.color(effect, fallback).lerp(fallback, 0.18)
