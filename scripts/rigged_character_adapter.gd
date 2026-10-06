@@ -201,7 +201,7 @@ func _finalize_loaded_rig() -> void:
         licensed_visual.name = "LicensedCombatNinja"
         # Runtime load keeps this visual-only script out of the base rig's
         # inheritance graph (the menu and world adapters extend this script).
-        licensed_visual.set_script(load("res://scripts/licensed_combat_ninja.gd"))
+        licensed_visual.set_script(load("res://scripts/licensed_combat_ninja.gd") as Script)
         add_child(licensed_visual)
 
     if is_instance_valid(fallback_visual):
