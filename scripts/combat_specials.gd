@@ -26,7 +26,7 @@ var owner_fighter: CharacterBody3D
 
 func _ready() -> void:
     owner_fighter = get_parent() as CharacterBody3D
-    var choices: PackedStringArray = owner_fighter.character_definition.jutsus
+    var choices: PackedStringArray = _available_choices()
     selected = choices[0] if not choices.is_empty() else ""
     if not owner_fighter.has_method("is_cpu_controlled"):
         call_deferred("warm_clone_pool")
@@ -114,18 +114,39 @@ func summon_clone(target: Node3D, offset: Vector3, delay: float, clip: String, l
             return true
     return false
 
-func cycle_selection() -> void:
+func _available_choices() -> PackedStringArray:
     var choices: PackedStringArray = owner_fighter.character_definition.jutsus
+    if (
+        owner_fighter.has_method("is_cpu_controlled")
+        or GameFlow.versus_mode
+        or not GameFlow.is_story_battle()
+        or owner_fighter.character_definition.character_id != "naruto"
+    ):
+        return choices
+
+    var unlocked: PackedStringArray = PackedStringArray()
+    for jutsu_id: String in choices:
+        if GameFlow.is_story_jutsu_unlocked(jutsu_id):
+            unlocked.append(jutsu_id)
+    if unlocked.is_empty() and not choices.is_empty():
+        unlocked.append(choices[0])
+    return unlocked
+
+func cycle_selection() -> void:
+    var choices: PackedStringArray = _available_choices()
     if choices.is_empty():
         return
     var index: int = choices.find(selected)
+    if index < 0:
+        selected = choices[0]
+        return
     selected = choices[(index + 1) % choices.size()]
 
 func start(kind: String = "") -> bool:
     var move: String = selected if kind.is_empty() else kind
     if not current.is_empty() or owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.jutsu_timer > 0.0 or owner_fighter.attack_active or owner_fighter.dodge_timer > 0.0 or owner_fighter.chakra_dash_timer > 0.0 or owner_fighter.jutsu_cooldown > 0.0:
         return false
-    if move not in owner_fighter.character_definition.jutsus:
+    if move not in _available_choices():
         return false
     var data: JutsuDefinition = owner_fighter.character_definition.find_jutsu(move)
     var cost: float = data.chakra_cost if data != null else 32.0
