@@ -79,9 +79,9 @@ func _ready() -> void:
     elif not GameFlow.save_message.is_empty():
         toast(GameFlow.save_message)
 
-func _label(position: Vector2, dimensions: Vector2, font_size: int = 19) -> Label:
+func _label(screen_position: Vector2, dimensions: Vector2, font_size: int = 19) -> Label:
     var label: Label = Label.new()
-    label.position = position
+    label.position = screen_position
     label.size = dimensions
     label.add_theme_font_size_override("font_size", font_size)
     label.add_theme_color_override("font_color", Color("fff0d5"))
