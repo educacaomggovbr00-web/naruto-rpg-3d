@@ -16,7 +16,8 @@ func run() -> void:
     await frames()
     var arena: Node = current_scene
     var scenery: Node = arena.get_node("ArenaPresentation/LicensedScenery")
-    check(scenery.instance_total == 24, "Arena contains licensed trees and boulders")
+    check(scenery.instance_total == 35, "Arena contains licensed vegetation plus visible Fantasy Town props")
+    check(scenery.props.size() == 11, "Arena instantiates all selected CC0 town props")
     check(scenery.batches.size() <= 32, "Arena vegetation uses bounded sector batches")
     var fighter: Node = arena.get_node("Player")
     check(fighter.rig_adapter.real_animation_count == 27, "Player's 27 combat clips survive asset integration")
@@ -36,7 +37,9 @@ func run() -> void:
     change_scene_to_file("res://world.tscn")
     await frames()
     var village: Node = current_scene
-    check(village.get_node("Geometry/LicensedScenery").instance_total == 18, "Village contains licensed tree and shrub meshes")
+    var village_scenery: Node = village.get_node("Geometry/LicensedScenery")
+    check(village_scenery.instance_total == 37, "Village contains licensed vegetation plus CC0 street props")
+    check(village_scenery.props.size() == 19, "Village instantiates gates, stalls, carts, benches, lanterns and banners")
     var npc: Node = village.get_node("academy_guide").actor
     check(npc.rig_adapter.rig_loaded, "Licensed ninja NPC imports its own rig")
     check(npc.rig_adapter.animation_player.is_playing(), "Ninja NPC plays native animation")
