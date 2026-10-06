@@ -97,6 +97,7 @@ var attack_elapsed: float = 0.0
 var attack_hit_triggered: bool = false
 var ground_bounce_pending: bool = false
 var wall_bounce_pending: bool = false
+var combat_state: Node = null
 
 @onready var rig_adapter: Node3D = $RiggedCharacterAdapter
 @onready var visual: MeshInstance3D = $Visual
@@ -151,9 +152,16 @@ func _ready() -> void:
     locked_target = player
     health = max_health
     spawn_position = global_position
+    combat_state = Node.new()
+    combat_state.name = "CombatStateMachine"
+    combat_state.set_script(preload("res://scripts/combat_state_machine.gd"))
+    add_child(combat_state)
+    combat_state.call("configure", self)
     _update_labels()
 
 func _physics_process(delta: float) -> void:
+    if is_instance_valid(combat_state):
+        combat_state.call("tick", delta)
     if is_instance_valid(cinematic_owner):
         cinematic_watchdog -= delta
         if cinematic_watchdog > 0.0 and targetable:
@@ -331,11 +339,17 @@ func on_hitbox_contact(_hitbox: Area3D, _victim: Node, damage: float, blocked: b
         else:
             attack_cooldown = 0.0
             _start_attack()
+        if is_instance_valid(combat_state):
+            combat_state.call("mark_dash_confirm", blocked)
     specials.call("contact", _victim, damage, blocked)
     if attack_active and not blocked and damage > 0.0:
         attack_confirmed = true
 
 func get_animation_state() -> String:
+    if is_instance_valid(combat_state):
+        combat_state.call("resolve")
+        return String(combat_state.call("get_visual_state"))
+
     if not targetable:
         return "defeat"
     if stagger_timer > 0.0:
@@ -401,6 +415,11 @@ func _decide_neutral(distance: float) -> void:
     neutral_motion = "approach" if decision_rng.randf() < ai_profile.aggression else "strafe"
     if neutral_motion == "strafe":
         orbit_side = -1.0 if decision_rng.randf() < 0.5 else 1.0
+
+func get_combat_state() -> String:
+    if not is_instance_valid(combat_state):
+        return get_cpu_state()
+    return String(combat_state.call("get_state"))
 
 func get_cpu_state() -> String:
     if not targetable:
@@ -515,6 +534,8 @@ func _apply_wall_bounce(pre_move_velocity: Vector3) -> void:
         return
 
 func _trigger_bounce_feedback(_bounce_kind: String) -> void:
+    if is_instance_valid(combat_state):
+        combat_state.call("mark_bounce", _bounce_kind)
     if is_instance_valid(combat_feedback):
         if combat_feedback.has_method("spawn_impact"):
             combat_feedback.call(
@@ -561,6 +582,8 @@ func receive_combat_hit(
             return 0.0
     var applied_damage: float = damage
     var applied_knockback: float = knockback
+    var was_guarding: bool = guarding
+    var guard_broken: bool = false
 
     if guarding:
         guard_meter = maxf(guard_meter - damage * 1.8 - knockback, 0.0)
@@ -568,6 +591,7 @@ func receive_combat_hit(
         guard_timer = maxf(guard_timer, 0.14)
         if guard_meter <= 0.0:
             guarding = false
+            guard_broken = true
             guard_timer = 0.0
             stagger_timer = 1.0
         applied_damage *= 0.22
@@ -584,6 +608,16 @@ func receive_combat_hit(
             reaction_timer = randf_range(0.10, 0.18)
         wall_bounce_pending = applied_knockback >= 4.0
         ground_bounce_pending = launch_velocity < -2.0
+
+    if is_instance_valid(combat_state):
+        combat_state.call(
+            "mark_hit",
+            applied_knockback,
+            launch_velocity,
+            hitstun,
+            was_guarding,
+            guard_broken
+        )
 
     health = maxf(health - applied_damage, 0.0)
 
@@ -650,6 +684,8 @@ func _update_labels() -> void:
 
 func _knock_out() -> void:
     _cancel_abilities()
+    if is_instance_valid(combat_state):
+        combat_state.call("clear_transient")
     awakening.call("stop")
     targetable = false
     guarding = false
@@ -663,6 +699,8 @@ func _knock_out() -> void:
 
 func _respawn() -> void:
     _cancel_abilities()
+    if is_instance_valid(combat_state):
+        combat_state.call("clear_transient")
     awakening.call("reset")
     ninja_tools.call("reset")
     ultimate.cooldown = 0.0
@@ -701,6 +739,8 @@ func _substitute() -> void:
         return
     _cancel_abilities()
     combat_feedback.call("spawn_substitution", global_position)
+    if is_instance_valid(combat_state):
+        combat_state.call("mark_substitution")
     substitutions -= 1
     substitution_cooldown = 0.65
     substitution_regen = 0.0
@@ -752,7 +792,11 @@ func get_special_animation() -> String:
     return ultimate.call("animation_clip") if not ultimate.phase.is_empty() else "chakra_charge" if awakening.transforming else specials.call("animation_clip")
 
 func _can_use_movement_action() -> bool:
-    return targetable and not is_instance_valid(cinematic_owner) and not attack_active and stagger_timer <= 0.0 and dodge_timer <= 0.0 and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0 and not guarding
+    var state_allows: bool = (
+        not is_instance_valid(combat_state)
+        or bool(combat_state.call("allows_action", "movement"))
+    )
+    return state_allows and targetable and not is_instance_valid(cinematic_owner) and not attack_active and stagger_timer <= 0.0 and dodge_timer <= 0.0 and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0 and not guarding
 
 func _cancel_abilities() -> void:
     if specials != null:
