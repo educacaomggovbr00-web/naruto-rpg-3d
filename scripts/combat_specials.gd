@@ -186,6 +186,14 @@ func start(kind: String = "") -> bool:
     owner_fighter.jutsu_timer = duration
     active_opened = false
     released = false
+
+    # Brief, readable camera emphasis for Naruto's close-range Rasengan.
+    # It uses the existing combat camera instead of a separate cinematic camera.
+    if move == "rasengan" and not owner_fighter.has_method("is_cpu_controlled") and is_instance_valid(owner_fighter.locked_target):
+        owns_camera = true
+        owner_fighter.camera_rig.call("begin_sequence", owner_fighter.locked_target, minf(duration, 0.62))
+        owner_fighter.camera_rig.call("set_sequence_shot", "jutsu")
+
     if move == "demon":
         for clone: CharacterBody3D in clones:
             if not clone.active:
@@ -214,7 +222,9 @@ func _physics_process(delta: float) -> void:
         sphere_visual.visible = not lightning and not styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         style_visual.visible = styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
-        sphere_visual.scale = Vector3.ONE * minf(1.0, elapsed * 5.0)
+        var orb_grow: float = minf(1.0, elapsed * 5.4)
+        var orb_pulse: float = 1.0 + (sin(elapsed * 42.0) * 0.045 if current == "rasengan" else 0.0)
+        sphere_visual.scale = Vector3.ONE * orb_grow * orb_pulse
         var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
         var startup: float = float(timing.get("startup", 0.38))
         var active_time: float = float(timing.get("active", 0.30))
@@ -312,7 +322,10 @@ func movement_velocity(delta: float) -> Vector3:
         return Vector3.ZERO
     var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
     var startup: float = float(timing.get("startup", 0.38))
-    if elapsed < startup - (move_definition.movement_lead if move_definition != null else 0.1) or elapsed > startup + float(timing.get("active", 0.30)):
+    var active_time: float = float(timing.get("active", 0.30))
+    var movement_lead: float = move_definition.movement_lead if move_definition != null else 0.1
+    var movement_start: float = startup - movement_lead
+    if elapsed < movement_start or elapsed > startup + active_time:
         return Vector3.ZERO
     var forward: Vector3 = owner_fighter.global_basis.z
     if is_instance_valid(owner_fighter.locked_target):
@@ -322,9 +335,25 @@ func movement_velocity(delta: float) -> Vector3:
             return Vector3.ZERO
         owner_fighter.call("_face_direction", aim, delta, move_definition.tracking_strength if move_definition != null else 7.0)
         forward = owner_fighter.global_basis.z
-    return forward * (move_definition.movement_speed if move_definition != null else 13.0)
+    var movement_window: float = maxf(active_time + movement_lead, 0.01)
+    var movement_phase: float = clampf((elapsed - movement_start) / movement_window, 0.0, 1.0)
+    var drive: float = lerpf(0.70, 1.16, sin(movement_phase * PI * 0.5))
+    return forward * (move_definition.movement_speed if move_definition != null else 13.0) * drive
 
 func contact(target: Node, dealt: float, blocked: bool = false) -> void:
+    if current == "rasengan" and dealt > 0.0:
+        var rasengan_target: Node3D = target as Node3D
+        var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+        if rasengan_target != null and feedback != null and feedback.has_method("spawn_chakra_impact"):
+            feedback.call(
+                "spawn_chakra_impact",
+                rasengan_target.global_position + Vector3.UP * 0.72,
+                owner_fighter.character_definition.energy_color
+            )
+        if is_instance_valid(owner_fighter.camera_rig) and owner_fighter.camera_rig.has_method("add_combat_impact"):
+            owner_fighter.camera_rig.call("add_combat_impact", 0.11 if blocked else 0.17, 1.8 if blocked else 3.4)
+        return
+
     if current != "barrage" or is_instance_valid(confirmed_target) or dealt <= 0.0 or blocked:
         return
     if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
