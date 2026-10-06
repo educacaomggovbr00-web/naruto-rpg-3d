@@ -280,7 +280,9 @@ func build() -> void:
     # CC0 Kenney Fantasy Town props are actually instantiated in the village,
     # not just stored under assets. They add readable silhouettes and street
     # detail while staying lightweight enough for mobile.
-    licensed_scenery.place("town_gate", Vector3(0, 0, 53.8), 4.4, 0.0, 86.0)
+    licensed_scenery.place_arch("torii", Vector3(0, 0, 53.5), 8.0, 180.0, 104.0)
+    licensed_scenery.place_arch("shrine", Vector3(-31.0, 0, -26.0), 5.6, 55.0, 92.0)
+    licensed_scenery.place_arch("temple_small", Vector3(37.0, 0, 24.0), 7.2, -35.0, 108.0)
     licensed_scenery.place("town_stall", Vector3(-16.2, 0, 18.0), 2.9, 180.0, 62.0)
     licensed_scenery.place("town_stall", Vector3(18.5, 0, 13.3), 2.8, 180.0, 62.0)
     licensed_scenery.place("town_cart", Vector3(8.2, 0, 18.5), 1.9, -20.0, 58.0)
