@@ -717,6 +717,16 @@
       "license": "CC0-1.0",
       "modifications": "Vendored unchanged; Shared palette texture is instantiated by licensed scenery code and scaled/cull-bounded for mobile. Location/scale only.",
       "sha256": "4aac939dc33195e35caf8c382ee3cb170054da763577f22d3c22692ec6afccdf"
+    },
+    {
+      "path": "assets/vendor/quaternius_japan/arch.glb",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Quaternius / Kay Lousberg",
+      "source": "https://github.com/Mangluu/ninja-way public/models/arch.glb; original Torii https://poly.pizza/m/7SyXZ62xR5 and Shrine https://poly.pizza/m/tFxdxO5clk",
+      "license": "CC0-1.0",
+      "modifications": "Re-encoded/optimized bundle from ninja-way; runtime selects named torii, temple, temple_small and shrine nodes, scales them and applies the project's mobile anime material.",
+      "sha256": "4e6ea1f824dfa6562359da2bf5205d0e440615beafddf6ac160c6fd86b1570e0",
+      "bytes": 74532
     }
   ]
 }
