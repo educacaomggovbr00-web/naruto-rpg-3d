@@ -7,6 +7,8 @@ const SOURCES: Dictionary = {
     "bush": preload("res://assets/vendor/kenney_nature/plant_bushDetailed.glb"),
     "rock": preload("res://assets/vendor/kenney_nature/rock_largeA.glb"),
     "boulder": preload("res://assets/vendor/kenney_nature/rock_largeC.glb"),
+    "sakura": preload("res://assets/vendor/quaternius_japan/sakura_tree.gltf"),
+    "bamboo": preload("res://assets/vendor/quaternius_japan/bamboo.gltf"),
     "town_lantern": preload("res://assets/vendor/kenney_fantasy_town/lantern.glb"),
     "town_stall": preload("res://assets/vendor/kenney_fantasy_town/stall-red.glb"),
     "town_bench": preload("res://assets/vendor/kenney_fantasy_town/stall-bench.glb"),
