@@ -13,11 +13,15 @@ var opened: bool = false
 var cinematic_started: bool = false
 var last_result: String = ""
 var power_visual: MeshInstance3D = null
+var presentation: Node3D
 
 func _ready() -> void:
     fighter = get_parent() as CharacterBody3D
     definition = fighter.character_definition.ultimate_definition
     process_physics_priority = 15
+    presentation = Node3D.new()
+    presentation.set_script(preload("res://scripts/ultimate_presentation.gd"))
+    add_child(presentation)
 
     entry_box = Area3D.new()
     entry_box.set_script(preload("res://scripts/combat_hitbox.gd"))
@@ -119,9 +123,8 @@ func _physics_process(delta: float) -> void:
         return
 
     if phase == "sequence":
-        power_visual.visible = true
-        entry_box.global_position = (fighter.global_position + target.global_position) * 0.5 + Vector3.UP * 0.65
-        power_visual.scale = Vector3.ONE * (1.3 + sin(elapsed * 10.0) * 0.12)
+        power_visual.visible = false
+        presentation.update_sequence(delta)
         if elapsed >= definition.sequence_duration:
             _enter("finish")
         return
@@ -133,6 +136,7 @@ func _physics_process(delta: float) -> void:
         var finish_duration: float = maxf(finish_impact + 0.28, float(finish_timing.get("duration", 0.52)))
         if not opened and elapsed >= finish_impact:
             opened = true
+            presentation.finish_impact()
             target.call("end_cinematic_lock", self)
             entry_box.call(
                 "activate",
@@ -161,6 +165,7 @@ func on_hitbox_contact(_box: Area3D, victim: Node, dealt: float, blocked: bool) 
     entry_box.call("deactivate")
     fighter.camera_rig.call("begin_sequence", target, definition.sequence_duration + 1.0)
     _enter("sequence")
+    presentation.begin(fighter,target,definition.effect,definition.sequence_duration)
 
 func on_attack_connected(victim: Node, dealt: float, lift: float) -> void:
     fighter.call("on_attack_connected", victim, dealt, lift)
@@ -198,6 +203,7 @@ func cancel(reason: String = "cancelled") -> void:
         return
 
     last_result = reason
+    presentation.stop()
     phase = ""
     entry_box.call("deactivate")
     power_visual.visible = false

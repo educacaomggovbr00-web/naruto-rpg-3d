@@ -20,6 +20,7 @@ var ribbon_materials: Array[ShaderMaterial] = []
 var profile: String = "energy"
 var technique_id: String = ""
 var weapons: Node3D
+var construct: Node3D
 
 func _ready() -> void:
     core = MeshInstance3D.new()
@@ -106,6 +107,9 @@ func _ready() -> void:
         var weapon: MeshInstance3D = tools.create(tools.KUNAI if index == 1 else tools.SHURIKEN,.75)
         weapon.position += Vector3(float(index-1)*.55,0,float(index%2)*.3)
         weapons.add_child(weapon)
+    construct = Node3D.new()
+    construct.set_script(preload("res://scripts/jutsu_construct.gd"))
+    add_child(construct)
     set_quality(quality)
     visible = false
 
@@ -122,6 +126,7 @@ func configure(kind: String, size: float, radial: bool = false, shape: String = 
     form = shape
     technique_id = ""
     clock = 0.0
+    construct.visible = false
     tint = RosterVisualStyle.color(kind)
     core_material.shader = preload("res://assets/vfx/elemental_volume.gdshader") if kind in ["fire","black_fire","water"] else CORE_SHADER
     profile = {"fire":"flame", "black_fire":"flame", "water":"stream", "wind":"crescent", "lightning":"electric", "sand":"grains", "earth":"grains", "oil":"grains", "insect":"swarm", "snake":"serpent", "shadow":"shadow", "steel":"weapon", "iron":"weapon", "bone":"weapon", "puppet":"weapon", "susanoo":"slash", "taijutsu":"crescent", "mind":"spiral"}.get(kind,"spiral")
@@ -148,10 +153,16 @@ func configure_jutsu(data: JutsuDefinition, size: float, radial: bool = false) -
     var shape: String = "wave" if data.jutsu_id == "henrique_katon_wave" else "dragon" if data.jutsu_id.contains("dragon") and data.effect in ["water","fire"] else "orb"
     configure(data.effect,size,radial,shape)
     technique_id = data.jutsu_id
+    var model: String = "shark" if technique_id.contains("shark") else "dragon" if technique_id.contains("dragon") and data.effect in ["fire","water","earth"] else "snake" if data.effect == "snake" else "puppet" if data.effect == "puppet" else "sand_hand" if data.effect == "sand" else ""
+    if not model.is_empty():
+        construct.configure(model,tint)
+        construct.set_quality(quality)
     update_visual(0.0)
 
 func set_quality(level: int) -> void:
     quality = clampi(level,0,2)
+    if construct != null:
+        construct.set_quality(quality)
     if motes != null:
         motes.multimesh.visible_instance_count = [6,10,16][quality]
 
@@ -162,6 +173,10 @@ func _physics_process(delta: float) -> void:
 func update_visual(delta: float) -> void:
     clock += delta
     var forward: Vector3 = heading.normalized() if heading.length_squared() > .001 else Vector3.BACK
+    if construct.visible:
+        construct.quaternion = Quaternion(Vector3.BACK,forward)
+        construct.scale = Vector3.ONE * radius * (1.35 if construct.kind == "puppet" else 1.65)
+        construct.animate(delta)
     core_material.set_shader_parameter("phase",clock)
     core.visible = not burst and element != "insect"
     weapons.visible = element == "steel" and not burst
@@ -246,6 +261,9 @@ func update_visual(delta: float) -> void:
         motes.multimesh.set_instance_transform(index,Transform3D(frame.scaled_local(particle_shape),offset))
         var color: Color = tint.lerp(Color(1,.8,.25),1.0-ratio) if element == "fire" else tint.lightened((1.0-ratio)*.35)
         motes.multimesh.set_instance_color(index,color)
+    if construct.visible:
+        core.visible = false
+        weapons.visible = false
     for index in range(rings.size()):
         var ring: MeshInstance3D = rings[index]
         ring.visible = (burst or element in ["chakra","mind","lightning"]) and (quality > 0 or index == 0)

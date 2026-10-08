@@ -2,7 +2,7 @@ extends SceneTree
 ## Copy this script outside the checkout, run with --main-pack from that directory.
 ## Otherwise res:// can fall back to checkout files and invalidate the check.
 func _initialize() -> void:
-    for path: String in ["res://scripts/jutsu_impact.gd","res://assets/vfx/jutsu_ribbon.gdshader","res://assets/vfx/jutsu_impact.gdshader","res://assets/vfx/elemental_volume.gdshader","res://assets/vfx/jutsu_smoke.gdshader"]:
+    for path: String in ["res://scripts/jutsu_construct.gd","res://scripts/ultimate_presentation.gd","res://scripts/jutsu_impact.gd","res://assets/vfx/jutsu_ribbon.gdshader","res://assets/vfx/jutsu_impact.gdshader","res://assets/vfx/elemental_volume.gdshader","res://assets/vfx/jutsu_smoke.gdshader"]:
         if not ResourceLoader.exists(path):
             push_error("Android export lost jutsu presentation: " + path)
             quit(1)

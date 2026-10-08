@@ -129,10 +129,15 @@ func _process(delta: float) -> void:
     if cinematic_remaining > 0.0 and is_instance_valid(cinematic_target):
         follow_position = (player.global_position + cinematic_target.global_position) * 0.5 + Vector3.UP
         var shot_distance: float = 8.0 if sequence_shot == "chain" else 5.2 if sequence_shot == "clash" else 5.8 if sequence_shot == "jutsu" else 6.4
+        if sequence_shot == "ultimate_prepare": shot_distance = 5.4
+        elif sequence_shot == "ultimate_sweep": shot_distance = 7.4
+        elif sequence_shot == "ultimate_finish": shot_distance = 5.0
         spring_arm.spring_length = lerpf(spring_arm.spring_length, shot_distance, 1.0 - exp(-6.0 * delta))
         if not sequence_shot.is_empty():
             var axis: Vector3 = cinematic_target.global_position - player.global_position
             var side_angle: float = 0.34 if sequence_shot == "jutsu" else 0.55
+            if sequence_shot == "ultimate_sweep": side_angle = 1.1
+            elif sequence_shot == "ultimate_finish": side_angle = -.35
             var shot_yaw: float = atan2(-axis.x, -axis.z) + side_angle
             yaw = lerp_angle(yaw, shot_yaw, 1.0 - exp(-5.0 * delta))
             var sequence_fov: float = 63.0 if sequence_shot == "jutsu" else 60.0

@@ -195,7 +195,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          for contract in team_battle battle_interactions boss_mob jutsu_finish; do
+          for contract in team_battle battle_interactions boss_mob jutsu_finish jutsu_construct; do
             xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/${contract}_contract.gd 2>&1 | tee /tmp/${contract}-opengl.log
             ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/${contract}-opengl.log
             grep -F 'CONTRACT: PASS' /tmp/${contract}-opengl.log
@@ -248,7 +248,7 @@ jobs:
         run: |
           set -o pipefail
           python -m unittest discover -s tests -p 'test_susanoo_rig.py'
-          for contract in evolution arcade_modes henrique_campaign visible_evolution combat_input roster_authored_models jutsu_presentation presentation_quality fighter_polish android_stability scene_loading team_battle battle_interactions boss_mob jutsu_finish; do
+          for contract in evolution arcade_modes henrique_campaign visible_evolution combat_input roster_authored_models jutsu_presentation presentation_quality fighter_polish android_stability scene_loading team_battle battle_interactions boss_mob jutsu_finish jutsu_construct; do
             /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script "res://tests/${contract}_contract.gd" 2>&1 | tee "/tmp/${contract}.log"
             ! grep -E '^(SCRIPT ERROR:|ERROR:)' "/tmp/${contract}.log"
             grep -F 'CONTRACT: PASS' "/tmp/${contract}.log"

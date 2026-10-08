@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Técnicas articuladas e supremos — 0.13.0
+
+Dragões, serpentes, marionetes, mão de areia e tubarão agora possuem corpos articulados e animações próprias. Supremos do controlador do elenco recebem três enquadramentos e apresentação elemental após entrada confirmada; Henrique conserva Susanoo e Naruto seu QTE. Modelos dos 26 lutadores, balanceamento e saves preservados. Evidências e limites em [JUTSU_CONSTRUCTS_0130.md](JUTSU_CONSTRUCTS_0130.md). APK debug ARM64 versionCode 14; teste físico pendente.
+
 ## Jutsus e apresentação — 0.12.0
 
 Superfícies de fogo/água, rastros, arcos de vento, armas, impactos elementais com fumaça, câmera de preparação e HUD refinados. Corrigida a perda de escala ao orientar os efeitos. Iluminação mais neutra; personagens, kits, parâmetros de combate e progresso preservados. Evidências e limites em [JUTSU_FINISH_0120.md](JUTSU_FINISH_0120.md). APK debug ARM64 versionCode 13; teste físico pendente.
