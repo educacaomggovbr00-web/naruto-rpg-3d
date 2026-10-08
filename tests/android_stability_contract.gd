@@ -34,6 +34,20 @@ func run() -> void:
     check(graphics.get_value("graphics", "quality") == 0 and graphics.get_value("other", "preserved") == "unchanged", "Recovery selects LOW and preserves other preferences")
     DirAccess.remove_absolute(marker)
     DirAccess.remove_absolute(graphics_path)
+    var anime = preload("res://scripts/anime_presentation.gd")
+    var material_source: StandardMaterial3D = StandardMaterial3D.new()
+    material_source.albedo_color = Color.RED
+    var retained_material: Material = anime.textured(material_source)
+    var sources: Array[StandardMaterial3D] = []
+    for i: int in range(80):
+        var source: StandardMaterial3D = StandardMaterial3D.new()
+        source.albedo_color = Color.BLUE
+        sources.append(source)
+        anime.textured(source)
+    check(anime.textured_cache.size() <= anime.MAX_CACHED_MATERIALS, "Material cache remains bounded after repeated model replacement")
+    check(retained_material.albedo_color == Color.RED, "Eviction preserves active material appearance")
+    var cached_material: Material = anime.textured(sources[-1])
+    check(anime.textured(sources[-1]) == cached_material, "Live cached material is reused")
     var flow = root.get_node("GameFlow")
     check(flow.enter_selection() == OK, "Selection opens")
     await scene_changed
