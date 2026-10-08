@@ -110,7 +110,7 @@ func _apply_rpg_battle_setup() -> void:
         var actor: Node = get_parent().get_node("Player")
         var opponent: Node = get_parent().get_node("EnemyDummy")
         if GameFlow.arcade_mode == "training":
-            opponent.training_behavior = 0
+            opponent.training_behavior = GamePreferences.training_behavior if GamePreferences.training_behavior < 2 else -1
             opponent.set_physics_process(true)
             opponent.enable_arsenal = false
             opponent.reactive_substitution = false
@@ -125,6 +125,12 @@ func _apply_rpg_battle_setup() -> void:
             opponent.max_health *= 1.35
             opponent.health = opponent.max_health
             _show_boss_intro("DESAFIO " + opponent.character_definition.display_name, opponent)
+        if GameFlow.battle_mode == "survival" and GameFlow.arcade_mode.is_empty():
+            _setup_free_battle()
+        elif GameFlow.arcade_mode == "survival":
+            var pressure: float = minf(float(GameFlow.survival_wave-1)*.035,.30)
+            opponent.decision_interval_min /= 1.0+pressure
+            opponent.decision_interval_max /= 1.0+pressure
         if not GameFlow.arcade_mode.is_empty() and GameFlow.arcade_mode != "boss":
             _show_story_intro(GameFlow.arcade_label())
         return
@@ -232,6 +238,9 @@ func _physics_process(_delta: float) -> void:
             _trigger_boss_phase(cpu, fighter, mission)
 
     if GameFlow.arcade_mode == "training":
+        fighter.chakra = fighter.max_chakra
+        if fighter.combo_display_timer <= 0.0 and cpu.stagger_timer <= 0.0 and cpu.is_on_floor() and not fighter.attack_active and fighter.jutsu_timer <= 0.0:
+            cpu.health = cpu.max_health
         if fighter.defeated:
             fighter.call("_respawn")
         if not cpu.targetable:
@@ -249,8 +258,36 @@ func _physics_process(_delta: float) -> void:
             GameFlow.finish_battle(alive == 0 and not fighter.defeated)
         return
     if fighter.defeated or not cpu.targetable:
+        if GameFlow.versus_mode and GameFlow.battle_mode == "training":
+            fighter.call("_respawn")
+            cpu.call("_respawn")
+            fighter.chakra = fighter.max_chakra
+            _show_phase_banner("TREINAMENTO • NOVA TENTATIVA")
+            return
         finished = true
         GameFlow.finish_battle(not cpu.targetable and not fighter.defeated)
+
+    if GameFlow.versus_mode and GameFlow.battle_mode == "training":
+        fighter.chakra = fighter.max_chakra
+        if fighter.combo_display_timer <= 0.0 and cpu.stagger_timer <= 0.0 and cpu.is_on_floor() and not fighter.attack_active and fighter.jutsu_timer <= 0.0:
+            cpu.health = cpu.max_health
+            cpu.guard_meter = minf(cpu.guard_meter + _delta * 30.0, 100.0)
+
+func _setup_free_battle() -> void:
+    var fighter: Node = get_parent().get_node("Player")
+    var cpu: Node = get_parent().get_node("EnemyDummy")
+    var title: String = "VERSUS • " + GamePreferences.DIFFICULTIES[GamePreferences.difficulty]
+    if GameFlow.battle_mode == "training":
+        cpu.reactive_substitution = false
+        title = "TREINAMENTO • CHAKRA INFINITO • NINJA: AGARRÃO"
+    elif GameFlow.battle_mode == "survival":
+        fighter.health = fighter.max_health * GameFlow.survival_health_ratio
+        # Bounded pressure increase; hitboxes, damage and animation timing remain shared.
+        var pressure: float = minf(float(GameFlow.survival_wave - 1) * 0.035, 0.30)
+        cpu.decision_interval_min /= 1.0 + pressure
+        cpu.decision_interval_max /= 1.0 + pressure
+        title = "SOBREVIVÊNCIA • DUELO %d • RECORDE %d" % [GameFlow.survival_wave, int(GameFlow.progress.get("survival_best", 0))]
+    _show_phase_banner(title)
 
 func _trigger_boss_phase(cpu: Node, fighter: Node, mission: Dictionary) -> void:
     boss_phase_triggered = true

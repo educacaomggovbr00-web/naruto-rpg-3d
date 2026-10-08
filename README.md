@@ -1,3 +1,7 @@
+## Main integrado — 0.17.0
+
+A versão reúne as melhorias de combate, jutsus, modelos, Susanoo, equipes, menu, campanha e Android com a atualização independente do main. Colisões varridas, defesa perfeita, agarrões, treino e sobrevivência foram conciliados sem substituir o elenco. Consulte [a integração e validação](docs/MAIN_INTEGRATION_0170.md).
+
 # Shinobi RPG 3D
 
 Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ultimate Ninja Storm 1**, em combate e, na fase do mundo, exploração física de Konoha. A direção completa está em [PROJECT_DIRECTION](docs/PROJECT_DIRECTION.md).
@@ -26,6 +30,26 @@ Saves versão 1 continuam válidos; os marcos da campanha são mapeados para os 
 - orientação horizontal (landscape)
 - alvo de 60 FPS
 - renderer `gl_compatibility`
+
+## Melhorias de jogabilidade — 2026-10-08
+
+- **Treinamento**: chakra infinito, CPU parado/defendendo/lutando, vida do alvo reposta após a sequência e reinício no KO. Comportamento em **AJUSTES**; sem consumir inventário da campanha.
+- **Sobrevivência**: oponentes sucessivos do elenco, vida restante + 20% da vida máxima entre duelos, pressão crescente limitada e recorde salvo. Derrota encerra a sequência; RECOMEÇAR volta ao primeiro duelo.
+- **Fácil / Normal / Difícil**: muda decisões, reação e uso do arsenal da CPU; sem multiplicar seu dano ou alterar hitboxes.
+- **Agarrão**: **NINJA → AGARR**, **G** ou **LB + X** no controle. Tem startup, alcance físico curto, cooldown e atravessa a defesa. Pode errar e ser interrompido. Reutiliza um clip existente; ainda não há coreografia de agarrar/arremessar dedicada.
+- **Defesa perfeita**: entrar em defesa até 0,12 s antes de um golpe de hitbox evita o dano, recupera um pouco de chakra/guarda e abre 0,32 s para contra-atacar. Agarrão atravessa essa defesa; não há dano automático de contra-ataque.
+- Hitboxes verificam o último frame da janela, varrem poses rápidas com amostras limitadas, deduplicam acertos e não atravessam paredes. Dano interrompe dash e seus comandos bufferados; pulo aceita buffer curto antes da aterrissagem.
+- **AJUSTES** na seleção ou **PAUSA → CONTROLES E CÂMERA**: sensibilidade, tamanho/opacidade dos botões e tremor. Configuração separada do save da campanha. Controle físico: sticks para mover/câmera; X ataque, Y jutsu, A pulo, B esquiva, LB defesa, RB dash, LT chakra, RT corrida, R3 lock, Start pausa.
+- HUD com guarda dos dois lutadores, cooldowns nos botões, feedback de toque e combo em uma faixa separada da vida do rival. SFX usam oito vozes posicionais reutilizadas.
+- Susanoo recebe entrada visual gradual e arco de corte leve em MED/HIGH. Corrigida a leitura do tempo de ataque quando Henrique é CPU; a armadura continua sem rig próprio.
+
+Validação automatizada no Godot **4.7.2**:
+
+```sh
+godot --headless --path . --script res://tests/gameplay_improvements_contract.gd
+```
+
+O passe e as pendências dos **20 tópicos** estão em [GAMEPLAY_IMPROVEMENTS](docs/GAMEPLAY_IMPROVEMENTS.md). Testes de engine/exportação não comprovam desempenho ou qualidade final em celular real.
 
 ## Gráficos anime
 

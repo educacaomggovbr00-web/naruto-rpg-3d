@@ -109,6 +109,8 @@ var attack_hit_triggered: bool = false
 var ground_bounce_pending: bool = false
 var wall_bounce_pending: bool = false
 var combat_state: Node = null
+var techniques: Node3D = null
+var observed_guard_time: float = 0.0
 
 @onready var rig_adapter: Node3D = $RiggedCharacterAdapter
 @onready var visual: MeshInstance3D = $Visual
@@ -126,6 +128,11 @@ func _ready() -> void:
     ai_profile = character_definition.ai_profile
     if ai_profile == null:
         ai_profile = RosterAIProfileFactory.build(character_definition.character_id)
+    if GameFlow.versus_mode:
+        ai_profile = CombatSettings.profile_for(ai_profile)
+    else:
+        ai_profile = ai_profile.duplicate() as AIProfileDefinition
+    techniques = _ability("CombatTechniques", preload("res://scripts/combat_techniques.gd"))
     moveset = character_definition.moveset
     max_chakra = character_definition.max_chakra
     chakra = max_chakra
@@ -295,6 +302,8 @@ func _physics_process(delta: float) -> void:
 
 func _update_timers(delta: float) -> void:
     counter_window = maxf(0.0, counter_window - delta)
+    if is_instance_valid(player):
+        observed_guard_time = clampf(observed_guard_time + delta if player.is_guarding else observed_guard_time - delta * 0.5, 0.0, 2.0)
     arsenal_delay = maxf(arsenal_delay - delta, 0.0)
     jutsu_cooldown = maxf(jutsu_cooldown - delta, 0.0)
     jutsu_timer = maxf(jutsu_timer - delta, 0.0)
@@ -506,6 +515,8 @@ func get_cpu_state() -> String:
 func _choose_close_action() -> void:
     attack_cycle += 1
     var roll: float = decision_rng.randf()
+    if player.is_guarding and roll < 0.10 + observed_guard_time * 0.10 and bool(techniques.call("start_grab")):
+        return
 
     # A visible held guard can be pressured on higher difficulties, only at
     # the normal decision tick and with the regular heavy attack startup.
@@ -731,6 +742,13 @@ func receive_combat_hit(
 
     return applied_damage
 
+func receive_grab_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
+    if not targetable or invulnerable_timer > 0.0:
+        return 0.0
+    guarding = false
+    guard_timer = 0.0
+    return receive_combat_hit(damage, direction, knockback, launch, stun)
+
 func on_attack_resolved(target: Node, amount: float, launch: float, blocked: bool) -> void:
     on_attack_connected(target,amount,launch,blocked)
 
@@ -902,6 +920,8 @@ func is_cpu_controlled() -> bool:
 func get_special_animation() -> String:
     if team != null and not team.phase.is_empty():
         return team.animation_clip()
+    if techniques != null and techniques.active:
+        return "attack_3"
     return ultimate.call("animation_clip") if not ultimate.phase.is_empty() else "chakra_charge" if awakening.transforming else specials.call("animation_clip")
 
 func _can_use_movement_action() -> bool:
@@ -912,6 +932,8 @@ func _can_use_movement_action() -> bool:
     return state_allows and targetable and not is_instance_valid(cinematic_owner) and not attack_active and stagger_timer <= 0.0 and dodge_timer <= 0.0 and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0 and not guarding
 
 func _cancel_abilities() -> void:
+    if is_instance_valid(techniques):
+        techniques.call("cancel")
     if specials != null:
         specials.call("cancel")
         ultimate.call("cancel", "interrupted")

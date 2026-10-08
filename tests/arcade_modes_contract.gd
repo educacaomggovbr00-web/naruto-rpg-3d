@@ -33,11 +33,11 @@ func run() -> void:
     current_scene.get_node("Player").health = 32.0
     check(flow.finish_battle(true), "Survival round finishes once")
     check(not flow.finish_battle(true) and flow.arcade_wins == 1, "Repeated completion cannot add wins")
-    check(flow.arcade_next_available and is_equal_approx(flow.arcade_health, 47.0), "Survival preserves HP plus bounded recovery")
+    check(flow.arcade_next_available and is_equal_approx(flow.arcade_health, 32.0 + current_scene.get_node("Player").max_health*.20), "Survival preserves HP plus bounded recovery")
     check(flow.advance_arcade() == OK, "Next survival opponent starts")
     await frames(8)
     check(flow.arcade_round == 1 and flow.cpu_character.character_id != "naruto", "Series advances to another fighter")
-    check(current_scene.get_node("Player").health <= 47.0, "Remaining HP carries into next round")
+    check(current_scene.get_node("Player").health <= flow.arcade_health, "Remaining HP carries into next round")
     flow.enter_selection()
     await frames(6)
     check(flow.start_arcade("tournament", "henrique", "naruto", "training") == OK, "Solo tournament starts")

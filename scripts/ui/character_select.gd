@@ -56,9 +56,9 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.16.0 • RESPOSTA, TÉCNICAS E APRESENTAÇÃO"
+    subtitle.text = "0.17.0 • RESPOSTA, TÉCNICAS E APRESENTAÇÃO"
     if RuntimeStability.recovered_session:
-        subtitle.text = "0.16.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
+        subtitle.text = "0.17.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -261,9 +261,32 @@ func _ready() -> void:
     player_pick.item_selected.connect(_describe)
     cpu_pick.item_selected.connect(_describe)
     arena_pick.item_selected.connect(_arena_changed)
+    mode_pick.item_selected.connect(_mode_changed)
     _describe(0)
     _arena_changed(0)
     queue_redraw()
+
+func _extra_choice(row: HBoxContainer, caption: String, items: Array[String]) -> OptionButton:
+    var group: VBoxContainer = VBoxContainer.new()
+    group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_child(group)
+    var label: Label = Label.new()
+    label.text = caption
+    _style_caption(label)
+    group.add_child(label)
+    var choice: OptionButton = OptionButton.new()
+    choice.custom_minimum_size = Vector2(0, 40)
+    for item: String in items:
+        choice.add_item(item)
+    _style_option(choice)
+    group.add_child(choice)
+    return choice
+
+func _mode_changed(index: int) -> void:
+    start_button.text = ["LUTAR", "TREINAR", "TORNEIO", "SOBREVIVER", "DESAFIAR CHEFES", "ENFRENTAR ESQUADRÃO"][clampi(index,0,5)]
+
+func _show_preferences() -> void:
+    _show_options()
 
 func _show_credits() -> void:
     var popup: AcceptDialog = AcceptDialog.new()

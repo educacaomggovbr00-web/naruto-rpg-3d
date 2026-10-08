@@ -19,11 +19,15 @@ var context_label: String = "AÇÃO"
 
 func _ready() -> void:
     resized.connect(_layout)
+    GamePreferences.changed.connect(_layout)
     _layout()
 
 func _layout() -> void:
     radius = clampf(size.y * 0.12, 50.0, 86.0)
     button_radius = clampf(size.y * 0.064, 30.0, 44.0)
+    radius *= GamePreferences.controls_scale
+    button_radius *= GamePreferences.controls_scale
+    modulate.a = GamePreferences.controls_opacity
     joystick_center = Vector2(radius + 34.0, size.y - radius - 28.0)
     sprint_center = Vector2(size.x - button_radius - 26.0, size.y - button_radius - 26.0)
     jump_center = sprint_center + Vector2(-button_radius * 2.25, -button_radius * 0.45)
@@ -35,7 +39,11 @@ func _inside(point: Vector2, center: Vector2, reach: float) -> bool:
     return point.distance_squared_to(center) <= reach * reach
 
 func _input(event: InputEvent) -> void:
-    if event is InputEventScreenTouch:
+    if event.is_action_pressed("pad_jutsu"):
+        interact_queue = 1
+    elif event.is_action_pressed("pad_lock"):
+        map_queue = 1
+    elif event is InputEventScreenTouch:
         if event.pressed:
             if joystick_touch == -1 and _inside(event.position, joystick_center, radius * 1.35):
                 joystick_touch = event.index

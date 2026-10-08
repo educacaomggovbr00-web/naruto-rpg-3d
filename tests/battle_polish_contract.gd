@@ -53,7 +53,7 @@ func run() -> void:
     await frames(15)
     check(enemy.stagger_timer <= 0 and enemy.invulnerable_timer <= 0,"Training dummy recovers from contact timers")
     coach.set_dummy_mode(1)
-    await frames(3)
+    await frames(12) # Ordinary guard probe occurs after the perfect-guard window.
     check(enemy.guarding and not enemy.enable_arsenal,"Training mode can practice guard without enemy offense")
     metrics.reset()
     var actual_hp: float = enemy.health

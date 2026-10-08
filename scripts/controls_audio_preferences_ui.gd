@@ -26,3 +26,22 @@ static func build(column: VBoxContainer) -> void:
             value_label.text = "%.2f" % value
             CombatSettings.set(key,value)
             CombatSettings.save_preferences())
+    for entry: Array in [["controls_scale","Tamanho dos controles",.8,1.15], ["controls_opacity","Opacidade dos controles",.4,1.0]]:
+        var key: String = entry[0]
+        var label: Label = Label.new()
+        label.text = entry[1]
+        column.add_child(label)
+        var slider: HSlider = HSlider.new()
+        slider.min_value = entry[2]
+        slider.max_value = entry[3]
+        slider.step = .05
+        slider.value = GamePreferences.get(key)
+        slider.custom_minimum_size.y = 32
+        column.add_child(slider)
+        slider.value_changed.connect(func(value: float) -> void:
+            GamePreferences.set(key,value)
+            # Save touch preferences without overriding the canonical camera/difficulty.
+            GamePreferences.camera_sensitivity = CombatSettings.camera_sensitivity
+            GamePreferences.camera_shake = CombatSettings.camera_shake > 0.0
+            GamePreferences.difficulty = mini(CombatSettings.difficulty,2)
+            GamePreferences.save_preferences())

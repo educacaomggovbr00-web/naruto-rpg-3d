@@ -40,6 +40,11 @@ var special_label: String = "DWB"
 var character_accent: Color = Color(0.08, 0.55, 1.0)
 var ui_scale: float = 1.0
 var jutsu_enabled: bool = true
+var grab_queue: int = 0
+var grab_center: Vector2 = Vector2.ZERO
+var cooldowns: Dictionary = {}
+var flash_position: Vector2 = Vector2.ZERO
+var flash_timer: float = 0.0
 var attack_queue: int = 0
 var jump_queue: int = 0
 var chakra_dash_queue: int = 0
@@ -76,18 +81,21 @@ var layout_key: String = ""
 var layout_center: Vector2
 var reset_layout_center: Vector2
 var owns_pause: bool = false
+var top_radius: float = 32.0
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     resized.connect(_update_layout)
+    GamePreferences.changed.connect(_update_layout)
     _update_layout()
     set_process_input(true)
 
 func _update_layout() -> void:
     var w: float = size.x
     var h: float = size.y
-    ui_scale = clampf(h / 720.0, 0.78, 1.12)
+    ui_scale = minf(clampf(h / 720.0, 0.78, 1.12) * GamePreferences.controls_scale, minf(w / 1120.0, h / 630.0))
+    modulate.a = GamePreferences.controls_opacity
 
     joystick_radius = 92.0 * ui_scale
     attack_radius = 62.0 * ui_scale
@@ -100,6 +108,8 @@ func _update_layout() -> void:
     charge_radius = 46.0 * ui_scale
     guard_radius = 40.0 * ui_scale
     advanced_radius = 34.0 * ui_scale
+    var top_scale: float = clampf(h / 720.0, 0.78, 1.12)
+    top_radius = 32.0 * top_scale
 
     joystick_center = Vector2(145.0 * ui_scale, h - 140.0 * ui_scale)
     if joystick_touch == -1:
@@ -113,11 +123,12 @@ func _update_layout() -> void:
     substitution_center = Vector2(w - 338.0 * ui_scale, h - 190.0 * ui_scale)
     charge_center = Vector2(w - 444.0 * ui_scale, h - 100.0 * ui_scale)
     guard_center = Vector2(w - 444.0 * ui_scale, h - 190.0 * ui_scale)
-    quality_center = Vector2(w - 190.0 * ui_scale, 72.0 * ui_scale)
-    advanced_toggle_center = Vector2(w - 310.0 * ui_scale, 72.0 * ui_scale)
-    lock_center = Vector2(w - 72.0 * ui_scale, 72.0 * ui_scale)
+    quality_center = Vector2(w - 190.0 * top_scale, 92.0 * top_scale)
+    advanced_toggle_center = Vector2(w - 310.0 * top_scale, 92.0 * top_scale)
+    lock_center = Vector2(w - 72.0 * top_scale, 92.0 * top_scale)
 
-    var advanced_y: float = minf(150.0 * ui_scale, h * 0.29)
+    var advanced_y: float = h - 350.0 * ui_scale
+    grab_center = Vector2(w - 130.0 * ui_scale, advanced_y)
     if clones_enabled:
         tool_select_center = Vector2(w - 690.0 * ui_scale, advanced_y)
         tool_use_center = Vector2(w - 610.0 * ui_scale, advanced_y)
@@ -185,10 +196,16 @@ func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
                     layout_key = key
                     return
         return
-    if _inside_circle(screen_position, quality_center, 43.0 * ui_scale):
+    flash_position = screen_position
+    flash_timer = .12
+    queue_redraw()
+    if advanced_open and _inside_circle(screen_position, grab_center, advanced_radius):
+        grab_queue = 1
+        return
+    if _inside_circle(screen_position, quality_center, top_radius):
         quality_queue += 1
         return
-    if _inside_circle(screen_position, advanced_toggle_center, 43.0 * ui_scale):
+    if _inside_circle(screen_position, advanced_toggle_center, top_radius):
         advanced_open = not advanced_open
         queue_redraw()
         return
@@ -227,7 +244,7 @@ func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
     if _inside_circle(screen_position, dash_center, dash_radius):
         chakra_dash_queue += 1
         return
-    if _inside_circle(screen_position, lock_center, lock_radius):
+    if _inside_circle(screen_position, lock_center, top_radius):
         lock_queue += 1
         return
     if _inside_circle(screen_position, jutsu_center, jutsu_radius):
@@ -401,9 +418,10 @@ func _draw() -> void:
     if layout_editing:
         _draw_button(reset_layout_center, advanced_radius, attack_fill, "RESET", 9, text_color)
         draw_string(ThemeDB.fallback_font, Vector2(28, 150 * ui_scale), "Arraste os controles. SALVAR retorna à luta.", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, text_color)
-    _draw_button(quality_center, advanced_radius, base_fill, quality_label, maxi(10, int(12.0 * ui_scale)), text_color)
-    _draw_button(advanced_toggle_center, advanced_radius, blue_fill if advanced_open else base_fill, "NINJA", 9, text_color)
+    _draw_button(quality_center, top_radius, base_fill, quality_label, maxi(10, int(12.0 * ui_scale)), text_color)
+    _draw_button(advanced_toggle_center, top_radius, blue_fill if advanced_open else base_fill, "NINJA", 9, text_color)
     if advanced_open:
+        _draw_button(grab_center, advanced_radius, attack_fill, "AGARR", 10, text_color, float(cooldowns.get("grab", 0.0)))
         _draw_button(tool_select_center, advanced_radius, base_fill, "ITEM", 11, text_color)
         _draw_button(tool_use_center, advanced_radius, blue_fill, tool_label, 10, text_color)
         _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
@@ -413,23 +431,29 @@ func _draw() -> void:
             _draw_button(clone_center, advanced_radius, blue_fill, "CLONE", 10, text_color)
             _draw_button(barrage_center, advanced_radius, attack_fill, "BARR", 11, text_color)
     _draw_button(attack_center, attack_radius, attack_fill, "ATK", 25, text_color)
-    _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color)
+    _draw_button(jutsu_center, jutsu_radius, jutsu_fill, "JUTSU", 16, text_color, float(cooldowns.get("jutsu", 0.0)))
     _draw_button(dash_center, dash_radius, blue_fill, "DASH", 17, text_color)
     _draw_button(jump_center, jump_radius, base_fill, "PULO", 16, text_color)
-    _draw_button(dodge_center, dodge_radius, base_fill, "ESQ", 16, text_color)
-    _draw_button(substitution_center, substitution_radius, defense_fill, "SUB", 16, text_color)
+    _draw_button(dodge_center, dodge_radius, base_fill, "ESQ", 16, text_color, float(cooldowns.get("dodge", 0.0)))
+    _draw_button(substitution_center, substitution_radius, defense_fill, "SUB", 16, text_color, float(cooldowns.get("sub", 0.0)))
     _draw_button(charge_center, charge_radius, blue_fill, "CHK", 16, text_color)
     _draw_button(guard_center, guard_radius, defense_fill, "DEF", 16, text_color)
-    _draw_button(lock_center, advanced_radius, base_fill, "LOCK", maxi(10, int(12.0 * ui_scale)), text_color)
+    _draw_button(lock_center, top_radius, base_fill, "LOCK", maxi(10, int(12.0 * ui_scale)), text_color)
 
     if charge_touch != -1:
         draw_arc(charge_center, charge_radius + 7.0, 0.0, TAU, 40, text_color, 4.0, true)
     if guard_touch != -1:
         draw_arc(guard_center, guard_radius + 7.0, 0.0, TAU, 40, text_color, 4.0, true)
 
-func _draw_button(center: Vector2, radius: float, fill: Color, label: String, font_size: int, text_color: Color) -> void:
+func _draw_button(center: Vector2, radius: float, fill: Color, label: String, font_size: int, text_color: Color, cooldown: float = 0.0) -> void:
+    if cooldown > 0.0:
+        fill = fill.darkened(0.5)
+        label = "%.1fs" % cooldown
+        font_size = 15
     draw_circle(center, radius, fill)
     draw_arc(center, radius, 0.0, TAU, 40, Color(1.0, 1.0, 1.0, 0.48), 3.0, true)
+    if flash_timer > 0.0 and _inside_circle(flash_position, center, radius):
+        draw_arc(center, radius - 5.0, 0.0, TAU, 32, Color(1, 1, 1, 0.9), 4.0, true)
 
     var width: float = radius * 1.8
     var baseline: Vector2 = center + Vector2(-width * 0.5, float(font_size) * 0.34)
@@ -470,7 +494,14 @@ func _notification(what: int) -> void:
     tool_select_queue = 0
     tool_use_queue = 0
     quality_queue = 0
+    grab_queue = 0
+    flash_timer = 0.0
     queue_redraw()
+
+func _process(delta: float) -> void:
+    if flash_timer > 0.0:
+        flash_timer = maxf(flash_timer - delta, 0.0)
+        queue_redraw()
 
 func configure_character(definition: CharacterDefinition) -> void:
     character_accent = definition.energy_color

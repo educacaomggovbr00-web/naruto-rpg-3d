@@ -31,8 +31,8 @@ func _unhandled_input(event: InputEvent) -> void:
         return
 
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-        yaw -= event.relative.x * 0.003
-        pitch = clampf(pitch - event.relative.y * 0.003, -0.30, 0.52)
+        yaw -= event.relative.x * 0.003 * CombatSettings.camera_sensitivity
+        pitch = clampf(pitch - event.relative.y * 0.003 * CombatSettings.camera_sensitivity, -0.30, 0.52)
     elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 

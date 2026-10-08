@@ -130,6 +130,7 @@ var attack_counter_bonus: float = 1.0
 var grab_attack: bool = false
 var grab_target: Node3D
 var grab_cooldown: float = 0.0
+var techniques: Node3D = null
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
@@ -146,6 +147,10 @@ func _ready() -> void:
     run_speed = character_definition.sprint_speed
     max_health = character_definition.max_health
     max_chakra = character_definition.max_chakra
+    techniques = Node3D.new()
+    techniques.name = "CombatTechniques"
+    techniques.set_script(preload("res://scripts/combat_techniques.gd"))
+    add_child(techniques)
     specials = Node3D.new()
     specials.name = "CombatSpecials"
     specials.set_script(preload("res://scripts/combat_specials.gd"))
@@ -207,7 +212,10 @@ func _unhandled_input(event: InputEvent) -> void:
         return
     if event is InputEventJoypadButton and event.pressed:
         if event.is_action_pressed("pad_attack"):
-            _try_attack()
+            if Input.is_action_pressed("pad_guard"):
+                techniques.call("start_grab")
+            else:
+                _try_attack()
         elif event.is_action_pressed("pad_jump"):
             jump_requested = true
         elif event.is_action_pressed("pad_jutsu"):
@@ -439,6 +447,9 @@ func _consume_mobile_actions() -> void:
     if mobile_controls.barrage_queue > 0:
         mobile_controls.barrage_queue = 0
         specials.call("start", "barrage")
+    if mobile_controls.grab_queue > 0:
+        mobile_controls.grab_queue = 0
+        techniques.call("start_grab")
     if bool(mobile_controls.call("consume_attack")):
         _try_attack()
     if bool(mobile_controls.call("consume_lock")):
@@ -555,6 +566,8 @@ func _cancel_attack() -> void:
     attack_hitbox.call("deactivate")
 
 func _cancel_jutsu() -> void:
+    if is_instance_valid(techniques):
+        techniques.call("cancel")
     jutsu_timer = 0.0
     jutsu_released = true
     if is_instance_valid(specials):
@@ -608,7 +621,7 @@ func _apply_movement(delta: float) -> void:
             var tangent: Vector3 = Vector3(-radial.z, 0.0, radial.x)
             direction = (tangent * input_vector.x - radial * input_vector.y).limit_length(1.0)
 
-    var wants_run: bool = Input.is_physical_key_pressed(KEY_SHIFT)
+    var wants_run: bool = Input.is_physical_key_pressed(KEY_SHIFT) or Input.is_action_pressed("pad_run")
     if is_instance_valid(mobile_controls):
         wants_run = wants_run or bool(mobile_controls.call("is_run_requested"))
 
@@ -635,6 +648,8 @@ func _get_move_input() -> Vector2:
         if typeof(mobile_value) == TYPE_VECTOR2:
             input_vector = mobile_value
 
+    if input_vector.length() <= 0.001:
+        input_vector = GamePreferences.gamepad_move()
     if input_vector.length() <= 0.001:
         input_vector = Vector2(
             float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
@@ -795,7 +810,7 @@ func on_attack_contact(target: Node, _damage: float) -> void:
         camera_rig.call("add_combat_impact", 0.035 if dash_blocked else 0.055, 0.6 if dash_blocked else 1.0)
 
 func _start_dodge() -> void:
-    if defeated or stagger_timer > 0.0 or dodge_cooldown > 0.0 or chakra_dash_timer > 0.0:
+    if is_instance_valid(cinematic_owner) or not ultimate.phase.is_empty() or defeated or stagger_timer > 0.0 or dodge_cooldown > 0.0 or chakra_dash_timer > 0.0:
         return
 
     var direction: Vector3 = _camera_relative_direction(_get_move_input())
@@ -1035,6 +1050,11 @@ func receive_combat_hit(
         clear_jump_intent()
         _cancel_attack()
         _cancel_jutsu()
+        chakra_dash_timer = 0.0
+        dash_hitbox.call("deactivate")
+        attack_buffer = 0.0
+        jump_buffer = 0.0
+        is_charging_chakra = false
         animation_action_id += 1
         stagger_timer = hitstun
 
@@ -1077,6 +1097,12 @@ func receive_combat_hit(
         _defeat()
 
     return applied_damage
+
+func receive_grab_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
+    if defeated or invulnerable_timer > 0.0:
+        return 0.0
+    is_guarding = false
+    return receive_combat_hit(damage, direction, knockback, launch, stun)
 
 func on_attack_resolved(target: Node, amount: float, launch: float, blocked: bool) -> void:
     on_attack_connected(target,amount,launch,blocked)
@@ -1236,6 +1262,7 @@ func _respawn() -> void:
     guard_meter = 100.0
     guard_stun = 0.0
     attack_buffer = 0.0
+    jump_buffer = 0.0
     defeated = false
     if is_instance_valid(team):
         team.reset()
@@ -1345,6 +1372,8 @@ func get_special_animation() -> String:
         return team.animation_clip()
     if is_instance_valid(cinematic_owner) and cinematic_owner.get("phase") == "wall_run":
         return "run"
+    if techniques != null and techniques.active:
+        return "attack_3"
     if not ultimate.phase.is_empty():
         return ultimate.call("animation_clip")
     if awakening.transforming:

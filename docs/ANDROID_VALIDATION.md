@@ -96,3 +96,17 @@ Essas validações precisam de aparelho real; headless garante contratos de dado
 5. Se um acessório atravessar demais o corpo, registrar personagem + ação + vídeo; offsets podem ser ajustados sem trocar rig ou combate.
 
 Essa camada não é modelo final. O objetivo deste teste é validar legibilidade, estabilidade dos bone-followers e custo mobile antes de substituir cada slot por um GLB próprio.
+# Passe de gameplay — 2026-10-08
+
+- Seleção: entrar em Versus, Treinamento e Sobrevivência em Fácil/Normal/Difícil.
+- Treino: alternar dummy parado/defender/lutar em AJUSTES; esgotar chakra, completar combo, causar KO; conferir reposição sem gastar itens da campanha.
+- Sobrevivência: vencer com metade da vida, avançar, conferir aproximadamente 70% de vida no duelo seguinte; perder, recomeçar e conferir recorde após reiniciar o app.
+- Combate: NINJA → AGARR contra DEF; testar erro fora de alcance, esquiva, interrupção e cooldown. Levantar DEF no impacto e conferir DEFESA PERFEITA sem dano automático.
+- Controles: combinar joystick + ATK + DEF/CHK; ajustar escala/opacidade e sensibilidade; minimizar o app durante carga, voltar e CONTINUAR sem dedos presos.
+- Gamepad: sticks, X/Y/A/B, LB/RB/LT/RT, R3, direcional e Start; conferir retorno ao touch após desconectar.
+- Apresentação: barras de guarda, combo abaixo da vida rival, sons posicionais, arco de espada do Henrique em MED/HIGH e asas em HIGH.
+- Medir FPS, memória, aquecimento e consumo durante 10 duelos. Os testes executados em desktop não substituem essa medição.
+
+## Main integrado 0.17.0
+
+Integração de `9e473ab` com a evolução 0.16, sem trocar modelos/rigs. APK local: `shinobi-clash-0.17.0-debug.apk` (versionCode 18). Contrato de gameplay compartilhado executa 54 verificações; exportação, assinatura, alinhamento 16 KB e payload isolado validados. Detalhes e hash em [MAIN_INTEGRATION_0170.md](MAIN_INTEGRATION_0170.md). Teste em aparelho físico continua pendente.

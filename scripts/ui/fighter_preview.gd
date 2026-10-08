@@ -23,7 +23,8 @@ func _ready() -> void:
     viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-    viewport.msaa_3d = Viewport.MSAA_DISABLED if OS.has_feature("android") else Viewport.MSAA_4X
+    var quality: int = GraphicsPreferences.read_quality()
+    viewport.msaa_3d = (Viewport.MSAA_DISABLED if quality == 0 else Viewport.MSAA_2X) if OS.has_feature("android") else Viewport.MSAA_4X
     viewport.scaling_3d_scale = 1.0
     add_child(viewport)
 
