@@ -23,7 +23,7 @@ func _ready() -> void:
     viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-    viewport.msaa_3d = Viewport.MSAA_4X
+    viewport.msaa_3d = Viewport.MSAA_DISABLED if OS.has_feature("android") else Viewport.MSAA_4X
     viewport.scaling_3d_scale = 1.0
     add_child(viewport)
 
@@ -101,16 +101,19 @@ func _ready() -> void:
     show_fighters(CharacterCatalog.HENRIQUE, CharacterCatalog.NARUTO)
 
 func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> void:
-    for fighter: CharacterBody3D in fighters:
-        if is_instance_valid(fighter):
-            stage.remove_child(fighter)
-            fighter.queue_free()
-    fighters.clear()
     if technique_visual != null:
         technique_visual.visible = false
     technique_timer = 0.0
 
     for index: int in range(2):
+        var selected: CharacterDefinition = player if index == 0 else cpu
+        if fighters.size() > index and is_instance_valid(fighters[index]):
+            if fighters[index].definition == selected:
+                continue
+            var previous: CharacterBody3D = fighters[index]
+            stage.remove_child(previous)
+            previous.queue_free()
+            fighters[index] = null
         var actor: CharacterBody3D = CharacterBody3D.new()
         actor.set_script(preload("res://scripts/ui/fighter_preview_actor.gd"))
         actor.definition = player if index == 0 else cpu
@@ -118,7 +121,10 @@ func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> voi
         actor.rotation.y = 0.14 if index == 0 else -0.14
         actor.scale = Vector3.ONE * 1.08
         stage.add_child(actor)
-        fighters.append(actor)
+        if fighters.size() > index:
+            fighters[index] = actor
+        else:
+            fighters.append(actor)
         if index == 0:
             actor.preview_animation(preview_clip)
 

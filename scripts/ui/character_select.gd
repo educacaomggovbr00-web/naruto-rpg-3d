@@ -54,7 +54,9 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.8.0 • ESCOLHA SEU CAMINHO NINJA"
+    subtitle.text = "0.9.0 • ESCOLHA SEU CAMINHO NINJA"
+    if RuntimeStability.recovered_session:
+        subtitle.text = "0.9.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)

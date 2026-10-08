@@ -72,7 +72,7 @@ func _ready() -> void:
     GameFlow.progress_changed.connect(_refresh_progress)
     _refresh_progress()
     settings.load("user://graphics.cfg")
-    apply_quality(clampi(int(settings.get_value("graphics", "quality", 1)), 0, 2), false)
+    apply_quality(clampi(int(settings.get_value("graphics", "quality", 0 if OS.has_feature("android") else 1)), 0, 2), false)
     if not GameFlow.return_message.is_empty():
         toast(GameFlow.return_message)
         GameFlow.return_message = ""

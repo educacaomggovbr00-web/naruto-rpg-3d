@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Estabilidade Android — 0.9.0
+
+Cache de animações limitado, rigs do menu reutilizados, inicialização leve no Android, proteção do botão Voltar e recuperação após interrupção. Personagens e sistemas preservados. APK debug ARM64 versionCode 10; causa do fechamento no aparelho ainda depende de reprodução/logcat. Evidências e limites em [ANDROID_STABILITY_090.md](ANDROID_STABILITY_090.md).
+
 ## Correção das malhas — 0.8.0
 
 Henrique e Naruto agora usam derivados ligados à pose original recuperada, corrigindo as roupas esticadas já presentes no repouso da versão 0.7.0. Originais, UVs, topologia, texturas e os demais personagens foram preservados. Seleção de dificuldade, dados dos jutsus, pressão de guarda da CPU e diálogos/NPCs também foram refinados. Evidências e reprodução em [SKIN_REPAIR_080.md](SKIN_REPAIR_080.md). APK debug ARM64 versionCode 9; validação física pendente.

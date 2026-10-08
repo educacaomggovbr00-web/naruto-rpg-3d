@@ -5,7 +5,9 @@ const TOON_MATERIAL: ShaderMaterial = preload("res://assets/characters/stylized/
 const ANIME: Script = preload("res://scripts/anime_presentation.gd")
 const COMBAT_HUBS: PackedStringArray = ["idle", "run", "sprint", "hit", "dodge", "guard", "jump", "fall", "chakra_dash", "defeat"]
 # Track paths are immutable after installation; playback stays per fighter.
+const MAX_CACHED_LIBRARIES: int = 4
 static var library_cache: Dictionary = {}
+static var library_cache_order: Array[String] = []
 
 const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
 const REFERENCE_REST_PATH: String = "res://assets/animations/mixamo_reference_rest.json"
@@ -551,7 +553,14 @@ func _install_combat_library() -> bool:
     combat_retargeted = retarget_required
     var cache_key: String = skeleton_path + "|" + ",".join(bone_names) + "|" + rest_signature.sha256_text()
     var library: AnimationLibrary = library_cache.get(cache_key) as AnimationLibrary
+    if library != null:
+        library_cache_order.erase(cache_key)
+        library_cache_order.append(cache_key)
     if library == null:
+        # Eviction drops only the cache reference: live AnimationPlayers retain
+        # their library, so existing fighters and clones keep animating.
+        while library_cache.size() >= MAX_CACHED_LIBRARIES and not library_cache_order.is_empty():
+            library_cache.erase(library_cache_order.pop_front())
         library = COMBAT_LIBRARY.duplicate(true) as AnimationLibrary
         for clip_name: StringName in library.get_animation_list():
             if not clips.has(String(clip_name)):
@@ -571,6 +580,7 @@ func _install_combat_library() -> bool:
                     _retarget_track(animation, track, source_rest, target_rest)
                 animation.track_set_path(track, NodePath(skeleton_path + ":" + target_bone_name))
         library_cache[cache_key] = library
+        library_cache_order.append(cache_key)
 
     var result: Error = animation_player.add_animation_library(&"combat", library)
     real_animation_count = library.get_animation_list().size()
