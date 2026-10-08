@@ -68,6 +68,9 @@ func profile_for(source: AIProfileDefinition) -> AIProfileDefinition:
     profile.jutsu_bias = minf(profile.jutsu_bias * [0.35, 1.0, 1.15, 1.3][difficulty], 0.8)
     profile.aggression = clampf(profile.aggression * [0.55, 1.0, 1.10, 1.18][difficulty], 0.1, 0.95)
     profile.dash_bias *= [0.4, 1.0, 1.1, 1.2][difficulty]
+    profile.projectile_reaction = [0.25, 0.70, 0.80, 0.87][difficulty]
+    profile.substitution_chance = [0.0, 0.18, 0.25, 0.33][difficulty]
+    profile.reaction_delay = [0.28, 0.14, 0.12, 0.10][difficulty]
     return profile
 
 func _install_controller_actions() -> void:

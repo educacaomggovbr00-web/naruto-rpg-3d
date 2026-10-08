@@ -9,7 +9,9 @@ func check(ok: bool, message: String):
         failures += 1
         push_error(message)
 func frames(count: int):
-    for index in range(count): await physics_frame
+    for index in range(count):
+        await physics_frame
+        await process_frame
 func run():
     var forks = MultiMeshInstance3D.new()
     forks.set_script(load("res://scripts/chidori_effect.gd"))
@@ -96,5 +98,8 @@ func run():
     specials.cancel()
     current_scene.queue_free()
     await frames(3)
+    if DisplayServer.get_name() != "headless":
+        await RenderingServer.frame_post_draw
+        await process_frame
     print("JUTSU PRESENTATION CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL",checks])
     quit(0 if failures == 0 else 1)

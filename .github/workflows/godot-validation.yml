@@ -182,6 +182,9 @@ jobs:
           xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/presentation_quality_contract.gd 2>&1 | tee /tmp/presentation-opengl.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/presentation-opengl.log
           grep -F 'PRESENTATION QUALITY CONTRACT: PASS' /tmp/presentation-opengl.log
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/fighter_polish_contract.gd 2>&1 | tee /tmp/fighter-polish-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/fighter-polish-opengl.log
+          grep -F 'FIGHTER POLISH CONTRACT: PASS' /tmp/fighter-polish-opengl.log
       - name: Upload gameplay presentation captures
         uses: actions/upload-artifact@v4
         with:
@@ -230,7 +233,7 @@ jobs:
         run: |
           set -o pipefail
           python -m unittest discover -s tests -p 'test_susanoo_rig.py'
-          for contract in evolution arcade_modes henrique_campaign visible_evolution combat_input roster_authored_models jutsu_presentation presentation_quality; do
+          for contract in evolution arcade_modes henrique_campaign visible_evolution combat_input roster_authored_models jutsu_presentation presentation_quality fighter_polish; do
             /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script "res://tests/${contract}_contract.gd" 2>&1 | tee "/tmp/${contract}.log"
             ! grep -E '^(SCRIPT ERROR:|ERROR:)' "/tmp/${contract}.log"
             grep -F 'CONTRACT: PASS' "/tmp/${contract}.log"

@@ -4,7 +4,7 @@
 script = ExtResource("1")
 character_id = "henrique"
 display_name = "Henrique Uchiha"
-model_path = "res://assets/characters/henrique/henrique_mobile_rigged.glb"
+model_path = "res://assets/characters/repaired/henrique_mobile.glb"
 visual_status = "DEVELOPMENT_ONLY_USER_SUPPLIED_HENRIQUE_RIGGED"
 model_ground_to_collision = true
 model_target_height = 1.70

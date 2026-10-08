@@ -165,8 +165,8 @@
       "author": "Projeto naruto-rpg-3d",
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
-      "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado.",
-      "sha256": "0de1c30047d457e44d686a1a24771e8768cf3dc1d99697674f23bdb8d5ba030f"
+      "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado.; selects corrected source-pose skin derivative",
+      "sha256": "0bf98df49d8592d66c88d11d12167fc17791df93053225b777af7866bf8ba75b"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -822,8 +822,8 @@
       "author": "Projeto",
       "source": "Henrique Uchiha original do jogador",
       "license": "Protagonista de fan game; autorização de apresentação da franquia não comprovada",
-      "modifications": "Novo protagonista, kit próprio e caminho do modelo enviado",
-      "sha256": "d1702993bf4512430abd4704f143fd612dd20866e34b7a4add6b49f6a07fbdc4"
+      "modifications": "Novo protagonista, kit próprio e caminho do modelo enviado; selects corrected source-pose skin derivative",
+      "sha256": "2ab7a36a6072db3bb31afc3f251f4625b5d2e16231a81d6ade304222f4dd1c54"
     },
     {
       "path": "assets/characters/henrique/henrique_mobile_rigged.glb",
@@ -1231,8 +1231,8 @@
       "author": "Shinobi Clash project",
       "source": "tools/bake_roster_portraits.gd; existing character models",
       "license": "Rendered derivative of existing development character assets",
-      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
-      "sha256": "bbf46be6bf4997c15d4f1b41619b4731ba92477fe1a1f7a304703e69d3c0a7d3"
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled; portrait uses corrected source-pose rig",
+      "sha256": "c728fb2dd0f83450e65a036b2c108438d52f62fd77e4958e608d173c9c09598e"
     },
     {
       "path": "assets/ui/portraits/hinata.png",
@@ -1348,8 +1348,8 @@
       "author": "Shinobi Clash project",
       "source": "tools/bake_roster_portraits.gd; existing character models",
       "license": "Rendered derivative of existing development character assets",
-      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
-      "sha256": "91fd52498e0bd6a4d1ab1e62c09f11ef8ef3c6d53d03e0c60772646d89cd0047"
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled; portrait uses corrected source-pose rig",
+      "sha256": "cc511d0fe6ae387668abedbdae4d4b873089ec24e6d47e0f7e8a92f6842cf8d9"
     },
     {
       "path": "assets/ui/portraits/neji.png",
@@ -1440,6 +1440,52 @@
       "license": "Rendered derivative of existing development character assets",
       "modifications": "Original in-engine portrait; no downloaded reference image bundled",
       "sha256": "d50a725133de9e4ace925796da3e1d50716e77044b0cc02b682adcdd426a747d"
+    },
+    {
+      "path": "assets/characters/repaired/naruto_mobile.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "User supplied model; project skin correction",
+      "source": "tools/repair_fighter_skin.py; existing supplied mesh",
+      "license": "Original model provenance unchanged",
+      "modifications": "Source-pose geometry recovered; fitted bind pose and anatomical skin weights; original file preserved",
+      "sha256": "dcdcbf08dacdbc1c8ec7207de56af59bf8e86f6c4f8ae0f3e64281f4cb368c84",
+      "embedded_images": [
+        {
+          "path": "assets/characters/repaired/naruto_mobile_texture_metallic-texture_roughness.png",
+          "sha256": "a2431bcdc59b743c332e2185880d48c962734a49bd8bacde435b1f0c694ef21e"
+        },
+        {
+          "path": "assets/characters/repaired/naruto_mobile_texture_diffuse.png",
+          "sha256": "e2f1b75cab9ab61af611a3b6d412cc4d99ad4450c7943b66ea10d01d20282bab"
+        },
+        {
+          "path": "assets/characters/repaired/naruto_mobile_texture_normal.png",
+          "sha256": "88ac7b3d5d1fedd97fe7eab695170f79f5a725a3e5c4cf27ed303929b196490f"
+        }
+      ]
+    },
+    {
+      "path": "assets/characters/repaired/henrique_mobile.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "User supplied model; project skin correction",
+      "source": "tools/repair_fighter_skin.py; existing supplied mesh",
+      "license": "Original model provenance unchanged",
+      "modifications": "Source-pose geometry recovered; fitted bind pose and anatomical skin weights; original file preserved",
+      "sha256": "efbb455d3ce4e384fbb51251e170e68ab2b7d76277d85f1666832a5d34ca858e",
+      "embedded_images": [
+        {
+          "path": "assets/characters/repaired/henrique_mobile_texture_metallic-texture_roughness.png",
+          "sha256": "38124d1764112e04742a447ba10aed69668e89d556f03051de08feb66b7101c4"
+        },
+        {
+          "path": "assets/characters/repaired/henrique_mobile_texture_diffuse.png",
+          "sha256": "8da6b4ea8171ce5d4d0eaff97cdb6b60577206a876a63e3465b81bc5149cf848"
+        },
+        {
+          "path": "assets/characters/repaired/henrique_mobile_texture_normal.png",
+          "sha256": "d89b90e38079c4f9ce6376850d9c7675d3a73f95168ffec5a2843b5c8561edaa"
+        }
+      ]
     }
   ]
 }

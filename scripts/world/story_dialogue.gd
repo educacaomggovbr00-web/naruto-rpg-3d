@@ -5,6 +5,8 @@ signal finished
 var lines: Array = []
 var index: int = 0
 var active: bool = false
+var progress_label: Label
+var portrait: TextureRect
 var title_label: Label
 var speaker_label: Label
 var body_label: Label
@@ -31,13 +33,17 @@ func _build() -> void:
     panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
     panel.offset_left = 54
     panel.offset_right = -54
-    panel.offset_top = -218
+    panel.offset_top = -260
     panel.offset_bottom = -24
     var style: StyleBoxFlat = StyleBoxFlat.new()
     style.bg_color = Color(0.015, 0.045, 0.065, 0.96)
     style.border_color = Color(0.82, 0.48, 0.18, 0.82)
     style.set_border_width_all(2)
     style.set_corner_radius_all(16)
+    style.content_margin_left = 18
+    style.content_margin_right = 18
+    style.content_margin_top = 12
+    style.content_margin_bottom = 12
     panel.add_theme_stylebox_override("panel", style)
     add_child(panel)
 
@@ -53,7 +59,18 @@ func _build() -> void:
     speaker_label = Label.new()
     speaker_label.add_theme_font_size_override("font_size", 24)
     speaker_label.add_theme_color_override("font_color", Color("ffd089"))
-    box.add_child(speaker_label)
+    var speaker_row = HBoxContainer.new()
+    box.add_child(speaker_row)
+    portrait = TextureRect.new()
+    portrait.custom_minimum_size = Vector2(42,42)
+    portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    speaker_row.add_child(portrait)
+    speaker_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    speaker_row.add_child(speaker_label)
+    progress_label = Label.new()
+    progress_label.add_theme_font_size_override("font_size",14)
+    speaker_row.add_child(progress_label)
 
     body_label = Label.new()
     body_label.custom_minimum_size = Vector2(0, 66)
@@ -134,6 +151,13 @@ func _show_line() -> void:
             choice_box.add_child(button)
         if choice_pending:
             choice_box.get_child(0).grab_focus()
+    portrait.visible = false
+    for definition in CharacterCatalog.READY:
+        if speaker_label.text in [definition.display_name,definition.display_name.split(" ")[0]]:
+            portrait.texture = load("res://assets/ui/portraits/"+definition.character_id+".png")
+            portrait.visible = true
+            break
+    progress_label.text = "%d / %d" % [index+1,lines.size()]
     next_button.text = "FECHAR" if index == lines.size() - 1 else "CONTINUAR"
 
 func _unhandled_input(event: InputEvent) -> void:

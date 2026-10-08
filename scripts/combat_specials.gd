@@ -280,6 +280,8 @@ func _physics_process(delta: float) -> void:
             cast_visual.heading = owner_fighter.global_basis.z
             cast_visual.visible = elapsed > .12 and elapsed < maxf(.24,duration-.10)
         var orb_grow: float = minf(1.0, elapsed * 5.4)
+        if cast_visual.visible and (lightning or styled_hand):
+            cast_visual.radius = .12 + .10 * orb_grow
         var orb_pulse: float = 1.0 + (sin(elapsed * 42.0) * 0.045 if current == "rasengan" else 0.0)
         sphere_visual.scale = Vector3.ONE * orb_grow * orb_pulse
         var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)

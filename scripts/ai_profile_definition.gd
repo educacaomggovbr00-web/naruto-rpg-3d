@@ -15,4 +15,7 @@ extends Resource
 @export var awakening_bias: float = 0.40
 @export var charge_threshold: float = 34.0
 @export var decision_speed: float = 1.0
+@export var projectile_reaction: float = 0.70
+@export var substitution_chance: float = 0.18
+@export var reaction_delay: float = 0.14
 @export var evidence: String = "OUR_APPROXIMATION"

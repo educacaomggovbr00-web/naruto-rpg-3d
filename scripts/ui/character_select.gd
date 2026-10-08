@@ -2,6 +2,7 @@ extends Control
 
 var player_pick: OptionButton
 var cpu_pick: OptionButton
+var difficulty_pick: OptionButton
 var mode_pick: OptionButton
 var arena_pick: OptionButton
 var description: Label
@@ -53,7 +54,7 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.7.0 • ESCOLHA SEU CAMINHO NINJA"
+    subtitle.text = "0.8.0 • ESCOLHA SEU CAMINHO NINJA"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -100,6 +101,23 @@ func _ready() -> void:
     _style_option(mode_pick)
     mode_pick.custom_minimum_size.y = 40
     mode_group.add_child(mode_pick)
+
+    var difficulty_group = VBoxContainer.new()
+    difficulty_group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    choices.add_child(difficulty_group)
+    var difficulty_label = Label.new()
+    difficulty_label.text = "DIFICULDADE"
+    _style_caption(difficulty_label)
+    difficulty_group.add_child(difficulty_label)
+    difficulty_pick = OptionButton.new()
+    for label in CombatSettings.DIFFICULTIES: difficulty_pick.add_item(label)
+    difficulty_pick.select(CombatSettings.difficulty)
+    _style_option(difficulty_pick)
+    difficulty_pick.custom_minimum_size.y = 40
+    difficulty_group.add_child(difficulty_pick)
+    difficulty_pick.item_selected.connect(func(index: int):
+        CombatSettings.difficulty = index
+        CombatSettings.save_preferences())
 
     _build_roster_strip(column)
 
@@ -154,6 +172,7 @@ func _ready() -> void:
     technique_pick.custom_minimum_size.y = 38
     _style_option(technique_pick)
     technique_row.add_child(technique_pick)
+    technique_pick.item_selected.connect(_describe_technique)
     var watch = Button.new()
     watch.text = "VER TÉCNICA"
     watch.pressed.connect(_preview_technique)
@@ -412,6 +431,7 @@ func _describe(_index: int) -> void:
     for index: int in range(roster_buttons.size()):
         roster_buttons[index].button_pressed = index == (player_pick.selected if roster_side == "player" else cpu_pick.selected)
 
+    _describe_technique(0)
     if roster_scroll != null and not roster_buttons.is_empty():
         roster_scroll.call_deferred("ensure_control_visible", roster_buttons[player_pick.selected if roster_side == "player" else cpu_pick.selected])
     if is_instance_valid(preview):
@@ -555,3 +575,10 @@ func _show_options() -> void:
     dialog.canceled.connect(dialog.queue_free)
     add_child(dialog)
     dialog.popup_centered()
+
+func _describe_technique(_index: int) -> void:
+    if technique_pick == null or technique_pick.item_count == 0: return
+    var character = CharacterCatalog.READY[player_pick.selected]
+    var data = character.find_jutsu(String(technique_pick.get_item_metadata(technique_pick.selected)))
+    if data == null: return
+    description.text = "%s • %s • Chakra %d • Recarga %.1f s" % [character.display_name,data.display_name,int(data.chakra_cost),data.cooldown]

@@ -44,7 +44,7 @@ func samples(mesh: MeshInstance3D, skeleton: Skeleton3D, model_scale: float) -> 
 
 func run() -> void:
     var flow: Node = root.get_node("GameFlow")
-    check(CharacterCatalog.NARUTO.model_path == "res://assets/characters/base_basic/base_basic_pbr_rigged.glb", "Naruto uses the single animated 3D model")
+    check(CharacterCatalog.NARUTO.model_path == "res://assets/characters/repaired/naruto_mobile.glb", "Naruto uses the single animated 3D model")
     check(is_equal_approx(CharacterCatalog.NARUTO.model_target_height, 1.70), "Naruto keeps tuned mobile character height")
     check(CharacterCatalog.NARUTO.idle_animation_override.is_empty(), "Naruto must use the real combat idle instead of chakra-charge as idle")
     check(CharacterCatalog.SAKURA.display_name == "Sakura" and CharacterCatalog.SAKURA.model_yaw_degrees == 0.0, "Sakura profile must expose corrected name and facing")

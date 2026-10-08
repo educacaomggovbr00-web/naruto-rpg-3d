@@ -455,6 +455,17 @@ func _choose_close_action() -> void:
     attack_cycle += 1
     var roll: float = decision_rng.randf()
 
+    # A visible held guard can be pressured on higher difficulties, only at
+    # the normal decision tick and with the regular heavy attack startup.
+    if CombatSettings.difficulty >= 2 and player.get_is_guarding() and is_on_floor() and roll < ai_profile.aggression:
+        attack_cooldown = attack_cooldown_time
+        attack_active = true
+        combo_step = 4
+        combo_branch = "down"
+        attack_airborne = false
+        _begin_strike()
+        return
+
     if guard_meter > 25.0 and roll < ai_profile.guard_bias:
         guarding = true
         guard_timer = guard_duration
@@ -613,8 +624,8 @@ func receive_combat_hit(
         attack_active = false
         attack_hitbox.call("deactivate")
         stagger_timer = hitstun
-        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and randf() < 0.18:
-            reaction_timer = randf_range(0.10, 0.18)
+        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and decision_rng.randf() < ai_profile.substitution_chance:
+            reaction_timer = decision_rng.randf_range(ai_profile.reaction_delay*.75, ai_profile.reaction_delay*1.3)
         wall_bounce_pending = applied_knockback >= 4.0
         ground_bounce_pending = launch_velocity < -2.0
 
@@ -949,10 +960,10 @@ func _react_to_projectile() -> bool:
         return false
     # Decisions are sampled on the existing delayed neutral tick; sometimes miss.
     var reaction: float = decision_rng.randf()
-    if reaction >= 0.70:
+    if reaction >= ai_profile.projectile_reaction:
         return false
     is_charging_chakra = false
-    if guard_meter > 35.0 and reaction < 0.45:
+    if guard_meter > 35.0 and reaction < ai_profile.projectile_reaction * .64:
         guarding = true
         guard_timer = minf(guard_duration, 0.45)
         return true

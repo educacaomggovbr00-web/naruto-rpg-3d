@@ -28,6 +28,7 @@ func run():
     camera.size = .7
     stage.add_child(camera)
     for definition in CharacterCatalog.READY:
+        if not OS.get_cmdline_user_args().is_empty() and definition.character_id not in OS.get_cmdline_user_args(): continue
         var actor = CharacterBody3D.new()
         actor.set_script(load("res://scripts/ui/fighter_preview_actor.gd"))
         actor.definition = definition

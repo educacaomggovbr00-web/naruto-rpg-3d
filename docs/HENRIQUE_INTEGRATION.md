@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Correção das malhas — 0.8.0
+
+Henrique e Naruto agora usam derivados ligados à pose original recuperada, corrigindo as roupas esticadas já presentes no repouso da versão 0.7.0. Originais, UVs, topologia, texturas e os demais personagens foram preservados. Seleção de dificuldade, dados dos jutsus, pressão de guarda da CPU e diálogos/NPCs também foram refinados. Evidências e reprodução em [SKIN_REPAIR_080.md](SKIN_REPAIR_080.md). APK debug ARM64 versionCode 9; validação física pendente.
+
 ## Menus, nitidez e técnicas — 0.7.0
 
 Seleção com 26 retratos, prévia das técnicas, galeria recolhível e tema comum para menus/diálogos. Resolução e antisserrilhado ajustados no combate e exploração; contornos extras que fragmentavam as malhas removidos. Apresentação procedural das 19 famílias de jutsus, sem alterar balanceamento. Modelos preservados byte a byte. Referências oficiais consultadas, mudanças, capturas e limites em [ANIME_PRESENTATION_REFERENCES.md](ANIME_PRESENTATION_REFERENCES.md). APK debug ARM64 versionCode 8; teste físico pendente.

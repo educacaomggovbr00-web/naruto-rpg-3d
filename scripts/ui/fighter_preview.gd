@@ -127,7 +127,8 @@ func preview_technique(id: String) -> void:
     var data: JutsuDefinition = fighters[0].definition.find_jutsu(id)
     if data == null: return
     fighters[0].preview_animation(data.animation_name)
-    technique_timer = 1.0
+    var manifest = fighters[0].rig_adapter.manifest
+    technique_timer = clampf(float(manifest.get("clips",{}).get(data.animation_name,{}).get("duration",1.0)),.6,2.0)
     technique_visual.visible = false
     if data.strategy not in ["clones","barrage","trap"]:
         technique_visual.position = Vector3(-.92,1.0,.45)

@@ -432,6 +432,20 @@ func interact() -> void:
             toast(String(data.text) + " Saldo: %d ryō." % int(GameFlow.progress.ryo))
     elif data.kind == "shop":
         toast("Suprimento comprado para o próximo treino." if GameFlow.buy_supplies(int(data.price)) else String(data.text) + " Limite: 3. Saldo: %d ryō." % int(GameFlow.progress.ryo))
+    elif data.kind == "talk":
+        controls.release_all()
+        if nearest.actor != null:
+            var facing = actor.global_position - nearest.actor.global_position
+            facing.y = 0
+            if facing.length_squared() > .01:
+                nearest.actor.rotation.y = atan2(facing.x,facing.z)
+        var dialogue: Array = [{"speaker":String(data.label),"text":String(data.text)}]
+        var mission = GameFlow.current_story_mission()
+        if not mission.is_empty():
+            dialogue.append({"speaker":String(data.label),"text":"Sua próxima missão é %s. Treine, prepare seus itens e siga o objetivo indicado no mapa." % String(mission.title)})
+        else:
+            dialogue.append({"speaker":String(data.label),"text":"A aldeia continua aberta para você. Há treino, lojas e desafios esperando."})
+        story_dialogue.call("play",dialogue,"CONVERSA NA ALDEIA")
     else:
         toast(String(data.text))
     if not GameFlow.save_message.is_empty():
