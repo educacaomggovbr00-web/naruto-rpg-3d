@@ -28,9 +28,8 @@ func _ready() -> void:
             enemy_definition.display_name.to_upper()
         ]
 
-    if _is_mobile_runtime():
-        rig_label.visible = false
-        fps_label.visible = false
+    rig_label.visible = "--debug-hud" in OS.get_cmdline_user_args()
+    fps_label.visible = rig_label.visible
 
 
 func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxFlat:
@@ -167,7 +166,7 @@ func _process(delta: float) -> void:
     resource_label.text = "SUB %d  •  GUARDA %d  •  %s  •  CD %.1f/%.1f" % [
         int(player.call("get_substitutions")),
         int(player.guard_meter),
-        String(player.specials.selected).to_upper(),
+        (player.character_definition.find_jutsu(String(player.specials.selected)).display_name if player.character_definition.find_jutsu(String(player.specials.selected)) != null else String(player.specials.selected).to_upper()),
         sub_cd,
         jutsu_cd
     ]
@@ -178,6 +177,8 @@ func _process(delta: float) -> void:
     else:
         var awakening_text: String = "%.1f" % player.awakening.remaining if player.awakening.active else "PRONTO" if player.awakening.eligible() else "—"
         resource_label.text += "  •  ULT %.1f  •  AWK %s" % [player.ultimate.cooldown, awakening_text]
+    if player.awakening.active and player.awakening.has_method("cycle_form"):
+        resource_label.text += " • " + SusanooVisual.FORM_NAMES[player.awakening.selected_form]
     var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]
     resource_label.text += "  •  %s %s" % [tool_name.to_upper(), "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
     var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]

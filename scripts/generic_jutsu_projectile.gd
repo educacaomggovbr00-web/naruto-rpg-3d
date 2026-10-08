@@ -89,6 +89,10 @@ func _physics_process(delta: float) -> void:
                     definition.launch_force,
                     definition.hitstun
                 ))
+                if definition.effect == "black_fire" and dealt > 0.0 and not fighter.get_is_guarding():
+                    preload("res://scripts/black_flame_status.gd").attach(fighter, owner_fighter)
+                if definition.jutsu_id == "henrique_genjutsu" and dealt > 0.0 and not fighter.get_is_guarding():
+                    preload("res://scripts/genjutsu_overlay.gd").attach(fighter)
                 owner_fighter.call("on_attack_connected", fighter, dealt, definition.launch_force)
                 recycle()
                 return

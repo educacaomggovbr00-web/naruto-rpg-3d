@@ -212,7 +212,7 @@ func _unhandled_input(event: InputEvent) -> void:
         elif event.is_action_pressed("pad_ultimate"):
             ultimate.call("start")
         elif event.is_action_pressed("pad_awakening"):
-            awakening.call("start")
+            _activate_awakening()
     if event is InputEventMouseButton and not _is_mobile_runtime():
         if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
             _try_attack()
@@ -238,7 +238,7 @@ func _unhandled_input(event: InputEvent) -> void:
         elif event.physical_keycode == KEY_5:
             ultimate.call("start")
         elif event.physical_keycode == KEY_6:
-            awakening.call("start")
+            _activate_awakening()
         elif event.physical_keycode == KEY_7:
             ninja_tools.call("cycle")
         elif event.physical_keycode == KEY_8:
@@ -365,7 +365,10 @@ func _consume_mobile_actions() -> void:
         ultimate.call("start")
     if mobile_controls.awakening_queue > 0:
         mobile_controls.awakening_queue = 0
-        awakening.call("start")
+        if awakening.active and awakening.has_method("cycle_form"):
+            awakening.call("cycle_form")
+        else:
+            _activate_awakening()
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
         specials.call("cycle_selection")
@@ -1116,6 +1119,10 @@ func _defeat() -> void:
     _set_locked_target(null)
 
 func _respawn() -> void:
+    for effect_name: String in ["BlackFlames", "GenjutsuOverlay"]:
+        var effect: Node = get_node_or_null(effect_name)
+        if effect != null:
+            effect.queue_free()
     _cancel_attack()
     timed_guard_window = 0.0
     counter_window = 0.0
@@ -1341,3 +1348,10 @@ func _resolve_grab() -> void:
     var direction: Vector3 = (target.global_position - global_position).normalized()
     var actual: float = float(target.call("receive_combat_hit", selected_attack.damage * get_damage_multiplier(), direction, selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun))
     on_attack_connected(target, actual, selected_attack.launch_force)
+
+
+func _activate_awakening() -> void:
+    if awakening.active and awakening.has_method("cycle_form"):
+        awakening.call("cycle_form")
+    else:
+        awakening.call("start")

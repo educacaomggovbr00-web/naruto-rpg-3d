@@ -48,7 +48,7 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "ESCOLHA • ENCARE • LUTE"
+    subtitle.text = "0.4.0 • SETE ARENAS • QUATRO FORMAS DO SUSANOO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -301,8 +301,8 @@ func _arena_choice(row: HBoxContainer) -> OptionButton:
     var choice: OptionButton = OptionButton.new()
     choice.custom_minimum_size = Vector2(0, 40)
     choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    choice.add_item("Campo de treino")
-    choice.add_item("Pátio ao entardecer")
+    for title: String in ArenaCatalog.NAMES:
+        choice.add_item(title)
     _style_option(choice)
     group.add_child(choice)
     return choice
@@ -390,14 +390,14 @@ func _describe(_index: int) -> void:
         preview.call("show_fighters", character, opponent)
 
 func _arena_changed(_index: int) -> void:
-    arena_badge.text = "CAMPO DE TREINO" if arena_pick.selected == 0 else "PÁTIO AO ENTARDECER"
+    arena_badge.text = ArenaCatalog.NAMES[arena_pick.selected].to_upper()
 
 func _start() -> void:
     if GameFlow.busy:
         return
     var player_id: String = CharacterCatalog.READY[player_pick.selected].character_id
     var cpu_id: String = CharacterCatalog.READY[cpu_pick.selected].character_id
-    var stage: String = "training" if arena_pick.selected == 0 else "courtyard"
+    var stage: String = ArenaCatalog.IDS[arena_pick.selected]
     var result: Error = GameFlow.start_versus(player_id, cpu_id, stage) if mode_pick.selected == 0 else GameFlow.start_arcade(["", "training", "tournament", "survival", "boss"][mode_pick.selected], player_id, cpu_id, stage)
     if result != OK:
         description.text = "Não foi possível iniciar a batalha: " + error_string(result)
@@ -432,6 +432,19 @@ func _show_options() -> void:
     help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     help.custom_minimum_size.x = 480
     column.add_child(help)
+    var outfit_label: Label = Label.new()
+    outfit_label.text = "Henrique • Roupa"
+    column.add_child(outfit_label)
+    var outfit: OptionButton = OptionButton.new()
+    for title: String in ["Original", "Renegado • lenço vermelho", "Operações • colete"]:
+        outfit.add_item(title)
+    outfit.select(CombatSettings.henrique_outfit)
+    outfit.item_selected.connect(func(index: int) -> void:
+        CombatSettings.henrique_outfit = index
+        CombatSettings.save_preferences()
+        for fighter: CharacterBody3D in preview.fighters:
+            fighter.rig_adapter._install_roster_visual_identity())
+    column.add_child(outfit)
     var volume_label: Label = Label.new()
     volume_label.text = "Volume geral"
     column.add_child(volume_label)

@@ -3,6 +3,7 @@ extends Node
 const PATH: String = "user://combat_settings.json"
 const DIFFICULTIES: PackedStringArray = ["Treino", "Normal", "Difícil", "Jounin"]
 var difficulty: int = 1
+var henrique_outfit: int = 1
 var controller_deadzone: float = 0.18
 var master_volume: float = 0.8
 var writable: bool = true
@@ -35,6 +36,9 @@ func _load_preferences() -> void:
             if point is Array and point.size() == 2 and point[0] is float and point[1] is float:
                 if is_finite(float(point[0])) and is_finite(float(point[1])) and float(point[0]) >= 0 and float(point[0]) <= 1 and float(point[1]) >= 0 and float(point[1]) <= 1:
                     touch_layout[key] = point.duplicate()
+    var outfit: Variant = data.get("henrique_outfit", 1.0)
+    if (outfit is float or outfit is int) and is_finite(float(outfit)):
+        henrique_outfit = clampi(int(outfit), 0, 2)
     difficulty = int(data.difficulty)
     controller_deadzone = clampf(float(data.deadzone), 0.1, 0.4)
     master_volume = clampf(float(data.volume), 0.0, 1.0)
@@ -45,7 +49,7 @@ func save_preferences() -> Error:
     var file: FileAccess = FileAccess.open(PATH + ".tmp", FileAccess.WRITE)
     if file == null:
         return FileAccess.get_open_error()
-    file.store_string(JSON.stringify({"version":1,"difficulty":difficulty,"deadzone":controller_deadzone,"volume":master_volume,"touch_layout":touch_layout}))
+    file.store_string(JSON.stringify({"version":1,"difficulty":difficulty,"deadzone":controller_deadzone,"volume":master_volume,"touch_layout":touch_layout,"henrique_outfit":henrique_outfit}))
     file.close()
     return DirAccess.rename_absolute(PATH + ".tmp", PATH)
 

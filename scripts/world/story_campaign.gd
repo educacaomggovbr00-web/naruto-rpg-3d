@@ -69,7 +69,7 @@ static func validate() -> PackedStringArray:
         seen[id] = true
         if CharacterCatalog.find(String(mission.get("opponent", ""))) == null:
             errors.append("unknown opponent: " + String(mission.get("opponent", "")))
-        if String(mission.get("arena", "")) not in ["training", "courtyard"]:
+        if not ArenaCatalog.valid(String(mission.get("arena", ""))):
             errors.append("invalid arena for " + id)
         if not region_is_valid(String(mission.get("region", ""))):
             errors.append("invalid region for " + id)

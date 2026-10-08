@@ -13,14 +13,14 @@ func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     custom_minimum_size = Vector2(0, 255)
     stretch = true
-    stretch_shrink = 2
+    stretch_shrink = 1
 
     var viewport: SubViewport = SubViewport.new()
     viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
     viewport.msaa_3d = Viewport.MSAA_DISABLED
-    viewport.scaling_3d_scale = 0.78
+    viewport.scaling_3d_scale = 1.0
     add_child(viewport)
 
     stage = Node3D.new()

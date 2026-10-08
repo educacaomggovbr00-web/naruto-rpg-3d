@@ -130,7 +130,7 @@ func _available_choices() -> PackedStringArray:
         # skills follow the same existing chapter milestones.
         var milestone: String = jutsu_id
         if owner_fighter.character_definition.character_id == "henrique":
-            milestone = {"henrique_katon": "demon", "henrique_chidori": "clones", "henrique_susanoo_slash": "barrage"}.get(jutsu_id, jutsu_id)
+            milestone = {"henrique_katon": "demon", "henrique_chidori": "clones", "henrique_susanoo_slash": "barrage", "henrique_nagashi": "chidori", "henrique_amaterasu": "barrage", "henrique_genjutsu": "barrage", "henrique_katon_wave": "clones"}.get(jutsu_id, jutsu_id)
         if GameFlow.is_story_jutsu_unlocked(milestone):
             unlocked.append(jutsu_id)
     if unlocked.is_empty() and not choices.is_empty():

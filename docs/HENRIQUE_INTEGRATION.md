@@ -1,6 +1,27 @@
 # Henrique Uchiha: integração
 
-## Evolução atual — Shinobi Clash 0.3.0
+## Evolução visual — Shinobi Clash 0.4.0
+
+Continuação preservando o modelo, os 65 ossos, os pesos refinados e o elenco.
+Sete arenas selecionáveis agora têm cenografia distinta: treino, pátio, distrito
+Uchiha, vale, floresta, esconderijo e ruínas. As novas são interpretações
+procedurais originais, com a área/colisões compartilhadas preservadas.
+Susanoo tem formas parcial e esquelética procedurais e armadura/perfeito usando
+o modelo articulado existente; as formas iniciais não têm skin independente.
+Invocação percorre as formas; depois AWK/tecla 6/direcional direito alterna.
+Há multiplicadores próprios de dano/movimento, mantendo duração e cooldown.
+OPÇÕES oferece roupa original, lenço vermelho ou colete, presos aos ossos;
+não são roupas inteiramente remodeladas e skinadas. Rig facial continua pendente.
+
+Henrique possui sete jutsus: os três anteriores, Nagashi de área, Amaterasu com
+status limitado de chamas/dano periódico, Genjutsu com hitstun e distorção da
+visão do jogador atingido, e onda Katon ampla sem perseguição. Custos/cooldowns,
+defesa, substituição, interrupções e desbloqueios usam os contratos existentes.
+Três loops instrumentais originais foram sintetizados para exploração/luta/chefes.
+Não há dublagem nova. Detalhes e critérios restantes em
+[SHINOBI_CLASH_EVOLUTION.md](SHINOBI_CLASH_EVOLUTION.md).
+
+## Histórico — Shinobi Clash 0.3.0
 
 Susanoo agora usa o derivado `susanoo_mobile_rigged.glb`: **25 ossos**, skin e cinco animações próprias. A espada do modelo acompanha a mão; materiais passam a receber iluminação. Esta etapa também acrescenta defesa precisa/contra-ataque, arremesso, dificuldades, controle Bluetooth por InputMap, layout touch editável, quatro modos adicionais e uma campanha Henrique de seis capítulos com escolha salva. O APK continua debug ARM64; validação física permanece pendente. Escopo entregue e plano completo em [SHINOBI_CLASH_EVOLUTION.md](SHINOBI_CLASH_EVOLUTION.md).
 

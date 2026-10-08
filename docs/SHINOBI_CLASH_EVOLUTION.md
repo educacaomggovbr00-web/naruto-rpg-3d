@@ -5,7 +5,31 @@ Escopo consolidado do pedido completo, sem criar outro jogo. Base: `main` em
 alterações; continuam os 26 personagens, os modelos existentes, o combate
 compartilhado, as regiões, o inventário e o save versão 1.
 
-## Entrega jogável desta etapa
+## Atualização visível 0.4.0
+
+- Sete arenas na seleção; cinco novas cenografias originais. Chão e iluminação
+  próprios, floresta com assets CC0, vale com rochas/cachoeira/monumentos,
+  distrito com edifícios, esconderijo com pilares e ruínas com escombros.
+  A física do ringue original permanece; água e escombros são apresentação.
+- Quatro formas do Susanoo: parcial e esquelética construídas em runtime;
+  armadura e perfeito usam skin de 25 ossos. Perfeito aumenta escala e tem
+  asas em HIGH. As formas iniciais usam articulação de nós, sem novo skin.
+  AWK/6/direcional direito alterna enquanto ativo; 9 também alterna.
+  Dano/movimento: parcial 1.10/1.15, esquelético 1.20/1.10,
+  armadura 1.35/1.04, perfeito 1.30/1.08. Não há multiplicador defensivo.
+- Nagashi: pulso de 3.2 m; Amaterasu: impacto e chamas por até 3 s, sem
+  acumulação ilimitada; Genjutsu: hitstun de 1.4 s e distorção temporária da
+  visão do jogador; onda Katon: projétil amplo sem tracking.
+  Guarda, esquiva/substituição, obstáculos, custos e cooldowns permanecem.
+- Roupa original, lenço e colete em OPÇÕES; acessórios presos aos ossos,
+  sem substituir a malha enviada. Não inclui rig facial novo.
+- Loops instrumentais originais em exploração, combate e chefes; sem dublagem.
+- Menu identifica versão 0.4.0; APK versionCode 4, mesmo pacote Android.
+
+![Floresta de combate](captures/arena_forest.png)
+![Forma perfeita](captures/susanoo_form_3.png)
+
+## Histórico da entrega 0.3.0
 
 - **127 clips humanos**, incluindo as 100 adaptações CC0 da etapa anterior.
   Os 27 originais continuam preservados. São variantes de fontes existentes,
@@ -80,20 +104,20 @@ pendente, não recursos prometidos como presentes no APK.
 | Prioridade | Área | Base/entrega atual | Trabalho e critério para concluir |
 |---|---|---|---|
 | 1 | Combate | Combos, perseguição aérea, dash, substituição, esquiva, guarda/quebra, reações, impacto, clones do Naruto, IA; agora aparo e arremesso | Polir transições/cancelamentos, chutes e combo contra parede/chão em todos os lutadores; duas pessoas sincronizadas nos agarrões; finalizações específicas; partidas completas sem golpes atravessando obstáculos ou estados presos |
-| 2 | Henrique | Modelo fornecido, 65 ossos, pesos refinados, clips retargetados, protagonista próprio | Rig facial, expressões, roupas alternativas modeladas e skinadas, revisão manual de mãos/cotovelos e locomação; poses válidas de todos os clips e identidade visual aprovada |
-| 3 | Poderes/Susanoo | Katon, Chidori, corte, awakening e ultimate; agora Susanoo articulado | Sharingan/Mangekyou visíveis nos olhos, Amaterasu, Genjutsu, Nagashi, ondas Katon; quatro formas com geometria/rig próprios e transições; custos e recuperação avaliados em partidas reais |
+| 2 | Henrique | Modelo fornecido, 65 ossos, pesos refinados, clips retargetados, lenço/colete acessórios | Rig facial, expressões, roupas inteiramente modeladas e skinadas, revisão manual de mãos/cotovelos e locomação; poses válidas de todos os clips e identidade visual aprovada |
+| 3 | Poderes/Susanoo | Sete jutsus, awakening/ultimate, quatro formas com diferentes estruturas | Sharingan/Mangekyou visíveis nos olhos; substituir as formas procedurais por skin própria e polir efeitos/transições; custos e recuperação avaliados em partidas reais |
 | 4 | Efeitos e apresentação | Partículas/impactos, câmera, rastros e materiais existentes; armadura iluminada | Expandir fumaça/faíscas/destruição visual e cinema específico por golpe; leitura clara e orçamento de efeitos medido em aparelho |
 | 5 | Android/interface | Touch editável, analógico, controle e opções; APK | Testar toque simultâneo, reconexão Bluetooth, diferentes proporções, pause/resume; ajuste de tamanho/opacidade e remapeamento; estabilidade e desempenho registrados em aparelhos reais |
-| 6 | Mundo e arenas | Konoha, floresta, rio e vale exploráveis; duas arenas de combate | Arenas próprias do Vale do Fim, floresta, esconderijo e destruída com colisão/câmera; NPCs/eventos/lojas e missões adicionais sem bloquear navegação |
+| 6 | Mundo e arenas | Konoha, floresta, rio e vale exploráveis; sete arenas de combate | Polir cenografia, adicionar água/destruição interativas e validar câmera/colisões das sete arenas; NPCs/eventos/lojas e missões adicionais sem bloquear navegação |
 | 7 | História/modos | Arco Henrique de seis capítulos e escolha; cinco modos | Mais decisões com consequências posteriores, rivais e cutscenes encenadas; chave completa de torneio, desafios específicos, ranking persistente e personalização |
-| 8 | Som | SFX/áudio e volume existentes | Trilhas originais/licenciadas para exploração/batalha/chefes, gravação da voz do Henrique e gritos, poses/introduções/vitórias por lutador; arquivos de áudio reais e mixagem revisada |
+| 8 | Som | SFX, volume e três loops instrumentais próprios | Expandir as trilhas e gravar a voz do Henrique e gritos, poses/introduções/vitórias por lutador; arquivos de áudio reais e mixagem revisada |
 | 9 | Sistemas | Save/carga, seleção, HUD, XP/skills, inventário, desbloqueios e progressão existentes | Conquistas, tutorial guiado, recuperação/backup do save, equipamentos e customização; testes de migração e de fluxo completo no Android |
 | Separada | Multiplayer | Fora desta etapa, conforme pedido | Definir transporte/servidor, sincronização, matchmaking e testes de rede antes de anunciar modo online |
 
 Modelagem de roupas/face e gravação de voz exigem produção de assets próprios;
 os screenshots enviados servem como referências. Eles não contêm esses assets.
 A pele nova do Susanoo é um rig ajustado ao modelo disponível, não o rig original
-comercial das referências. As quatro formas não foram implementadas nesta etapa.
+comercial das referências. As quatro formas estão presentes na 0.4.0; as duas primeiras são procedurais.
 
 ## Reprodução e validação
 

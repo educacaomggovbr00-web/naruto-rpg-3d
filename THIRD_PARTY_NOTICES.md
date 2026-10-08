@@ -116,3 +116,10 @@ The original is static, without skin/animations. The project derivative `susanoo
 Source: `3970037e-fd4c-4114-b9f6-75905e547ff4.zip`, `base_basic_pbr.glb` supplied by the player. Source SHA-256: `701a61f74ba02666bd672df53ea88000ccdb71d994e38dfd16dd942ac8505852`.
 
 Provider/generation rights were not supplied; registered as DEVELOPMENT_ONLY. The project fitted the 65-bone combat reference skeleton, normalized weights, retained the chibi head and reposed the mesh offline. Existing CC0 Quaternius combat animations are registered separately; rig reference provenance remains unchanged.
+
+## Original instrumental loops (0.4.0)
+
+`assets/audio/original/{exploration,battle,boss}.wav` are original procedural
+compositions produced by `tools/compose_shinobi_music.py`. They synthesize notes
+and percussion without external samples or recordings. These are instrumental
+prototype loops; they do not include Henrique dialogue or professional vocals.

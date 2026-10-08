@@ -707,6 +707,10 @@ func _knock_out() -> void:
     respawn_timer = recovery_delay
 
 func _respawn() -> void:
+    for effect_name: String in ["BlackFlames", "GenjutsuOverlay"]:
+        var effect: Node = get_node_or_null(effect_name)
+        if effect != null:
+            effect.queue_free()
     _cancel_abilities()
     if is_instance_valid(combat_state):
         combat_state.call("clear_transient")

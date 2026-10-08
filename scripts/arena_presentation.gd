@@ -44,6 +44,10 @@ func build() -> void:
     ANIME.sun(sun, dusk)
     for side: Node in get_parent().get_node("ArenaWalls").get_children():
         side.get_node("Mesh").visible = false
+    if GameFlow.arena_id not in ["training", "courtyard"]:
+        _build_new_arena(GameFlow.arena_id)
+        _commit_batches()
+        return
     # Same physical boundary, enriched wall caps, buttresses and timber rails.
     for coordinate: float in [-29.5, 29.5]:
         box(Vector3(0, 1.6, coordinate), Vector3(60, 3.2, 0.5), plaster)
@@ -138,6 +142,9 @@ func build() -> void:
         target.position += Vector3(x, 1.2, 30.5)
         target.visibility_range_end = 52.0
         add_child(target)
+    _commit_batches()
+
+func _commit_batches() -> void:
     var material: ShaderMaterial = preload("res://assets/world/anime_scenery.tres")
     for key: Vector2i in batches:
         var surface: SurfaceTool = batches[key]
@@ -160,3 +167,73 @@ func set_quality(value: int) -> void:
     for instance: MeshInstance3D in detail:
         instance.visible = value > 0
     environment.environment.fog_enabled = value > 0
+
+
+func _build_new_arena(id: String) -> void:
+    licensed_scenery = Node3D.new()
+    licensed_scenery.name = "LicensedScenery"
+    licensed_scenery.set_script(preload("res://scripts/licensed_scenery.gd"))
+    add_child(licensed_scenery)
+    var stone: Color = Color("697982")
+    var floor_colors: Dictionary = {"forest": Color("566147"), "valley": Color("757b7a"), "hideout": Color("343845"), "ruins": Color("817565"), "konoha": Color("ae9c82")}
+    ground_material.set_shader_parameter("soil", floor_colors[id])
+    ground_material.set_shader_parameter("paving", floor_colors[id])
+    ground_material.set_shader_parameter("courtyard", id in ["konoha", "hideout"])
+    get_parent().get_node("Sun").light_color = Color("dde9ff")
+    get_parent().get_node("Sun").light_energy = 0.85
+    # All landmarks remain outside the original 60 m combat boundary.
+    # Existing wall colliders continue to constrain fighters and camera rays.
+    if id == "forest":
+        var trees: Array[Vector3] = []
+        for i: int in range(64):
+            var angle: float = TAU * float(i) / 64.0
+            trees.append(Vector3(cos(angle), 0, sin(angle)) * (33.0 + float(i % 4) * 7.0))
+        licensed_scenery.scatter("pine", trees, 18.0)
+        for x: float in [-34.0, 34.0]:
+            cylinder(Vector3(x, 3, 0), 3, 6, timber, 12)
+        environment.environment.fog_light_color = Color("31594a")
+    elif id == "valley":
+        for side: float in [-1.0, 1.0]:
+            for rock: int in range(9):
+                cylinder(Vector3(side * (39 + rock % 2 * 5), 7 + rock % 3 * 2, -48 + rock * 12), 9, 14 + rock % 3 * 4, stone.lightened(rock % 3 * 0.04), 7, 5)
+            box(Vector3(side * 36, 3, 0), Vector3(10, 6, 100), stone.darkened(0.2))
+            # Original monument silhouettes, rather than extracted franchise meshes.
+            cylinder(Vector3(side * 37, 18, -15), 3.5, 12, stone, 10, 2.5)
+            box(Vector3(side * 37, 27, -15), Vector3(6, 7, 4), stone.lightened(0.1))
+            box(Vector3(side * 37, 32, -15), Vector3(4, 4, 4), stone)
+            box(Vector3(side * 32, 26, -15), Vector3(7, 2, 3), stone)
+        for rock: int in range(7):
+            cylinder(Vector3(-36 + rock * 12, 7, -44), 9, 14 + rock % 3 * 3, stone.darkened(0.18), 7, 5)
+        box(Vector3(0, 8, -33.9), Vector3(7, 16, 0.3), Color("a9e3f0"))
+        box(Vector3(0, 0.025, -23), Vector3(58, 0.035, 9), Color("317d98"))
+    elif id == "hideout":
+        environment.environment.background_color = Color("111924")
+        environment.environment.ambient_light_color = Color("66719c")
+        for side: float in [-1.0, 1.0]:
+            box(Vector3(side * 33, 7, 0), Vector3(6, 14, 68), stone.darkened(0.6))
+            box(Vector3(0, 7, side * 33), Vector3(68, 14, 6), stone.darkened(0.6))
+            for z: float in [-24.0, -8.0, 8.0, 24.0]:
+                cylinder(Vector3(side * 29, 4, z), 1.5, 8, stone.darkened(0.3), 8)
+                box(Vector3(side * 29, 7, z), Vector3(2.5, 0.3, 2.5), Color("c184ed"))
+        box(Vector3(0, 14, 0), Vector3(68, 2, 68), stone.darkened(0.7))
+    else:
+        var destroyed: bool = id == "ruins"
+        for i: int in range(16):
+            var side: float = -1.0 if i % 2 == 0 else 1.0
+            var z: float = -42 + float(i / 2) * 12
+            var height: float = 2.5 + float(i % 4) * 2.2 if destroyed else 7 + float(i % 3) * 3
+            var center: Vector3 = Vector3(side * 37, height * 0.5, z)
+            box(center, Vector3(12, height, 9), plaster.darkened(0.35) if destroyed else plaster)
+            if not destroyed:
+                roof(Vector3(center.x, height, center.z), 13, 10, 2, tile if i % 2 == 0 else red)
+                for y: float in [2.0, 5.0, 8.0]:
+                    if y < height:
+                        box(Vector3(center.x - side * 6.1, y, z), Vector3(0.1, 1.5, 6), Color("70a9bd"))
+            else:
+                for debris: int in range(4):
+                    box(Vector3(side * (30 + debris), 0.5, z + debris), Vector3(2, 1, 1.5), stone)
+        if not destroyed:
+            licensed_scenery.place_arch("torii", Vector3(0, 0, -33), 12.0, 0.0, 108.0)
+            box(Vector3(0, 14, -55), Vector3(65, 28, 8), Color("b49370"))
+        else:
+            environment.environment.fog_light_color = Color("ad7566")

@@ -25,8 +25,26 @@ static func complete(hero: CharacterDefinition) -> void:
     var slash: JutsuDefinition = _jutsu("henrique_susanoo_slash", "Susanoo: Corte de Chakra", "burst", "susanoo", "combat_slash_center", 28.0, 30.0)
     slash.hitbox_radius = 1.85
     slash.knockback = 13.0
-    hero.jutsu_definitions.assign([fire, lightning, slash])
-    hero.jutsus = PackedStringArray([fire.jutsu_id, lightning.jutsu_id, slash.jutsu_id])
+    var nagashi: JutsuDefinition = _jutsu("henrique_nagashi", "Chidori Nagashi", "burst", "lightning", "combat_cast_high", 36.0, 20.0)
+    nagashi.hitbox_radius = 3.2
+    nagashi.knockback = 8.0
+    var amaterasu: JutsuDefinition = _jutsu("henrique_amaterasu", "Amaterasu", "projectile", "black_fire", "combat_cast_left", 40.0, 16.0)
+    amaterasu.movement_speed = 18.0
+    amaterasu.tracking_strength = 4.0
+    amaterasu.cooldown = 4.0
+    var illusion: JutsuDefinition = _jutsu("henrique_genjutsu", "Mangekyou: Genjutsu", "projectile", "mind", "combat_cast_right", 38.0, 8.0)
+    illusion.hitstun = 1.4
+    illusion.knockback = 0.0
+    illusion.launch_force = 0.0
+    illusion.cooldown = 5.0
+    var wave: JutsuDefinition = _jutsu("henrique_katon_wave", "Katon: Onda de Fogo", "projectile", "fire", "combat_cast_high", 34.0, 25.0)
+    wave.hitbox_radius = 1.15
+    wave.movement_speed = 16.0
+    wave.tracking_strength = 0.0
+    hero.jutsu_definitions.assign([fire, lightning, slash, nagashi, amaterasu, illusion, wave])
+    hero.jutsus = PackedStringArray()
+    for jutsu: JutsuDefinition in hero.jutsu_definitions:
+        hero.jutsus.append(jutsu.jutsu_id)
     var mode: AwakeningDefinition = AwakeningDefinition.new()
     mode.awakening_id = "henrique_awakening"
     mode.display_name = "Mangekyou • Susanoo"

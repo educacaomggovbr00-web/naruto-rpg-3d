@@ -10,6 +10,7 @@ const BANK: Dictionary = {
     "dash": preload("res://assets/audio/kenney/thrusterFire_000.ogg"),
     "smoke": preload("res://assets/audio/kenney/explosionCrunch_000.ogg")
 }
+var music: AudioStreamPlayer
 var voices: Array[AudioStreamPlayer] = []
 var charge_voice: AudioStreamPlayer
 var cursor: int = 0
@@ -20,8 +21,18 @@ var settings: ConfigFile = ConfigFile.new()
 var muted_button: Button = null
 
 func _ready() -> void:
+    music = AudioStreamPlayer.new()
+    add_child(music)
+    var theme: String = "exploration" if get_parent().scene_file_path.ends_with("world.tscn") else "boss" if GameFlow.arcade_mode == "boss" else "battle"
+    var track: AudioStreamWAV = load("res://assets/audio/original/" + theme + ".wav").duplicate() as AudioStreamWAV
+    track.loop_mode = AudioStreamWAV.LOOP_FORWARD
+    track.loop_end = roundi(track.get_length() * track.mix_rate)
+    music.stream = track
+    music.volume_db = -19.0
     settings.load("user://audio.cfg")
     muted = bool(settings.get_value("audio", "muted", false))
+    if not muted and DisplayServer.get_name() != "headless":
+        music.play()
     for index: int in range(8):
         var voice: AudioStreamPlayer = AudioStreamPlayer.new()
         voice.max_polyphony = 1
@@ -93,6 +104,10 @@ func toggle_mute() -> void:
     _refresh_button()
 
 func _refresh_button() -> void:
+    if music != null:
+        music.volume_db = -80.0 if muted else -19.0
+        if not muted and not music.playing and DisplayServer.get_name() != "headless":
+            music.play()
     muted_button.text = "SOM: OFF" if muted else "SOM: ON"
 
 func stop_all() -> void:

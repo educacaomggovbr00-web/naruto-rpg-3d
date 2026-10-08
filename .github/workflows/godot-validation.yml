@@ -220,7 +220,7 @@ jobs:
         run: |
           set -o pipefail
           python -m unittest discover -s tests -p 'test_susanoo_rig.py'
-          for contract in evolution arcade_modes henrique_campaign; do
+          for contract in evolution arcade_modes henrique_campaign visible_evolution; do
             /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script "res://tests/${contract}_contract.gd" 2>&1 | tee "/tmp/${contract}.log"
             ! grep -E '^(SCRIPT ERROR:|ERROR:)' "/tmp/${contract}.log"
             grep -F 'CONTRACT: PASS' "/tmp/${contract}.log"

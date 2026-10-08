@@ -246,7 +246,11 @@ func _should_use_procedural_identity() -> bool:
 
 
 func _install_roster_visual_identity() -> void:
+    for accessory: Dictionary in roster_accessories:
+        if is_instance_valid(accessory.node):
+            accessory.node.queue_free()
     roster_accessories.clear()
+    _install_henrique_outfit()
     if character_definition == null or character_definition.visual_profile == null or skeleton == null:
         return
     if not _should_use_procedural_identity():
@@ -995,3 +999,19 @@ func get_available_animations_text() -> String:
         names.append(String(animation_value))
 
     return ", ".join(names)
+
+
+func _install_henrique_outfit() -> void:
+    if character_definition == null or character_definition.character_id != "henrique" or skeleton == null:
+        return
+    var settings: Node = get_tree().root.get_node_or_null("CombatSettings")
+    var outfit: int = int(settings.henrique_outfit) if settings != null else 0
+    if outfit == 1:
+        # Original red scarf and two trailing cloth panels, anchored to the actual rig.
+        _add_capsule_accessory("Neck", 0.10, 0.38, Vector3(0, 0.0, 0), Vector3(0, 0, 90), Color("8f273f"), Vector3(1, 1, 1.6))
+        _add_box_accessory("Spine2", Vector3(0.16, 0.65, 0.035), Vector3(-0.12, -0.28, -0.21), Vector3(-15, 0, -12), Color("8f273f"))
+        _add_box_accessory("Spine2", Vector3(0.14, 0.50, 0.035), Vector3(0.1, -0.22, -0.23), Vector3(-20, 0, 12), Color("602139"))
+    elif outfit == 2:
+        _add_box_accessory("Spine2", Vector3(0.48, 0.35, 0.12), Vector3(0, -0.07, 0.17), Vector3.ZERO, Color("243c45"))
+        for side: float in [-1.0, 1.0]:
+            _add_box_accessory("Spine2", Vector3(0.14, 0.10, 0.04), Vector3(side * 0.13, -0.10, 0.25), Vector3.ZERO, Color("91a69b"))

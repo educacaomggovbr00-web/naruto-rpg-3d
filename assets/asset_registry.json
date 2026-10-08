@@ -945,6 +945,33 @@
       "license": "Original project content",
       "modifications": "Original Henrique campaign: six chapters and a saved rival choice; existing campaign retained",
       "sha256": "67d7aa5236940416f1acb4efbc898c598b42fa897d89c01c43f26d221c5a3c61"
+    },
+    {
+      "path": "assets/audio/original/boss.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original procedural composition: tools/compose_shinobi_music.py",
+      "license": "Project original composition",
+      "modifications": "Synthesized instrumental loop; no recordings or external samples",
+      "sha256": "33cef6feff645bd3952877bfe0d3b3e5341ac1847a53cd08d82a84156f22ec74"
+    },
+    {
+      "path": "assets/audio/original/exploration.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original procedural composition: tools/compose_shinobi_music.py",
+      "license": "Project original composition",
+      "modifications": "Synthesized instrumental loop; no recordings or external samples",
+      "sha256": "33b100f1968c29caf497de26b6afbeeba37554d0ed0cce8704bbcb8d04d4df54"
+    },
+    {
+      "path": "assets/audio/original/battle.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original procedural composition: tools/compose_shinobi_music.py",
+      "license": "Project original composition",
+      "modifications": "Synthesized instrumental loop; no recordings or external samples",
+      "sha256": "afad626adec5afbb105bd47835d8e9016978602f459b95312f9a39d2682631fc"
     }
   ]
 }

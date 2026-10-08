@@ -15,6 +15,11 @@ var pose_blend: float = 0.0
 var skeleton: Skeleton3D
 var animation_player: AnimationPlayer
 var current_clip: String = ""
+var form: int = 3
+var partial_shell: Node3D
+var skeletal_shell: Node3D
+var skeletal_arms: Array[Node3D] = []
+const FORM_NAMES: PackedStringArray = ["Parcial", "Esquelético", "Armadura", "Perfeito"]
 
 static func strike_angle(progress: float, impact_phase: float = 0.42) -> float:
     var phase: float = clampf(progress, 0.0, 1.0)
@@ -52,6 +57,8 @@ func _ready() -> void:
             external_model = true
     if not external_model:
         _build_proxy()
+    _build_forms()
+    set_form(form)
     set_quality(quality_level)
 
 func _find_rig(node: Node) -> void:
@@ -162,6 +169,8 @@ func update_pose(delta: float, striking: bool, progress: float = 0.0, local_velo
     shell.rotation = Vector3(clampf(local_velocity.z * 0.006, -0.08, 0.08), pose_blend * 0.18,
         clampf(-local_velocity.x * 0.008, -0.10, 0.10))
     material.emission_energy_multiplier = 1.0 + (0.35 * sin(PI * clampf(progress, 0.0, 1.0)) if striking else 0.0)
+    for index: int in range(skeletal_arms.size()):
+        skeletal_arms[index].rotation.x = angle * (1.0 if index == 0 else -0.35)
     if sword_arm != null:
         # Strike follows the manifest's impact; recovery returns continuously to
         # neutral, including interruption, rather than snapping from full swing.
@@ -180,5 +189,48 @@ func reset_pose() -> void:
 func set_quality(level: int) -> void:
     quality_level = clampi(level, 0, 2)
     for wing: MeshInstance3D in wings:
-        wing.visible = quality_level == 2
+        wing.visible = quality_level == 2 and form == 3
     # Geometry is bounded and built once; no per-frame allocations/particles.
+
+
+func _build_forms() -> void:
+    partial_shell = Node3D.new()
+    partial_shell.name = "PartialRibcage"
+    shell.add_child(partial_shell)
+    for side: float in [-1.0, 1.0]:
+        _segment(partial_shell, Vector3(side * 0.2, 0.1, -0.65), Vector3(side * 0.2, 2.3, -0.65), 0.08)
+        for row: int in range(6):
+            var y: float = 0.25 + row * 0.33
+            var last: Vector3 = Vector3(side * 0.2, y, -0.65)
+            for step: int in range(1, 9):
+                var angle: float = step * PI / 8.0
+                var point: Vector3 = Vector3(side * 1.25 * sin(angle), y, -0.15 - 1.1 * cos(angle))
+                _segment(partial_shell, last, point, 0.06)
+                last = point
+    skeletal_shell = Node3D.new()
+    skeletal_shell.name = "SkeletalUpperBody"
+    shell.add_child(skeletal_shell)
+    _segment(skeletal_shell, Vector3(0, 1.6, -0.55), Vector3(0, 3.5, -0.55), 0.13)
+    _ball(skeletal_shell, Vector3(0, 3.1, -0.55), Vector3(0.6, 0.75, 0.5))
+    for side: float in [-1.0, 1.0]:
+        _segment(skeletal_shell, Vector3(side * 0.2, 3.35, -0.55), Vector3(side * 0.65, 3.9, -0.55), 0.07)
+        var arm: Node3D = Node3D.new()
+        arm.position = Vector3(side * 1.1, 2.5, -0.55)
+        skeletal_shell.add_child(arm)
+        skeletal_arms.append(arm)
+        _ball(arm, Vector3.ZERO, Vector3(0.35, 0.35, 0.35))
+        _segment(arm, Vector3.ZERO, Vector3(side * 0.4, -0.7, 0.1), 0.13)
+        _segment(arm, Vector3(side * 0.4, -0.7, 0.1), Vector3(side * 0.6, -0.8, 1.0), 0.11)
+        for finger: int in range(4):
+            _segment(arm, Vector3(side * 0.6 + finger * 0.07, -0.8, 1), Vector3(side * 0.6 + finger * 0.07, -0.95, 1.3), 0.035)
+
+func set_form(value: int) -> void:
+    form = clampi(value, 0, 3)
+    if partial_shell == null:
+        return
+    partial_shell.visible = form <= 1
+    skeletal_shell.visible = form == 1
+    if imported_avatar != null:
+        imported_avatar.visible = form >= 2
+        imported_avatar.scale = Vector3.ONE * (0.006 if form == 3 else 0.005)
+    set_quality(quality_level)

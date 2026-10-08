@@ -5,6 +5,8 @@ static func color(effect: String, fallback: Color = Color(0.20, 0.65, 1.0)) -> C
     match effect:
         "susanoo":
             return Color(0.64, 0.20, 1.0)
+        "black_fire":
+            return Color(0.06, 0.01, 0.10)
         "fire":
             return Color(1.0, 0.23, 0.04)
         "water":

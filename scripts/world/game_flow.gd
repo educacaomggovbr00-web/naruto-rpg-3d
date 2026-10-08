@@ -359,7 +359,7 @@ func start_versus(player_id: String, cpu_id: String, stage: String) -> Error:
         return ERR_BUSY
     var selected_player: CharacterDefinition = CharacterCatalog.find(player_id)
     var selected_cpu: CharacterDefinition = CharacterCatalog.find(cpu_id)
-    if selected_player == null or selected_cpu == null or stage not in ["training", "courtyard"]:
+    if selected_player == null or selected_cpu == null or not ArenaCatalog.valid(stage):
         return ERR_INVALID_PARAMETER
     _reset_arcade()
     player_character = selected_player
@@ -463,7 +463,7 @@ func start_story_battle(position: Vector3 = Vector3.ZERO, yaw: float = 0.0) -> E
         return ERR_DOES_NOT_EXIST
     var opponent: CharacterDefinition = CharacterCatalog.find(String(mission.get("opponent", "")))
     var stage: String = String(mission.get("arena", "training"))
-    if opponent == null or stage not in ["training", "courtyard"]:
+    if opponent == null or not ArenaCatalog.valid(stage):
         return ERR_INVALID_DATA
     versus_mode = false
     _reset_arcade()
