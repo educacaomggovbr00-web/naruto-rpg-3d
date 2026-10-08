@@ -80,7 +80,7 @@ func run() -> void:
     var flow: Node = root.get_node("GameFlow")
     CharacterCatalog.initialize()
     check_retarget_math()
-    check(CharacterCatalog.READY.size() == 25, "Storm 1 selection must expose all 25 playable fighters")
+    check(CharacterCatalog.READY.size() == 26, "Storm 1 selection must expose all 25 playable fighters")
     var placeholder_count: int = 0
     for definition: CharacterDefinition in CharacterCatalog.READY:
         if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
@@ -106,7 +106,7 @@ func run() -> void:
             check(adapter._has_required_combat_bones(), "Authored mesh keeps every combat-critical hand/foot/body bone")
             var meshes: Array[MeshInstance3D] = []
             adapter._collect_mesh_instances(adapter.model_instance, meshes)
-            if definition.character_id == "naruto":
+            if definition.character_id in ["naruto", "henrique"]:
                 check(meshes.size() == 1, "BaseBasic Naruto uses one optimized skinned mesh")
                 check(meshes[0].mesh.surface_get_array_index_len(0) / 3 <= 60000, "Naruto stays within the offline triangle budget")
                 for mesh: MeshInstance3D in meshes:
@@ -143,7 +143,7 @@ func run() -> void:
                 check(meshes[0].material_override == adapter.TOON_MATERIAL, "Original authored fighters keep the project toon material")
             var library: AnimationLibrary = adapter.animation_player.get_animation_library(&"combat")
             check(library == cpu.rig_adapter.animation_player.get_animation_library(&"combat"), "Identical profiles share immutable prepared clips across teams")
-            if definition.character_id != "naruto" and adapter.skeleton.get_bone_count() == 65:
+            if definition.character_id not in ["naruto", "henrique"] and adapter.skeleton.get_bone_count() == 65:
                 if shared_stylized_library == null:
                     shared_stylized_library = library
                 check(library == shared_stylized_library, "Compatible 65-bone authored models share immutable clip data")

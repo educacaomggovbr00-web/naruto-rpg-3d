@@ -5,6 +5,7 @@ extends RefCounted
 ## character-specific authored choreography. Values are OUR_APPROXIMATION and
 ## keep every fighter mechanically distinct without borrowing Naruto's moveset.
 const PROFILES: Dictionary = {
+    "henrique": {"speed": 8.0, "sprint": 12.5, "health": 105.0, "damage": [6.5, 8.5, 11.0, 16.5], "knockback": 9.0, "lift": 8.5, "stun": 0.24, "third": "attack_3"},
     "shikamaru": {"speed": 7.1, "sprint": 11.2, "health": 96.0, "damage": [5.5, 7.0, 9.0, 13.5], "knockback": 7.0, "lift": 7.2, "stun": 0.23, "third": "attack_3"},
     "choji": {"speed": 6.3, "sprint": 10.2, "health": 118.0, "damage": [8.0, 10.5, 13.0, 19.0], "knockback": 10.5, "lift": 8.8, "stun": 0.30, "third": "attack_4"},
     "ino": {"speed": 7.5, "sprint": 11.9, "health": 94.0, "damage": [5.8, 7.8, 9.8, 14.2], "knockback": 7.5, "lift": 7.8, "stun": 0.20, "third": "attack_3"},

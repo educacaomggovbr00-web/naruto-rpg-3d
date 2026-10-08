@@ -84,7 +84,7 @@ func _ready() -> void:
     camera.keep_aspect = Camera3D.KEEP_HEIGHT
     stage.add_child(camera)
 
-    show_fighters(CharacterCatalog.NARUTO, CharacterCatalog.NARUTO)
+    show_fighters(CharacterCatalog.HENRIQUE, CharacterCatalog.NARUTO)
 
 func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> void:
     for fighter: CharacterBody3D in fighters:

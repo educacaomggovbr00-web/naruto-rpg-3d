@@ -13,7 +13,7 @@ const MISSIONS: Dictionary = {
     "training": preload("res://assets/world/training.tres")
 }
 
-var player_character: CharacterDefinition = CharacterCatalog.NARUTO
+var player_character: CharacterDefinition = CharacterCatalog.HENRIQUE
 var cpu_character: CharacterDefinition = CharacterCatalog.NARUTO
 var arena_id: String = "training"
 var versus_mode: bool = false
@@ -185,6 +185,13 @@ func is_story_jutsu_unlocked(jutsu_id: String) -> bool:
     ensure_rpg_progress()
     return progress.unlocked_jutsus.has(jutsu_id)
 
+func _story_unlock_label(milestone: String) -> String:
+    if player_character == CharacterCatalog.HENRIQUE:
+        # Later Naruto-only rewards stay recorded for saves/versus; do not show
+        # unavailable Naruto moves as Henrique abilities.
+        return {"clones": "CHIDORI", "barrage": "CORTE SUSANOO"}.get(milestone, "TREINO UCHIHA")
+    return milestone.to_upper()
+
 func buy_item(item_id: String, price: int, max_stock: int = 9) -> bool:
     ensure_rpg_progress()
     if item_id not in ["ramen", "food_pill", "bomb", "kunai_pack"]:
@@ -234,7 +241,13 @@ func story_dialogue(phase: String, mission_id: String = "") -> Array:
         return []
     var key: String = phase + "_dialogue"
     var value: Variant = mission.get(key, [])
-    return value as Array if value is Array else []
+    if not value is Array:
+        return []
+    var lines: Array = (value as Array).duplicate(true)
+    for line: Dictionary in lines:
+        if line.get("speaker", "") == "Naruto":
+            line.speaker = "Henrique Uchiha"
+    return lines
 
 func story_dialogue_key(phase: String, mission_id: String = "") -> String:
     var mission: Dictionary = current_story_mission() if mission_id.is_empty() else StoryCampaign.find(mission_id)
@@ -392,7 +405,7 @@ func start_battle(id: String, position: Vector3, yaw: float) -> Error:
     versus_mode = false
     pending_story_id = ""
     if player_character == null:
-        player_character = CharacterCatalog.NARUTO
+        player_character = CharacterCatalog.HENRIQUE
     cpu_character = CharacterCatalog.NARUTO
     arena_id = "training"
     accept_mission(id)
@@ -417,7 +430,7 @@ func start_story_battle(position: Vector3 = Vector3.ZERO, yaw: float = 0.0) -> E
     if opponent == null or stage not in ["training", "courtyard"]:
         return ERR_INVALID_DATA
     versus_mode = false
-    player_character = CharacterCatalog.NARUTO
+    player_character = CharacterCatalog.HENRIQUE
     cpu_character = opponent
     arena_id = stage
     pending_story_id = String(mission.id)
@@ -484,7 +497,7 @@ func finish_battle(won: bool) -> bool:
                     int(reward.ryo),
                     int(reward.xp),
                     " • NÍVEL +%d" % int(reward.levels) if int(reward.levels) > 0 else "",
-                    " • JUTSU: " + String(reward.unlock).to_upper() if not String(reward.unlock).is_empty() else ""
+                    " • JUTSU: " + _story_unlock_label(String(reward.unlock)) if not String(reward.unlock).is_empty() else ""
                 ]
         else:
             return_message = "Missão falhou: %s. Você pode tentar novamente." % String(mission.get("title", "Missão"))

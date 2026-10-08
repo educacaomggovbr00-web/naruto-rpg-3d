@@ -46,6 +46,7 @@ func reset(distance: float = 1.1) -> void:
     game.get_node("HUD/MobileControls").move_vector = Vector2.ZERO
 
 func run() -> void:
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     game = load("res://main.tscn").instantiate() as Node3D
     root.add_child(game)
     game.get_node("CombatFeedback").hit_stop_enabled = false

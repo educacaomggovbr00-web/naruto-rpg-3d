@@ -39,7 +39,7 @@ func clear_generic_fighter(fighter: CharacterBody3D) -> void:
 func run() -> void:
     CharacterCatalog.initialize()
 
-    check(CharacterCatalog.READY.size() == 25, "Power contract expects the full 25-fighter roster")
+    check(CharacterCatalog.READY.size() == 26, "Power contract expects the full 25-fighter roster")
     for fighter: CharacterDefinition in CharacterCatalog.READY:
         check(fighter.jutsus.size() >= 2, "Every fighter needs at least two jutsus: " + fighter.character_id)
         check(fighter.has_ultimate, "Every fighter needs an Ultimate: " + fighter.character_id)

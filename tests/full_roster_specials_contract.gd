@@ -31,7 +31,7 @@ func reset_fighter(fighter: CharacterBody3D) -> void:
 func run() -> void:
     CharacterCatalog.initialize()
 
-    check(CharacterCatalog.READY.size() == 25, "Full roster must contain 25 fighters")
+    check(CharacterCatalog.READY.size() == 26, "Full roster must contain 25 fighters")
 
     var special_ids: Dictionary = {}
     for fighter: CharacterDefinition in CharacterCatalog.READY:

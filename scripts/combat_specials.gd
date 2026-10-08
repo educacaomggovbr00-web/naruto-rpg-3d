@@ -120,13 +120,18 @@ func _available_choices() -> PackedStringArray:
         owner_fighter.has_method("is_cpu_controlled")
         or GameFlow.versus_mode
         or not GameFlow.is_story_battle()
-        or owner_fighter.character_definition.character_id != "naruto"
+        or owner_fighter.character_definition.character_id not in ["naruto", "henrique"]
     ):
         return choices
 
     var unlocked: PackedStringArray = PackedStringArray()
     for jutsu_id: String in choices:
-        if GameFlow.is_story_jutsu_unlocked(jutsu_id):
+        # Preserve version-1 saves and mission rewards; Henrique's corresponding
+        # skills follow the same existing chapter milestones.
+        var milestone: String = jutsu_id
+        if owner_fighter.character_definition.character_id == "henrique":
+            milestone = {"henrique_katon": "demon", "henrique_chidori": "clones", "henrique_susanoo_slash": "barrage"}.get(jutsu_id, jutsu_id)
+        if GameFlow.is_story_jutsu_unlocked(milestone):
             unlocked.append(jutsu_id)
     if unlocked.is_empty() and not choices.is_empty():
         unlocked.append(choices[0])
@@ -147,6 +152,8 @@ func start(kind: String = "") -> bool:
     if not current.is_empty() or owner_fighter.defeated or owner_fighter.stagger_timer > 0.0 or owner_fighter.jutsu_timer > 0.0 or owner_fighter.attack_active or owner_fighter.dodge_timer > 0.0 or owner_fighter.chakra_dash_timer > 0.0 or owner_fighter.jutsu_cooldown > 0.0:
         return false
     if move not in _available_choices():
+        return false
+    if move == "henrique_susanoo_slash" and not owner_fighter.awakening.active:
         return false
     var data: JutsuDefinition = owner_fighter.character_definition.find_jutsu(move)
     var cost: float = data.chakra_cost if data != null else 32.0

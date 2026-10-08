@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
+[resource]
+script = ExtResource("1")
+character_id = "henrique"
+display_name = "Henrique Uchiha"
+model_path = "res://assets/characters/henrique/henrique_mobile_rigged.glb"
+visual_status = "DEVELOPMENT_ONLY_USER_SUPPLIED_HENRIQUE_RIGGED"
+model_ground_to_collision = true
+model_target_height = 1.70
+movement_speed = 8.0
+sprint_speed = 12.5
+max_health = 105.0
+energy_color = Color(0.64, 0.20, 1.0, 1)
+summary = "Protagonista • Katon, Chidori e corte Susanoo. Mangekyou com 50% de vida e chakra cheio. Modelo enviado com rig e 27 animações."

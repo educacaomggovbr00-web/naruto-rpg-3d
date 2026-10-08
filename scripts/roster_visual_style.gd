@@ -3,6 +3,8 @@ extends RefCounted
 
 static func color(effect: String, fallback: Color = Color(0.20, 0.65, 1.0)) -> Color:
     match effect:
+        "susanoo":
+            return Color(0.64, 0.20, 1.0)
         "fire":
             return Color(1.0, 0.23, 0.04)
         "water":
@@ -35,6 +37,10 @@ static func color(effect: String, fallback: Color = Color(0.20, 0.65, 1.0)) -> C
             return fallback
 
 static func projectile_mesh(effect: String) -> PrimitiveMesh:
+    if effect == "susanoo":
+        var blade: BoxMesh = BoxMesh.new()
+        blade.size = Vector3(1.8, 0.12, 0.28)
+        return blade
     if effect in ["steel", "puppet", "bone", "snake"]:
         var box: BoxMesh = BoxMesh.new()
         box.size = Vector3(0.18, 0.18, 0.90) if effect != "bone" else Vector3(0.14, 0.14, 1.05)

@@ -17,6 +17,7 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
 
@@ -46,11 +47,13 @@ func run() -> void:
     check(manga_overlay != null, "Combat HUD must include the manga impact overlay")
     if manga_overlay != null:
         check(not manga_overlay.visible, "Manga impact overlay must stay dormant outside impacts")
+        feedback.set_process(false)
         feedback.call("spawn_impact", cpu.global_position + Vector3.UP, "slam")
-        await frames(1)
+        feedback.call("_update_manga_impact", 1.0 / 60.0)
         check(manga_overlay.visible, "Heavy combat impacts must activate the manga overlay")
         var manga_material: ShaderMaterial = manga_overlay.material as ShaderMaterial
         check(manga_material != null and float(manga_material.get_shader_parameter("impact")) > 0.20, "Heavy hits must drive visible manga impact strength")
+        feedback.set_process(true)
 
     check(not cpu.get_node("HealthLabel").visible, "Enemy 3D health text must stay hidden during normal combat")
     check(hud.get("enemy_health_bar") != null, "HUD must expose a readable enemy health bar")

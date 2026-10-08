@@ -22,7 +22,7 @@ func run() -> void:
     var procedural_count: int = 0
     var accessory_signatures: Dictionary = {}
     for fighter: CharacterDefinition in CharacterCatalog.READY:
-        if fighter.character_id in ["naruto", "sasuke", "sakura", "kakashi"]:
+        if fighter.character_id in ["naruto", "sasuke", "sakura", "kakashi", "henrique"]:
             continue
 
         procedural_count += 1

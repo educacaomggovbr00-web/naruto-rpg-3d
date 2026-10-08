@@ -138,6 +138,9 @@ func _ready() -> void:
     awakening = Node3D.new()
     awakening.name = "Awakening"
     awakening.set_script(
+        preload("res://scripts/henrique_awakening.gd")
+        if character_definition.character_id == "henrique"
+        else
         preload("res://scripts/naruto_awakening.gd")
         if character_definition.character_id == "naruto"
         else preload("res://scripts/roster_awakening.gd")
@@ -147,6 +150,9 @@ func _ready() -> void:
     ultimate = Node3D.new()
     ultimate.name = "Ultimate"
     ultimate.set_script(
+        preload("res://scripts/henrique_ultimate.gd")
+        if character_definition.character_id == "henrique"
+        else
         preload("res://scripts/ultimate_controller.gd")
         if character_definition.character_id == "naruto"
         else preload("res://scripts/roster_ultimate_controller.gd")
@@ -1104,7 +1110,10 @@ func get_combat_state() -> String:
 func get_camera_state_profile() -> Dictionary:
     if not is_instance_valid(combat_state):
         return {}
-    return combat_state.call("camera_profile") as Dictionary
+    var profile: Dictionary = (combat_state.call("camera_profile") as Dictionary).duplicate()
+    if character_definition.character_id == "henrique" and awakening != null and (awakening.active or awakening.transforming):
+        profile["distance_offset"] = float(profile.get("distance_offset", 0.0)) + 1.2
+    return profile
 
 func get_max_health() -> float:
     return max_health

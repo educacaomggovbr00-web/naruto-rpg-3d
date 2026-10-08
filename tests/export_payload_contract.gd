@@ -29,6 +29,7 @@ func run() -> void:
         print("PUBLIC PAYLOAD GATE: PASS")
         quit(0)
         return
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var game: Node = load("res://main.tscn").instantiate()
     root.add_child(game)
     for i: int in range(8):
@@ -93,7 +94,7 @@ func run() -> void:
             push_error("Export lost character mesh/profile: " + definition.character_id)
             quit(1)
             return
-        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED"]:
+        if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_HENRIQUE_RIGGED"]:
             authored_visuals += 1
         elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
             roster_placeholders += 1
@@ -102,8 +103,8 @@ func run() -> void:
             quit(1)
             return
     if (
-        catalog.READY.size() != 25
-        or authored_visuals != 4
+        catalog.READY.size() != 26
+        or authored_visuals != 5
         or roster_placeholders != 21
         or not catalog.SAKURA.jutsus.has("booby_trap")
         or not catalog.SAKURA.jutsus.has("cherry_blossom_impact")
@@ -123,7 +124,7 @@ func run() -> void:
         quit(1)
         return
     print("CHARACTER JUTSU DATA ANDROID PACK: PASS")
-    print("FULL STORM 1 ROSTER, MODEL SLOTS AND FOUR AUTHORED VISUALS ANDROID PACK: PASS")
+    print("FULL STORM 1 ROSTER, MODEL SLOTS AND FIVE AUTHORED VISUALS ANDROID PACK: PASS")
     menu.queue_free()
     await process_frame
     var village: Node = load("res://world.tscn").instantiate()
@@ -143,6 +144,29 @@ func run() -> void:
     print("WORLD ANDROID PACK: PASS")
     print("RPG STORY AND REGIONS ANDROID PACK: PASS")
     village.queue_free()
+    await process_frame
+    var flow: Node = root.get_node("GameFlow")
+    flow.player_character = catalog.HENRIQUE
+    flow.cpu_character = catalog.SASUKE
+    flow.versus_mode = true
+    var hero_battle: Node = load("res://main.tscn").instantiate()
+    root.add_child(hero_battle)
+    for i: int in range(8):
+        await physics_frame
+        await process_frame
+    var hero: Node = hero_battle.get_node("Player")
+    if (
+        not hero.rig_adapter.rig_loaded
+        or hero.rig_adapter.real_animation_count != 27
+        or not hero.awakening.avatar.external_model
+        or not hero.ultimate.avatar.external_model
+        or not FileAccess.file_exists("res://assets/susanoo/LICENSE.txt")
+    ):
+        push_error("Android pack lost Henrique skin, ready-made Susanoo or attribution")
+        quit(1)
+        return
+    hero_battle.queue_free()
+    print("HENRIQUE SUSANOO ANDROID PACK: PASS")
     print("ANDROID PHASE 1 PACK: PASS")
     await process_frame
     quit(0)

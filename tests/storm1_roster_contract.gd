@@ -22,7 +22,7 @@ func check(ok: bool, message: String) -> void:
 
 func run() -> void:
     CharacterCatalog.initialize()
-    check(CharacterCatalog.READY.size() == 25, "Storm 1 must expose 25 playable fighters")
+    check(CharacterCatalog.READY.size() == 26, "Storm 1 must expose 25 playable fighters")
     check(CharacterCatalog.SUPPORT_ONLY.size() == 10, "Storm 1 support-only roster must keep 10 entries")
 
     var seen: Dictionary = {}

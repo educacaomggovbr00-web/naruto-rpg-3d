@@ -15,6 +15,7 @@ func check(ok: bool, message: String) -> void:
 func frames(count: int) -> void:
     for index: int in range(count):
         await physics_frame
+        await process_frame
 
 func samples(mesh: MeshInstance3D, skeleton: Skeleton3D, model_scale: float) -> PackedVector3Array:
     var transforms: Array[Transform3D] = []

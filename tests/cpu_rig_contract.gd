@@ -12,6 +12,7 @@ func frames(count: int) -> void:
     for index: int in range(count):
         await physics_frame
 func run() -> void:
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var arena: Node3D = load("res://main.tscn").instantiate()
     root.add_child(arena)
     await frames(8)

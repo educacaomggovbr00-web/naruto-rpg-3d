@@ -109,7 +109,7 @@ func run() -> void:
     check(battle.scene_file_path == "res://main.tscn" and flow.pending_battle == "training", "World trainer must use the original battle scene")
     var fighter: Node = battle.get_node("Player")
     check(fighter.ninja_tools.stock.bomb == 3 and fighter.ninja_tools.stock.food_pills == 3 and flow.progress.supplies == 0, "Purchased supply must apply once to existing ninja tools")
-    check(fighter.rig_adapter.real_animation_count == 27 and fighter.specials.clones.size() == 3, "Mission battle must retain rig and combat pools")
+    check(fighter.rig_adapter.real_animation_count == 27 and fighter.specials.projectiles.size() == 3, "Mission battle must retain rig and character projectile pools")
     battle.get_node("EnemyDummy").call("_knock_out")
     await frames(3)
     check(flow.battle_finished and flow.result_layer != null and battle.process_mode == Node.PROCESS_MODE_DISABLED, "CPU KO must open a result and stop active combat")

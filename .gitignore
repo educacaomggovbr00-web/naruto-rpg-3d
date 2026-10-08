@@ -40,3 +40,9 @@ external/character_assets/
 # Recreated from embedded supplied Sakura GLB during import
 assets/characters/sakura_user/sakura_mobile_rigged_*.png
 assets/characters/sakura_user/sakura_mobile_rigged_*.png.import
+
+# Recreated from Henrique and Susanoo embedded textures during Godot import
+assets/characters/henrique/henrique_mobile_rigged_*.png
+assets/characters/henrique/henrique_mobile_rigged_*.png.import
+assets/susanoo/susanoo_mobile_*.png
+assets/susanoo/susanoo_mobile_*.png.import

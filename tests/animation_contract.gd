@@ -19,6 +19,7 @@ func frames(count: int) -> void:
         await physics_frame
 
 func _run() -> void:
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     game = load("res://main.tscn").instantiate() as Node3D
     root.add_child(game)
     player = game.get_node("Player") as CharacterBody3D

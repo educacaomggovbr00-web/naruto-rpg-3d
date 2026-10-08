@@ -815,6 +815,78 @@
           "sha256": "62118ccee997298c33fcaf2d301ae82bdccdbc5a9c8f0e2719b7ad32032793df"
         }
       ]
+    },
+    {
+      "path": "assets/characters/definitions/henrique.tres",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Projeto",
+      "source": "Henrique Uchiha original do jogador",
+      "license": "Protagonista de fan game; autorização de apresentação da franquia não comprovada",
+      "modifications": "Novo protagonista, kit próprio e caminho do modelo enviado",
+      "sha256": "a2f42bf55a6955d415fccfb733412b65449ee5625bbaae345e936e51a648985f"
+    },
+    {
+      "path": "assets/characters/henrique/henrique_mobile_rigged.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Modelo enviado pelo usuário; rig e preparação pelo projeto",
+      "source": "3970037e-fd4c-4114-b9f6-75905e547ff4.zip / base_basic_pbr.glb",
+      "license": "User-supplied model; generation/provider rights unverified; shared reference rig provenance unchanged",
+      "modifications": "65 ossos, pesos normalizados, proporções chibi, T-pose, 15398 triângulos e texturas de até 1024 px; animações CC0 existentes registradas separadamente",
+      "sha256": "a139e993df1d29a61d28558d9ddb5c7b6c6754d385c1e42eb93ab292bc8e0777",
+      "embedded_images": [
+        {
+          "path": "assets/characters/henrique/henrique_mobile_rigged_texture_normal.png",
+          "sha256": "d89b90e38079c4f9ce6376850d9c7675d3a73f95168ffec5a2843b5c8561edaa"
+        },
+        {
+          "path": "assets/characters/henrique/henrique_mobile_rigged_texture_diffuse.png",
+          "sha256": "8da6b4ea8171ce5d4d0eaff97cdb6b60577206a876a63e3465b81bc5149cf848"
+        },
+        {
+          "path": "assets/characters/henrique/henrique_mobile_rigged_texture_metallic-texture_roughness.png",
+          "sha256": "38124d1764112e04742a447ba10aed69668e89d556f03051de08feb66b7101c4"
+        }
+      ]
+    },
+    {
+      "path": "assets/susanoo/susanoo_mobile.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "wahidinesport",
+      "source": "https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199",
+      "license": "CC-BY-4.0 declared by uploader; underlying franchise authorization unverified",
+      "modifications": "Convertido de glTF para GLB, reduzido a 11961 triângulos; materiais runtime de chakra violeta, escala ajustada, asas opcionais; fonte estática sem animações",
+      "sha256": "fda84857e0f4f9de5490aac4b714b53a4ce63f53ab09074cf24a1f2ce06ba140",
+      "embedded_images": [
+        {
+          "path": "assets/susanoo/susanoo_mobile_0.png",
+          "sha256": "9f07e50a728549156a5f9316da3805620f9fcfa32ab355d9ac20790c379f3d1e"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_1.png",
+          "sha256": "612f7d75c8726b6a90c7064f9d4ac88adeac650af8fa71e7300cd7c89d788565"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_2.png",
+          "sha256": "0b20ea86b629370d538771259df1d5673cb8b275fc48da4f5f7dc8c36e982fb7"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_3.png",
+          "sha256": "ea68587ad08edbe658069cb4bdb563a9918f3eec3178b708423e6fa38d9fc862"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_4.png",
+          "sha256": "95aa83eec8220b6de257036b41e001bd1d687d7d04823ea578d4ac3f25001697"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_5.png",
+          "sha256": "693213eb3ac110a40497e6b80e4ae5f39f14ffa681819d9359efbec096f35246"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_6.png",
+          "sha256": "27e2f81846e319707f374da804594c1a76299d7da2d0766336ac8b725cf5670f"
+        }
+      ],
+      "credit": "Perfect susanoo by wahidinesport, CC BY 4.0; https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199; https://creativecommons.org/licenses/by/4.0/; modified by project."
     }
   ]
 }

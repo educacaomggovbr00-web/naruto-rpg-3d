@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "source_zip": "3970037e-fd4c-4114-b9f6-75905e547ff4.zip",
+  "source_sha256": "701a61f74ba02666bd672df53ea88000ccdb71d994e38dfd16dd942ac8505852",
+  "source_landmarks_cm": {
+    "Hips": [
+      0,
+      69,
+      12
+    ],
+    "Spine": [
+      0,
+      80,
+      12
+    ],
+    "Spine1": [
+      0,
+      94,
+      12
+    ],
+    "Spine2": [
+      0,
+      107,
+      12
+    ],
+    "Neck": [
+      0,
+      118,
+      10
+    ],
+    "Head": [
+      0,
+      130,
+      0
+    ],
+    "HeadTop_End": [
+      0,
+      167,
+      0
+    ],
+    "LeftShoulder": [
+      -9,
+      109,
+      12
+    ],
+    "LeftArm": [
+      -19,
+      107,
+      12
+    ],
+    "LeftForeArm": [
+      -24,
+      90,
+      12
+    ],
+    "LeftHand": [
+      -23,
+      73,
+      10
+    ],
+    "RightShoulder": [
+      9,
+      109,
+      12
+    ],
+    "RightArm": [
+      19,
+      107,
+      12
+    ],
+    "RightForeArm": [
+      24,
+      90,
+      12
+    ],
+    "RightHand": [
+      23,
+      73,
+      10
+    ],
+    "LeftUpLeg": [
+      -13,
+      66,
+      12
+    ],
+    "LeftLeg": [
+      -23,
+      36,
+      12
+    ],
+    "LeftFoot": [
+      -32,
+      9,
+      10
+    ],
+    "LeftToeBase": [
+      -33,
+      3,
+      -8
+    ],
+    "LeftToe_End": [
+      -33,
+      3,
+      -17
+    ],
+    "RightUpLeg": [
+      13,
+      66,
+      12
+    ],
+    "RightLeg": [
+      23,
+      36,
+      12
+    ],
+    "RightFoot": [
+      32,
+      9,
+      10
+    ],
+    "RightToeBase": [
+      33,
+      3,
+      -8
+    ],
+    "RightToe_End": [
+      33,
+      3,
+      -17
+    ]
+  },
+  "output": {
+    "path": "assets/characters/henrique/henrique_mobile_rigged.glb",
+    "sha256": "a139e993df1d29a61d28558d9ddb5c7b6c6754d385c1e42eb93ab292bc8e0777",
+    "size_bytes": 3228368,
+    "vertices": 21707,
+    "triangles": 15398,
+    "joints": 65,
+    "texture_max_size": 1024
+  },
+  "combat_library": "res://assets/animations/combat_mixamo.tres",
+  "combat_clips": 27,
+  "license": "User-supplied; provenance unverified",
+  "weighting": "Four normalized influences; rigid chibi head; offline T-pose fitting"
+}

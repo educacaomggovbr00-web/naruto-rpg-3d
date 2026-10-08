@@ -4,6 +4,20 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 
 > Projeto independente em desenvolvimento. Nenhum arquivo proprietário de Storm foi baixado ou extraído. A origem/licença do modelo previamente fornecido ainda não foi comprovada; desenvolvimento e publicação têm gates separados.
 
+## Henrique Uchiha — protagonista
+
+Henrique é o personagem inicial da seleção e o protagonista da campanha. Os **25 lutadores anteriores continuam disponíveis**, nos mesmos índices. O ZIP enviado foi integrado como um modelo real com **65 ossos**, pesos de skin, proporções chibi e as **27 animações** da biblioteca de combate existente. A malha mobile tem 15.398 triângulos e texturas de até 1024 px.
+
+- **Katon**: projétil de fogo; disponível no início da campanha.
+- **Chidori**: ataque de mão e avanço; desbloqueado pelo primeiro duelo da Academia.
+- **Mangekyou / Susanoo**: vida em 50% ou menos e chakra cheio; botão AWK ou manter CHK com carga completa. Dura 14 s, com movimento ×1,08 e dano ×1,30.
+- **Corte Susanoo**: desbloqueado no Teste do Sino; exige transformação ativa. Escolha com ESQ e use JUTSU.
+- **Ultimate Susanoo**: 80 chakra, fora da transformação; o golpe de entrada precisa acertar. Bloqueio, substituição e interrupções seguem os sistemas atuais.
+
+O Susanoo pronto é **“Perfect susanoo” por wahidinesport**, anunciado sob **CC BY 4.0**, com arquivo de licença e créditos acessíveis na seleção. A malha foi reduzida a 11.961 triângulos; asas aparecem na qualidade HIGH. O modelo de origem é estático: o jogo anima a aura e a lâmina de chakra, enquanto a armadura acompanha Henrique. Não há animações esqueléticas próprias do Susanoo nesta entrega. Os gates atuais de publicação permanecem ativos: a licença anunciada pelo uploader não comprova os direitos sobre a franquia nem a origem do modelo enviado.
+
+Saves versão 1 continuam válidos; os marcos da campanha são mapeados para os jutsus de Henrique sem apagar as recompensas de Naruto. A exploração mantém a opção de usar outros personagens selecionados. Detalhes e reprodução em [HENRIQUE_INTEGRATION](docs/HENRIQUE_INTEGRATION.md).
+
 ## Engine e alvo
 - Godot 4.7.2
 - mobile-first

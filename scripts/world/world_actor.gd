@@ -101,4 +101,4 @@ func get_combo_step() -> int:
 func get_character_definition() -> CharacterDefinition:
     if not player_controlled:
         return null
-    return GameFlow.player_character if GameFlow.player_character != null else CharacterCatalog.NARUTO
+    return GameFlow.player_character if GameFlow.player_character != null else CharacterCatalog.HENRIQUE

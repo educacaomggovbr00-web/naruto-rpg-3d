@@ -21,7 +21,7 @@ func run() -> void:
 
     var slot_count: int = 0
     for fighter: CharacterDefinition in CharacterCatalog.READY:
-        if fighter.character_id in ["naruto", "sasuke", "sakura", "kakashi"]:
+        if fighter.character_id in ["naruto", "sasuke", "sakura", "kakashi", "henrique"]:
             continue
 
         slot_count += 1

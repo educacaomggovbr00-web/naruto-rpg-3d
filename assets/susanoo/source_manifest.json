@@ -1,0 +1,18 @@
+{
+  "source_title": "Perfect susanoo",
+  "author": "wahidinesport",
+  "source_url": "https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199",
+  "license_url": "http://creativecommons.org/licenses/by/4.0/",
+  "license_slug": "by",
+  "verified_date": "2026-10-08",
+  "source_archive": "https://mirror.traines.eu/sketchfab-backup/c1/c1ef38744eb64891b26a6f41aac1b199.zip",
+  "archive_sha256": "5137686cdcdc8d14d40116b1331fd47d16c37f60ad8f908fbd9898654c779108",
+  "source_triangles": 34098,
+  "runtime_triangles": 11961,
+  "runtime_bytes": 564144,
+  "runtime_sha256": "fda84857e0f4f9de5490aac4b714b53a4ce63f53ab09074cf24a1f2ce06ba140",
+  "skin": false,
+  "native_animations": 0,
+  "conversion": "gltfpack 1.3 -si 0.30 -se 0.004 -sp -sv -noq -kn -ke",
+  "release_status": "DEVELOPMENT_ONLY: underlying franchise authorization is not established"
+}

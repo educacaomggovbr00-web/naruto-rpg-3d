@@ -77,6 +77,7 @@ func _ready() -> void:
     choices.add_theme_constant_override("separation", 12)
     choice_margin.add_child(choices)
     player_pick = _fighter_choice(choices, "SEU LUTADOR")
+    player_pick.select(CharacterCatalog.READY.find(CharacterCatalog.HENRIQUE))
     cpu_pick = _fighter_choice(choices, "CPU")
     arena_pick = _arena_choice(choices)
 
@@ -151,12 +152,35 @@ func _ready() -> void:
     _style_action(world, Color("1f7184"))
     actions.add_child(world)
 
+    var credits: Button = Button.new()
+    credits.text = "CRÉDITOS"
+    credits.custom_minimum_size = Vector2(150, 56)
+    credits.pressed.connect(_show_credits)
+    _style_action(credits, Color("58407a"))
+    actions.add_child(credits)
+
     player_pick.item_selected.connect(_describe)
     cpu_pick.item_selected.connect(_describe)
     arena_pick.item_selected.connect(_arena_changed)
     _describe(0)
     _arena_changed(0)
     queue_redraw()
+
+func _show_credits() -> void:
+    var popup: AcceptDialog = AcceptDialog.new()
+    popup.title = "Créditos do Susanoo"
+    popup.ok_button_text = "VOLTAR"
+    var text: RichTextLabel = RichTextLabel.new()
+    text.bbcode_enabled = true
+    text.custom_minimum_size = Vector2(760, 210)
+    text.add_theme_font_size_override("normal_font_size", 18)
+    text.text = "[b]Perfect susanoo[/b] — wahidinesport\n[url=https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199]Modelo original no Sketchfab[/url]\n[url=https://creativecommons.org/licenses/by/4.0/]Licença Creative Commons Attribution 4.0[/url]\n\nAlterações: malha reduzida, conversão para GLB, escala, materiais de chakra violeta e asas opcionais.\nModelo do Henrique enviado pelo jogador; rig e integração pelo projeto. Animações CC0 de Quaternius."
+    text.meta_clicked.connect(func(url: Variant) -> void: OS.shell_open(String(url)))
+    popup.add_child(text)
+    add_child(popup)
+    popup.confirmed.connect(popup.queue_free)
+    popup.canceled.connect(popup.queue_free)
+    popup.popup_centered()
 
 func _draw() -> void:
     draw_rect(Rect2(Vector2.ZERO, size), Color("040a12"))

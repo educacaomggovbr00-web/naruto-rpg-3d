@@ -48,6 +48,7 @@ func await_clash() -> void:
             return
 
 func run() -> void:
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     game = load("res://main.tscn").instantiate() as Node3D
     root.add_child(game)
     game.get_node("CombatFeedback").hit_stop_enabled = false

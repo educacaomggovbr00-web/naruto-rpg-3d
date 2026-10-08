@@ -123,11 +123,17 @@ func _ready() -> void:
         move_speed = character_definition.movement_speed
     specials = _ability("CombatSpecials", preload("res://scripts/combat_specials.gd"))
     var awakening_script: Script = (
+        preload("res://scripts/henrique_awakening.gd")
+        if character_definition.character_id == "henrique"
+        else
         preload("res://scripts/naruto_awakening.gd")
         if character_definition.character_id == "naruto"
         else preload("res://scripts/roster_awakening.gd")
     )
     var ultimate_script: Script = (
+        preload("res://scripts/henrique_ultimate.gd")
+        if character_definition.character_id == "henrique"
+        else
         preload("res://scripts/ultimate_controller.gd")
         if character_definition.character_id == "naruto"
         else preload("res://scripts/roster_ultimate_controller.gd")
