@@ -2,6 +2,12 @@ extends SubViewportContainer
 ## Lightweight character-select stage: larger silhouettes, anime lighting, no gameplay systems.
 var stage: Node3D
 var fighters: Array[CharacterBody3D] = []
+var preview_clip: String = "idle"
+
+func preview_animation(clip: String) -> void:
+    preview_clip = clip
+    if not fighters.is_empty():
+        fighters[0].preview_animation(clip)
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -102,3 +108,5 @@ func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> voi
         actor.scale = Vector3.ONE * 1.24
         stage.add_child(actor)
         fighters.append(actor)
+        if index == 0:
+            actor.preview_animation(preview_clip)

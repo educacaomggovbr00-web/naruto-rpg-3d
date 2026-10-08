@@ -75,8 +75,8 @@
       "author": "Quaternius / Gonzalo Furnier",
       "source": "https://quaternius.itch.io/universal-animation-library-2",
       "license": "CC0-1.0",
-      "modifications": "Retarget UAL1/2 para Mixamo, 27 clips; ver manifesto",
-      "sha256": "d4d8013715182f30367ef872a3caa06cf919aabee972e5743504763bda95f05f"
+      "modifications": "27 preserved clips + 100 directional/mirrored/aerial CC0 adaptations, 65 bones, 30 FPS; see combat_manifest.json",
+      "sha256": "4d5300f89e8b0ed923d4166fbc1dd9845242be20d4652d4e8cea927099dd9aa6"
     },
     {
       "path": "assets/vfx/chakra_shell.gdshader",
@@ -823,7 +823,7 @@
       "source": "Henrique Uchiha original do jogador",
       "license": "Protagonista de fan game; autorização de apresentação da franquia não comprovada",
       "modifications": "Novo protagonista, kit próprio e caminho do modelo enviado",
-      "sha256": "a2f42bf55a6955d415fccfb733412b65449ee5625bbaae345e936e51a648985f"
+      "sha256": "d1702993bf4512430abd4704f143fd612dd20866e34b7a4add6b49f6a07fbdc4"
     },
     {
       "path": "assets/characters/henrique/henrique_mobile_rigged.glb",
@@ -831,8 +831,8 @@
       "author": "Modelo enviado pelo usuário; rig e preparação pelo projeto",
       "source": "3970037e-fd4c-4114-b9f6-75905e547ff4.zip / base_basic_pbr.glb",
       "license": "User-supplied model; generation/provider rights unverified; shared reference rig provenance unchanged",
-      "modifications": "65 ossos, pesos normalizados, proporções chibi, T-pose, 15398 triângulos e texturas de até 1024 px; animações CC0 existentes registradas separadamente",
-      "sha256": "a139e993df1d29a61d28558d9ddb5c7b6c6754d385c1e42eb93ab292bc8e0777",
+      "modifications": "65 ossos, pesos normalizados, proporções chibi, T-pose, 15398 triângulos e texturas de até 1024 px; animações CC0 existentes registradas separadamente; smooth shoulder/elbow/wrist skin zones and rigid fists, unchanged geometry/rest/head",
+      "sha256": "b2dfe22cc43fb3a8ece06bbe8d1a8fbec23b1212cf73c71b8fcb09965688168c",
       "embedded_images": [
         {
           "path": "assets/characters/henrique/henrique_mobile_rigged_texture_normal.png",
@@ -887,6 +887,15 @@
         }
       ],
       "credit": "Perfect susanoo by wahidinesport, CC BY 4.0; https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199; https://creativecommons.org/licenses/by/4.0/; modified by project."
+    },
+    {
+      "path": "assets/ui/shinobi_icon.svg",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto",
+      "source": "Original authored SVG chakra/lightning/blade emblem",
+      "license": "CC0-1.0",
+      "modifications": "Original 512 px application icon",
+      "sha256": "2dea1720a021e24d5aa32b704464e4c441bf1a86b06aa269163c0d37b9af535f"
     }
   ]
 }

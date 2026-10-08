@@ -181,6 +181,15 @@ jobs:
       - name: Validate Storm research bridges
         run: |
           python -m unittest discover -s tests -p 'test_storm1_research_tools.py'
+      - name: Validate 100 new clips, gallery and Susanoo impact timing
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pip install numpy scipy Pillow
+          python -m unittest discover -s tests -p 'test_combat_expansion.py'
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/combat_expansion_contract.gd 2>&1 | tee /tmp/combat-expansion.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/combat-expansion.log
+          grep -F 'COMBAT EXPANSION CONTRACT: PASS' /tmp/combat-expansion.log
       - name: Validate release provenance gate
         run: |
           python tools/validate_release_assets.py

@@ -1,5 +1,15 @@
 # Henrique Uchiha: integração
 
+## Continuação a partir de e779639 — combate e Android
+
+O estado abaixo documenta a entrega original. A continuação preserva os 26 personagens, a campanha e os sistemas existentes e acrescenta **100 clips de combate**, mantendo os 27 originais byte a byte. São dez famílias com dez adaptações espaciais das fontes CC0 já registradas; não são 100 novas gravações de mocap. A seleção permite visualizar todos, e Henrique usa novos clips nos combos, branches, Katon, Chidori, corte e Ultimate.
+
+O rig mantém malha, texturas, rest, 65 ossos e cabeça rígida; somente os pesos de 3.206 vértices dos ombros/mangas/punhos foram refinados. Susanoo ganha antecipação, impacto sincronizado ao manifesto, recuperação, inclinação de movimento, entrada gradual e reset. O modelo externo continua sem skeleton próprio.
+
+Foi gerado e validado um **APK debug ARM64**, versão `0.2.0-henrique-combat100`, Android 7.0 ou superior. Assinatura v2/v3, alinhamento de 16 KB e conteúdo extraído do APK passaram; teste em aparelho físico continua pendente. Procedimentos, evidências e limitações em [COMBAT100_ANDROID.md](COMBAT100_ANDROID.md).
+
+![Henrique e Susanoo na continuação](captures/henrique_combat100.png)
+
 ## Estado entregue
 
 - Protagonista inicial e da campanha: Henrique Uchiha. Seleção tem 26 personagens; os 25 anteriores continuam nos mesmos índices e com os mesmos modelos/kits.

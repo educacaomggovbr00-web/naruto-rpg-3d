@@ -101,7 +101,7 @@ func run() -> void:
         cpu.enable_arsenal = false
         for actor: CharacterBody3D in [player, cpu]:
             var adapter: Node3D = actor.rig_adapter
-            check(adapter.rig_loaded and adapter.real_animation_count == 27, "Authored profiles/CPU use 27 real clips")
+            check(adapter.rig_loaded and adapter.real_animation_count == 127, "Authored profiles/CPU use 127 real clips")
             check(adapter.skeleton.get_bone_count() >= 27, "Authored mesh keeps a complete Mixamo body rig")
             check(adapter._has_required_combat_bones(), "Authored mesh keeps every combat-critical hand/foot/body bone")
             var meshes: Array[MeshInstance3D] = []

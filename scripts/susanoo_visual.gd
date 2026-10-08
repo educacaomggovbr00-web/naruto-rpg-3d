@@ -11,6 +11,17 @@ var external_model: bool = false
 var material: StandardMaterial3D
 var imported_avatar: Node3D
 var wings: Array[MeshInstance3D] = []
+var pose_blend: float = 0.0
+
+static func strike_angle(progress: float, impact_phase: float = 0.42) -> float:
+    var phase: float = clampf(progress, 0.0, 1.0)
+    var impact: float = clampf(impact_phase, 0.15, 0.80)
+    var windup: float = impact * 0.65
+    if phase < windup:
+        return lerpf(0.0, -0.85, smoothstep(0.0, windup, phase))
+    if phase < impact:
+        return lerpf(-0.85, 1.40, smoothstep(windup, impact, phase))
+    return lerpf(1.40, 0.0, smoothstep(impact, 1.0, phase))
 
 func _ready() -> void:
     material = StandardMaterial3D.new()
@@ -101,11 +112,30 @@ func _mesh(parent: Node3D, mesh: Mesh) -> MeshInstance3D:
     parent.add_child(instance)
     return instance
 
-func update_pose(delta: float, striking: bool, progress: float = 0.0) -> void:
-    clock += delta
-    shell.scale = Vector3.ONE * (1.0 + sin(clock * 4.0) * 0.018)
+func update_pose(delta: float, striking: bool, progress: float = 0.0, local_velocity: Vector3 = Vector3.ZERO, impact_phase: float = 0.42, summon: float = 1.0) -> void:
+    # Hit-stop freezes this clock too. Motion remains independent per avatar.
+    var dt: float = maxf(delta, 0.0)
+    clock += dt
+    var speed: float = minf(Vector2(local_velocity.x, local_velocity.z).length() / 12.5, 1.0)
+    var angle: float = strike_angle(progress, impact_phase) if striking else 0.0
+    pose_blend = lerpf(pose_blend, angle, 1.0 - exp(-dt * 18.0))
+    shell.scale = Vector3.ONE * (0.15 + 0.85 * smoothstep(0.0, 1.0, clampf(summon, 0.0, 1.0))) * (1.0 + sin(clock * 4.0) * 0.012)
+    shell.position.y = sin(clock * lerpf(2.0, 9.0, speed)) * lerpf(0.012, 0.045, speed)
+    shell.rotation = Vector3(clampf(local_velocity.z * 0.006, -0.08, 0.08), pose_blend * 0.18,
+        clampf(-local_velocity.x * 0.008, -0.10, 0.10))
+    material.emission_energy_multiplier = 1.0 + (0.35 * sin(PI * clampf(progress, 0.0, 1.0)) if striking else 0.0)
     if sword_arm != null:
-        sword_arm.rotation.y = lerpf(-0.70, 1.40, clampf(progress, 0.0, 1.0)) if striking else sin(clock * 2.0) * 0.06
+        # Strike follows the manifest's impact; recovery returns continuously to
+        # neutral, including interruption, rather than snapping from full swing.
+        sword_arm.rotation = Vector3(-absf(pose_blend) * 0.12, angle if striking else pose_blend + sin(clock * 2.0) * 0.04, pose_blend * 0.16)
+
+func reset_pose() -> void:
+    clock = 0.0
+    pose_blend = 0.0
+    if shell != null:
+        shell.transform = Transform3D.IDENTITY
+    if sword_arm != null:
+        sword_arm.rotation = Vector3.ZERO
 
 func set_quality(level: int) -> void:
     quality_level = clampi(level, 0, 2)

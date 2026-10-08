@@ -40,7 +40,7 @@ func run() -> void:
     check(fighter.character_definition.character_id == "sasuke" and cpu.character_definition.character_id == "naruto", "Selected profiles must reach both controllers")
     check(fighter.moveset != cpu.moveset and fighter.move_speed == 8.0, "Selection must change actual moveset and movement stats")
     check(fighter.moveset.attack(3, false).animation_name == "air_attack_2", "Sasuke kick must consume the real selected clip")
-    check(fighter.rig_adapter.real_animation_count == 27 and cpu.rig_adapter.real_animation_count == 27, "Both profiles retain all baked clips")
+    check(fighter.rig_adapter.real_animation_count == 127 and cpu.rig_adapter.real_animation_count == 127, "Both profiles retain all baked clips")
     check(fighter.rig_adapter.animation_player.get_animation_library(&"combat") != cpu.rig_adapter.animation_player.get_animation_library(&"combat"), "Different Naruto/Sasuke rest rigs must keep independently prepared clip libraries")
     check(fighter.rig_adapter.animation_tree != cpu.rig_adapter.animation_tree, "Playback state must remain independent")
     var controls: Control = arena.get_node("HUD/MobileControls")

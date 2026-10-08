@@ -29,7 +29,7 @@ func _run() -> void:
     enemy.reactive_substitution = false
     await frames(8)
     check(adapter.is_rig_loaded(), "Rig must load with real clips")
-    check(adapter.real_animation_count == 27, "All 27 clips must be installed")
+    check(adapter.real_animation_count == 127, "All 127 clips must be installed")
     check(adapter.right_hand_bone >= 0 and adapter.left_hand_bone >= 0, "Godot bone names must resolve")
     check(not adapter.animation_player.has_animation_library(&"proc"), "No procedural combat library")
     player.set_physics_process(false)

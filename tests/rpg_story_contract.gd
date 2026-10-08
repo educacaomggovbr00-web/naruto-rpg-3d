@@ -72,7 +72,7 @@ func run() -> void:
     check(String(geometry.region_id) == "forest", "Region scene must build the requested map")
     check(int(geometry.draw_instances) <= 10, "External region must keep draw groups bounded for mobile")
     check(int(geometry.collision_count) > 10, "Region must have physical traversal collision")
-    check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 27, "Regions must reuse the animated 3D fighter rig")
+    check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 127, "Regions must reuse the animated 3D fighter rig")
     region.queue_free()
     await frames(4)
 

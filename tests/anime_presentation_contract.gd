@@ -76,7 +76,7 @@ func run() -> void:
         check(rival.rig_adapter.rig_loaded and has_visible_mesh(rival.rig_adapter.model_instance), "Sasuke configured 3D model is instantiated and visible")
         check(fighter.rig_adapter.model_path == fighter.get_character_definition().model_path, "Player renders Naruto's configured model path")
         check(rival.rig_adapter.model_path == rival.get_character_definition().model_path, "CPU renders Sasuke's configured model path")
-        check(fighter.rig_adapter.real_animation_count == 27 and rival.rig_adapter.real_animation_count == 27, "Both roster combat rigs retain all 27 clips")
+        check(fighter.rig_adapter.real_animation_count == 127 and rival.rig_adapter.real_animation_count == 127, "Both roster combat rigs retain all 127 clips")
         var visible_player_mesh: MeshInstance3D = first_visible_mesh(fighter.rig_adapter.model_instance)
         check(visible_player_mesh != null, "Configured player mesh remains visible with anime presentation")
         if visible_player_mesh != null:

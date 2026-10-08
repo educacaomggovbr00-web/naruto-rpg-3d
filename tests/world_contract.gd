@@ -30,7 +30,7 @@ func run() -> void:
     check(geometry.sectors.size() <= 65 and geometry.sectors.size() > 20, "Village must merge meshes in bounded sectors")
     check(geometry.triangles < 16000 and geometry.triangles > 1000, "Original environment geometry must remain mobile-sized")
     check(geometry.collision_count > 50, "Buildings, stairs and roof terraces need real collision")
-    check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 27, "Exploration must preserve the existing real clips and rig")
+    check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 127, "Exploration must preserve the existing real clips and rig")
     check(actor.is_on_floor(), "Village spawn must be on a physical street")
     check(actor.get_node("AttackHitbox").collision_mask == 0, "Exploration cannot enable combat hitboxes")
     check(actor.get_node("WorldCamera/SpringArm3D").shape is SphereShape3D, "World camera must use volume collision")

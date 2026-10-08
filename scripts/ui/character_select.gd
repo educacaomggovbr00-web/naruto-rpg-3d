@@ -9,6 +9,7 @@ var preview: SubViewportContainer
 var player_name: Label
 var cpu_name: Label
 var arena_badge: Label
+var animation_gallery: HBoxContainer
 
 func _ready() -> void:
     CharacterCatalog.initialize()
@@ -120,6 +121,11 @@ func _ready() -> void:
     preview = SubViewportContainer.new()
     preview.set_script(preload("res://scripts/ui/fighter_preview.gd"))
     preview_margin.add_child(preview)
+
+    animation_gallery = HBoxContainer.new()
+    animation_gallery.set_script(preload("res://scripts/ui/combat_animation_gallery.gd"))
+    column.add_child(animation_gallery)
+    animation_gallery.clip_selected.connect(preview.preview_animation)
 
     description = Label.new()
     description.custom_minimum_size.y = 42.0

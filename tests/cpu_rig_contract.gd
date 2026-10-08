@@ -22,7 +22,7 @@ func run() -> void:
     cpu.set_physics_process(false)
     fighter.set_physics_process(false)
     arena.get_node("CombatFeedback").hit_stop_enabled = false
-    check(rig.rig_loaded and rig.real_animation_count == 27, "CPU needs the real shared 27-clip rig")
+    check(rig.rig_loaded and rig.real_animation_count == 127, "CPU needs the real shared 127-clip rig")
     check(not cpu.visual.visible, "Capsule must be hidden after rig loading")
     check(rig.animation_tree != fighter.rig_adapter.animation_tree, "Fighters need independent AnimationTree playback")
     check(cpu.attack_hitbox.collision_mask == 8, "CPU strike must target player hurtboxes")

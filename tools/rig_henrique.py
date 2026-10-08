@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial.transform import Rotation
 import rig_base_basic_models as base
+from refine_henrique_weights import refine
 
 ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / 'assets/characters/henrique'
@@ -99,12 +100,15 @@ def main():
     old = ROOT / output['path']
     final = DEST / 'henrique_mobile_rigged.glb'
     old.rename(final)
+    refinement = refine(final, final)
+    output['sha256'] = refinement['output_sha256']
     output['path'] = final.relative_to(ROOT).as_posix()
     profile = {'schema': 1, 'source_zip': '3970037e-fd4c-4114-b9f6-75905e547ff4.zip',
                'source_sha256': SOURCE_SHA, 'source_landmarks_cm': LANDMARKS,
                'output': output, 'combat_library': 'res://assets/animations/combat_mixamo.tres',
-               'combat_clips': 27, 'license': 'User-supplied; provenance unverified',
-               'weighting': 'Four normalized influences; rigid chibi head; offline T-pose fitting'}
+               'combat_clips': 127, 'license': 'User-supplied; provenance unverified',
+               'refinement': refinement,
+               'weighting': 'Four normalized influences; rigid chibi head; smooth shoulder/elbow/wrist zones and rigid fists'}
     (DEST / 'rig_profile.json').write_text(json.dumps(profile, indent=2) + '\n')
     print(json.dumps(output, indent=2))
 

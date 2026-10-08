@@ -1,5 +1,6 @@
 [application]
 config/name="Shinobi RPG 3D"
+config/icon="res://assets/ui/shinobi_icon.svg"
 run/main_scene="res://selection.tscn"
 run/max_fps=60
 
@@ -18,6 +19,7 @@ window/stretch/aspect="expand"
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
 
 [editor_plugins]
 enabled=PackedStringArray("res://addons/release_asset_gate/plugin.cfg")

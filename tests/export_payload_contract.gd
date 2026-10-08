@@ -35,7 +35,7 @@ func run() -> void:
     for i: int in range(8):
         await physics_frame
     var fighter: Node = game.get_node("Player")
-    if not fighter.rig_adapter.rig_loaded or fighter.rig_adapter.real_animation_count != 27 or fighter.ninja_tools.projectiles.size() != 6 or fighter.specials.clones.size() != 3:
+    if not fighter.rig_adapter.rig_loaded or fighter.rig_adapter.real_animation_count != 127 or fighter.ninja_tools.projectiles.size() != 6 or fighter.specials.clones.size() != 3:
         push_error("Development export lost rig/manifest or pools")
         quit(1)
         return
@@ -157,7 +157,7 @@ func run() -> void:
     var hero: Node = hero_battle.get_node("Player")
     if (
         not hero.rig_adapter.rig_loaded
-        or hero.rig_adapter.real_animation_count != 27
+        or hero.rig_adapter.real_animation_count != 127
         or not hero.awakening.avatar.external_model
         or not hero.ultimate.avatar.external_model
         or not FileAccess.file_exists("res://assets/susanoo/LICENSE.txt")

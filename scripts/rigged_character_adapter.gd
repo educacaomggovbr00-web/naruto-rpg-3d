@@ -817,6 +817,21 @@ func _setup_animation_tree() -> void:
     animation_tree.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
     var state_machine: AnimationNodeStateMachine = AnimationNodeStateMachine.new()
     var clips: Dictionary = manifest["clips"]
+    var runtime_states: Dictionary = {}
+    for state: String in clips:
+        if not bool(clips[state].get("expansion", false)):
+            runtime_states[state] = true
+    if character_definition != null:
+        var moves: MovesetDefinition = character_definition.moveset
+        if moves != null:
+            for attack: AttackDefinition in moves.ground + moves.aerial + [moves.neutral_finisher, moves.up_finisher, moves.down_finisher, moves.side_finisher]:
+                if attack != null:
+                    runtime_states[attack.animation_name] = true
+        for jutsu: JutsuDefinition in character_definition.jutsu_definitions:
+            runtime_states[jutsu.animation_name] = true
+        if character_definition.ultimate_definition != null:
+            runtime_states[character_definition.ultimate_definition.entry_clip] = true
+            runtime_states[character_definition.ultimate_definition.finisher_clip] = true
     var index: int = 0
     for state_name: String in clips:
         var blend: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
@@ -835,9 +850,13 @@ func _setup_animation_tree() -> void:
         for to_state: String in clips:
             if from_state == to_state:
                 continue
+            # Gallery-only states travel through idle; active gameplay retains
+            # direct fades. Avoid a 127² graph on every mobile/menu fighter.
+            if from_state != "idle" and to_state != "idle" and (not runtime_states.has(from_state) or not runtime_states.has(to_state)):
+                continue
             var transition: AnimationNodeStateMachineTransition = AnimationNodeStateMachineTransition.new()
             transition.xfade_time = 0.08
-            if to_state.begins_with("attack_") or to_state.begins_with("air_attack_"):
+            if to_state.begins_with("attack_") or to_state.begins_with("air_attack_") or bool(clips[to_state].get("expansion", false)):
                 transition.xfade_time = 0.025
             elif to_state == "hit" or to_state == "dodge":
                 transition.xfade_time = 0.035
@@ -861,7 +880,7 @@ func _sync_animation_state(delta: float) -> void:
     var desired_state: String = _runtime_animation_state()
     var action_id: int = int(player.call("get_animation_action_id"))
     if desired_state == current_state:
-        if action_id != last_action_id and desired_state in ["hit", "jutsu", "rasengan", "guard_break", "dodge", "chakra_dash", "attack_1", "attack_2", "attack_3", "attack_4", "air_attack_1", "air_attack_2", "air_attack_3", "air_attack_4"]:
+        if action_id != last_action_id and not bool(manifest.get("clips", {}).get(desired_state, {}).get("loop", false)):
             playback.start(StringName(desired_state), true)
     else:
         current_state = desired_state

@@ -4,16 +4,25 @@ extends RefCounted
 ## Original protagonist kit; uses existing hit, guard, dodge and animation contracts.
 static func complete(hero: CharacterDefinition) -> void:
     hero.moveset = RosterMovesetFactory.build_moveset("henrique")
+    # Distinct choreography, same damage/branches/cancel and save contracts.
+    var ground_clips: PackedStringArray = ["combat_jab_center", "combat_cross_center", "combat_hook_left", "combat_uppercut_center"]
+    var air_clips: PackedStringArray = ["combat_jab_aerial", "combat_cross_aerial", "combat_hook_aerial", "combat_overhead_aerial"]
+    for index: int in range(4):
+        hero.moveset.ground[index].animation_name = ground_clips[index]
+        hero.moveset.aerial[index].animation_name = air_clips[index]
+    hero.moveset.up_finisher.animation_name = "combat_uppercut_high"
+    hero.moveset.down_finisher.animation_name = "combat_overhead_low"
+    hero.moveset.side_finisher.animation_name = "combat_hook_right"
     hero.ai_profile = RosterAIProfileFactory.build("sasuke")
     hero.jutsu_definitions = []
-    var fire: JutsuDefinition = _jutsu("henrique_katon", "Katon: Bola de Fogo", "projectile", "fire", "jutsu", 24.0, 22.0)
+    var fire: JutsuDefinition = _jutsu("henrique_katon", "Katon: Bola de Fogo", "projectile", "fire", "combat_cast_center", 24.0, 22.0)
     fire.movement_speed = 20.0
     fire.tracking_strength = 2.5
     fire.hitbox_radius = 0.48
-    var lightning: JutsuDefinition = _jutsu("henrique_chidori", "Chidori", "hand", "lightning", "rasengan", 32.0, 28.0)
+    var lightning: JutsuDefinition = _jutsu("henrique_chidori", "Chidori", "hand", "lightning", "combat_thrust_center", 32.0, 28.0)
     lightning.movement_speed = 15.0
     lightning.tracking_strength = 7.0
-    var slash: JutsuDefinition = _jutsu("henrique_susanoo_slash", "Susanoo: Corte de Chakra", "burst", "susanoo", "attack_4", 28.0, 30.0)
+    var slash: JutsuDefinition = _jutsu("henrique_susanoo_slash", "Susanoo: Corte de Chakra", "burst", "susanoo", "combat_slash_center", 28.0, 30.0)
     slash.hitbox_radius = 1.85
     slash.knockback = 13.0
     hero.jutsu_definitions.assign([fire, lightning, slash])
@@ -33,7 +42,7 @@ static func complete(hero: CharacterDefinition) -> void:
     finish.display_name = "Susanoo: Espada do Uchiha"
     finish.effect = "susanoo"
     finish.entry_clip = "chakra_dash"
-    finish.finisher_clip = "attack_4"
+    finish.finisher_clip = "combat_overhead_center"
     finish.chakra_cost = 80.0
     finish.finisher_damage = 38.0
     finish.finisher_knockback = 15.0
