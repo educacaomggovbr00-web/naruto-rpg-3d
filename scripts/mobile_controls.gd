@@ -146,6 +146,8 @@ func _update_layout() -> void:
     queue_redraw()
 
 func _input(event: InputEvent) -> void:
+    if not layout_editing and event is InputEventScreenTouch and event.pressed and _expansion_overlay_contains(event.position):
+        return
     if event is InputEventScreenTouch:
         if event.pressed:
             _touch_pressed(event.index, event.position)
@@ -153,6 +155,19 @@ func _input(event: InputEvent) -> void:
             _touch_released(event.index)
     elif event is InputEventScreenDrag:
         _touch_dragged(event.index, event.position)
+
+func _expansion_overlay_contains(point: Vector2) -> bool:
+    var arena: Node = get_parent().get_parent()
+    var overlay: Node = arena.get_node_or_null("TeamHUD")
+    if overlay != null and overlay.panel.is_visible_in_tree() and overlay.panel.get_global_rect().has_point(point):
+        return true
+    var coach: Node = arena.get_node_or_null("BattleBridge/TrainingCoach")
+    if coach != null:
+        for control: Control in [coach.panel, coach.toggle]:
+            if control.is_visible_in_tree() and control.get_global_rect().has_point(point):
+                return true
+    var encounter: Node = arena.get_node_or_null("BattleBridge/BossEncounter")
+    return encounter != null and encounter.panel.is_visible_in_tree() and encounter.panel.get_global_rect().has_point(point)
 
 func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
     if _inside_circle(screen_position, layout_center, 43.0 * ui_scale):

@@ -5,6 +5,8 @@ var boss_intro_timer: float = 0.0
 var boss_banner: Label = null
 var boss_phase_triggered: bool = false
 var boss_phase_threshold: float = 0.32
+var mob_enemies: Array[CharacterBody3D] = []
+var boss_encounter: CanvasLayer = null
 
 func _ready() -> void:
     var audio: Node = Node.new()
@@ -33,6 +35,67 @@ func _ready() -> void:
         GameFlow.progress.supplies -= 1
         GameFlow.save_progress()
     call_deferred("_apply_rpg_battle_setup")
+    call_deferred("_setup_expansion")
+
+func _setup_expansion() -> void:
+    var fighter: CharacterBody3D = get_parent().get_node("Player")
+    var enemy: CharacterBody3D = get_parent().get_node("EnemyDummy")
+    var arena: Node3D = Node3D.new()
+    arena.name = "ArenaInteractions"
+    arena.set_script(preload("res://scripts/arena_interactions.gd"))
+    get_parent().add_child(arena)
+    if GameFlow.battle_rules_enabled:
+        for actor: CharacterBody3D in [fighter, enemy]:
+            var condition: Node3D = Node3D.new()
+            condition.name = "BattleCondition"
+            condition.set_script(preload("res://scripts/battle_condition.gd"))
+            actor.add_child(condition)
+        if GameFlow.arcade_mode == "boss" or (GameFlow.is_story_battle() and bool(GameFlow.current_story_battle_data().get("boss", false))):
+            boss_encounter = CanvasLayer.new()
+            boss_encounter.name = "BossEncounter"
+            boss_encounter.set_script(preload("res://scripts/boss_encounter.gd"))
+            boss_encounter.fighter = fighter
+            boss_encounter.boss = enemy
+            add_child(boss_encounter)
+    if GameFlow.team_enabled:
+        for actor: CharacterBody3D in [fighter, enemy]:
+            if actor == enemy and GameFlow.arcade_mode == "mob":
+                continue
+            var team: CombatTeam = CombatTeam.new()
+            team.name = "PlayerTeam" if actor == fighter else "EnemyTeam"
+            team.add_to_group("combat_teams")
+            team.configure(actor, enemy if actor == fighter else fighter, GameFlow.player_partners if actor == fighter else GameFlow.cpu_partners)
+            get_parent().add_child(team)
+    if GameFlow.team_enabled or GameFlow.battle_rules_enabled:
+        var team_hud: CanvasLayer = CanvasLayer.new()
+        team_hud.name = "TeamHUD"
+        team_hud.set_script(preload("res://scripts/team/team_hud.gd"))
+        team_hud.fighter = fighter
+        team_hud.enemy = enemy
+        get_parent().add_child(team_hud)
+    if GameFlow.arcade_mode == "mob":
+        _setup_mob(enemy)
+
+func _setup_mob(enemy: CharacterBody3D) -> void:
+    mob_enemies.append(enemy)
+    var definitions: PackedStringArray = ["shino", "kiba"]
+    for index: int in range(2):
+        var template: Node = load("res://main.tscn").instantiate()
+        var actor: CharacterBody3D = template.get_node("EnemyDummy")
+        template.remove_child(actor)
+        template.free()
+        actor.name = "MobNinja%d" % index
+        actor.character_override = CharacterCatalog.find(definitions[index])
+        actor.position = Vector3(-4.0 if index == 0 else 4.0, 1.0, -7.0)
+        actor.enable_arsenal = false
+        actor.reactive_substitution = false
+        get_parent().add_child(actor)
+        actor.max_health = 45.0
+        actor.health = 45.0
+        actor.attack_damage = 6.0
+        actor.decision_interval_min *= 1.4
+        actor.decision_interval_max *= 1.4
+        mob_enemies.append(actor)
 
 func _apply_rpg_battle_setup() -> void:
     if GameFlow.versus_mode:
@@ -165,6 +228,17 @@ func _physics_process(_delta: float) -> void:
         if not cpu.targetable:
             cpu.call("_respawn")
         return
+    if GameFlow.arcade_mode == "mob":
+        var alive: int = 0
+        for actor: CharacterBody3D in mob_enemies:
+            if actor.targetable:
+                alive += 1
+            else:
+                actor.set_physics_process(false)
+        if fighter.defeated or alive == 0:
+            finished = true
+            GameFlow.finish_battle(alive == 0 and not fighter.defeated)
+        return
     if fighter.defeated or not cpu.targetable:
         finished = true
         GameFlow.finish_battle(not cpu.targetable and not fighter.defeated)
@@ -188,6 +262,8 @@ func _trigger_boss_phase(cpu: Node, fighter: Node, mission: Dictionary) -> void:
         cpu.awakening.call("start")
 
     _show_phase_banner("FASE 2 • " + String(mission.get("title", "BOSS")).to_upper())
+    if is_instance_valid(boss_encounter):
+        boss_encounter.call_deferred("start_qte")
 
     if is_instance_valid(fighter.camera_rig):
         if fighter.camera_rig.has_method("begin_sequence"):

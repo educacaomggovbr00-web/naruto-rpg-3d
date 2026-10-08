@@ -92,6 +92,7 @@ func _physics_process(delta: float) -> void:
         if collider is Area3D and collider.has_method("get_fighter"):
             var fighter: Node = collider.call("get_fighter")
             if fighter != owner_fighter and fighter.has_method("receive_combat_hit"):
+                var blocked: bool = fighter.get_is_guarding()
                 var dealt: float = float(fighter.call(
                     "receive_combat_hit",
                     definition.damage * float(owner_fighter.call("get_damage_multiplier")),
@@ -100,9 +101,9 @@ func _physics_process(delta: float) -> void:
                     definition.launch_force,
                     definition.hitstun
                 ))
-                if definition.effect == "black_fire" and dealt > 0.0 and not fighter.get_is_guarding():
-                    preload("res://scripts/black_flame_status.gd").attach(fighter, owner_fighter)
-                if definition.jutsu_id == "henrique_genjutsu" and dealt > 0.0 and not fighter.get_is_guarding():
+                if dealt > 0.0:
+                    ElementalStates.apply_hit(fighter, owner_fighter, definition.effect, blocked)
+                if definition.jutsu_id == "henrique_genjutsu" and dealt > 0.0 and not blocked:
                     preload("res://scripts/genjutsu_overlay.gd").attach(fighter)
                 owner_fighter.call("on_attack_connected", fighter, dealt, definition.launch_force)
                 _impact()
@@ -122,6 +123,7 @@ func _physics_process(delta: float) -> void:
     orb.rotation.x += delta * (spin * 0.45)
 
 func _impact() -> void:
+    preload("res://scripts/arena_interactions.gd").impact(owner_fighter, global_position, definition.effect, definition.hitbox_radius * 1.5, definition.damage)
     var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
     if feedback != null:
         feedback.spawn_chakra_impact(global_position,RosterVisualStyle.color(definition.effect))

@@ -75,6 +75,7 @@ func profile_for(source: AIProfileDefinition) -> AIProfileDefinition:
 
 func _install_controller_actions() -> void:
     var buttons: Dictionary = {"pad_attack":JOY_BUTTON_X,"pad_jump":JOY_BUTTON_A,"pad_jutsu":JOY_BUTTON_Y,"pad_dash":JOY_BUTTON_B,"pad_guard":JOY_BUTTON_LEFT_SHOULDER,"pad_charge":JOY_BUTTON_RIGHT_SHOULDER,"pad_substitution":JOY_BUTTON_DPAD_DOWN,"pad_dodge":JOY_BUTTON_DPAD_LEFT,"pad_lock":JOY_BUTTON_RIGHT_STICK,"pad_ultimate":JOY_BUTTON_DPAD_UP,"pad_awakening":JOY_BUTTON_DPAD_RIGHT}
+    buttons.merge({"pad_support_one": JOY_BUTTON_LEFT_STICK, "pad_support_two": JOY_BUTTON_BACK, "pad_leader_change": JOY_BUTTON_START})
     for action: String in buttons:
         if not InputMap.has_action(action):
             InputMap.add_action(action)

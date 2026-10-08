@@ -9,6 +9,8 @@ extends CharacterBody3D
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
 var character_definition: CharacterDefinition = null
+var team: Node = null
+var battle_condition: Node = null
 var cinematic_owner: Node = null
 var cinematic_watchdog: float = 0.0
 var selected_attack: AttackDefinition = null
@@ -131,7 +133,7 @@ var grab_cooldown: float = 0.0
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func get_character_definition() -> CharacterDefinition:
-    return GameFlow.player_character
+    return character_definition if character_definition != null else GameFlow.player_character
 
 func _ready() -> void:
     character_definition = get_character_definition()
@@ -197,13 +199,18 @@ func _ready() -> void:
     combat_state.call("configure", self)
 
 func _unhandled_input(event: InputEvent) -> void:
+    if _handle_expansion_input(event):
+        return
     if event is InputEventJoypadButton and event.pressed:
         if event.is_action_pressed("pad_attack"):
             _try_attack()
         elif event.is_action_pressed("pad_jump"):
             jump_requested = true
         elif event.is_action_pressed("pad_jutsu"):
-            _try_jutsu()
+            if team != null and Input.is_action_pressed("pad_charge"):
+                team.start_ultimate()
+            else:
+                _try_jutsu()
         elif event.is_action_pressed("pad_dash"):
             _start_chakra_dash()
         elif event.is_action_pressed("pad_substitution"):
@@ -215,7 +222,11 @@ func _unhandled_input(event: InputEvent) -> void:
         elif event.is_action_pressed("pad_ultimate"):
             ultimate.call("start")
         elif event.is_action_pressed("pad_awakening"):
-            _activate_awakening()
+            if team != null and Input.is_action_pressed("pad_charge"):
+                team.start_linked_awakening()
+            else:
+                _activate_awakening()
+
     if event is InputEventMouseButton and not _is_mobile_runtime():
         if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
             _try_attack()
@@ -252,6 +263,27 @@ func _unhandled_input(event: InputEvent) -> void:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
             _start_dodge()
+
+func _handle_expansion_input(event: InputEvent) -> bool:
+    if not event.is_pressed() or (event is InputEventKey and event.echo):
+        return false
+    var key: int = event.physical_keycode if event is InputEventKey else 0
+    if team != null:
+        if key == KEY_Z or event.is_action_pressed("pad_support_one"):
+            team.call_support(0)
+        elif key == KEY_X or event.is_action_pressed("pad_support_two"):
+            team.call_support(1)
+        elif key == KEY_C or event.is_action_pressed("pad_leader_change"):
+            team.request_change(0)
+        elif key == KEY_V:
+            team.start_ultimate()
+        elif key == KEY_B:
+            team.start_linked_awakening()
+        else:
+            return false
+        get_viewport().set_input_as_handled()
+        return true
+    return false
 
 func _physics_process(delta: float) -> void:
     _consume_mobile_actions()
@@ -773,6 +805,8 @@ func _try_substitution() -> void:
     var substitution_origin: Vector3 = global_position
 
     substitutions -= 1
+    if GameFlow.battle_rules_enabled:
+        counter_window = .5
     substitution_cooldown = 0.65
     sub_regen_timer = 0.0
     substitution_hidden = 0.12
@@ -988,6 +1022,11 @@ func receive_combat_hit(
             guard_broken
         )
 
+    if is_instance_valid(battle_condition):
+        applied_damage *= battle_condition.received_multiplier()
+        battle_condition.record_damage(damage, knockback, was_guarding)
+    if is_instance_valid(team):
+        applied_damage = team.incoming_damage(applied_damage, guard_broken)
     health = maxf(health - applied_damage, 0.0)
 
     var push: Vector3 = direction
@@ -1016,6 +1055,8 @@ func receive_combat_hit(
 func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float) -> void:
     if actual_damage <= 0.001:
         return
+    if is_instance_valid(team):
+        team.record_hit(actual_damage, launch_velocity, target.get_is_guarding())
     var target_guarding: bool = (
         target.has_method("get_is_guarding")
         and bool(target.call("get_is_guarding"))
@@ -1130,7 +1171,7 @@ func _defeat() -> void:
     _set_locked_target(null)
 
 func _respawn() -> void:
-    for effect_name: String in ["BlackFlames", "GenjutsuOverlay"]:
+    for effect_name: String in ["BlackFlames", "GenjutsuOverlay", "ElementalStates"]:
         var effect: Node = get_node_or_null(effect_name)
         if effect != null:
             effect.queue_free()
@@ -1164,6 +1205,10 @@ func _respawn() -> void:
     guard_stun = 0.0
     attack_buffer = 0.0
     defeated = false
+    if is_instance_valid(team):
+        team.reset()
+    if is_instance_valid(battle_condition):
+        battle_condition.reset()
 
 func _can_use_movement_action() -> bool:
     var state_allows: bool = (
@@ -1264,6 +1309,10 @@ func _is_mobile_runtime() -> bool:
     )
 
 func get_special_animation() -> String:
+    if team != null and not team.phase.is_empty():
+        return team.animation_clip()
+    if is_instance_valid(cinematic_owner) and cinematic_owner.get("phase") == "wall_run":
+        return "run"
     if not ultimate.phase.is_empty():
         return ultimate.call("animation_clip")
     if awakening.transforming:
@@ -1275,7 +1324,17 @@ func get_damage_multiplier() -> float:
         float(awakening.call("damage_multiplier"))
         * (float(ninja_tools.call("damage_multiplier")) if ninja_tools != null else 1.0)
         * rpg_damage_multiplier
+        * (battle_condition.damage_multiplier() if is_instance_valid(battle_condition) else 1.0)
     )
+
+func receive_status_damage(damage: float) -> float:
+    if defeated or invulnerable_timer > 0.0:
+        return 0.0
+    var dealt: float = minf(health, maxf(damage, 0.0) * (guard_damage_multiplier if is_guarding else 1.0))
+    health -= dealt
+    if health <= 0.0:
+        _defeat()
+    return dealt
 
 func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
     if awakening.active:
@@ -1286,7 +1345,8 @@ func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launc
 func on_hitbox_contact(_box: Area3D, target: Node, dealt: float, blocked: bool) -> void:
     if _box == attack_hitbox and attack_active and not blocked and dealt > 0.0:
         attack_confirmed = true
-    specials.call("contact", target, dealt, blocked)
+    if _box == specials.rasengan_hitbox or _box == specials.barrage_hitbox:
+        specials.call("contact", target, dealt, blocked)
 
 func begin_cinematic_lock(requester: Node) -> bool:
     if defeated or (is_instance_valid(cinematic_owner) and cinematic_owner != requester):

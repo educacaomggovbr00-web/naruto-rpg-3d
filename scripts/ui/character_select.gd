@@ -17,6 +17,8 @@ var roster_scroll: ScrollContainer
 var technique_pick: OptionButton
 var animation_toggle: Button
 var animation_gallery: HBoxContainer
+var team_toggle: CheckBox
+var rules_enabled: bool = true
 
 func _ready() -> void:
     CharacterCatalog.initialize()
@@ -54,9 +56,9 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.10.0 • ESCOLHA SEU CAMINHO NINJA"
+    subtitle.text = "0.11.0 • EQUIPES, COMBATE ELEMENTAL E CHEFES"
     if RuntimeStability.recovered_session:
-        subtitle.text = "0.10.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
+        subtitle.text = "0.11.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -100,7 +102,7 @@ func _ready() -> void:
     _style_caption(mode_label)
     mode_group.add_child(mode_label)
     mode_pick = OptionButton.new()
-    for mode_title: String in ["Batalha livre", "Treinamento", "Torneio solo", "Sobrevivência", "Chefes"]:
+    for mode_title: String in ["Batalha livre", "Treinamento", "Torneio solo", "Sobrevivência", "Chefes", "Esquadrão inimigo"]:
         mode_pick.add_item(mode_title)
     _style_option(mode_pick)
     mode_pick.custom_minimum_size.y = 40
@@ -188,6 +190,16 @@ func _ready() -> void:
         preview_panel.custom_minimum_size.y = 175.0 if animation_gallery.visible else 220.0
         preview.custom_minimum_size.y = 175.0 if animation_gallery.visible else 220.0)
     technique_row.add_child(animation_toggle)
+    team_toggle = CheckBox.new()
+    team_toggle.name = "TeamEnabled"
+    team_toggle.text = "EQUIPE"
+    team_toggle.button_pressed = GameFlow.team_enabled if GameFlow.team_preferences_set else true
+    rules_enabled = GameFlow.battle_rules_enabled if GameFlow.team_preferences_set else true
+    technique_row.add_child(team_toggle)
+    var team_button: Button = Button.new()
+    team_button.text = "PARCEIROS"
+    team_button.pressed.connect(_show_team_options)
+    technique_row.add_child(team_button)
     animation_gallery = HBoxContainer.new()
     animation_gallery.set_script(preload("res://scripts/ui/combat_animation_gallery.gd"))
     column.add_child(animation_gallery)
@@ -515,9 +527,76 @@ func _start() -> void:
     var player_id: String = CharacterCatalog.READY[player_pick.selected].character_id
     var cpu_id: String = CharacterCatalog.READY[cpu_pick.selected].character_id
     var stage: String = ArenaCatalog.IDS[arena_pick.selected]
-    var result: Error = GameFlow.start_versus(player_id, cpu_id, stage) if mode_pick.selected == 0 else GameFlow.start_arcade(["", "training", "tournament", "survival", "boss"][mode_pick.selected], player_id, cpu_id, stage)
+    GameFlow.team_enabled = team_toggle.button_pressed
+    GameFlow.battle_rules_enabled = rules_enabled
+    GameFlow.team_preferences_set = true
+    var result: Error = GameFlow.start_versus(player_id, cpu_id, stage) if mode_pick.selected == 0 else GameFlow.start_arcade(["", "training", "tournament", "survival", "boss", "mob"][mode_pick.selected], player_id, cpu_id, stage)
     if result != OK:
         description.text = "Não foi possível iniciar a batalha: " + error_string(result)
+
+func _show_team_options() -> void:
+    var dialog: ConfirmationDialog = ConfirmationDialog.new()
+    dialog.name = "TeamOptions"
+    dialog.title = "Formação de equipe"
+    dialog.ok_button_text = "APLICAR"
+    dialog.cancel_button_text = "VOLTAR"
+    add_child(dialog)
+    var column: VBoxContainer = VBoxContainer.new()
+    column.add_theme_constant_override("separation", 12)
+    dialog.add_child(column)
+    var help: Label = Label.new()
+    help.text = "Um líder + até dois parceiros • Vida compartilhada\nSuporte tem recarga. Trocas consomem a barra de suporte."
+    column.add_child(help)
+    var picks: Array[OptionButton] = []
+    var configured: Array[PackedStringArray] = [GameFlow.player_partners, GameFlow.cpu_partners]
+    for side: int in range(2):
+        var label: Label = Label.new()
+        label.text = "SUA EQUIPE" if side == 0 else "EQUIPE CPU"
+        column.add_child(label)
+        var row: HBoxContainer = HBoxContainer.new()
+        column.add_child(row)
+        for slot: int in range(2):
+            var pick: OptionButton = OptionButton.new()
+            pick.name = "Partner%d" % picks.size()
+            pick.custom_minimum_size = Vector2(255, 44)
+            pick.add_item("Sem parceiro")
+            pick.set_item_metadata(0, "")
+            for definition: CharacterDefinition in CharacterCatalog.READY:
+                pick.add_item(definition.display_name)
+                pick.set_item_metadata(pick.item_count - 1, definition.character_id)
+                if slot < configured[side].size() and configured[side][slot] == definition.character_id:
+                    pick.select(pick.item_count - 1)
+            row.add_child(pick)
+            picks.append(pick)
+    var rules: CheckBox = CheckBox.new()
+    rules.name = "BattleRulesEnabled"
+    rules.text = "Estados elementais, quebra de equipamento e cenário"
+    rules.button_pressed = rules_enabled
+    column.add_child(rules)
+    var error_label: Label = Label.new()
+    error_label.add_theme_color_override("font_color", Color("ff8a72"))
+    column.add_child(error_label)
+    # Keep the dialog open on invalid duplicate choices, with an actionable error.
+    dialog.dialog_hide_on_ok = false
+    dialog.confirmed.connect(func():
+        var player_ids: PackedStringArray = []
+        var cpu_ids: PackedStringArray = []
+        for index: int in range(picks.size()):
+            var id: String = picks[index].get_selected_metadata()
+            if not id.is_empty():
+                if index < 2:
+                    player_ids.append(id)
+                else:
+                    cpu_ids.append(id)
+        if GameFlow.configure_teams(team_toggle.button_pressed, player_ids, cpu_ids) != OK:
+            error_label.text = "Escolha parceiros diferentes em cada equipe."
+            return
+        rules_enabled = rules.button_pressed
+        GameFlow.battle_rules_enabled = rules_enabled
+        description.text = "Equipe pronta • Z/X suporte, C troca, V supremo, B despertar • Botões na luta."
+        dialog.queue_free())
+    dialog.canceled.connect(dialog.queue_free)
+    dialog.popup_centered(Vector2i(570, 440))
 
 
 func _enter_world() -> void:

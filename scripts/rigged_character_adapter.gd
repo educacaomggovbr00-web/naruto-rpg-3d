@@ -95,6 +95,24 @@ func _physics_process(delta: float) -> void:
     if follow_hitbox_to_bones and (state == "attack" or state == "air_attack"):
         snap_attack_hitbox(int(player.call("get_combo_step")), state == "air_attack")
 
+func reload_character(definition: CharacterDefinition) -> void:
+    _discard_rig_candidate()
+    character_definition = definition
+    requested_model_path = definition.model_path
+    model_path = definition.model_path
+    auto_scale_model = definition.model_auto_scale
+    ground_to_collision = definition.model_ground_to_collision
+    model_scale = definition.model_scale_multiplier
+    target_character_height = definition.model_target_height
+    model_offset = definition.model_offset
+    model_yaw_degrees = definition.model_yaw_degrees
+    fallback_import_scale = definition.model_fallback_import_scale
+    prefer_native_locomotion = definition.prefer_native_locomotion
+    last_action_id = -1
+    _try_load_rig()
+    if chakra_aura != null:
+        _tint_chakra_aura()
+
 func _try_load_rig() -> void:
     rig_loaded = false
     resolved_model_path = ""
@@ -200,9 +218,11 @@ func _finalize_loaded_rig() -> void:
     # Generic CC0 ninja skins are not injected over Player/CPU anymore.
 
     if is_instance_valid(fallback_visual):
-        chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
+        if chakra_aura == null:
+            chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
         if chakra_aura != null:
-            chakra_aura.reparent(self, true)
+            if chakra_aura.get_parent() != self:
+                chakra_aura.reparent(self, true)
             aura_base_scale = chakra_aura.scale
             _tint_chakra_aura()
         fallback_visual.visible = false

@@ -9,6 +9,16 @@ func run() -> void:
         push_error("Android payload lost lightweight startup/loading resources")
         quit(1)
         return
+    for script: String in ["combat_team.gd", "support_actor.gd", "fighter_reconfiguration.gd", "team_hud.gd"]:
+        if not ResourceLoader.exists("res://scripts/team/" + script):
+            push_error("Android payload lost team module: " + script)
+            quit(1)
+            return
+    for script: String in ["elemental_states.gd", "battle_condition.gd", "breakable_prop.gd", "arena_interactions.gd", "boss_encounter.gd"]:
+        if not ResourceLoader.exists("res://scripts/" + script):
+            push_error("Android payload lost battle interaction module: " + script)
+            quit(1)
+            return
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var game: Node = load("res://main.tscn").instantiate()
     root.add_child(game)

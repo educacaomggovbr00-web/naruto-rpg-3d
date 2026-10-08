@@ -66,7 +66,10 @@ func _physics_process(delta: float) -> void:
         if collider is Area3D and collider.has_method("get_fighter"):
             var fighter: Node = collider.call("get_fighter")
             if fighter != owner_fighter and fighter.has_method("receive_combat_hit"):
+                var blocked: bool = fighter.get_is_guarding()
                 var dealt: float = fighter.call("receive_combat_hit", definition.damage * float(owner_fighter.call("get_damage_multiplier")), direction, definition.knockback, definition.launch_force, definition.hitstun)
+                if dealt > 0.0:
+                    ElementalStates.apply_hit(fighter, owner_fighter, "fire", blocked)
                 owner_fighter.call("on_attack_connected", fighter, dealt, definition.launch_force)
                 _impact()
                 recycle()
@@ -78,6 +81,7 @@ func _physics_process(delta: float) -> void:
     if fraction < 1.0:
         recycle()
 func _impact() -> void:
+    preload("res://scripts/arena_interactions.gd").impact(owner_fighter, global_position, "fire", definition.radius * 1.5, definition.damage)
     var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
     if feedback != null:
         feedback.spawn_chakra_impact(global_position,Color(1,.25,.02))

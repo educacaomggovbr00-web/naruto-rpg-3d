@@ -88,7 +88,7 @@ func run() -> void:
     cpu._respawn()
     cpu.set_physics_process(false)
     check(cpu.specials.start("rasengan") and cpu.chakra == 68.0, "CPU runs the same Rasengan module/cost")
-    check(cpu.specials.rasengan_hitbox.collision_mask == 8, "CPU jutsu volume must target player, not CPU")
+    check((cpu.specials.rasengan_hitbox.collision_mask & 8) != 0 and (cpu.specials.rasengan_hitbox.collision_mask & 16) == 0, "CPU jutsu volume must target player, not CPU; scenery collision is independent")
     cpu.receive_combat_hit(1.0, Vector3.BACK, 0, 0, 0.3)
     check(cpu.specials.current.is_empty() and cpu.specials.rasengan_hitbox.remaining_time == 0.0, "Incoming hit interrupts CPU jutsu")
     cpu._respawn()

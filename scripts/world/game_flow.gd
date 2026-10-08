@@ -15,6 +15,26 @@ const MISSIONS: Dictionary = {
 
 var player_character: CharacterDefinition = CharacterCatalog.HENRIQUE
 var cpu_character: CharacterDefinition = CharacterCatalog.NARUTO
+var team_enabled: bool = false
+var team_preferences_set: bool = false
+var battle_rules_enabled: bool = false
+var player_partners: PackedStringArray = ["sasuke", "sakura"]
+var cpu_partners: PackedStringArray = ["kakashi", "hinata"]
+
+func configure_teams(enabled: bool, friendly: PackedStringArray, hostile: PackedStringArray) -> Error:
+    for ids: PackedStringArray in [friendly, hostile]:
+        if ids.size() > 2:
+            return ERR_INVALID_PARAMETER
+        var seen: PackedStringArray = []
+        for id: String in ids:
+            if CharacterCatalog.find(id) == null or id in seen:
+                return ERR_INVALID_PARAMETER
+            seen.append(id)
+    team_enabled = enabled
+    player_partners = friendly.duplicate()
+    cpu_partners = hostile.duplicate()
+    team_preferences_set = true
+    return OK
 var arena_id: String = "training"
 var versus_mode: bool = false
 var campaign_id: String = "classic"
@@ -600,6 +620,12 @@ func finish_battle(won: bool) -> bool:
         if player != null and player.has_method("_cancel_jutsu"):
             player.call("_cancel_jutsu")
             player.call("_cancel_attack")
+        for team: Node in get_tree().get_nodes_in_group("combat_teams"):
+            team.cancel("result")
+            team._clear_supports()
+        var encounter: Node = current.get_node_or_null("BattleBridge/BossEncounter")
+        if encounter != null:
+            encounter.cancel("result")
         var audio: Node = current.get_node_or_null("AudioManager")
         if audio != null:
             audio.call("stop_all")
@@ -811,10 +837,10 @@ func _reset_arcade() -> void:
     arcade_health = -1.0
 
 func arcade_label() -> String:
-    return {"training":"Treinamento livre", "tournament":"Torneio solo", "survival":"Sobrevivência", "boss":"Desafio de chefes"}.get(arcade_mode, "Batalha livre")
+    return {"training":"Treinamento livre", "tournament":"Torneio solo", "survival":"Sobrevivência", "boss":"Desafio de chefes", "mob":"Batalha contra esquadrão"}.get(arcade_mode, "Batalha livre")
 
 func start_arcade(mode: String, player_id: String, cpu_id: String, stage: String) -> Error:
-    if mode not in ["training", "tournament", "survival", "boss"]:
+    if mode not in ["training", "tournament", "survival", "boss", "mob"]:
         return ERR_INVALID_PARAMETER
     var result: Error = start_versus(player_id, cpu_id, stage)
     if result != OK:

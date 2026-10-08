@@ -146,6 +146,10 @@ func _process(delta: float) -> void:
     if refresh_timer > 0.0:
         return
     refresh_timer = 0.10
+    var definition: CharacterDefinition = player.get_character_definition()
+    $Title.text = "%s  VS  %s" % [definition.display_name.to_upper(), enemy.get_character_definition().display_name.to_upper()]
+    health_bar.max_value = player.max_health
+    chakra_bar.max_value = player.max_chakra
     health_bar.value = float(player.call("get_health"))
     chakra_bar.value = float(player.call("get_chakra"))
 
@@ -205,6 +209,18 @@ func _process(delta: float) -> void:
         int(cpu.max_health),
         enemy_state
     ]
+    if GameFlow.arcade_mode == "mob":
+        var bridge: Node = get_parent().get_node("BattleBridge")
+        var total: float = 0.0
+        var remaining: float = 0.0
+        var alive: int = 0
+        for actor: CharacterBody3D in bridge.mob_enemies:
+            total += actor.max_health
+            remaining += actor.health
+            alive += int(actor.targetable)
+        enemy_health_bar.max_value = maxf(total, 1.0)
+        enemy_health_bar.value = remaining
+        enemy_name_label.text = "ESQUADRÃO • %d NINJAS • %d/%d" % [alive, int(remaining), int(total)]
 
     var combo_hits: int = int(player.call("get_combo_hits"))
     var combo_damage: float = float(player.call("get_combo_damage"))

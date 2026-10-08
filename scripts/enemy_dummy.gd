@@ -2,6 +2,9 @@ extends CharacterBody3D
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
 var character_definition: CharacterDefinition = null
+var team: Node = null
+var battle_condition: Node = null
+var character_override: CharacterDefinition = null
 var ai_profile: AIProfileDefinition = null
 var selected_attack: AttackDefinition = null
 var combo_branch: String = "neutral"
@@ -91,6 +94,8 @@ var animation_action_id: int = 0
 var attack_confirmed: bool = false
 var attack_airborne: bool = false
 var attack_timing: Dictionary = {}
+var counter_window: float = 0.0
+var strike_counter_bonus: float = 1.0
 
 var attack_active: bool = false
 var attack_elapsed: float = 0.0
@@ -108,7 +113,7 @@ var combat_state: Node = null
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func get_character_definition() -> CharacterDefinition:
-    return GameFlow.cpu_character
+    return character_definition if character_definition != null else character_override if character_override != null else GameFlow.cpu_character
 
 func _ready() -> void:
     character_definition = get_character_definition()
@@ -273,6 +278,7 @@ func _physics_process(delta: float) -> void:
     _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
+    counter_window = maxf(0.0, counter_window - delta)
     arsenal_delay = maxf(arsenal_delay - delta, 0.0)
     jutsu_cooldown = maxf(jutsu_cooldown - delta, 0.0)
     jutsu_timer = maxf(jutsu_timer - delta, 0.0)
@@ -324,7 +330,7 @@ func _update_attack_timeline(delta: float) -> void:
     if not attack_hit_triggered and attack_elapsed >= startup:
         attack_hit_triggered = true
         rig_adapter.call("snap_attack_hitbox", combo_step, attack_airborne)
-        attack_hitbox.call("activate", self, selected_attack.damage * attack_damage / 10.0,
+        attack_hitbox.call("activate", self, selected_attack.damage * attack_damage / 10.0 * strike_counter_bonus,
             selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun,
             float(attack_timing.get("active", 0.09)))
 
@@ -350,7 +356,8 @@ func on_hitbox_contact(_hitbox: Area3D, _victim: Node, damage: float, blocked: b
             _start_attack()
         if is_instance_valid(combat_state):
             combat_state.call("mark_dash_confirm", blocked)
-    specials.call("contact", _victim, damage, blocked)
+    if _hitbox == specials.rasengan_hitbox or _hitbox == specials.barrage_hitbox:
+        specials.call("contact", _victim, damage, blocked)
     if attack_active and not blocked and damage > 0.0:
         attack_confirmed = true
 
@@ -501,6 +508,8 @@ func _begin_strike() -> void:
     attack_confirmed = false
     animation_action_id += 1
     selected_attack = moveset.attack(combo_step, attack_airborne, combo_branch)
+    strike_counter_bonus = 1.25 if counter_window > 0.0 else 1.0
+    counter_window = 0.0
     attack_timing = selected_attack.animation_timing(rig_adapter.manifest)
 
 func _face_direction(direction: Vector3, delta: float, speed: float = 10.0) -> void:
@@ -573,7 +582,17 @@ func is_defeated() -> bool:
     return not targetable
 
 func get_damage_multiplier() -> float:
-    return float(awakening.call("damage_multiplier")) * float(ninja_tools.call("damage_multiplier"))
+    return float(awakening.call("damage_multiplier")) * float(ninja_tools.call("damage_multiplier")) * (battle_condition.damage_multiplier() if is_instance_valid(battle_condition) else 1.0)
+
+func receive_status_damage(damage: float) -> float:
+    if not targetable or invulnerable_timer > 0.0:
+        return 0.0
+    var dealt: float = minf(health, maxf(damage, 0.0) * (.22 if guarding else 1.0))
+    health -= dealt
+    _update_labels()
+    if health <= 0.0:
+        _knock_out()
+    return dealt
 
 func is_targetable() -> bool:
     return targetable
@@ -639,6 +658,11 @@ func receive_combat_hit(
             guard_broken
         )
 
+    if is_instance_valid(battle_condition):
+        applied_damage *= battle_condition.received_multiplier()
+        battle_condition.record_damage(damage, knockback, was_guarding)
+    if is_instance_valid(team):
+        applied_damage = team.incoming_damage(applied_damage, guard_broken)
     health = maxf(health - applied_damage, 0.0)
 
     var push: Vector3 = direction
@@ -663,6 +687,8 @@ func receive_combat_hit(
     return applied_damage
 
 func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float) -> void:
+    if is_instance_valid(team):
+        team.record_hit(_actual_damage, _launch_velocity, target.get_is_guarding())
     var impact_kind: String = "normal"
     if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
         impact_kind = "guard"
@@ -718,7 +744,7 @@ func _knock_out() -> void:
     respawn_timer = recovery_delay
 
 func _respawn() -> void:
-    for effect_name: String in ["BlackFlames", "GenjutsuOverlay"]:
+    for effect_name: String in ["BlackFlames", "GenjutsuOverlay", "ElementalStates"]:
         var effect: Node = get_node_or_null(effect_name)
         if effect != null:
             effect.queue_free()
@@ -739,6 +765,10 @@ func _respawn() -> void:
     invulnerable_timer = 0.0
     reaction_timer = 0.0
     targetable = true
+    if is_instance_valid(team):
+        team.reset()
+    if is_instance_valid(battle_condition):
+        battle_condition.reset()
     guarding = false
     ground_bounce_pending = false
     wall_bounce_pending = false
@@ -766,6 +796,8 @@ func _substitute() -> void:
     if is_instance_valid(combat_state):
         combat_state.call("mark_substitution")
     substitutions -= 1
+    if GameFlow.battle_rules_enabled:
+        counter_window = .5
     substitution_cooldown = 0.65
     substitution_regen = 0.0
     invulnerable_timer = 0.4
@@ -813,6 +845,8 @@ func is_cpu_controlled() -> bool:
     return true
 
 func get_special_animation() -> String:
+    if team != null and not team.phase.is_empty():
+        return team.animation_clip()
     return ultimate.call("animation_clip") if not ultimate.phase.is_empty() else "chakra_charge" if awakening.transforming else specials.call("animation_clip")
 
 func _can_use_movement_action() -> bool:

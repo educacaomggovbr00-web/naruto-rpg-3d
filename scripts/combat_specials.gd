@@ -324,6 +324,7 @@ func _physics_process(delta: float) -> void:
             else:
                 sphere_visual.scale = Vector3.ONE * clampf(move_definition.hitbox_radius * 0.85, 0.9, 2.4)
             rasengan_hitbox.call("activate", owner_fighter, move_definition.damage, move_definition.knockback, move_definition.launch_force, move_definition.hitstun, 0.18)
+            preload("res://scripts/arena_interactions.gd").impact(owner_fighter, rasengan_hitbox.global_position, move_definition.effect, move_definition.hitbox_radius, move_definition.damage)
             return
         if move_definition != null and move_definition.strategy == "trap":
             for trap: Node3D in traps:
@@ -435,6 +436,9 @@ func movement_velocity(delta: float) -> Vector3:
     return forward * (move_definition.movement_speed if move_definition != null else 13.0) * drive
 
 func contact(target: Node, dealt: float, blocked: bool = false) -> void:
+    if not current.is_empty() and move_definition != null and dealt > 0.0:
+        ElementalStates.apply_hit(target, owner_fighter, move_definition.effect, blocked)
+        preload("res://scripts/arena_interactions.gd").impact(owner_fighter, target.global_position, move_definition.effect, move_definition.hitbox_radius, dealt)
     if current == "rasengan" and dealt > 0.0:
         var state_machine: Node = _combat_state_machine()
         if state_machine != null:

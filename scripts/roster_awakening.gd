@@ -67,6 +67,8 @@ func _build_aura() -> void:
     accent.visible = false
 
 func eligible() -> bool:
+    if fighter.team != null and fighter.team.linked_authorization:
+        return not fighter.is_defeated() and not active and not transforming
     if definition == null or not fighter.character_definition.has_awakening:
         return false
     return (

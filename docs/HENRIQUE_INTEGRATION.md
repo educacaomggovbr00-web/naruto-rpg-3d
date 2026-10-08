@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Equipes e interações — 0.11.0
+
+Equipes com até três membros, suporte, troca de líder nos 26 lutadores, combo em equipe, vida compartilhada, Storm, supremo conjunto e despertar vinculado. Estados elementais, equipamento, cenário destrutível, QTE de chefes e modo com três inimigos simultâneos integram o combate existente. Modelos, clips, saves e campanhas preservados. Regras próprias, validação e limites em [TEAM_COMBAT_0110.md](TEAM_COMBAT_0110.md). APK debug ARM64 versionCode 12; teste físico pendente.
+
 ## Inicialização e menus — 0.10.0
 
 Boot leve, carregamento em etapas com liberação prévia da cena anterior, perfis gráficos compartilhados entre combate/aldeia/regiões, opções com rolagem e seleção lembrada na sessão. Personagens, modelos, combate e saves preservados. APK debug ARM64 versionCode 11; teste no aparelho ainda pendente. Evidências e limites em [LOADING_ANDROID_0100.md](LOADING_ANDROID_0100.md).

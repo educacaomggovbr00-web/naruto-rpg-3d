@@ -41,7 +41,7 @@ func _physics_process(delta: float) -> void:
     tick -= delta
     if tick <= 0.0:
         tick += 0.75
-        victim.receive_combat_hit(2.0, Vector3.ZERO, 0.0, 0.0, 0.0)
+        victim.receive_status_damage(2.0)
     for i: int in range(flames.size()):
         var angle: float = i * TAU / flames.size()
         flames[i].position = Vector3(cos(angle) * 0.35, 0.3, sin(angle) * 0.35)
