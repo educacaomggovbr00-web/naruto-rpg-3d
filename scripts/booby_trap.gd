@@ -28,13 +28,10 @@ func _ready() -> void:
     thread.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     wire.add_child(thread)
     for side: float in [-1.0, 1.0]:
-        var kunai: MeshInstance3D = MeshInstance3D.new()
-        var blade: PrismMesh = PrismMesh.new()
-        blade.size = Vector3(0.16, 0.4, 0.06)
-        kunai.mesh = blade
-        kunai.material_override = metal
-        kunai.position = Vector3(side * 1.2, 0.13, 0)
+        var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
+        var kunai: MeshInstance3D = tools.create(tools.KUNAI,.42)
         kunai.rotation.z = side * 0.35
+        kunai.position = Vector3(side * 1.2, 0.13, 0) - kunai.basis * kunai.mesh.get_aabb().get_center()
         kunai.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
         wire.add_child(kunai)
     ball = MeshInstance3D.new()

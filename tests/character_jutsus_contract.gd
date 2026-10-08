@@ -69,6 +69,12 @@ func run() -> void:
     player.specials._physics_process(0.25)
     var trap: Node3D = player.specials.traps[0]
     trap.set_physics_process(false)
+    var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
+    for index: int in [1,2]:
+        var kunai: MeshInstance3D = trap.wire.get_child(index)
+        check(kunai.mesh == tools.KUNAI,"Trap uses actual shared kunai geometry")
+        var center: Vector3 = kunai.transform * kunai.mesh.get_aabb().get_center()
+        check(center.distance_to(Vector3(-1.2 if index == 1 else 1.2,.13,0)) < .0001,"Rotated trap kunai remains centered on anchor")
     check(trap.active and trap.phase == "armed", "Clip release arms reusable world entity")
     player.specials._physics_process(0.50)
     check(trap.active and player.specials.current.is_empty(), "Released trap survives owner's normal recovery")

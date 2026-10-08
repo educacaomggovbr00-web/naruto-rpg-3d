@@ -1,6 +1,7 @@
 extends Node3D
 ## Fixed-size impact pool: animated shell, ground pressure ring and instanced debris.
 ## Visual only. No gameplay timers, lights, physics bodies or global RNG.
+var signature: Node3D
 var active: bool = false
 var kind: String = "chakra"
 var clock: float = 0.0
@@ -78,11 +79,16 @@ func _ready() -> void:
     smoke.material_override = smoke_material
     smoke.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     add_child(smoke)
+    signature = Node3D.new()
+    signature.set_script(preload("res://scripts/jutsu_signature.gd"))
+    add_child(signature)
     set_quality(quality)
     visible = false
 
 func set_quality(level: int) -> void:
     quality = clampi(level,0,2)
+    if signature != null:
+        signature.set_quality(quality)
     if sparks != null:
         sparks.multimesh.visible_instance_count = [8,16,24][quality]
         smoke.multimesh.visible_instance_count = [2,4,6][quality]
@@ -101,6 +107,7 @@ func activate(origin: Vector3, element: String, size: float, direction: Vector3)
     ring_material.albedo_color = RosterVisualStyle.color(kind).lightened(.2)
     smoke_material.set_shader_parameter("smoke_color",Color("645443") if kind in ["earth","sand"] else Color("30343b"))
     ring.position.y = -origin.y + .035
+    signature.configure("",kind,radius,true)
     active = true
     visible = true
     update_visual(0.0)
@@ -115,6 +122,7 @@ func update_visual(delta: float) -> void:
     if progress >= 1.0:
         recycle()
         return
+    signature.update_visual(delta,heading)
     var color: Color = RosterVisualStyle.color(kind)
     shell_material.set_shader_parameter("progress",progress)
     var expansion: float = radius * (.25 + sin(progress*PI*.5)*.9)
@@ -149,4 +157,5 @@ func update_visual(delta: float) -> void:
 func recycle() -> void:
     active = false
     visible = false
+    signature.visible = false
     clock = 0.0

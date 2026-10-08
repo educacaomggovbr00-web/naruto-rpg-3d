@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Apresentação das técnicas — 0.14.0
+
+35 IDs recebem seleção explícita de padrões visuais: sombras no chão, insetos com silhueta própria, domos, campos de ossos, pétalas, bisturi/palmas de chakra, trilhas e acentos elementais. Corrigidos o clarão na origem da arena e a apresentação genérica de chakra junto à mão. Demon Wind recebe rastro e armadilha usa kunais existentes recentradas. Elenco, modelos, balanceamento e saves preservados. Evidências e limites em [JUTSU_SIGNATURES_0140.md](JUTSU_SIGNATURES_0140.md). APK debug ARM64 versionCode 15; teste físico pendente.
+
 ## Técnicas articuladas e supremos — 0.13.0
 
 Dragões, serpentes, marionetes, mão de areia e tubarão agora possuem corpos articulados e animações próprias. Supremos do controlador do elenco recebem três enquadramentos e apresentação elemental após entrada confirmada; Henrique conserva Susanoo e Naruto seu QTE. Modelos dos 26 lutadores, balanceamento e saves preservados. Evidências e limites em [JUTSU_CONSTRUCTS_0130.md](JUTSU_CONSTRUCTS_0130.md). APK debug ARM64 versionCode 14; teste físico pendente.

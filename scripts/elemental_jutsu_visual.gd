@@ -21,6 +21,7 @@ var profile: String = "energy"
 var technique_id: String = ""
 var weapons: Node3D
 var construct: Node3D
+var signature: Node3D
 
 func _ready() -> void:
     core = MeshInstance3D.new()
@@ -110,6 +111,9 @@ func _ready() -> void:
     construct = Node3D.new()
     construct.set_script(preload("res://scripts/jutsu_construct.gd"))
     add_child(construct)
+    signature = Node3D.new()
+    signature.set_script(preload("res://scripts/jutsu_signature.gd"))
+    add_child(signature)
     set_quality(quality)
     visible = false
 
@@ -146,6 +150,7 @@ func configure(kind: String, size: float, radial: bool = false, shape: String = 
         material.set_shader_parameter("energy_color", tint)
         material.set_shader_parameter("fire_mode", kind in ["fire","black_fire"])
         material.set_shader_parameter("dark_mode", kind in ["black_fire","shadow"])
+    signature.configure("",kind,radius,radial)
     visible = true
     update_visual(0.0)
 
@@ -153,6 +158,7 @@ func configure_jutsu(data: JutsuDefinition, size: float, radial: bool = false) -
     var shape: String = "wave" if data.jutsu_id == "henrique_katon_wave" else "dragon" if data.jutsu_id.contains("dragon") and data.effect in ["water","fire"] else "orb"
     configure(data.effect,size,radial,shape)
     technique_id = data.jutsu_id
+    signature.configure(technique_id,data.effect,radius,radial)
     var model: String = "shark" if technique_id.contains("shark") else "dragon" if technique_id.contains("dragon") and data.effect in ["fire","water","earth"] else "snake" if data.effect == "snake" else "puppet" if data.effect == "puppet" else "sand_hand" if data.effect == "sand" else ""
     if not model.is_empty():
         construct.configure(model,tint)
@@ -161,6 +167,8 @@ func configure_jutsu(data: JutsuDefinition, size: float, radial: bool = false) -
 
 func set_quality(level: int) -> void:
     quality = clampi(level,0,2)
+    if signature != null:
+        signature.set_quality(quality)
     if construct != null:
         construct.set_quality(quality)
     if motes != null:
@@ -177,6 +185,8 @@ func update_visual(delta: float) -> void:
         construct.quaternion = Quaternion(Vector3.BACK,forward)
         construct.scale = Vector3.ONE * radius * (1.35 if construct.kind == "puppet" else 1.65)
         construct.animate(delta)
+    signature.radius = radius
+    signature.update_visual(delta,forward)
     core_material.set_shader_parameter("phase",clock)
     core.visible = not burst and element != "insect"
     weapons.visible = element == "steel" and not burst
@@ -261,6 +271,11 @@ func update_visual(delta: float) -> void:
         motes.multimesh.set_instance_transform(index,Transform3D(frame.scaled_local(particle_shape),offset))
         var color: Color = tint.lerp(Color(1,.8,.25),1.0-ratio) if element == "fire" else tint.lightened((1.0-ratio)*.35)
         motes.multimesh.set_instance_color(index,color)
+    if signature.pattern in ["beetles","beetle_prison","shadow_path","shadow_needles","bone_field","scalpel","phoenix"] or (signature.pattern == "palms" and not technique_id.is_empty()):
+        core.visible = false
+        motes.visible = false
+    else:
+        motes.visible = true
     if construct.visible:
         core.visible = false
         weapons.visible = false

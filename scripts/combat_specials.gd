@@ -208,6 +208,7 @@ func start(kind: String = "") -> bool:
     cast_visual.visible = false
     if move_definition != null and (move_definition.strategy == "projectile" or move_definition.strategy == "hand"):
         cast_visual.configure_jutsu(move_definition,.16)
+        cast_visual.visible = false
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     if move_definition != null:
@@ -273,16 +274,19 @@ func _physics_process(delta: float) -> void:
         rasengan_hitbox.global_position = hand + owner_fighter.global_basis.z * 0.12
         var lightning: bool = move_definition.effect == "lightning"
         var styled_hand: bool = move_definition.effect not in ["chakra", "lightning"] and owner_fighter.character_definition.character_id != "naruto"
-        sphere_visual.visible = not lightning and not styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        var orb_hand: bool = move_definition.effect == "chakra" and move_definition.jutsu_id.contains("rasengan")
+        sphere_visual.visible = orb_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         style_visual.visible = false
         chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
-        if lightning or styled_hand:
+        if lightning or styled_hand or move_definition.effect == "chakra":
             cast_visual.global_position = rasengan_hitbox.global_position
             cast_visual.heading = owner_fighter.global_basis.z
             cast_visual.visible = elapsed > .12 and elapsed < maxf(.24,duration-.10)
         var orb_grow: float = minf(1.0, elapsed * 5.4)
-        if cast_visual.visible and (lightning or styled_hand):
+        if cast_visual.visible:
             cast_visual.radius = .12 + .10 * orb_grow
+            if sphere_visual.visible:
+                cast_visual.core.visible = false
         var orb_pulse: float = 1.0 + (sin(elapsed * 42.0) * 0.045 if current == "rasengan" else 0.0)
         sphere_visual.scale = Vector3.ONE * orb_grow * orb_pulse
         var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
