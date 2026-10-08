@@ -72,7 +72,7 @@ func run() -> void:
             return
         if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_HENRIQUE_RIGGED"]:
             authored_visuals += 1
-        elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+        elif definition.visual_status == "ORIGINAL_STYLIZED_SKINNED_MODEL":
             roster_placeholders += 1
         else:
             push_error("Unexpected roster visual status: " + definition.character_id)

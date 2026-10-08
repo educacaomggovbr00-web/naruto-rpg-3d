@@ -1,5 +1,14 @@
 # Henrique Uchiha: integração
 
+## Modelos do elenco — 0.5.0
+
+Os 21 personagens que usavam o rig genérico agora têm GLBs próprios com proporções humanas estilizadas, roupa, cabelo, rosto, acessórios skinados e dedos articulados. Cada modelo possui 65 ossos e usa a biblioteca de 127 clips existente. São aproximações originais estilizadas, sem rig facial; acabamento de produção ainda pendente. Naruto, Sasuke, Sakura, Kakashi e Henrique foram preservados byte a byte; fingerprints registrados em `assets/characters/final/roster_manifest.json`. Kits, índices do elenco e sistemas existentes preservados. O fallback permanece disponível se um modelo estiver ausente ou incompatível.
+
+![Elenco com os 21 novos modelos](captures/roster_050.png)
+
+APK debug ARM64 `0.5.0-roster-models`, Android 7+, validação física pendente.
+
+
 ## Evolução visual — Shinobi Clash 0.4.0
 
 Continuação preservando o modelo, os 65 ossos, os pesos refinados e o elenco.

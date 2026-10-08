@@ -1,5 +1,14 @@
 # Shinobi Clash — evolução do projeto existente
 
+## Modelos do elenco — 0.5.0
+
+Os 21 personagens que usavam o rig genérico agora têm GLBs próprios com proporções humanas estilizadas, roupa, cabelo, rosto, acessórios skinados e dedos articulados. Cada modelo possui 65 ossos e usa a biblioteca de 127 clips existente. São aproximações originais estilizadas, sem rig facial; acabamento de produção ainda pendente. Naruto, Sasuke, Sakura, Kakashi e Henrique foram preservados byte a byte; fingerprints registrados em `assets/characters/final/roster_manifest.json`. Kits, índices do elenco e sistemas existentes preservados. O fallback permanece disponível se um modelo estiver ausente ou incompatível.
+
+![Elenco com os 21 novos modelos](captures/roster_050.png)
+
+APK debug ARM64 `0.5.0-roster-models`, Android 7+, validação física pendente.
+
+
 Escopo consolidado do pedido completo, sem criar outro jogo. Base: `main` em
 `e779639`, Godot **4.7.2**. A integração original do Henrique foi lida antes das
 alterações; continuam os 26 personagens, os modelos existentes, o combate
@@ -169,3 +178,15 @@ A captura OpenGL usa llvmpipe e não mede desempenho de celular.
   mínimo API 24, target API 36 do template oficial.
   SHA-256 `f79378aefde3b7965cfbac50ad02790a1d0a1e3655410be4bdfd4bdb0391b9f9`.
   A assinatura debug da CI pode produzir outro fingerprint do APK.
+
+### Validação da etapa 0.5.0
+
+32 contratos anteriores passaram; contrato adicional dos 21 modelos passou com
+316 verificações de skin, caminhos próprios, mãos, escala e poses animadas.
+19 testes Python passaram, incluindo pesos normalizados, fingerprints distintos,
+limite de 14 mil triângulos por novo modelo e preservação dos cinco modelos prontos.
+Galeria idle/golpe capturada no Godot 4.7.2 com OpenGL Compatibility/Mesa;
+não constitui benchmark Android. Conteúdo extraído do APK passou nos contratos
+isolados do export e dos 21 modelos, sem acesso ao checkout. Assinatura v2/v3
+e alinhamento de 16 KB verificados. APK debug ARM64, versionCode 6;
+teste em dispositivo real pendente.

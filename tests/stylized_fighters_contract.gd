@@ -84,9 +84,9 @@ func run() -> void:
     check(CharacterCatalog.READY.size() == 26, "Storm 1 selection must expose all 25 playable fighters")
     var placeholder_count: int = 0
     for definition: CharacterDefinition in CharacterCatalog.READY:
-        if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+        if definition.visual_status == "ORIGINAL_STYLIZED_SKINNED_MODEL":
             placeholder_count += 1
-    check(placeholder_count == 21, "Twenty-one roster slots should use the temporary shared rig until their visuals are authored")
+    check(placeholder_count == 21, "Twenty-one roster slots have dedicated skinned models")
     var model_paths: Dictionary = {}
     var shared_stylized_library: AnimationLibrary
     for definition: CharacterDefinition in CharacterCatalog.AUTHORED_VISUALS:

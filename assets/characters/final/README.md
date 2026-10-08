@@ -1,6 +1,6 @@
 # Modelos finais do roster
 
-Esta pasta é o ponto de entrada para substituir os 21 rigs compartilhados por modelos mobile próprios sem alterar combate, IA, jutsus ou cenas.
+Esta pasta contém os 21 modelos estilizados próprios gerados por `tools/create_roster_fighters.py`, sem alterar os cinco modelos anteriormente prontos. Geometria original, roupas/acessórios skinados, 65 ossos; fingerprints e limites em `roster_manifest.json`. O gerador recusa sobrescrever modelos existentes. A estrutura continua permitindo substituir modelos individualmente sem alterar combate, IA ou jutsus.
 
 ## Convenção de caminho
 
@@ -23,7 +23,7 @@ O modelo final precisa:
 - abrir como `PackedScene`/Node3D;
 - conter `Skeleton3D`;
 - possuir os ossos de combate compatíveis com Mixamo: Hips, Spine, Spine1, Spine2, Head, braços, antebraços, mãos, coxas, pernas e pés dos dois lados;
-- permitir retarget da biblioteca de 27 clips;
+- permitir retarget da biblioteca de 127 clips;
 - ter pelo menos um mesh visível;
 - ser adequado a mobile em triângulos, materiais e texturas;
 - usar apenas assets com procedência/licença registrada antes de publicação.

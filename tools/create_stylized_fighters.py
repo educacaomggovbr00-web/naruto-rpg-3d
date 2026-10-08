@@ -236,7 +236,7 @@ def build(character):
     return mesh
 
 
-def export(character, mesh):
+def export(character, mesh, destination=None):
     binary = bytearray()
     views, accessors = [], []
     def buffer(data, dtype, kind, component):
@@ -272,7 +272,7 @@ def export(character, mesh):
     encoded += b' ' * (-len(encoded)%4)
     binary.extend(b'\0' * (-len(binary)%4))
     result = struct.pack('<III',0x46546c67,2,28+len(encoded)+len(binary))+struct.pack('<II',len(encoded),0x4e4f534a)+encoded+struct.pack('<II',len(binary),0x004e4942)+binary
-    destination = ROOT/f'assets/characters/stylized/{character}.glb'
+    destination = Path(destination) if destination is not None else ROOT/f'assets/characters/stylized/{character}.glb'
     destination.parent.mkdir(parents=True,exist_ok=True)
     destination.write_bytes(result)
     print(f'{character}: {len(mesh.positions)} vertices, {len(mesh.indices)//3} triangles, {len(result)} bytes, {len(nodes)} skin joints')
