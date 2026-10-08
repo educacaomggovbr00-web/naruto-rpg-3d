@@ -1,14 +1,14 @@
 extends Node
 ## Persisted render/VFX budgets only. Combat timing, pools and hitboxes stay identical.
 const LABELS: Array[String] = ["LOW", "MED", "HIGH"]
-const TARGET_SCALE: Array[float] = [0.62, 0.76, 0.92]
-const MIN_ADAPTIVE_SCALE: Array[float] = [0.50, 0.58, 0.70]
+const TARGET_SCALE: Array[float] = [0.75, 0.90, 1.0]
+const MIN_ADAPTIVE_SCALE: Array[float] = [0.70, 0.80, 0.90]
 
 @export var adaptive_resolution: bool = true
 var level: int = 1
 var settings: ConfigFile = ConfigFile.new()
 var adaptive_timer: float = 3.0
-var render_scale: float = 0.76
+var render_scale: float = 0.90
 var low_fps_streak: int = 0
 var recovery_streak: int = 0
 var emergency_mode: bool = false
@@ -91,6 +91,7 @@ func apply(value: int, save: bool = true) -> void:
     sun.shadow_enabled = level > 0
     sun.directional_shadow_max_distance = 18.0 if level == 1 else 32.0
 
+    get_viewport().msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][level]
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
     get_viewport().scaling_3d_scale = render_scale
 

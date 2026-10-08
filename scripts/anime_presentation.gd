@@ -32,8 +32,9 @@ static func textured(source: StandardMaterial3D) -> Material:
     result.rim_enabled = true
     result.rim = 0.13
     result.rim_tint = 0.42
-    if result.next_pass == null:
-        result.next_pass = _outline()
+    # Imported skinned surfaces keep their texture detail without fragmented
+    # inverted-hull passes at joints. MSAA handles silhouette antialiasing.
+    result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 
     textured_cache[key] = result
     return result

@@ -2,16 +2,20 @@ extends SubViewportContainer
 ## Lightweight character-select stage: larger silhouettes, anime lighting, no gameplay systems.
 var stage: Node3D
 var fighters: Array[CharacterBody3D] = []
+var technique_visual: Node3D
+var technique_timer: float = 0.0
 var preview_clip: String = "idle"
 
 func preview_animation(clip: String) -> void:
+    technique_timer = 0.0
+    if technique_visual != null: technique_visual.visible = false
     preview_clip = clip
     if not fighters.is_empty():
         fighters[0].preview_animation(clip)
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
-    custom_minimum_size = Vector2(0, 255)
+    custom_minimum_size = Vector2(0, 220)
     stretch = true
     stretch_shrink = 1
 
@@ -19,7 +23,7 @@ func _ready() -> void:
     viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-    viewport.msaa_3d = Viewport.MSAA_DISABLED
+    viewport.msaa_3d = Viewport.MSAA_4X
     viewport.scaling_3d_scale = 1.0
     add_child(viewport)
 
@@ -45,10 +49,11 @@ func _ready() -> void:
     stage.add_child(fill)
 
     var back_mesh: PlaneMesh = PlaneMesh.new()
-    back_mesh.size = Vector2(10.0, 4.5)
+    back_mesh.size = Vector2(18.0, 4.5)
     var back_material: StandardMaterial3D = StandardMaterial3D.new()
     back_material.albedo_color = Color("0a1d2b")
     back_material.roughness = 1.0
+    back_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
     back_mesh.material = back_material
     var backdrop: MeshInstance3D = MeshInstance3D.new()
     backdrop.mesh = back_mesh
@@ -84,12 +89,15 @@ func _ready() -> void:
         stage.add_child(disc)
 
     var camera: Camera3D = Camera3D.new()
-    camera.position = Vector3(0, 1.18, 5.0)
+    camera.position = Vector3(0, .94, 5.0)
     camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-    camera.size = 2.18
+    camera.size = 2.3
     camera.keep_aspect = Camera3D.KEEP_HEIGHT
     stage.add_child(camera)
 
+    technique_visual = Node3D.new()
+    technique_visual.set_script(preload("res://scripts/elemental_jutsu_visual.gd"))
+    stage.add_child(technique_visual)
     show_fighters(CharacterCatalog.HENRIQUE, CharacterCatalog.NARUTO)
 
 func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> void:
@@ -98,6 +106,9 @@ func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> voi
             stage.remove_child(fighter)
             fighter.queue_free()
     fighters.clear()
+    if technique_visual != null:
+        technique_visual.visible = false
+    technique_timer = 0.0
 
     for index: int in range(2):
         var actor: CharacterBody3D = CharacterBody3D.new()
@@ -105,8 +116,27 @@ func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> voi
         actor.definition = player if index == 0 else cpu
         actor.position = Vector3(-0.92 if index == 0 else 0.92, 0.95, 0)
         actor.rotation.y = 0.14 if index == 0 else -0.14
-        actor.scale = Vector3.ONE * 1.24
+        actor.scale = Vector3.ONE * 1.08
         stage.add_child(actor)
         fighters.append(actor)
         if index == 0:
             actor.preview_animation(preview_clip)
+
+func preview_technique(id: String) -> void:
+    if fighters.is_empty(): return
+    var data: JutsuDefinition = fighters[0].definition.find_jutsu(id)
+    if data == null: return
+    fighters[0].preview_animation(data.animation_name)
+    technique_timer = 1.0
+    technique_visual.visible = false
+    if data.strategy not in ["clones","barrage","trap"]:
+        technique_visual.position = Vector3(-.92,1.0,.45)
+        technique_visual.heading = Vector3.RIGHT
+        technique_visual.configure(data.effect,.26,data.strategy == "burst","wave" if id == "henrique_katon_wave" else "orb")
+
+func _physics_process(delta: float) -> void:
+    if technique_timer <= 0.0: return
+    technique_timer -= delta
+    if technique_timer <= 0.0:
+        technique_visual.visible = false
+        fighters[0].preview_animation("idle")

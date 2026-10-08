@@ -90,7 +90,7 @@ func run() -> void:
     await frames(2)
     check(village.quality == (old_quality + 1) % 3 and controls.camera_touch == -1, "Quality GUI touch must not reserve camera finger")
     village.apply_quality(0, false)
-    check(not village.get_node("Sun").shadow_enabled and is_equal_approx(root.scaling_3d_scale, 0.62), "World LOW must apply Compatibility budgets")
+    check(not village.get_node("Sun").shadow_enabled and is_equal_approx(root.scaling_3d_scale, 0.75), "World LOW must apply Compatibility budgets")
     var npc_meshes: Array[MeshInstance3D] = []
     var npc: CharacterBody3D = village.get_node("academy_guide").actor
     npc.rig_adapter.call("_collect_mesh_instances", npc.rig_adapter.model_instance, npc_meshes)

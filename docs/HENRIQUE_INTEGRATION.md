@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Menus, nitidez e técnicas — 0.7.0
+
+Seleção com 26 retratos, prévia das técnicas, galeria recolhível e tema comum para menus/diálogos. Resolução e antisserrilhado ajustados no combate e exploração; contornos extras que fragmentavam as malhas removidos. Apresentação procedural das 19 famílias de jutsus, sem alterar balanceamento. Modelos preservados byte a byte. Referências oficiais consultadas, mudanças, capturas e limites em [ANIME_PRESENTATION_REFERENCES.md](ANIME_PRESENTATION_REFERENCES.md). APK debug ARM64 versionCode 8; teste físico pendente.
+
 ## Jutsus elementais — 0.6.0
 
 Chidori/Raikiri agora usam segmentos com escala no eixo local correto: raios curtos ao redor da mão, com núcleo elétrico. A escala e o relógio são reiniciados entre jutsus. Nagashi usa um pulso circular junto ao chão, com vida visual de 0,38 s independente da janela de dano; interrupções limpam imediatamente o efeito.

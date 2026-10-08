@@ -17,6 +17,9 @@ window/handheld/orientation=0
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[gui]
+theme/custom="res://assets/ui/shinobi_theme.tres"
+
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

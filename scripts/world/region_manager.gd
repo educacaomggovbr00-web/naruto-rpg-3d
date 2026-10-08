@@ -165,7 +165,8 @@ func _on_story_dialogue_finished() -> void:
 func apply_quality(level: int, save: bool = true) -> void:
     quality = clampi(level, 0, 2)
     get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
-    get_viewport().scaling_3d_scale = [0.58, 0.74, 0.90][quality]
+    get_viewport().scaling_3d_scale = [0.75, 0.90, 1.0][quality]
+    get_viewport().msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][quality]
     $Sun.shadow_enabled = quality > 0
     $Sun.directional_shadow_max_distance = [0.0, 18.0, 28.0][quality]
     $Environment.environment.fog_enabled = quality > 0

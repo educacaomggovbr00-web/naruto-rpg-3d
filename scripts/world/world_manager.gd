@@ -1,7 +1,7 @@
 extends Node3D
 const POINTS_PATH: String = "res://assets/world/village_points.json"
-const TARGET_SCALE: Array[float] = [0.62, 0.76, 0.92]
-const MIN_ADAPTIVE_SCALE: Array[float] = [0.50, 0.58, 0.70]
+const TARGET_SCALE: Array[float] = [0.75, 0.90, 1.0]
+const MIN_ADAPTIVE_SCALE: Array[float] = [0.70, 0.80, 0.90]
 var points: Array[Area3D] = []
 var nearest: Area3D = null
 var scan_timer: float = 0.0
@@ -175,6 +175,7 @@ func apply_quality(level: int, save: bool = true) -> void:
     recovery_streak = 0
     emergency_mode = false
     get_viewport().scaling_3d_scale = render_scale
+    get_viewport().msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][quality]
     quality_button.text = ["LOW", "MED", "HIGH"][quality]
     for point: Area3D in points:
         if point.actor == null or not is_instance_valid(point.actor.rig_adapter.model_instance):

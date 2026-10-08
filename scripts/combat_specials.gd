@@ -206,7 +206,7 @@ func start(kind: String = "") -> bool:
     chidori_visual.scale = Vector3.ONE
     chidori_visual.clock = 0.0
     cast_visual.visible = false
-    if move_definition != null and (move_definition.strategy == "projectile" or (move_definition.strategy == "hand" and move_definition.effect == "lightning")):
+    if move_definition != null and (move_definition.strategy == "projectile" or move_definition.strategy == "hand"):
         cast_visual.configure(move_definition.effect,.16)
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
@@ -273,12 +273,12 @@ func _physics_process(delta: float) -> void:
         var lightning: bool = move_definition.effect == "lightning"
         var styled_hand: bool = move_definition.effect not in ["chakra", "lightning"] and owner_fighter.character_definition.character_id != "naruto"
         sphere_visual.visible = not lightning and not styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
-        style_visual.visible = styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        style_visual.visible = false
         chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
-        if lightning:
+        if lightning or styled_hand:
             cast_visual.global_position = rasengan_hitbox.global_position
             cast_visual.heading = owner_fighter.global_basis.z
-            cast_visual.visible = chidori_visual.visible
+            cast_visual.visible = elapsed > .12 and elapsed < maxf(.24,duration-.10)
         var orb_grow: float = minf(1.0, elapsed * 5.4)
         var orb_pulse: float = 1.0 + (sin(elapsed * 42.0) * 0.045 if current == "rasengan" else 0.0)
         sphere_visual.scale = Vector3.ONE * orb_grow * orb_pulse
@@ -308,12 +308,13 @@ func _physics_process(delta: float) -> void:
             rasengan_hitbox.global_position = owner_fighter.global_position + Vector3.UP * 0.65 + owner_fighter.global_basis.z * 0.45
             var generic_burst: bool = owner_fighter.character_definition.character_id != "naruto"
             sphere_visual.visible = not generic_burst
-            style_visual.visible = generic_burst
+            style_visual.visible = generic_burst and move_definition.effect in ["susanoo","earth","sand","bone","snake","puppet"]
             cast_visual.scale = Vector3.ONE
             cast_visual.global_position = rasengan_hitbox.global_position
             cast_visual.configure(move_definition.effect,move_definition.hitbox_radius,true)
-            if move_definition.effect == "lightning":
+            if move_definition.effect in ["lightning","shadow","sand","earth","insect","snake","oil","taijutsu"]:
                 cast_visual.global_position = owner_fighter.global_position + Vector3.DOWN * .6
+            if move_definition.effect == "lightning":
                 style_visual.visible = false
                 chidori_visual.visible = false
             if generic_burst:

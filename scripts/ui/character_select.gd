@@ -10,6 +10,11 @@ var preview: SubViewportContainer
 var player_name: Label
 var cpu_name: Label
 var arena_badge: Label
+var roster_buttons: Array[Button] = []
+var roster_side: String = "player"
+var roster_scroll: ScrollContainer
+var technique_pick: OptionButton
+var animation_toggle: Button
 var animation_gallery: HBoxContainer
 
 func _ready() -> void:
@@ -21,16 +26,16 @@ func _ready() -> void:
     margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     margin.add_theme_constant_override("margin_left", 28)
     margin.add_theme_constant_override("margin_right", 28)
-    margin.add_theme_constant_override("margin_top", 14)
-    margin.add_theme_constant_override("margin_bottom", 14)
+    margin.add_theme_constant_override("margin_top", 10)
+    margin.add_theme_constant_override("margin_bottom", 10)
     add_child(margin)
 
     var column: VBoxContainer = VBoxContainer.new()
-    column.add_theme_constant_override("separation", 9)
+    column.add_theme_constant_override("separation", 6)
     margin.add_child(column)
 
     var header: HBoxContainer = HBoxContainer.new()
-    header.custom_minimum_size.y = 54.0
+    header.custom_minimum_size.y = 48.0
     column.add_child(header)
 
     var title_stack: VBoxContainer = VBoxContainer.new()
@@ -48,7 +53,7 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.6.0 • JUTSUS ELEMENTAIS • 26 VISUAIS"
+    subtitle.text = "0.7.0 • ESCOLHA SEU CAMINHO NINJA"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -96,8 +101,10 @@ func _ready() -> void:
     mode_pick.custom_minimum_size.y = 40
     mode_group.add_child(mode_pick)
 
+    _build_roster_strip(column)
+
     var versus: HBoxContainer = HBoxContainer.new()
-    versus.custom_minimum_size.y = 42.0
+    versus.custom_minimum_size.y = 34.0
     versus.add_theme_constant_override("separation", 14)
     column.add_child(versus)
 
@@ -121,7 +128,7 @@ func _ready() -> void:
 
     var preview_panel: PanelContainer = PanelContainer.new()
     preview_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    preview_panel.custom_minimum_size.y = 255.0
+    preview_panel.custom_minimum_size.y = 220.0
     preview_panel.add_theme_stylebox_override("panel", _box(Color(0.02, 0.07, 0.11, 0.96), Color(0.22, 0.46, 0.58, 0.95), 2, 18))
     column.add_child(preview_panel)
 
@@ -136,13 +143,36 @@ func _ready() -> void:
     preview.set_script(preload("res://scripts/ui/fighter_preview.gd"))
     preview_margin.add_child(preview)
 
+    var technique_row = HBoxContainer.new()
+    column.add_child(technique_row)
+    var technique_caption = Label.new()
+    technique_caption.text = "TÉCNICAS"
+    _style_caption(technique_caption)
+    technique_row.add_child(technique_caption)
+    technique_pick = OptionButton.new()
+    technique_pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    technique_pick.custom_minimum_size.y = 38
+    _style_option(technique_pick)
+    technique_row.add_child(technique_pick)
+    var watch = Button.new()
+    watch.text = "VER TÉCNICA"
+    watch.pressed.connect(_preview_technique)
+    technique_row.add_child(watch)
+    animation_toggle = Button.new()
+    animation_toggle.text = "ANIMAÇÕES"
+    animation_toggle.pressed.connect(func():
+        animation_gallery.visible = not animation_gallery.visible
+        preview_panel.custom_minimum_size.y = 175.0 if animation_gallery.visible else 220.0
+        preview.custom_minimum_size.y = 175.0 if animation_gallery.visible else 220.0)
+    technique_row.add_child(animation_toggle)
     animation_gallery = HBoxContainer.new()
     animation_gallery.set_script(preload("res://scripts/ui/combat_animation_gallery.gd"))
     column.add_child(animation_gallery)
     animation_gallery.clip_selected.connect(preview.preview_animation)
+    animation_gallery.visible = false
 
     description = Label.new()
-    description.custom_minimum_size.y = 42.0
+    description.custom_minimum_size.y = 32.0
     description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     description.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
     description.add_theme_font_size_override("font_size", 14)
@@ -279,10 +309,7 @@ func _fighter_choice(row: HBoxContainer, title_text: String) -> OptionButton:
     choice.custom_minimum_size = Vector2(0, 40)
     choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     for fighter: CharacterDefinition in CharacterCatalog.READY:
-        var suffix: String = ""
-        if fighter.model_slot != null:
-            suffix = " · FINAL" if ResourceLoader.exists(fighter.model_path) else " · SLOT"
-        choice.add_item(fighter.display_name + suffix)
+        choice.add_item(fighter.display_name)
     _style_option(choice)
     group.add_child(choice)
     return choice
@@ -375,19 +402,85 @@ func _describe(_index: int) -> void:
     player_name.add_theme_color_override("font_color", character.energy_color.lightened(0.28))
     cpu_name.add_theme_color_override("font_color", opponent.energy_color.lightened(0.28))
 
-    var status: String = "VISUAL PRÓPRIO"
-    if character.model_slot != null:
-        status = "MODELO FINAL" if ResourceLoader.exists(character.model_path) else "FALLBACK PROCEDURAL"
+    description.text = "%s • %d técnicas • Combos terrestres e aéreos • Ultimate e transformação" % [character.display_name,character.jutsus.size()]
+    if technique_pick != null:
+        technique_pick.clear()
+        for id: String in character.jutsus:
+            var technique: JutsuDefinition = character.find_jutsu(id)
+            technique_pick.add_item(technique.display_name if technique != null else id.capitalize())
+            technique_pick.set_item_metadata(technique_pick.item_count - 1,id)
+    for index: int in range(roster_buttons.size()):
+        roster_buttons[index].button_pressed = index == (player_pick.selected if roster_side == "player" else cpu_pick.selected)
 
-    description.text = "%s  —  %s
-%s" % [
-        character.display_name.to_upper(),
-        status,
-        character.summary
-    ]
-
+    if roster_scroll != null and not roster_buttons.is_empty():
+        roster_scroll.call_deferred("ensure_control_visible", roster_buttons[player_pick.selected if roster_side == "player" else cpu_pick.selected])
     if is_instance_valid(preview):
         preview.call("show_fighters", character, opponent)
+
+func _build_roster_strip(column: VBoxContainer) -> void:
+    var row = HBoxContainer.new()
+    column.add_child(row)
+    var side = Button.new()
+    side.text = "VOCÊ"
+    side.custom_minimum_size.x = 78
+    side.tooltip_text = "Escolher personagem do jogador ou da CPU"
+    side.pressed.connect(func():
+        roster_side = "cpu" if roster_side == "player" else "player"
+        side.text = "CPU" if roster_side == "cpu" else "VOCÊ"
+        _describe(0))
+    row.add_child(side)
+    var scroll = ScrollContainer.new()
+    roster_scroll = scroll
+    scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    scroll.custom_minimum_size.y = 76
+    scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    row.add_child(scroll)
+    var portraits = HBoxContainer.new()
+    portraits.add_theme_constant_override("separation",6)
+    scroll.add_child(portraits)
+    for index: int in range(CharacterCatalog.READY.size()):
+        var definition: CharacterDefinition = CharacterCatalog.READY[index]
+        var card = Button.new()
+        card.custom_minimum_size = Vector2(164,60)
+        card.tooltip_text = definition.display_name
+        card.toggle_mode = true
+        var content = HBoxContainer.new()
+        content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+        content.offset_left = 8
+        content.offset_right = -8
+        content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        card.add_child(content)
+        var portrait = TextureRect.new()
+        portrait.texture = load("res://assets/ui/portraits/"+definition.character_id+".png")
+        portrait.custom_minimum_size = Vector2(48,48)
+        portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+        portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+        portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        content.add_child(portrait)
+        var name_label = Label.new()
+        name_label.text = definition.display_name
+        name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+        name_label.add_theme_font_size_override("font_size",12)
+        name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        content.add_child(name_label)
+        card.pressed.connect(_pick_roster.bind(index))
+        portraits.add_child(card)
+        roster_buttons.append(card)
+
+func _pick_roster(index: int) -> void:
+    if roster_side == "cpu":
+        cpu_pick.select(index)
+    else:
+        player_pick.select(index)
+    _describe(index)
+
+func _preview_technique() -> void:
+    if technique_pick == null or technique_pick.selected < 0:
+        return
+    preview.preview_technique(String(technique_pick.get_item_metadata(technique_pick.selected)))
+
 
 func _arena_changed(_index: int) -> void:
     arena_badge.text = ArenaCatalog.NAMES[arena_pick.selected].to_upper()

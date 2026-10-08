@@ -1,6 +1,8 @@
 class_name RosterVisualStyle
 extends RefCounted
 
+const EFFECTS: PackedStringArray = ["fire","black_fire","water","wind","lightning","sand","earth","oil","shadow","mind","insect","steel","iron","puppet","bone","snake","taijutsu","chakra","susanoo"]
+
 static func color(effect: String, fallback: Color = Color(0.20, 0.65, 1.0)) -> Color:
     match effect:
         "susanoo":
@@ -25,7 +27,7 @@ static func color(effect: String, fallback: Color = Color(0.20, 0.65, 1.0)) -> C
             return Color(0.96, 0.34, 0.74)
         "insect":
             return Color(0.26, 0.22, 0.12)
-        "steel", "puppet":
+        "steel", "iron", "puppet":
             return Color(0.72, 0.78, 0.86)
         "bone":
             return Color(0.92, 0.90, 0.82)

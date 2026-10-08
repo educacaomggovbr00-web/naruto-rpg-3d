@@ -48,7 +48,7 @@ func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3,
     var color: Color = RosterVisualStyle.color(data.effect, fallback_color).lerp(fallback_color, 0.18)
     material.albedo_color = color
     material.emission = color
-    var enhanced: bool = data.effect in ["fire","black_fire","water","wind","chakra","lightning","mind","sand","susanoo"]
+    var enhanced: bool = data.effect in RosterVisualStyle.EFFECTS
     orb.visible = not enhanced
     elemental_visual.visible = enhanced
     if enhanced:

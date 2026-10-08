@@ -9,6 +9,7 @@ var form: String = "orb"
 var burst: bool = false
 var quality: int = 1
 var core: MeshInstance3D
+var mesh_bank: Dictionary = {}
 var core_material: ShaderMaterial
 var motes: MultiMeshInstance3D
 var rings: Array[MeshInstance3D] = []
@@ -22,6 +23,16 @@ func _ready() -> void:
     ball.height = 2.0
     ball.radial_segments = 20
     ball.rings = 10
+    mesh_bank["orb"] = ball
+    var blade = BoxMesh.new()
+    blade.size = Vector3(.22,.22,2.0)
+    mesh_bank["blade"] = blade
+    var spike = CylinderMesh.new()
+    spike.top_radius = 0
+    spike.bottom_radius = 1
+    spike.height = 2
+    spike.radial_segments = 8
+    mesh_bank["spike"] = spike
     core.mesh = ball
     core_material = ShaderMaterial.new()
     core_material.shader = CORE_SHADER
@@ -76,6 +87,9 @@ func configure(kind: String, size: float, radial: bool = false, shape: String = 
     form = shape
     clock = 0.0
     tint = RosterVisualStyle.color(kind)
+    core.mesh = mesh_bank["spike"] if kind == "bone" else mesh_bank["blade"] if kind in ["steel","puppet","susanoo"] else mesh_bank["orb"]
+    core_material.set_shader_parameter("solid_mode", kind in ["steel","iron","bone","puppet"])
+    core_material.set_shader_parameter("grain_mode", kind in ["sand","earth","oil"])
     core_material.set_shader_parameter("energy_color", tint)
     core_material.set_shader_parameter("fire_mode", kind in ["fire", "black_fire"])
     core_material.set_shader_parameter("dark_mode", kind in ["black_fire", "shadow"])
@@ -96,14 +110,30 @@ func _physics_process(delta: float) -> void:
 func update_visual(delta: float) -> void:
     clock += delta
     core_material.set_shader_parameter("phase",clock)
-    core.visible = not burst
+    core.visible = not burst and element != "insect"
     core.scale = Vector3.ONE * radius * (1.0 + sin(clock * 19.0) * .035)
     core.rotation = Vector3.ZERO
     if form == "wave":
         core.basis = Basis(Quaternion(Vector3.BACK, heading.normalized()))
         core.scale = Vector3(radius*1.7,radius*.55,radius*.7)
-    if element == "wind":
-        core.scale *= Vector3(1.25,.28,1.25)
+    var forward: Vector3 = heading.normalized() if heading.length_squared() > .001 else Vector3.BACK
+    if element in ["steel","puppet","susanoo"]:
+        core.basis = Basis(Quaternion(Vector3.BACK,forward))
+        core.scale = Vector3(radius*.55,radius*.55,radius*1.6)
+        if element == "susanoo": core.scale.x *= 4.0
+    elif element == "bone":
+        core.basis = Basis(Quaternion(Vector3.UP,forward))
+        core.scale = Vector3(radius*.18,radius*1.6,radius*.18)
+    elif element == "shadow":
+        core.scale = Vector3(radius*1.2,radius*.055,radius*1.7)
+    elif element == "snake":
+        core.basis = Basis(Quaternion(Vector3.BACK,forward))
+        core.scale = Vector3(radius*.48,radius*.48,radius*.8)
+    elif element == "wind":
+        core.scale *= Vector3(1.25,.16,1.25)
+    elif element == "water":
+        core.basis = Basis(Quaternion(Vector3.BACK,forward))
+        core.scale *= Vector3(.85,.85,1.35)
     if burst and clock >= .38:
         visible = false
         return
@@ -121,7 +151,12 @@ func update_visual(delta: float) -> void:
         else:
             offset = frame * Vector3(cos(angle)*radius*(1.3 if form == "wave" else .3)*ratio,sin(angle)*radius*.3*ratio,-radius*(.6+ratio*2.8))
             if element in ["fire", "black_fire"]: offset.y += ratio * radius * .5
-            size = radius * (.22 - ratio*.16)
+            elif element == "insect":
+                offset = frame * Vector3(cos(angle)*radius*.85,sin(angle*1.7)*radius*.6,-radius*(.5+ratio*1.6))
+            elif element == "snake":
+                offset = frame * Vector3(sin(clock*12.0-ratio*8.0)*radius*.45,0,-radius*(.4+ratio*3.0))
+            elif element == "shadow": offset.y *= .06
+            size = radius * (.25 - ratio*.09) if element in ["snake","insect","sand","earth"] else radius * (.22 - ratio*.16)
         if index == motes.multimesh.visible_instance_count - 1:
             tail_tip = offset
         motes.multimesh.set_instance_transform(index,Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * maxf(.001,size)),offset))
