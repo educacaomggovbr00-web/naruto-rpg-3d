@@ -9,6 +9,7 @@ var shape: SphereShape3D
 var hit_mask: int = 16
 var definition: JutsuDefinition = null
 var orb: MeshInstance3D
+var elemental_visual: Node3D
 var material: StandardMaterial3D
 
 func _ready() -> void:
@@ -21,6 +22,9 @@ func _ready() -> void:
     material.roughness = 0.55
     orb.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     add_child(orb)
+    elemental_visual = Node3D.new()
+    elemental_visual.set_script(preload("res://scripts/elemental_jutsu_visual.gd"))
+    add_child(elemental_visual)
     visible = false
 
 func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3, heading: Vector3, data: JutsuDefinition) -> void:
@@ -44,6 +48,12 @@ func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3,
     var color: Color = RosterVisualStyle.color(data.effect, fallback_color).lerp(fallback_color, 0.18)
     material.albedo_color = color
     material.emission = color
+    var enhanced: bool = data.effect in ["fire","black_fire","water","wind","chakra","lightning","mind","sand","susanoo"]
+    orb.visible = not enhanced
+    elemental_visual.visible = enhanced
+    if enhanced:
+        elemental_visual.configure(data.effect, clampf(data.hitbox_radius,.18,.85),false,"wave" if data.jutsu_id == "henrique_katon_wave" else "orb")
+        elemental_visual.heading = direction
     active = true
     visible = true
 
@@ -60,6 +70,7 @@ func _physics_process(delta: float) -> void:
         if aim.length_squared() > 0.001:
             direction = direction.slerp(aim.normalized(), minf(delta * definition.tracking_strength, 1.0)).normalized()
 
+    elemental_visual.heading = direction
     var travel: Vector3 = direction * definition.movement_speed * delta
     var query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
     query.shape = shape
@@ -94,9 +105,11 @@ func _physics_process(delta: float) -> void:
                 if definition.jutsu_id == "henrique_genjutsu" and dealt > 0.0 and not fighter.get_is_guarding():
                     preload("res://scripts/genjutsu_overlay.gd").attach(fighter)
                 owner_fighter.call("on_attack_connected", fighter, dealt, definition.launch_force)
+                _impact()
                 recycle()
                 return
         elif collider is StaticBody3D:
+            _impact()
             recycle()
             return
 
@@ -107,6 +120,11 @@ func _physics_process(delta: float) -> void:
     var spin: float = RosterVisualStyle.orbit_speed(definition.effect)
     orb.rotation.y += delta * spin
     orb.rotation.x += delta * (spin * 0.45)
+
+func _impact() -> void:
+    var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+    if feedback != null:
+        feedback.spawn_chakra_impact(global_position,RosterVisualStyle.color(definition.effect))
 
 func recycle() -> void:
     active = false

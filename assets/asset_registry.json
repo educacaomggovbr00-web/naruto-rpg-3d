@@ -1161,6 +1161,42 @@
       "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
       "license": "Original modeled geometry; inherited skeleton provenance unresolved",
       "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/vfx/elemental_core.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Procedural opaque elemental surface; no external assets",
+      "sha256": "5785ea879ab412466b0b0e3d889e2a144004f2eb9f6ceddfac91906241ec88da"
+    },
+    {
+      "path": "assets/audio/original/jutsu_fire.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "tools/compose_jutsu_sfx.py",
+      "license": "Original project composition",
+      "modifications": "Deterministic synthesized elemental sound; no sampled recordings",
+      "sha256": "68eb58dcb01b5976daa16d52f87a72117c2cae0c38c8a615991512f428ca6b3e"
+    },
+    {
+      "path": "assets/audio/original/jutsu_lightning.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "tools/compose_jutsu_sfx.py",
+      "license": "Original project composition",
+      "modifications": "Deterministic synthesized elemental sound; no sampled recordings",
+      "sha256": "8a0dec02a4703004c7cad71f998eeb387bbf755931957a32821d5023174dd691"
+    },
+    {
+      "path": "assets/audio/original/jutsu_water.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "tools/compose_jutsu_sfx.py",
+      "license": "Original project composition",
+      "modifications": "Deterministic synthesized elemental sound; no sampled recordings",
+      "sha256": "ccf6017477453801dd4872eb3f627ce9e97a518ca2d4ebc2c930df9214258de1"
     }
   ]
 }

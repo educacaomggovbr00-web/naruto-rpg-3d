@@ -33,6 +33,9 @@ func _physics_process(delta: float) -> void:
         _segment(branch * 2 + 1, bend, tip)
 
 func _segment(index: int, start: Vector3, finish: Vector3) -> void:
+    multimesh.set_instance_transform(index, segment_transform(start,finish))
+
+func segment_transform(start: Vector3, finish: Vector3) -> Transform3D:
     var axis: Vector3 = finish - start
     var rotation_basis: Basis = Basis(Quaternion(Vector3.UP, axis.normalized()))
-    multimesh.set_instance_transform(index, Transform3D(rotation_basis.scaled(Vector3(1, axis.length(), 1)), (start + finish) * 0.5))
+    return Transform3D(rotation_basis.scaled_local(Vector3(1, axis.length(), 1)), (start + finish) * 0.5)

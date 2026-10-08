@@ -11,13 +11,17 @@ var flames: Array[MeshInstance3D] = []
 func _ready() -> void:
     for i: int in range(7):
         var flame: MeshInstance3D = MeshInstance3D.new()
-        var mesh: PrismMesh = PrismMesh.new()
-        mesh.size = Vector3(0.17, 0.8, 0.17)
+        var mesh: SphereMesh = SphereMesh.new()
+        mesh.radius = .10
+        mesh.height = .75
+        mesh.radial_segments = 8
+        mesh.rings = 5
         flame.mesh = mesh
-        var material: StandardMaterial3D = StandardMaterial3D.new()
-        material.albedo_color = Color("10091d")
-        material.emission_enabled = true
-        material.emission = Color("3a145d")
+        var material: ShaderMaterial = ShaderMaterial.new()
+        material.shader = preload("res://assets/vfx/elemental_core.gdshader")
+        material.set_shader_parameter("energy_color", Color("10091d"))
+        material.set_shader_parameter("fire_mode", true)
+        material.set_shader_parameter("dark_mode", true)
         flame.material_override = material
         flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
         add_child(flame)
@@ -41,6 +45,7 @@ func _physics_process(delta: float) -> void:
     for i: int in range(flames.size()):
         var angle: float = i * TAU / flames.size()
         flames[i].position = Vector3(cos(angle) * 0.35, 0.3, sin(angle) * 0.35)
+        flames[i].material_override.set_shader_parameter("phase",clock + i*.3)
         flames[i].scale.y = 0.7 + sin(clock * 12 + i) * 0.3
 
 static func attach(victim: Node3D, attacker: Node3D) -> void:

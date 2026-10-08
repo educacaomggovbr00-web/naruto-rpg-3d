@@ -60,7 +60,7 @@ func run() -> void:
     fighter.chakra = 100
     check(fighter.specials.start("henrique_nagashi"), "Nagashi starts")
     fighter.specials._physics_process(fighter.specials.release_time() + 0.01)
-    check(fighter.specials.chidori_visual.visible and not fighter.specials.style_visual.visible, "Nagashi uses radial electric forks instead of a solid sphere")
+    check(fighter.specials.cast_visual.visible and fighter.specials.cast_visual.burst and not fighter.specials.chidori_visual.visible and not fighter.specials.style_visual.visible, "Nagashi uses a bounded radial pulse instead of stretched hand forks")
     fighter.specials.cancel()
     check(not fighter.specials.chidori_visual.visible, "Interrupted pulse cleans up")
     battle.queue_free()

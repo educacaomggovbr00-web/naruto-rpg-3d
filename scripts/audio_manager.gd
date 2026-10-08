@@ -1,6 +1,9 @@
 extends Node
 ## Bounded SFX voices, preloaded offline; no runtime downloads or node churn.
 const BANK: Dictionary = {
+    "jutsu_fire": preload("res://assets/audio/original/jutsu_fire.wav"),
+    "jutsu_lightning": preload("res://assets/audio/original/jutsu_lightning.wav"),
+    "jutsu_water": preload("res://assets/audio/original/jutsu_water.wav"),
     "normal": preload("res://assets/audio/kenney/impactPunch_medium_000.ogg"),
     "heavy": preload("res://assets/audio/kenney/impactPunch_heavy_000.ogg"),
     "guard": preload("res://assets/audio/kenney/impactMetal_light_000.ogg"),

@@ -133,7 +133,7 @@ func run() -> void:
     cpu._knock_out()
     check(not cpu.awakening.active and cpu.specials.current.is_empty(), "KO cleans CPU modes and abilities")
     var audio: Node = arena.get_node("AudioManager")
-    check(audio.voices.size() == 8 and audio.BANK.size() == 8, "Audio must use a bounded preloaded pool")
+    check(audio.voices.size() == 8 and audio.BANK.size() == 11, "Audio must use a bounded preloaded pool")
     var node_count: int = audio.get_child_count()
     for index: int in range(100):
         audio.play("normal")

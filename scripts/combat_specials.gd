@@ -19,6 +19,7 @@ var sequence_elapsed: float = 0.0
 var sequence_stage: int = 0
 var barrage_hitbox: Area3D
 var chidori_visual: MultiMeshInstance3D
+var cast_visual: Node3D
 var owns_camera: bool = false
 var move_definition: JutsuDefinition
 var traps: Array[Node3D] = []
@@ -59,6 +60,10 @@ func _ready() -> void:
     chidori_visual = MultiMeshInstance3D.new()
     chidori_visual.set_script(preload("res://scripts/chidori_effect.gd"))
     rasengan_hitbox.add_child(chidori_visual)
+    cast_visual = Node3D.new()
+    cast_visual.set_script(preload("res://scripts/elemental_jutsu_visual.gd"))
+    add_child(cast_visual)
+    cast_visual.top_level = true
     barrage_hitbox = Area3D.new()
     barrage_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
     barrage_hitbox.collision_layer = 0
@@ -189,12 +194,20 @@ func start(kind: String = "") -> bool:
         visual_color = _effect_color(move_definition.effect, visual_color)
     if owner_fighter.awakening.active:
         visual_color = visual_color.lightened(0.12)
+    if audio != null and move_definition != null and move_definition.effect in ["fire","black_fire","lightning","water"]:
+        audio.play("jutsu_" + ("fire" if move_definition.effect == "black_fire" else move_definition.effect),-17.0)
     sphere_visual.call("set_energy_color", visual_color)
+    style_visual.rotation = Vector3.ZERO
     style_material.albedo_color = visual_color
     style_material.emission = visual_color
     if move_definition != null:
         style_visual.mesh = RosterVisualStyle.projectile_mesh(move_definition.effect)
         style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius) * 0.72
+    chidori_visual.scale = Vector3.ONE
+    chidori_visual.clock = 0.0
+    cast_visual.visible = false
+    if move_definition != null and (move_definition.strategy == "projectile" or (move_definition.strategy == "hand" and move_definition.effect == "lightning")):
+        cast_visual.configure(move_definition.effect,.16)
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     if move_definition != null:
@@ -247,6 +260,11 @@ func _physics_process(delta: float) -> void:
         cancel(false)
         return
     elapsed += delta
+    if move_definition != null and move_definition.strategy == "projectile":
+        cast_visual.visible = not released
+        cast_visual.global_position = owner_fighter.rig_adapter.get_hand_world_position()
+        cast_visual.heading = owner_fighter.global_basis.z
+        cast_visual.scale = Vector3.ONE * clampf(elapsed / maxf(release_time(),.1),.1,1.0)
     if current == "barrage":
         _barrage_timeline(delta)
     elif move_definition != null and move_definition.strategy == "hand":
@@ -257,6 +275,10 @@ func _physics_process(delta: float) -> void:
         sphere_visual.visible = not lightning and not styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         style_visual.visible = styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
         chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        if lightning:
+            cast_visual.global_position = rasengan_hitbox.global_position
+            cast_visual.heading = owner_fighter.global_basis.z
+            cast_visual.visible = chidori_visual.visible
         var orb_grow: float = minf(1.0, elapsed * 5.4)
         var orb_pulse: float = 1.0 + (sin(elapsed * 42.0) * 0.045 if current == "rasengan" else 0.0)
         sphere_visual.scale = Vector3.ONE * orb_grow * orb_pulse
@@ -281,16 +303,19 @@ func _physics_process(delta: float) -> void:
             rasengan_hitbox.call("deactivate")
     elif not released and elapsed >= release_time():
         released = true
+        cast_visual.visible = false
         if move_definition != null and move_definition.strategy == "burst":
             rasengan_hitbox.global_position = owner_fighter.global_position + Vector3.UP * 0.65 + owner_fighter.global_basis.z * 0.45
             var generic_burst: bool = owner_fighter.character_definition.character_id != "naruto"
             sphere_visual.visible = not generic_burst
             style_visual.visible = generic_burst
+            cast_visual.scale = Vector3.ONE
+            cast_visual.global_position = rasengan_hitbox.global_position
+            cast_visual.configure(move_definition.effect,move_definition.hitbox_radius,true)
             if move_definition.effect == "lightning":
+                cast_visual.global_position = owner_fighter.global_position + Vector3.DOWN * .6
                 style_visual.visible = false
-                chidori_visual.visible = true
-                var pulse_scale: float = move_definition.hitbox_radius / 0.55
-                chidori_visual.scale = Vector3(pulse_scale, 0.75, pulse_scale)
+                chidori_visual.visible = false
             if generic_burst:
                 style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius)
             else:
@@ -314,12 +339,21 @@ func _physics_process(delta: float) -> void:
             if projectile.is_inside_tree() and not projectile.active:
                 demon_projectile = projectile
                 transformed = current == "demon"
-                var origin: Vector3 = owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8
+                var heading: Vector3 = owner_fighter.global_basis.z
+                if is_instance_valid(owner_fighter.locked_target):
+                    var aim: Vector3 = owner_fighter.locked_target.global_position + Vector3.UP * .25 - (owner_fighter.global_position + Vector3.UP * .25)
+                    if aim.length_squared() > .01:
+                        heading = aim.normalized()
+                var origin: Vector3 = owner_fighter.global_position + Vector3.UP * 0.25 + heading * 0.8
                 if projectile.has_method("launch_jutsu") and move_definition != null:
-                    projectile.call("launch_jutsu", owner_fighter, owner_fighter.locked_target, origin, owner_fighter.global_basis.z, move_definition)
+                    projectile.call("launch_jutsu", owner_fighter, owner_fighter.locked_target, origin, heading, move_definition)
                 else:
-                    projectile.call("launch", owner_fighter, owner_fighter.locked_target, origin, owner_fighter.global_basis.z)
+                    projectile.call("launch", owner_fighter, owner_fighter.locked_target, origin, heading)
                 break
+    if released and move_definition != null and move_definition.strategy == "burst":
+        style_visual.visible = style_visual.visible and elapsed - release_time() < .25
+        if move_definition.effect == "susanoo":
+            style_visual.rotation.y = (elapsed - release_time()) * 9.0
     if elapsed >= duration:
         # Successful release lets delayed clone attacks finish autonomously.
         cancel(false)
@@ -342,6 +376,8 @@ func cancel(stop_clones: bool = true) -> void:
     sphere_visual.visible = false
     style_visual.visible = false
     chidori_visual.visible = false
+    if stop_clones or not cast_visual.burst:
+        cast_visual.visible = false
     rasengan_hitbox.call("deactivate")
     barrage_hitbox.call("deactivate")
     confirmed_target = null
@@ -412,6 +448,10 @@ func contact(target: Node, dealt: float, blocked: bool = false) -> void:
             owner_fighter.camera_rig.call("add_combat_impact", 0.11 if blocked else 0.17, 1.8 if blocked else 3.4)
         return
 
+    if move_definition != null and move_definition.effect == "lightning" and dealt > 0.0:
+        var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+        if feedback != null:
+            feedback.spawn_chakra_impact(rasengan_hitbox.global_position,Color(.4,.8,1))
     if current != "barrage" or is_instance_valid(confirmed_target) or dealt <= 0.0 or blocked:
         return
     if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
