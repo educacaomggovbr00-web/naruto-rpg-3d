@@ -12,6 +12,10 @@ func frames(count: int):
     for index in range(count):
         await physics_frame
         await process_frame
+func silence_fixture_enemy(node: Node):
+    if node.name == "EnemyDummy":
+        node.process_mode = Node.PROCESS_MODE_DISABLED
+
 func run():
     var forks = MultiMeshInstance3D.new()
     forks.set_script(load("res://scripts/chidori_effect.gd"))
@@ -51,8 +55,12 @@ func run():
     check(effect.core.scale.x > effect.core.scale.y*2.0,"Katon wave has a broad silhouette")
     effect.queue_free()
     var flow = root.get_node("GameFlow")
+    # Disable AI before _ready/first physics tick: shader compilation can take
+    # enough wall time for a live CPU to interrupt this presentation-only test.
+    node_added.connect(silence_fixture_enemy)
     check(flow.start_versus("henrique","naruto","training") == OK,"Battle opens")
     await frames(20)
+    node_added.disconnect(silence_fixture_enemy)
     var player = current_scene.get_node("Player")
     var enemy = current_scene.get_node("EnemyDummy")
     player.set_physics_process(false)
