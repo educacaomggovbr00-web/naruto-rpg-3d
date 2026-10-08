@@ -87,6 +87,10 @@ var juggle_timer: float = 0.0
 @export var decision_interval_max: float = 0.32
 var decision_timer: float = 0.20
 var neutral_motion: String = "approach"
+var observed_melee_action: int = -1
+var melee_wait: float = -1.0
+var melee_defense_cooldown: float = 0.0
+var pressure_memory: float = 0.0
 var orbit_side: float = 1.0
 var decision_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -250,6 +254,10 @@ func _physics_process(delta: float) -> void:
         _move_and_handle_bounces()
         return
 
+    if _react_to_melee(delta, distance):
+        _slow_down(delta)
+        _move_and_handle_bounces()
+        return
     decision_timer = maxf(decision_timer - delta, 0.0)
     if not attack_active and decision_timer <= 0.0:
         _decide_neutral(distance)
@@ -414,6 +422,35 @@ func _chase_player(to_player: Vector3, delta: float) -> void:
     var direction: Vector3 = to_player.normalized()
     velocity.x = move_toward(velocity.x, direction.x * move_speed * float(awakening.call("movement_multiplier")), acceleration * delta)
     velocity.z = move_toward(velocity.z, direction.z * move_speed * float(awakening.call("movement_multiplier")), acceleration * delta)
+
+func _react_to_melee(delta: float, distance: float) -> bool:
+    melee_defense_cooldown = maxf(melee_defense_cooldown-delta,0.0)
+    pressure_memory = maxf(pressure_memory-delta*.12,0.0)
+    if CombatSettings.difficulty == 0 or training_behavior >= 0 or attack_active or not player.attack_active or distance > attack_range+1.2:
+        melee_wait = -1.0
+        return false
+    if player.animation_action_id != observed_melee_action:
+        observed_melee_action = player.animation_action_id
+        melee_wait = ai_profile.reaction_delay
+        pressure_memory = minf(pressure_memory+1.0,3.0)
+        return false
+    if melee_wait < 0.0 or melee_defense_cooldown > 0.0: return false
+    melee_wait -= delta
+    if melee_wait > 0.0: return false
+    melee_wait = -1.0
+    var roll: float = decision_rng.randf()
+    var guard_chance: float = minf(ai_profile.guard_bias+pressure_memory*.04,.65)
+    if guard_meter > 25.0 and roll < guard_chance:
+        guarding = true
+        guard_timer = .26
+    elif is_on_floor() and roll < guard_chance+ai_profile.dodge_bias*.6:
+        _start_reaction_dodge(player.global_position-global_position)
+        invulnerable_timer = maxf(invulnerable_timer,dodge_timer+.03)
+        animation_action_id += 1
+    else:
+        return false
+    melee_defense_cooldown = .65
+    return true
 
 func _decide_neutral(distance: float) -> void:
     decision_timer = decision_rng.randf_range(decision_interval_min, decision_interval_max)
@@ -694,13 +731,17 @@ func receive_combat_hit(
 
     return applied_damage
 
-func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float) -> void:
+func on_attack_resolved(target: Node, amount: float, launch: float, blocked: bool) -> void:
+    on_attack_connected(target,amount,launch,blocked)
+
+func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float, blocked: Variant = null) -> void:
+    var target_guarded: bool = bool(blocked) if blocked is bool else target.has_method("get_is_guarding") and target.get_is_guarding()
     if _actual_damage > 0.001:
-        combat_hit_recorded.emit(_actual_damage,target.get_is_guarding())
+        combat_hit_recorded.emit(_actual_damage,target_guarded)
     if is_instance_valid(team):
-        team.record_hit(_actual_damage, _launch_velocity, target.get_is_guarding())
+        team.record_hit(_actual_damage, _launch_velocity, target_guarded)
     var impact_kind: String = "normal"
-    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+    if target_guarded:
         impact_kind = "guard"
 
     if is_instance_valid(combat_feedback):
@@ -754,6 +795,10 @@ func _knock_out() -> void:
     respawn_timer = recovery_delay
 
 func _respawn() -> void:
+    observed_melee_action = -1
+    melee_wait = -1.0
+    melee_defense_cooldown = 0.0
+    pressure_memory = 0.0
     for effect_name: String in ["BlackFlames", "GenjutsuOverlay", "ElementalStates"]:
         var effect: Node = get_node_or_null(effect_name)
         if effect != null:

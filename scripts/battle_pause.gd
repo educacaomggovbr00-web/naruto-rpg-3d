@@ -50,11 +50,19 @@ func _ready() -> void:
     summary = Label.new()
     summary.add_theme_font_size_override("font_size",14)
     column.add_child(summary)
-    preload("res://scripts/camera_preferences_ui.gd").build(column)
+    var scroll: ScrollContainer = ScrollContainer.new()
+    scroll.custom_minimum_size = Vector2(0,280)
+    scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    column.add_child(scroll)
+    var preferences: VBoxContainer = VBoxContainer.new()
+    preferences.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    scroll.add_child(preferences)
+    preload("res://scripts/camera_preferences_ui.gd").build(preferences)
+    preload("res://scripts/controls_audio_preferences_ui.gd").build(preferences)
     var volume: HSlider = HSlider.new()
     var label: Label = Label.new()
     label.text = "Volume geral"
-    column.add_child(label)
+    preferences.add_child(label)
     volume.max_value = 1.0
     volume.step = .05
     volume.value = CombatSettings.master_volume
@@ -63,7 +71,7 @@ func _ready() -> void:
         CombatSettings.master_volume = value
         CombatSettings.apply_audio()
         CombatSettings.save_preferences())
-    column.add_child(volume)
+    preferences.add_child(volume)
     continue_button = _button(column,"CONTINUAR",resume)
     _button(column,"REINICIAR BATALHA",func() -> void:
         resume()
@@ -108,6 +116,8 @@ func toggle() -> void:
     previous_mouse_mode = Input.mouse_mode
     var controls: Node = get_parent().get_node_or_null("HUD/MobileControls")
     if controls != null: controls.reset_interaction()
+    get_parent().get_node("Player").clear_jump_intent()
+    get_parent().get_node("Player").dash_cancel_buffer = 0.0
     summary.text = get_parent().get_node("BattleMetrics").summary()
     continue_button.grab_focus()
     owns_pause = true

@@ -5,6 +5,8 @@ signal finished
 var lines: Array = []
 var index: int = 0
 var active: bool = false
+var reveal_clock: float = 0.0
+var reveal_speed: float = 42.0
 var progress_label: Label
 var portrait: TextureRect
 var title_label: Label
@@ -102,6 +104,10 @@ func play(dialogue_lines: Array, title: String = "HISTÓRIA") -> bool:
 func advance() -> void:
     if not active or choice_pending:
         return
+    if body_label.visible_characters >= 0 and body_label.visible_characters < body_label.get_total_character_count():
+        body_label.visible_characters = -1
+        next_button.text = "FECHAR" if index == lines.size()-1 else "CONTINUAR"
+        return
     index += 1
     if index >= lines.size():
         close()
@@ -151,6 +157,9 @@ func _show_line() -> void:
             choice_box.add_child(button)
         if choice_pending:
             choice_box.get_child(0).grab_focus()
+    reveal_clock = 0.0
+    body_label.visible_characters = -1 if choice_pending else 0
+    if not choice_pending: next_button.grab_focus()
     portrait.visible = false
     for definition in CharacterCatalog.READY:
         if speaker_label.text in [definition.display_name,definition.display_name.split(" ")[0]]:
@@ -159,6 +168,12 @@ func _show_line() -> void:
             break
     progress_label.text = "%d / %d" % [index+1,lines.size()]
     next_button.text = "FECHAR" if index == lines.size() - 1 else "CONTINUAR"
+
+func _process(delta: float) -> void:
+    if not active or choice_pending or body_label.visible_characters < 0: return
+    reveal_clock += delta*reveal_speed
+    body_label.visible_characters = mini(int(reveal_clock),body_label.get_total_character_count())
+    next_button.text = "MOSTRAR TEXTO" if body_label.visible_characters < body_label.get_total_character_count() else "FECHAR" if index == lines.size()-1 else "CONTINUAR"
 
 func _unhandled_input(event: InputEvent) -> void:
     if not active:
@@ -177,7 +192,11 @@ func _choose(option: Dictionary) -> void:
         return
     choice_pending = false
     body_label.text = String(option.reply)
+    body_label.visible_characters = -1
     for child: Node in choice_box.get_children():
         child.queue_free()
     next_button.visible = true
     next_button.grab_focus()
+
+func _exit_tree() -> void:
+    if active: get_tree().paused = false

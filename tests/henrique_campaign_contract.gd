@@ -31,6 +31,7 @@ func run() -> void:
     root.add_child(dialogue)
     dialogue.play(flow.story_dialogue("intro"))
     for index: int in range(3):
+        dialogue.body_label.visible_characters = -1 # Finish reveal before moving to the next line.
         dialogue.advance()
     check(dialogue.choice_pending and paused, "Story pauses for a real player choice")
     dialogue.advance()

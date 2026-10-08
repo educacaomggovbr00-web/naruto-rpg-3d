@@ -9,6 +9,10 @@ var master_volume: float = 0.8
 var camera_fov: float = 60.0
 var camera_shake: float = 1.0
 var camera_motion: bool = true
+var camera_sensitivity: float = 1.0
+var touch_deadzone: float = .12
+var music_volume: float = .8
+var sfx_volume: float = 1.0
 var writable: bool = true
 var touch_layout: Dictionary = {}
 const TOUCH_KEYS: PackedStringArray = ["joystick", "attack", "jump", "dash", "jutsu", "substitution", "dodge", "charge", "guard"]
@@ -47,6 +51,12 @@ func _load_preferences(path: String = PATH) -> void:
     var shake: Variant = data.get("camera_shake",1.0)
     if (shake is float or shake is int) and is_finite(float(shake)): camera_shake = clampf(float(shake),0.0,1.0)
     if data.get("camera_motion",true) is bool: camera_motion = data.get("camera_motion",true)
+    for key: String in ["camera_sensitivity", "touch_deadzone", "music_volume", "sfx_volume"]:
+        var value: Variant = data.get(key, get(key))
+        if (value is float or value is int) and is_finite(float(value)):
+            var minimum: float = .5 if key == "camera_sensitivity" else .05 if key == "touch_deadzone" else 0.0
+            var maximum: float = 2.0 if key == "camera_sensitivity" else .3 if key == "touch_deadzone" else 1.0
+            set(key, clampf(float(value),minimum,maximum))
     difficulty = int(data.difficulty)
     controller_deadzone = clampf(float(data.deadzone), 0.1, 0.4)
     master_volume = clampf(float(data.volume), 0.0, 1.0)
@@ -57,7 +67,7 @@ func save_preferences(path: String = PATH) -> Error:
     var file: FileAccess = FileAccess.open(path + ".tmp", FileAccess.WRITE)
     if file == null:
         return FileAccess.get_open_error()
-    file.store_string(JSON.stringify({"version":1,"difficulty":difficulty,"deadzone":controller_deadzone,"volume":master_volume,"touch_layout":touch_layout,"henrique_outfit":henrique_outfit,"camera_fov":camera_fov,"camera_shake":camera_shake,"camera_motion":camera_motion}))
+    file.store_string(JSON.stringify({"version":1,"difficulty":difficulty,"deadzone":controller_deadzone,"volume":master_volume,"touch_layout":touch_layout,"henrique_outfit":henrique_outfit,"camera_fov":camera_fov,"camera_shake":camera_shake,"camera_motion":camera_motion,"camera_sensitivity":camera_sensitivity,"touch_deadzone":touch_deadzone,"music_volume":music_volume,"sfx_volume":sfx_volume}))
     file.close()
     return DirAccess.rename_absolute(path + ".tmp", path)
 
@@ -99,6 +109,11 @@ func _install_controller_actions() -> void:
             event.axis_value = float(axes[action][1])
             InputMap.action_add_event(action, event)
         InputMap.action_set_deadzone(action, controller_deadzone)
+
+func touch_movement(raw: Vector2) -> Vector2:
+    var magnitude: float = minf(raw.length(),1.0)
+    if magnitude <= touch_deadzone: return Vector2.ZERO
+    return raw.normalized() * ((magnitude-touch_deadzone)/(1.0-touch_deadzone))
 
 func movement() -> Vector2:
     return Input.get_vector("pad_left", "pad_right", "pad_forward", "pad_back", controller_deadzone)

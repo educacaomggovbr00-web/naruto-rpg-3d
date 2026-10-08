@@ -92,6 +92,7 @@ var attack_duration: float = 0.28
 var jutsu_elapsed: float = 0.0
 var jutsu_released: bool = false
 var attack_buffer: float = 0.0
+var dash_cancel_buffer: float = 0.0
 var attack_variant: String = ""
 var buffered_variant: String = ""
 var has_buffered_variant: bool = false
@@ -115,6 +116,8 @@ var combo_damage: float = 0.0
 var combo_display_timer: float = 0.0
 
 var jump_requested: bool = false
+var jump_buffer: float = 0.0
+var coyote_timer: float = 0.0
 var is_guarding: bool = false
 var is_charging_chakra: bool = false
 var defeated: bool = false
@@ -301,6 +304,8 @@ func _physics_process(delta: float) -> void:
         cinematic_owner = null
     _update_attack_timeline(delta)
     _update_jutsu_timeline(delta)
+    if dash_cancel_buffer > 0.0 and attack_active and attack_confirmed:
+        _start_chakra_dash(false)
     if attack_buffer > 0.0 and not attack_active and attack_cooldown <= 0.0:
         attack_buffer = 0.0
         _try_attack()
@@ -323,9 +328,7 @@ func _physics_process(delta: float) -> void:
     elif air_float_timer > 0.0 and velocity.y < 0.0:
         velocity.y = move_toward(velocity.y, 0.0, gravity * delta)
 
-    if jump_requested and is_on_floor() and _can_use_movement_action():
-        velocity.y = jump_velocity * awakening.call("movement_multiplier")
-    jump_requested = false
+    _update_jump_intent(delta, is_on_floor())
 
     if stagger_timer > 0.0:
         velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
@@ -382,6 +385,22 @@ func _physics_process(delta: float) -> void:
 
     move_and_slide()
     _update_animation_state()
+
+func _update_jump_intent(delta: float, grounded: bool) -> void:
+    coyote_timer = .08 if grounded else maxf(coyote_timer-delta,0.0)
+    jump_buffer = .12 if jump_requested else maxf(jump_buffer-delta,0.0)
+    jump_requested = false
+    if defeated or stagger_timer > 0.0 or is_instance_valid(cinematic_owner):
+        clear_jump_intent()
+        return
+    if jump_buffer > 0.0 and coyote_timer > 0.0 and _can_use_movement_action():
+        velocity.y = jump_velocity * awakening.call("movement_multiplier")
+        clear_jump_intent()
+
+func clear_jump_intent() -> void:
+    jump_requested = false
+    jump_buffer = 0.0
+    coyote_timer = 0.0
 
 func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
@@ -459,6 +478,7 @@ func _update_timers(delta: float) -> void:
     counter_window = maxf(counter_window - delta, 0.0)
     grab_cooldown = maxf(grab_cooldown - delta, 0.0)
     attack_buffer = maxf(attack_buffer - delta, 0.0)
+    dash_cancel_buffer = maxf(dash_cancel_buffer-delta,0.0)
     guard_stun = maxf(guard_stun - delta, 0.0)
     guard_regen_delay = maxf(guard_regen_delay - delta, 0.0)
     if guard_regen_delay <= 0.0 and not is_guarding:
@@ -521,6 +541,7 @@ func _update_attack_timeline(delta: float) -> void:
         attack_hitbox.call("deactivate")
 
 func _cancel_attack() -> void:
+    dash_cancel_buffer = 0.0
     attack_buffer = 0.0
     buffered_variant = ""
     has_buffered_variant = false
@@ -698,11 +719,14 @@ func _validate_locked_target() -> void:
     if locked_target.has_method("is_targetable") and not bool(locked_target.call("is_targetable")):
         _set_locked_target(null)
 
-func _start_chakra_dash() -> void:
+func _start_chakra_dash(queue_early: bool = true) -> void:
     var cancel_timing: Dictionary = rig_adapter.call("get_attack_timing", maxi(combo_step, 1), attack_is_airborne)
     if selected_attack != null:
         cancel_timing = selected_attack.animation_timing(rig_adapter.manifest)
     var can_cancel: bool = attack_active and attack_confirmed and attack_elapsed >= float(cancel_timing.get("cancel_open", attack_startup + 0.09)) and attack_elapsed <= float(cancel_timing.get("cancel_close", attack_duration)) and combo_step < 4
+    if attack_active and attack_confirmed and combo_step < 4 and not defeated and stagger_timer <= 0.0 and chakra >= chakra_dash_cost and attack_elapsed < float(cancel_timing.get("cancel_open",attack_duration)):
+        if queue_early: dash_cancel_buffer = .16
+        return
     if (not _can_use_movement_action() and not can_cancel) or chakra < chakra_dash_cost:
         return
     if not is_on_floor() and air_dash_count >= 2:
@@ -1008,6 +1032,7 @@ func receive_combat_hit(
         applied_knockback *= 0.25
         launch_velocity *= 0.15
     else:
+        clear_jump_intent()
         _cancel_attack()
         _cancel_jutsu()
         animation_action_id += 1
@@ -1053,16 +1078,20 @@ func receive_combat_hit(
 
     return applied_damage
 
-func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float) -> void:
+func on_attack_resolved(target: Node, amount: float, launch: float, blocked: bool) -> void:
+    on_attack_connected(target,amount,launch,blocked)
+
+func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float, blocked: Variant = null) -> void:
     if actual_damage <= 0.001:
         return
-    if is_instance_valid(team):
-        team.record_hit(actual_damage, launch_velocity, target.get_is_guarding())
     var target_guarding: bool = (
         target.has_method("get_is_guarding")
         and bool(target.call("get_is_guarding"))
     )
 
+    if blocked is bool: target_guarding = blocked
+    if is_instance_valid(team):
+        team.record_hit(actual_damage,launch_velocity,target_guarding)
     combat_hit_recorded.emit(actual_damage,target_guarding)
     if not target_guarding:
         combo_hits += 1
@@ -1173,6 +1202,7 @@ func _defeat() -> void:
     _set_locked_target(null)
 
 func _respawn() -> void:
+    clear_jump_intent()
     for effect_name: String in ["BlackFlames", "GenjutsuOverlay", "ElementalStates"]:
         var effect: Node = get_node_or_null(effect_name)
         if effect != null:

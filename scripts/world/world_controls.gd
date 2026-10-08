@@ -74,8 +74,7 @@ func _input(event: InputEvent) -> void:
 
 func _move_stick(point: Vector2) -> void:
     move_vector = ((point - joystick_center) / radius).limit_length(1.0)
-    if move_vector.length() < 0.12:
-        move_vector = Vector2.ZERO
+    move_vector = CombatSettings.touch_movement(move_vector)
     queue_redraw()
 
 func consume_camera_delta() -> Vector2:

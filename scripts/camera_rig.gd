@@ -70,13 +70,13 @@ func _process(delta: float) -> void:
         if typeof(touch_value) == TYPE_VECTOR2:
             var touch_delta: Vector2 = touch_value
             if touch_delta.length_squared() > 0.0:
-                yaw -= touch_delta.x * touch_sensitivity
-                pitch = clampf(pitch - touch_delta.y * touch_sensitivity, min_pitch, max_pitch)
+                yaw -= touch_delta.x * touch_sensitivity * CombatSettings.camera_sensitivity
+                pitch = clampf(pitch - touch_delta.y * touch_sensitivity * CombatSettings.camera_sensitivity, min_pitch, max_pitch)
 
     if not is_instance_valid(locked_target):
         var stick: Vector2 = Input.get_vector("pad_camera_left", "pad_camera_right", "pad_camera_up", "pad_camera_down", CombatSettings.controller_deadzone)
-        yaw -= stick.x * delta * 2.2
-        pitch = clampf(pitch - stick.y * delta * 1.6, min_pitch, max_pitch)
+        yaw -= stick.x * delta * 2.2 * CombatSettings.camera_sensitivity
+        pitch = clampf(pitch - stick.y * delta * 1.6 * CombatSettings.camera_sensitivity, min_pitch, max_pitch)
 
     var follow_position: Vector3 = player.global_position + Vector3.UP * height
 

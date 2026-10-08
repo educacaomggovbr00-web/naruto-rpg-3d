@@ -149,6 +149,17 @@ func update_visual(delta: float) -> void:
         var travel: float = radius*progress*(1.3+float(index%3)*.25)
         var offset: Vector3 = Vector3(cos(angle)*travel,lift*radius*sin(progress*PI)-progress*progress*.25,sin(angle)*travel)
         if kind == "lightning": offset = frame * Vector3(offset.x,offset.z*.6,offset.y)
+        elif kind in ["fire","black_fire","oil"]:
+            # Embers rise into the plume instead of falling like stone debris.
+            offset.y = radius * progress * (1.2+float(index%4)*.2)
+            offset.x *= .65
+            offset.z *= .65
+        elif kind == "water":
+            offset.y = radius * (lift*progress*2.0-progress*progress*1.4)
+        elif kind in ["earth","sand","bone"]:
+            offset.y = maxf(.02,radius*(lift*progress*1.3-progress*progress*1.8))
+        elif kind in ["wind","susanoo"]:
+            offset = frame * Vector3(cos(angle)*travel*.4,sin(angle)*travel*.3,travel*1.1)
         var size: float = radius*(.055 if kind in ["lightning","steel","wind"] else .08)*(1.0-progress)
         var proportions: Vector3 = Vector3(.45,.45,2.8) if kind in ["lightning","steel","wind"] else Vector3(.6,1.4,.6) if kind in ["fire","black_fire","water"] else Vector3.ONE
         sparks.multimesh.set_instance_transform(index,Transform3D(frame.scaled_local(proportions*maxf(.001,size)),offset))

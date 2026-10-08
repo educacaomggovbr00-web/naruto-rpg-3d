@@ -70,9 +70,14 @@ func spawn_elemental_impact(origin: Vector3, kind: String, radius: float = .8, h
     _trigger_manga_impact(origin,.28,RosterVisualStyle.color(kind))
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
-        audio.play("heavy",-20.0)
+        audio.play_element(kind, origin)
 
 func _process(delta: float) -> void:
+    if get_tree().paused:
+        if hit_stop_end_msec > 0 and Time.get_ticks_msec() >= hit_stop_end_msec:
+            Engine.time_scale = normal_time_scale
+            hit_stop_end_msec = 0
+        return
     for i: int in range(flashes.size()):
         if lifetimes[i] <= 0.0:
             continue
@@ -146,7 +151,7 @@ func spawn_impact(world_position: Vector3, impact_kind: String = "normal") -> vo
 
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
-        audio.call("play", "guard" if impact_kind == "guard" else "heavy" if impact_kind in ["slam", "launcher", "bounce"] else "normal")
+        audio.play_at("guard" if impact_kind == "guard" else "heavy" if impact_kind in ["slam", "launcher", "bounce"] else "normal",world_position)
     _spawn_flash(world_position, scale_value, color_value, lifetime)
     _trigger_manga_impact(world_position, manga_strength, color_value)
 

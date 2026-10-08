@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Atualização integrada — 0.16.0
+
+Salto com buffer/tempo de tolerância, cancelamento de dash em fila após confirmação, defesa próxima da CPU com atraso e memória curta de pressão, indicação de dano/quebra de guarda, áudio posicional com mixagem separada, impactos elementais diferenciados, passada do Susanoo ligada à velocidade, controles configuráveis, destaque de NPC e diálogos graduais. Corrigidos relógios visuais durante a pausa e classificação de contatos que quebram guarda. Modelos, conteúdo, balanceamento de dano e progresso preservados. Escopo dos 20 pontos, evidências e pendências em [INTEGRATED_POLISH_0160.md](INTEGRATED_POLISH_0160.md). APK debug ARM64 versionCode 17; validação física pendente.
+
 ## Combate, treino e câmera — 0.15.0
 
 Pausa funcional com ajustes de câmera e áudio, retomada e reinício. Treino com alvo parado, defesa ou CPU ativa, física e temporizadores funcionando e análise de contatos confirmados. Câmera acompanha diferenças de altura e oferece preferências persistentes. Elenco, jutsus, equipes, campanha e saves preservados. Evidências e limites em [BATTLE_POLISH_0150.md](BATTLE_POLISH_0150.md). APK debug ARM64 versionCode 16; teste físico pendente.

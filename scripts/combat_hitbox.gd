@@ -93,7 +93,9 @@ func try_hit(fighter: Node) -> void:
     if source.has_method("on_attack_contact"):
         source.call("on_attack_contact", fighter, actual_damage)
 
-    if actual_damage > 0.001 and source.has_method("on_attack_connected"):
+    if actual_damage > 0.001 and source.has_method("on_attack_resolved"):
+        source.call("on_attack_resolved",fighter,actual_damage,launch_velocity,was_blocked)
+    elif actual_damage > 0.001 and source.has_method("on_attack_connected"):
         source.call(
             "on_attack_connected",
             fighter,

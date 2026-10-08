@@ -13,12 +13,21 @@ extends CanvasLayer
 
 var enemy_health_bar: ProgressBar
 var enemy_name_label: Label
+var event_label: Label
+var event_remaining: float = 0.0
+var last_enemy_state: String = ""
+var last_player_state: String = ""
 
 func _ready() -> void:
     health_bar.max_value = float(player.call("get_max_health"))
     chakra_bar.max_value = float(player.call("get_max_chakra"))
     _build_backplates()
     _apply_anime_hud_style()
+    for bar: ProgressBar in [health_bar,enemy_health_bar]:
+        var tail: Control = Control.new()
+        tail.name = "DamageTail"
+        tail.set_script(preload("res://scripts/damage_tail.gd"))
+        bar.add_child(tail)
 
     var player_definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
     var enemy_definition: CharacterDefinition = enemy.call("get_character_definition") as CharacterDefinition
@@ -30,6 +39,19 @@ func _ready() -> void:
 
     rig_label.visible = "--debug-hud" in OS.get_cmdline_user_args()
     fps_label.visible = rig_label.visible
+    event_label = Label.new()
+    event_label.position = Vector2(480,225)
+    event_label.size = Vector2(340,40)
+    event_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    event_label.add_theme_font_size_override("font_size",22)
+    event_label.add_theme_color_override("font_color",Color("ffd07a"))
+    event_label.add_theme_color_override("font_shadow_color",Color("091b29"))
+    event_label.add_theme_constant_override("shadow_offset_x",2)
+    event_label.add_theme_constant_override("shadow_offset_y",2)
+    event_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(event_label)
+    event_label.visible = false
+    player.combat_hit_recorded.connect(_confirmed_hit)
 
 
 func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxFlat:
@@ -145,7 +167,30 @@ func _style_bar(bar: ProgressBar, fill_color: Color) -> void:
     bar.add_theme_stylebox_override("fill", fill)
 
 var refresh_timer: float = 0.0
+func show_combat_event(text: String) -> void:
+    event_label.text = text
+    event_remaining = 1.1
+    event_label.modulate.a = 1.0
+    event_label.visible = true
+
+func _confirmed_hit(_amount: float, guarded: bool) -> void:
+    if guarded: return
+    if player.grab_attack: show_combat_event("ARREMESSO")
+    elif player.attack_counter_bonus > 1.0 and player.attack_active: show_combat_event("CONTRA-ATAQUE")
+
+func _update_combat_events(delta: float) -> void:
+    event_remaining = maxf(event_remaining-delta,0.0)
+    event_label.visible = event_remaining > 0.0
+    event_label.modulate.a = minf(event_remaining*4.0,1.0)
+    var cpu_state: String = enemy.get_combat_state()
+    var hero_state: String = player.get_combat_state()
+    if cpu_state != last_enemy_state and cpu_state == "guard_break": show_combat_event("GUARDA ROMPIDA")
+    elif hero_state != last_player_state and hero_state == "guard_break": show_combat_event("SUA GUARDA ROMPEU")
+    last_enemy_state = cpu_state
+    last_player_state = hero_state
+
 func _process(delta: float) -> void:
+    _update_combat_events(delta)
     refresh_timer -= delta
     if refresh_timer > 0.0:
         return

@@ -56,9 +56,9 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.15.0 • COMBATE, TREINO E CÂMERA"
+    subtitle.text = "0.16.0 • RESPOSTA, TÉCNICAS E APRESENTAÇÃO"
     if RuntimeStability.recovered_session:
-        subtitle.text = "0.15.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
+        subtitle.text = "0.16.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -669,6 +669,7 @@ func _show_options() -> void:
             fighter.rig_adapter._install_roster_visual_identity())
     column.add_child(outfit)
     preload("res://scripts/camera_preferences_ui.gd").build(column)
+    preload("res://scripts/controls_audio_preferences_ui.gd").build(column)
     var volume_label: Label = Label.new()
     volume_label.text = "Volume geral"
     column.add_child(volume_label)

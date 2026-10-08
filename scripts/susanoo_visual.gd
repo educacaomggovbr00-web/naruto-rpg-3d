@@ -6,6 +6,7 @@ const MODEL_PATH: String = "res://assets/susanoo/susanoo_mobile_rigged.glb"
 var sword_arm: Node3D
 var shell: Node3D
 var clock: float = 0.0
+var walk_phase: float = 0.0
 var quality_level: int = 1
 var external_model: bool = false
 var material: StandardMaterial3D
@@ -148,6 +149,7 @@ func update_pose(delta: float, striking: bool, progress: float = 0.0, local_velo
     # Hit-stop freezes this clock too. Motion remains independent per avatar.
     var dt: float = maxf(delta, 0.0)
     clock += dt
+    walk_phase = fmod(walk_phase + Vector2(local_velocity.x,local_velocity.z).length()*dt/7.0,1.0)
     if imported_avatar != null:
         imported_avatar.scale = imported_avatar.scale.lerp(Vector3.ONE * target_avatar_scale, 1.0 - exp(-dt * 12.0))
     var speed: float = minf(Vector2(local_velocity.x, local_velocity.z).length() / 12.5, 1.0)
@@ -163,7 +165,7 @@ func update_pose(delta: float, striking: bool, progress: float = 0.0, local_velo
     elif guarding:
         _sample_animation("guard", 0.5)
     elif speed > 0.08:
-        _sample_animation("walk", fmod(clock, 0.8) / 0.8)
+        _sample_animation("walk", walk_phase)
     else:
         _sample_animation("idle", fmod(clock, 2.4) / 2.4)
     pose_blend = lerpf(pose_blend, angle, 1.0 - exp(-dt * 18.0))
@@ -181,6 +183,7 @@ func update_pose(delta: float, striking: bool, progress: float = 0.0, local_velo
 
 func reset_pose() -> void:
     clock = 0.0
+    walk_phase = 0.0
     pose_blend = 0.0
     current_clip = ""
     _sample_animation("idle", 0.0)

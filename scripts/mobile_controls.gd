@@ -305,8 +305,7 @@ func _update_joystick(screen_position: Vector2) -> void:
     joystick_knob = joystick_center + offset
     move_vector = offset / joystick_radius
 
-    if move_vector.length() < joystick_deadzone:
-        move_vector = Vector2.ZERO
+    move_vector = CombatSettings.touch_movement(move_vector)
 
     queue_redraw()
 

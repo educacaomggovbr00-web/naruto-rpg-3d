@@ -3,6 +3,7 @@ var data: Dictionary = {}
 var marker: Node3D
 var actor: CharacterBody3D = null
 var timer: float = 0.0
+var name_label: Label3D
 
 func _ready() -> void:
     collision_layer = 0
@@ -38,6 +39,7 @@ func _ready() -> void:
         actor.position.y = 0.0
         add_to_group("world_interactables")
     var label: Label3D = Label3D.new()
+    name_label = label
     label.position.y = 1.5 if data.kind != "scroll" else 0.7
     label.text = data.label
     label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -54,6 +56,10 @@ func _refresh() -> void:
         set_physics_process(visible)
 
 func _physics_process(delta: float) -> void:
+    var selected: bool = get_parent().get("nearest") == self
+    if name_label != null:
+        name_label.modulate = Color("ffd07a") if selected else Color.WHITE
+        name_label.font_size = 30 if selected else 26
     if data.kind != "scroll":
         return
     marker.rotation.y += delta * 1.5
