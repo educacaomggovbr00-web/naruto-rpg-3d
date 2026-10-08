@@ -54,9 +54,9 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.9.0 • ESCOLHA SEU CAMINHO NINJA"
+    subtitle.text = "0.10.0 • ESCOLHA SEU CAMINHO NINJA"
     if RuntimeStability.recovered_session:
-        subtitle.text = "0.9.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
+        subtitle.text = "0.10.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)
@@ -87,9 +87,11 @@ func _ready() -> void:
     choices.add_theme_constant_override("separation", 12)
     choice_margin.add_child(choices)
     player_pick = _fighter_choice(choices, "SEU LUTADOR")
-    player_pick.select(CharacterCatalog.READY.find(CharacterCatalog.HENRIQUE))
+    player_pick.select(maxi(CharacterCatalog.READY.find(GameFlow.player_character), 0))
     cpu_pick = _fighter_choice(choices, "CPU")
+    cpu_pick.select(maxi(CharacterCatalog.READY.find(GameFlow.cpu_character), 0))
     arena_pick = _arena_choice(choices)
+    arena_pick.select(maxi(ArenaCatalog.IDS.find(GameFlow.arena_id), 0))
     var mode_group: VBoxContainer = VBoxContainer.new()
     mode_group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     choices.add_child(mode_group)
@@ -529,8 +531,14 @@ func _show_options() -> void:
     var dialog: AcceptDialog = AcceptDialog.new()
     dialog.title = "Dificuldade e controle"
     dialog.min_size = Vector2i(520, 320)
+    var scroll: ScrollContainer = ScrollContainer.new()
+    scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    scroll.custom_minimum_size = Vector2(520, 380)
+    dialog.add_child(scroll)
     var column: VBoxContainer = VBoxContainer.new()
-    dialog.add_child(column)
+    column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    column.add_theme_constant_override("separation", 8)
+    scroll.add_child(column)
     var label: Label = Label.new()
     label.text = "Dificuldade da CPU (aplicada na próxima batalha)"
     column.add_child(label)
@@ -547,6 +555,27 @@ func _show_options() -> void:
     help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     help.custom_minimum_size.x = 480
     column.add_child(help)
+    var graphics_label: Label = Label.new()
+    graphics_label.text = "Qualidade gráfica • próxima batalha ou exploração"
+    column.add_child(graphics_label)
+    var graphics: OptionButton = OptionButton.new()
+    graphics.name = "GraphicsQuality"
+    for title: String in GraphicsPreferences.LABELS:
+        graphics.add_item(title)
+    graphics.select(GraphicsPreferences.read_quality())
+    var graphics_help: Label = Label.new()
+    graphics_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    var graphic_descriptions: PackedStringArray = ["Menos efeitos e sombras, para priorizar fluidez.", "Efeitos e sombras equilibrados.", "Mais efeitos, sombras e nitidez."]
+    graphics_help.text = graphic_descriptions[graphics.selected]
+    graphics.item_selected.connect(func(index: int) -> void:
+        graphics_help.text = graphic_descriptions[index]
+        var result: Error = GraphicsPreferences.save_quality(index)
+        if result != OK:
+            graphics.select(GraphicsPreferences.read_quality())
+            graphics_help.text = graphic_descriptions[graphics.selected]
+            push_warning("Não foi possível salvar a qualidade gráfica."))
+    column.add_child(graphics)
+    column.add_child(graphics_help)
     var outfit_label: Label = Label.new()
     outfit_label.text = "Henrique • Roupa"
     column.add_child(outfit_label)
@@ -576,7 +605,7 @@ func _show_options() -> void:
     dialog.confirmed.connect(dialog.queue_free)
     dialog.canceled.connect(dialog.queue_free)
     add_child(dialog)
-    dialog.popup_centered()
+    dialog.popup_centered(Vector2i(560, 620))
 
 func _describe_technique(_index: int) -> void:
     if technique_pick == null or technique_pick.item_count == 0: return

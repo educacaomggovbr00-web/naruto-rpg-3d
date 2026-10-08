@@ -48,6 +48,7 @@ var progress: Dictionary = {
     "dialogue_seen": []
 }
 
+var loading_screen: CanvasLayer
 var busy: bool = false
 var pending_battle: String = ""
 var pending_story_id: String = ""
@@ -61,11 +62,23 @@ var story_dialogue_seen: Dictionary = {}
 func _ready() -> void:
     CharacterCatalog.initialize()
     get_tree().scene_changed.connect(_scene_ready)
+    loading_screen = CanvasLayer.new()
+    loading_screen.name = "SceneLoadingScreen"
+    loading_screen.set_script(preload("res://scripts/scene_loading_screen.gd"))
+    add_child(loading_screen)
+    loading_screen.failed.connect(_loading_failed)
+    loading_screen.retry_requested.connect(_transition)
+    loading_screen.menu_requested.connect(enter_selection)
     load_progress()
     ensure_rpg_progress()
 
 func _scene_ready() -> void:
+    if loading_screen != null and loading_screen.active and get_tree().current_scene != null:
+        if get_tree().current_scene.scene_file_path != loading_screen.pending_path:
+            return
     busy = false
+    if loading_screen != null and loading_screen.active:
+        loading_screen.finish()
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F10:
@@ -301,12 +314,31 @@ func mark_story_dialogue_seen(phase: String, mission_id: String = "") -> void:
 func _transition(path: String) -> Error:
     if busy:
         return ERR_BUSY
+    if not ResourceLoader.exists(path, "PackedScene"):
+        return ERR_FILE_NOT_FOUND
     busy = true
+    var previous: Node = get_tree().current_scene
+    if previous != null: previous.process_mode = Node.PROCESS_MODE_DISABLED
     _clear_result()
-    var result: Error = get_tree().change_scene_to_file(path)
-    if result != OK:
-        busy = false
-    return result
+    get_tree().paused = false
+    Engine.time_scale = 1.0
+    # The overlay is 2D; don't retain a high-MSAA 3D framebuffer while swapping.
+    get_viewport().msaa_3d = Viewport.MSAA_DISABLED
+    get_viewport().scaling_3d_scale = 0.75
+    var title: String = {
+        "res://selection.tscn": "Escolha seu caminho ninja",
+        "res://main.tscn": "%s × %s" % [player_character.display_name, cpu_character.display_name],
+        "res://world.tscn": "Bem-vindo à Vila da Folha",
+        "res://region.tscn": "Explorando além da aldeia"
+    }.get(path, "Preparando sua jornada")
+    var stability: Node = get_tree().root.get_node_or_null("RuntimeStability")
+    if stability != null: stability.record_loading(path)
+    loading_screen.begin(path, title)
+    return OK
+
+func _loading_failed(path: String, error: Error) -> void:
+    busy = false
+    push_warning("Scene loading failed: %s (%s)" % [path, error_string(error)])
 
 func _clear_pending_battle() -> void:
     pending_battle = ""

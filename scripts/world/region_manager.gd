@@ -35,7 +35,7 @@ func _ready() -> void:
     story_dialogue.finished.connect(_on_story_dialogue_finished)
     GameFlow.progress_changed.connect(_refresh_hud)
     settings.load("user://graphics.cfg")
-    apply_quality(clampi(int(settings.get_value("graphics", "quality", 1)), 0, 2), false)
+    apply_quality(GraphicsPreferences.read_quality(settings), false)
     _refresh_hud()
 
 func _spawn_for_region(region_id: String) -> Vector3:

@@ -98,7 +98,7 @@ func _ready() -> void:
     technique_visual = Node3D.new()
     technique_visual.set_script(preload("res://scripts/elemental_jutsu_visual.gd"))
     stage.add_child(technique_visual)
-    show_fighters(CharacterCatalog.HENRIQUE, CharacterCatalog.NARUTO)
+    show_fighters(GameFlow.player_character, GameFlow.cpu_character)
 
 func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> void:
     if technique_visual != null:

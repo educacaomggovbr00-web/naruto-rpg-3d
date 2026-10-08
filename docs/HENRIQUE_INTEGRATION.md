@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Inicialização e menus — 0.10.0
+
+Boot leve, carregamento em etapas com liberação prévia da cena anterior, perfis gráficos compartilhados entre combate/aldeia/regiões, opções com rolagem e seleção lembrada na sessão. Personagens, modelos, combate e saves preservados. APK debug ARM64 versionCode 11; teste no aparelho ainda pendente. Evidências e limites em [LOADING_ANDROID_0100.md](LOADING_ANDROID_0100.md).
+
 ## Estabilidade Android — 0.9.0
 
 Cache de animações limitado, rigs do menu reutilizados, inicialização leve no Android, proteção do botão Voltar e recuperação após interrupção. Personagens e sistemas preservados. APK debug ARM64 versionCode 10; causa do fechamento no aparelho ainda depende de reprodução/logcat. Evidências e limites em [ANDROID_STABILITY_090.md](ANDROID_STABILITY_090.md).

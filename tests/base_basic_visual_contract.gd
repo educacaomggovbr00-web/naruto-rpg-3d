@@ -13,6 +13,9 @@ func check(ok: bool, message: String) -> void:
         push_error(message)
 
 func frames(count: int) -> void:
+    var pending_flow: Node = root.get_node("GameFlow")
+    while pending_flow.busy:
+        await process_frame
     for index: int in range(count):
         await physics_frame
         await process_frame

@@ -1,7 +1,7 @@
 [application]
 config/name="Shinobi RPG 3D"
 config/icon="res://assets/ui/shinobi_icon.svg"
-run/main_scene="res://selection.tscn"
+run/main_scene="res://boot.tscn"
 run/max_fps=60
 
 [autoload]

@@ -18,7 +18,7 @@ func _ready() -> void:
         # Bounded log, useful with adb/run-as; never stores personal data.
         var log_file: FileAccess = FileAccess.open(TRACE, FileAccess.WRITE)
         if log_file != null:
-            log_file.store_line("Shinobi Clash 0.9.0; interrupted: %s; previous scene: %s" % [recovered_session, previous_scene])
+            log_file.store_line("Shinobi Clash 0.10.0; interrupted: %s; previous scene: %s" % [recovered_session, previous_scene])
             log_file.store_line("renderer: %s" % RenderingServer.get_video_adapter_name())
         _mark_active()
         get_tree().scene_changed.connect(_scene_changed)
@@ -40,7 +40,15 @@ func _mark_active() -> void:
         var current: Node = get_tree().current_scene
         file.store_string(JSON.stringify({"scene": current.scene_file_path if current != null else "startup"}))
 
+func record_loading(path: String) -> void:
+    if not OS.has_feature("android"): return
+    var file: FileAccess = FileAccess.open(MARKER, FileAccess.WRITE)
+    if file != null:
+        file.store_string(JSON.stringify({"scene": "loading:" + path}))
+
 func _scene_changed() -> void:
+    if GameFlow.busy and GameFlow.loading_screen.active and get_tree().current_scene.scene_file_path != GameFlow.loading_screen.pending_path:
+        return
     _mark_active()
     var file: FileAccess = FileAccess.open(TRACE, FileAccess.READ_WRITE)
     if file != null:

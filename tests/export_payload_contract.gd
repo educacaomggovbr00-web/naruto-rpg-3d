@@ -5,6 +5,10 @@ func _initialize() -> void:
     call_deferred("run")
 
 func run() -> void:
+    if ProjectSettings.get_setting("application/run/main_scene") != "res://boot.tscn" or not ResourceLoader.exists("res://boot.tscn") or not ResourceLoader.exists("res://scripts/scene_loading_screen.gd"):
+        push_error("Android payload lost lightweight startup/loading resources")
+        quit(1)
+        return
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var game: Node = load("res://main.tscn").instantiate()
     root.add_child(game)

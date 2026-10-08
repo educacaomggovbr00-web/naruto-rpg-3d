@@ -15,7 +15,7 @@ var emergency_mode: bool = false
 
 func _ready() -> void:
     settings.load("user://graphics.cfg")
-    level = clampi(int(settings.get_value("graphics", "quality", 0 if OS.has_feature("android") else 1)), 0, 2)
+    level = GraphicsPreferences.read_quality(settings)
     set_process(_is_mobile_runtime() and adaptive_resolution)
     call_deferred("apply", level, false)
 
