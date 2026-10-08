@@ -54,7 +54,7 @@ func _build_backplates() -> void:
 
     var info: PanelContainer = PanelContainer.new()
     info.position = Vector2(10, 152)
-    info.size = Vector2(555, 64)
+    info.size = Vector2(480, 64)
     info.mouse_filter = Control.MOUSE_FILTER_IGNORE
     info.add_theme_stylebox_override("panel", _hud_panel(Color(0.012, 0.030, 0.048, 0.66), Color(0.24, 0.45, 0.55, 0.30), 12))
     add_child(info)
@@ -91,6 +91,10 @@ func _build_backplates() -> void:
     $Title.add_theme_font_size_override("font_size", 16)
     status_label.add_theme_font_size_override("font_size", 13)
     resource_label.add_theme_font_size_override("font_size", 12)
+    status_label.size.x = 455
+    resource_label.size.x = 455
+    status_label.clip_text = true
+    resource_label.clip_text = true
     rig_label.add_theme_font_size_override("font_size", 11)
     fps_label.add_theme_font_size_override("font_size", 12)
 
@@ -156,7 +160,7 @@ func _process(delta: float) -> void:
     var locked_target: Node3D = player.call("get_locked_target") as Node3D
     var lock_text: String = "LIVRE"
     if is_instance_valid(locked_target):
-        lock_text = locked_target.name
+        lock_text = locked_target.get_character_definition().display_name if locked_target.has_method("get_character_definition") else "ALVO"
 
     var animation_state: String = String(player.call("get_animation_state"))
     status_label.text = "%s  •  COMBO %d  •  %s" % [
@@ -167,6 +171,9 @@ func _process(delta: float) -> void:
 
     var sub_cd: float = float(player.call("get_substitution_cooldown"))
     var jutsu_cd: float = float(player.call("get_jutsu_cooldown"))
+    var technique: JutsuDefinition = player.character_definition.find_jutsu(String(player.specials.selected))
+    if not rig_label.visible:
+        status_label.text = "%s  •  %s" % [technique.display_name if technique != null else "TÉCNICA NINJA", "RECARGA %.1fs" % jutsu_cd if jutsu_cd > 0.0 else "PRONTO"]
     resource_label.text = "SUB %d  •  GUARDA %d  •  %s  •  CD %.1f/%.1f" % [
         int(player.call("get_substitutions")),
         int(player.guard_meter),
@@ -185,6 +192,11 @@ func _process(delta: float) -> void:
         resource_label.text += " • " + SusanooVisual.FORM_NAMES[player.awakening.selected_form]
     var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]
     resource_label.text += "  •  %s %s" % [tool_name.to_upper(), "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
+    var cinematic_clash: bool = (is_instance_valid(player.cinematic_owner) and player.cinematic_owner.get("phase") == "clash") or player.ultimate.phase == "clash"
+    if not rig_label.visible and not cinematic_clash:
+        resource_label.text = "SUB %d%s  •  GUARDA %d  •  %s %s  •  ULT %s" % [player.substitutions," (%.1fs)" % sub_cd if sub_cd > 0 else "",int(player.guard_meter),tool_name.to_upper(),"∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name]),"%.1fs" % player.ultimate.cooldown if player.ultimate.cooldown > 0 else "PRONTO"]
+        if player.awakening.active:
+            status_label.text = "%s  •  %.1fs" % [SusanooVisual.FORM_NAMES[player.awakening.selected_form] if player.awakening.has_method("cycle_form") else "DESPERTAR",player.awakening.remaining]
     var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]
     var controls: Node = get_node("MobileControls")
     var form_button: String = "FORMA" if player.awakening.active and player.awakening.has_method("cycle_form") else "AWK"

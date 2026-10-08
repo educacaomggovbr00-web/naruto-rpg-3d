@@ -18,7 +18,7 @@ func _ready() -> void:
         # Bounded log, useful with adb/run-as; never stores personal data.
         var log_file: FileAccess = FileAccess.open(TRACE, FileAccess.WRITE)
         if log_file != null:
-            log_file.store_line("Shinobi Clash 0.11.0; interrupted: %s; previous scene: %s" % [recovered_session, previous_scene])
+            log_file.store_line("Shinobi Clash 0.12.0; interrupted: %s; previous scene: %s" % [recovered_session, previous_scene])
             log_file.store_line("renderer: %s" % RenderingServer.get_video_adapter_name())
         _mark_active()
         get_tree().scene_changed.connect(_scene_changed)

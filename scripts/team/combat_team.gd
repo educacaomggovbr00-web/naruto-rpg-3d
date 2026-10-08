@@ -381,7 +381,7 @@ func _update_sequence(delta: float) -> void:
         sequence_target.is_guarding = false
         if dealt > 0.0:
             ElementalStates.apply_hit(sequence_target, fighter, data.effect, blocked)
-        fighter.combat_feedback.spawn_chakra_impact(sequence_target.global_position + Vector3.UP * .6, members[sequence_stage % members.size()].energy_color)
+        fighter.combat_feedback.spawn_elemental_impact(sequence_target.global_position + Vector3.UP * .4,data.effect,.9 if sequence_stage == 3 else .55,fighter.global_basis.z)
         fighter.camera_rig.add_combat_impact(.12, 2.5)
         sequence_stage += 1
         fighter.animation_action_id += 1

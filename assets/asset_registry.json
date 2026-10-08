@@ -80,7 +80,7 @@
     },
     {
       "path": "assets/vfx/chakra_shell.gdshader",
-      "sha256": "c2b9b2f78f68d7f3b1d81be28ec07e135a9cda591ac44446fb1b6366b5bc5af2",
+      "sha256": "a92efbb1c8be470a6d91574f52b4121d6f7bf3b32c417b67c5da8b9ebcee83db",
       "status": "SAFE_FOR_RELEASE",
       "author": "Projeto naruto-rpg-3d",
       "source": "Código original neste repositório",
@@ -89,7 +89,7 @@
     },
     {
       "path": "assets/vfx/chakra_core.gdshader",
-      "sha256": "71ffdee82a001b8d48a8786601189c978e29f88ea587668da99acedc50818d37",
+      "sha256": "a4f27389d4baa6637b5f8f88a5e1a49722f303f3356d2f734b6ce4354ff61c52",
       "status": "SAFE_FOR_RELEASE",
       "author": "Projeto naruto-rpg-3d",
       "source": "Código original neste repositório",
@@ -327,7 +327,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "4cda45f347da6d98058836684f196651d2143e3bc7503b5ef83a848a763ee0d7"
+      "sha256": "d6e3f247a9ad79d921f4ef08c142c6c51cf96f0fa1cae038d0975d8f5f2cb8bb"
     },
     {
       "path": "assets/characters/stylized/toon.tres",
@@ -1169,7 +1169,7 @@
       "source": "Original authored shader",
       "license": "Original project content",
       "modifications": "Procedural opaque elemental surface; no external assets; granular and solid variants",
-      "sha256": "4bb9a253a1767916f922a8c9c4950eef521af6251689bf19703959f2f92045fb"
+      "sha256": "12b139e3a3a805bed000e61e4f4d6129de568eb4165d5abc482248950c74a273"
     },
     {
       "path": "assets/audio/original/jutsu_fire.wav",
@@ -1486,6 +1486,42 @@
           "sha256": "d89b90e38079c4f9ce6376850d9c7675d3a73f95168ffec5a2843b5c8561edaa"
         }
       ]
+    },
+    {
+      "path": "assets/vfx/jutsu_ribbon.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original deforming translucent trail strips; bounded quality layers; Compatibility renderer",
+      "sha256": "aae060ca8dd7b09da526a23fc455c6f6eb1c9cd3d1eb5757dde6cd97c4f9c386"
+    },
+    {
+      "path": "assets/vfx/jutsu_impact.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original translucent expanding elemental impact shell; pooled and time bounded; Compatibility renderer",
+      "sha256": "8246d61bbd00c787eaa5e0170360996fdec6ed083e0721ad030d7e2cddd4c0c7"
+    },
+    {
+      "path": "assets/vfx/elemental_volume.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original translucent fire/black flame/water surface with soft silhouette; Compatibility renderer",
+      "sha256": "187d6c0240dc9df5ae7463dbf1ebcd99d15ecbbab116cb783d25dcf3ea157a7f"
+    },
+    {
+      "path": "assets/vfx/jutsu_smoke.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original low-cost soft smoke surface; fixed multimesh impact puffs",
+      "sha256": "cb0c15b78f2e36ec9e84df2a7eca592f444df69e98eb9834db57fb3c1c2af735"
     }
   ]
 }

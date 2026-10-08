@@ -73,9 +73,9 @@ static func environment(dusk: bool = false, existing: Environment = null) -> Env
     result.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 
     result.adjustment_enabled = true
-    result.adjustment_brightness = 1.03
-    result.adjustment_contrast = 1.10
-    result.adjustment_saturation = 1.14
+    result.adjustment_brightness = 0.98
+    result.adjustment_contrast = 1.08
+    result.adjustment_saturation = 1.10
 
     result.fog_enabled = true
     result.fog_light_color = sky_material.sky_horizon_color
@@ -83,7 +83,7 @@ static func environment(dusk: bool = false, existing: Environment = null) -> Env
     return result
 
 static func sun(light: DirectionalLight3D, dusk: bool = false) -> void:
-    light.light_color = Color("ffb76e") if dusk else Color("ffd49c")
-    light.light_energy = 1.12
+    light.light_color = Color("ffc795") if dusk else Color("fff1d8")
+    light.light_energy = 1.0
     light.shadow_bias = 0.075
     light.shadow_normal_bias = 0.92

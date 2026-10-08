@@ -11,11 +11,12 @@ var flames: Array[MeshInstance3D] = []
 func _ready() -> void:
     for i: int in range(7):
         var flame: MeshInstance3D = MeshInstance3D.new()
-        var mesh: SphereMesh = SphereMesh.new()
-        mesh.radius = .10
-        mesh.height = .75
+        var mesh: CylinderMesh = CylinderMesh.new()
+        mesh.bottom_radius = .10
+        mesh.top_radius = .015
+        mesh.height = .65
         mesh.radial_segments = 8
-        mesh.rings = 5
+        mesh.rings = 4
         flame.mesh = mesh
         var material: ShaderMaterial = ShaderMaterial.new()
         material.shader = preload("res://assets/vfx/elemental_core.gdshader")

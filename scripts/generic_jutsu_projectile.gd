@@ -52,7 +52,7 @@ func launch_jutsu(source: CharacterBody3D, destination: Node3D, origin: Vector3,
     orb.visible = not enhanced
     elemental_visual.visible = enhanced
     if enhanced:
-        elemental_visual.configure(data.effect, clampf(data.hitbox_radius,.18,.85),false,"wave" if data.jutsu_id == "henrique_katon_wave" else "orb")
+        elemental_visual.configure_jutsu(data,clampf(data.hitbox_radius,.18,.85))
         elemental_visual.heading = direction
     active = true
     visible = true
@@ -115,6 +115,7 @@ func _physics_process(delta: float) -> void:
             return
 
     if fraction < 1.0:
+        _impact()
         recycle()
         return
 
@@ -126,7 +127,7 @@ func _impact() -> void:
     preload("res://scripts/arena_interactions.gd").impact(owner_fighter, global_position, definition.effect, definition.hitbox_radius * 1.5, definition.damage)
     var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
     if feedback != null:
-        feedback.spawn_chakra_impact(global_position,RosterVisualStyle.color(definition.effect))
+        feedback.spawn_elemental_impact(global_position,definition.effect,definition.hitbox_radius,direction)
 
 func recycle() -> void:
     active = false

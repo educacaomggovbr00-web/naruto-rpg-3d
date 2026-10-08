@@ -1,6 +1,7 @@
 extends MultiMeshInstance3D
 ## Original opaque electrical forks: 16 segments in a single draw, no particles.
 var clock: float = 0.0
+var quality: int = 1
 func _ready() -> void:
     var batch: MultiMesh = MultiMesh.new()
     batch.transform_format = MultiMesh.TRANSFORM_3D
@@ -20,15 +21,20 @@ func _ready() -> void:
     cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
     visible = false
 
+func set_quality(level: int) -> void:
+    quality = clampi(level,0,2)
+    if multimesh != null:
+        multimesh.visible_instance_count = [8,12,16][quality]
+
 func _physics_process(delta: float) -> void:
     if not is_visible_in_tree():
         return
     clock += delta
-    for branch: int in range(8):
-        var angle: float = float(branch) * TAU / 8.0 + clock * 3.0
+    for branch: int in range(multimesh.visible_instance_count / 2):
+        var angle: float = float(branch) * 2.399963 + clock * 1.5
         var direction: Vector3 = Vector3(cos(angle), sin(angle * 2.3 + clock * 19.0) * 0.6, sin(angle)).normalized()
-        var bend: Vector3 = direction * (0.22 + sin(clock * 23.0 + branch) * 0.05)
-        var tip: Vector3 = direction * 0.55 + Vector3.UP * sin(clock * 31.0 + branch) * 0.1
+        var bend: Vector3 = direction * (0.17 + sin(clock * 23.0 + branch) * 0.04)
+        var tip: Vector3 = direction * .40 + Vector3.UP * sin(clock * 31.0 + branch) * .07
         _segment(branch * 2, Vector3.ZERO, bend)
         _segment(branch * 2 + 1, bend, tip)
 

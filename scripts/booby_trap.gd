@@ -148,10 +148,17 @@ func _physics_process(delta: float) -> void:
                 heading.y = 0.0
                 var dealt: float = victim.call("receive_combat_hit", definition.damage * float(owner_fighter.call("get_damage_multiplier")), heading.normalized(), definition.knockback, definition.launch_force, definition.hitstun)
                 owner_fighter.call("on_attack_connected", victim, dealt, definition.launch_force)
+                _impact()
                 recycle()
                 return
         if fraction < 1.0:
+            _impact()
             recycle()
+
+func _impact() -> void:
+    var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+    if feedback != null:
+        feedback.spawn_elemental_impact(ball.global_position,"steel",.65,Vector3.DOWN)
 
 func recycle() -> void:
     active = false

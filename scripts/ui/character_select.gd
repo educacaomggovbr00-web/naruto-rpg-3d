@@ -56,9 +56,9 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.11.0 • EQUIPES, COMBATE ELEMENTAL E CHEFES"
+    subtitle.text = "0.12.0 • JUTSUS, IMPACTOS E EQUIPES"
     if RuntimeStability.recovered_session:
-        subtitle.text = "0.11.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
+        subtitle.text = "0.12.0 • MODO LEVE ATIVADO APÓS INTERRUPÇÃO"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)

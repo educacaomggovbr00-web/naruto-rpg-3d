@@ -7,8 +7,8 @@ void fragment() {
     float warp = sin(p.y * 1.7 + phase * 4.0) * 0.7;
     float flow = sin(p.x + p.y * 2.0 + warp - phase * 9.0);
     float cross_flow = sin(p.y * 3.0 - p.x + phase * 6.0);
-    float veins = pow(max(0.0, flow * cross_flow), 3.0);
+    float veins = smoothstep(0.35,0.85,flow*cross_flow);
     float rim = pow(1.0 - max(dot(normalize(NORMAL), normalize(VIEW)), 0.0), 2.0);
-    ALBEDO = mix(energy_color.rgb * 0.55, vec3(0.87, 0.96, 1.0), veins * 0.65 + rim * 0.35);
+    ALBEDO = mix(energy_color.rgb * 0.42, vec3(0.87, 0.96, 1.0), veins * 0.72 + rim * 0.28);
     EMISSION = energy_color.rgb * (0.3 + veins * 0.5);
 }

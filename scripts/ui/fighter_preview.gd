@@ -139,7 +139,7 @@ func preview_technique(id: String) -> void:
     if data.strategy not in ["clones","barrage","trap"]:
         technique_visual.position = Vector3(-.92,1.0,.45)
         technique_visual.heading = Vector3.RIGHT
-        technique_visual.configure(data.effect,.26,data.strategy == "burst","wave" if id == "henrique_katon_wave" else "orb")
+        technique_visual.configure_jutsu(data,.26,data.strategy == "burst")
 
 func _physics_process(delta: float) -> void:
     if technique_timer <= 0.0: return

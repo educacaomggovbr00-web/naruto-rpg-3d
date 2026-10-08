@@ -10,6 +10,9 @@ var effect_budget: int = 32
 var trail_interval: float = 0.06
 var pool_cursor: int = 0
 var trail_timer: float = 0.0
+var elemental_impacts: Array[Node3D] = []
+var elemental_cursor: int = 0
+var elemental_budget: int = 4
 
 var hit_stop_end_msec: int = 0
 var normal_time_scale: float = 1.0
@@ -43,6 +46,31 @@ func _ready() -> void:
         lifetimes.append(0.0)
         durations.append(0.0)
         sizes.append(0.0)
+    for index: int in range(6):
+        var impact: Node3D = Node3D.new()
+        impact.set_script(preload("res://scripts/jutsu_impact.gd"))
+        add_child(impact)
+        elemental_impacts.append(impact)
+
+func set_quality(level: int) -> void:
+    elemental_budget = [2,4,6][clampi(level,0,2)]
+    elemental_cursor = 0
+    for index: int in range(elemental_impacts.size()):
+        elemental_impacts[index].set_quality(level)
+        if index >= elemental_budget:
+            elemental_impacts[index].recycle()
+
+func spawn_elemental_impact(origin: Vector3, kind: String, radius: float = .8, heading: Vector3 = Vector3.BACK) -> void:
+    if elemental_impacts.is_empty():
+        return
+    var impact: Node3D = elemental_impacts[elemental_cursor]
+    elemental_cursor = (elemental_cursor+1)%elemental_budget
+    impact.activate(origin,kind,radius,heading)
+    _spawn_flash(origin,minf(radius*.35,.5),RosterVisualStyle.color(kind).lightened(.3),.08)
+    _trigger_manga_impact(origin,.28,RosterVisualStyle.color(kind))
+    var audio: Node = get_node_or_null("../AudioManager")
+    if audio != null:
+        audio.play("heavy",-20.0)
 
 func _process(delta: float) -> void:
     for i: int in range(flashes.size()):

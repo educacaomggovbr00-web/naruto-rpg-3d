@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Jutsus e apresentação — 0.12.0
+
+Superfícies de fogo/água, rastros, arcos de vento, armas, impactos elementais com fumaça, câmera de preparação e HUD refinados. Corrigida a perda de escala ao orientar os efeitos. Iluminação mais neutra; personagens, kits, parâmetros de combate e progresso preservados. Evidências e limites em [JUTSU_FINISH_0120.md](JUTSU_FINISH_0120.md). APK debug ARM64 versionCode 13; teste físico pendente.
+
 ## Equipes e interações — 0.11.0
 
 Equipes com até três membros, suporte, troca de líder nos 26 lutadores, combo em equipe, vida compartilhada, Storm, supremo conjunto e despertar vinculado. Estados elementais, equipamento, cenário destrutível, QTE de chefes e modo com três inimigos simultâneos integram o combate existente. Modelos, clips, saves e campanhas preservados. Regras próprias, validação e limites em [TEAM_COMBAT_0110.md](TEAM_COMBAT_0110.md). APK debug ARM64 versionCode 12; teste físico pendente.

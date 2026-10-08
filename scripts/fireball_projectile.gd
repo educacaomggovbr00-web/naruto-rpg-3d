@@ -79,12 +79,13 @@ func _physics_process(delta: float) -> void:
             recycle()
             return
     if fraction < 1.0:
+        _impact()
         recycle()
 func _impact() -> void:
     preload("res://scripts/arena_interactions.gd").impact(owner_fighter, global_position, "fire", definition.radius * 1.5, definition.damage)
     var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
     if feedback != null:
-        feedback.spawn_chakra_impact(global_position,Color(1,.25,.02))
+        feedback.spawn_elemental_impact(global_position,"fire",definition.radius,direction)
 
 func recycle() -> void:
     active = false

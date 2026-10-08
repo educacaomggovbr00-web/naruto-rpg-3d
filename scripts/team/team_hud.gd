@@ -9,12 +9,13 @@ var status: Label
 var buttons: Array[Button] = []
 var gauge_labels: Array[Label] = []
 var refresh: float = 0.0
+var wall_button: Button
 
 func _ready() -> void:
     layer = 12
     panel = PanelContainer.new()
     panel.position = Vector2(400, 226) if GameFlow.arcade_mode == "training" else Vector2(14, 226)
-    panel.size = Vector2(370, 168)
+    panel.size = Vector2(370,168 if fighter.team != null and fighter.team.members.size()>1 else 58)
     add_child(panel)
     var column: VBoxContainer = VBoxContainer.new()
     column.add_theme_constant_override("separation", 4)
@@ -69,7 +70,7 @@ func _ready() -> void:
     status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
     column.add_child(status)
     if GameFlow.is_story_battle():
-        var wall_button: Button = Button.new()
+        wall_button = Button.new()
         wall_button.text = "CORRER NA PAREDE • FASE 2"
         wall_button.pressed.connect(func():
             var encounter: Node = fighter.get_parent().get_node_or_null("BattleBridge/BossEncounter")
@@ -125,6 +126,13 @@ func _process(delta: float) -> void:
         names.text = "ESTADOS DE COMBATE"
         status.text = "Fogo / água / eletricidade • Armadura • Cenário"
     var states: Node = fighter.get_node_or_null("ElementalStates")
+    var has_team: bool = team != null and team.members.size()>1
+    var damaged: bool = fighter.battle_condition != null and (fighter.battle_condition.armor_broken or fighter.battle_condition.weapon_broken)
+    var encounter: Node = fighter.get_parent().get_node_or_null("BattleBridge/BossEncounter")
+    var wall_ready: bool = GameFlow.is_story_battle() and encounter != null and encounter.giant.visible
+    panel.visible = has_team or states != null or damaged or wall_ready
+    if wall_button != null:
+        wall_button.visible = wall_ready
     if states != null:
         status.text = states.summary()
     if fighter.battle_condition != null and fighter.battle_condition.armor_broken:
