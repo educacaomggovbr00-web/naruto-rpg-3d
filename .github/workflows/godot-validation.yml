@@ -205,12 +205,13 @@ jobs:
           grep -F 'Export público bloqueado; payload excluído.' /tmp/public-export.log
           ! grep -F 'SCRIPT ERROR:' /tmp/public-export.log
           cp tests/export_payload_contract.gd /tmp/export_payload_contract.gd
+          cp tests/public_payload_contract.gd /tmp/public_payload_contract.gd
           cd /tmp
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/android-phase1.pck --script /tmp/export_payload_contract.gd 2>&1 | tee /tmp/pack-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/pack-contract.log
           grep -F 'ANDROID PHASE 1 PACK: PASS' /tmp/pack-contract.log
           grep -F 'CHARACTER JUTSU DATA ANDROID PACK: PASS' /tmp/pack-contract.log
           grep -F 'WORLD ANDROID PACK: PASS' /tmp/pack-contract.log
-          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/blocked-public.pck --script /tmp/export_payload_contract.gd -- --public 2>&1 | tee /tmp/public-pack-contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/blocked-public.pck --script /tmp/public_payload_contract.gd 2>&1 | tee /tmp/public-pack-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/public-pack-contract.log
           grep -F 'PUBLIC PAYLOAD GATE: PASS' /tmp/public-pack-contract.log

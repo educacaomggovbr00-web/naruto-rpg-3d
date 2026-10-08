@@ -82,5 +82,6 @@ python3 tools/export_android.py --godot /caminho/godot --output build/naruto-rpg
 - Registro de assets e `git diff --check` passaram.
 - ZIP do APK íntegro; assinatura v2/v3 e alinhamento de 16 KB passaram. Contém somente bibliotecas ARM64 e inclui a atribuição do Susanoo.
 - Conteúdo de `assets/` extraído do APK e executado pelo Godot Linux fora do checkout: contratos de payload confirmaram personagens, jutsus, mundo, campanha, regiões e Henrique/Susanoo. O novo contrato de galeria/combate também passou no payload.
+- Pacote público rejeitado validado com `public_payload_contract.gd`, independente das classes de gameplay que o gate exclui. Confirmou ausência de autoload, cenas e modelos não liberados, incluindo Henrique e Susanoo.
 
 Isso não comprova instalação, toque, driver gráfico ou desempenho em Android físico. As capturas usam renderização por software e não são benchmarks de celular. Save v1, os 25 personagens anteriores, atribuições e o gate de distribuição pública foram preservados.

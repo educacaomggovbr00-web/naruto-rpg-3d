@@ -5,30 +5,6 @@ func _initialize() -> void:
     call_deferred("run")
 
 func run() -> void:
-    if "--public" in OS.get_cmdline_user_args():
-        for id: String in ["naruto", "sasuke", "sakura", "kakashi"]:
-            if ResourceLoader.exists("res://assets/characters/stylized/" + id + ".glb"):
-                push_error("Development-only fan model leaked into public payload")
-                quit(1)
-                return
-        if ProjectSettings.has_setting("autoload/GameFlow"):
-            push_error("Rejected public container retained a resource-dependent autoload")
-            quit(1)
-            return
-        if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn") or FileAccess.file_exists("res://selection.tscn"):
-            push_error("Uncleared public payload leaked")
-            quit(1)
-            return
-        var model_import: ConfigFile = ConfigFile.new()
-        if model_import.load("res://assets/characters/rigged.glb.import") == OK:
-            var imported_path: String = model_import.get_value("remap", "path", "")
-            if FileAccess.file_exists(imported_path):
-                push_error("Imported uncleared model leaked")
-                quit(1)
-                return
-        print("PUBLIC PAYLOAD GATE: PASS")
-        quit(0)
-        return
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var game: Node = load("res://main.tscn").instantiate()
     root.add_child(game)
