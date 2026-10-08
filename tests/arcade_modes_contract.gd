@@ -20,7 +20,7 @@ func run() -> void:
     check(flow.start_arcade("training", "henrique", "naruto", "training") == OK, "Training starts")
     await frames(8)
     var enemy: CharacterBody3D = current_scene.get_node("EnemyDummy")
-    check(not enemy.is_physics_processing() and not enemy.reactive_substitution, "Training dummy waits for practice")
+    check(enemy.is_physics_processing() and enemy.training_behavior == 0 and not enemy.reactive_substitution, "Training dummy waits for practice")
     enemy.targetable = false
     enemy.health = 0.0
     await frames(2)

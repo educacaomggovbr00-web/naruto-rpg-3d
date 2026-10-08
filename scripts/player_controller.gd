@@ -1,4 +1,5 @@
 extends CharacterBody3D
+signal combat_hit_recorded(amount: float, guarded: bool)
 
 @export var move_speed: float = 7.5
 @export var run_speed: float = 12.0
@@ -1062,6 +1063,7 @@ func on_attack_connected(target: Node, actual_damage: float, launch_velocity: fl
         and bool(target.call("get_is_guarding"))
     )
 
+    combat_hit_recorded.emit(actual_damage,target_guarding)
     if not target_guarding:
         combo_hits += 1
         combo_damage += maxf(actual_damage, 0.0)

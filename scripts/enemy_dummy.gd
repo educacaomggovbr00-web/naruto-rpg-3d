@@ -1,8 +1,10 @@
 extends CharacterBody3D
+signal combat_hit_recorded(amount: float, guarded: bool)
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
 var character_definition: CharacterDefinition = null
 var team: Node = null
+var training_behavior: int = -1
 var battle_condition: Node = null
 var character_override: CharacterDefinition = null
 var ai_profile: AIProfileDefinition = null
@@ -239,6 +241,12 @@ func _physics_process(delta: float) -> void:
         velocity.z = motion.z
         if specials.current == "barrage":
             velocity.y = motion.y
+        _move_and_handle_bounces()
+        return
+
+    if training_behavior >= 0:
+        guarding = training_behavior == 1 and guard_meter >= 20.0
+        _slow_down(delta)
         _move_and_handle_bounces()
         return
 
@@ -687,6 +695,8 @@ func receive_combat_hit(
     return applied_damage
 
 func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float) -> void:
+    if _actual_damage > 0.001:
+        combat_hit_recorded.emit(_actual_damage,target.get_is_guarding())
     if is_instance_valid(team):
         team.record_hit(_actual_damage, _launch_velocity, target.get_is_guarding())
     var impact_kind: String = "normal"

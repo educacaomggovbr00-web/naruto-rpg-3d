@@ -67,6 +67,10 @@ func request_back() -> void:
     if GameFlow.busy: return
     var current: Node = get_tree().current_scene
     if current == null: return
+    var pause_menu: Node = current.get_node_or_null("BattlePause")
+    if pause_menu != null:
+        pause_menu.toggle()
+        return
     if current.scene_file_path != "res://selection.tscn":
         # Preserve the exploration checkpoint before navigating away.
         GameFlow.notification(NOTIFICATION_APPLICATION_PAUSED)

@@ -77,6 +77,10 @@ func run() -> void:
     await scene_changed
     await frames(3)
     stability.request_back()
+    check(paused and current_scene.get_node("BattlePause").owns_pause,"Battle Back opens safe pause instead of leaving the match")
+    stability.request_back()
+    check(not paused,"Second Back resumes without losing the match")
+    flow.enter_selection()
     for i in range(8): await process_frame
     await frames(3)
     check(current_scene.scene_file_path == "res://selection.tscn" and not paused and is_equal_approx(Engine.time_scale,1.0), "Battle Back returns to usable menu")

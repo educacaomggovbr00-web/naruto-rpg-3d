@@ -6,6 +6,9 @@ var difficulty: int = 1
 var henrique_outfit: int = 1
 var controller_deadzone: float = 0.18
 var master_volume: float = 0.8
+var camera_fov: float = 60.0
+var camera_shake: float = 1.0
+var camera_motion: bool = true
 var writable: bool = true
 var touch_layout: Dictionary = {}
 const TOUCH_KEYS: PackedStringArray = ["joystick", "attack", "jump", "dash", "jutsu", "substitution", "dodge", "charge", "guard"]
@@ -15,10 +18,10 @@ func _ready() -> void:
     _install_controller_actions()
     apply_audio()
 
-func _load_preferences() -> void:
-    if not FileAccess.file_exists(PATH):
+func _load_preferences(path: String = PATH) -> void:
+    if not FileAccess.file_exists(path):
         return
-    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(PATH))
+    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
     if not parsed is Dictionary:
         writable = false
         return
@@ -39,19 +42,24 @@ func _load_preferences() -> void:
     var outfit: Variant = data.get("henrique_outfit", 1.0)
     if (outfit is float or outfit is int) and is_finite(float(outfit)):
         henrique_outfit = clampi(int(outfit), 0, 2)
+    var fov: Variant = data.get("camera_fov",60.0)
+    if (fov is float or fov is int) and is_finite(float(fov)): camera_fov = clampf(float(fov),52.0,72.0)
+    var shake: Variant = data.get("camera_shake",1.0)
+    if (shake is float or shake is int) and is_finite(float(shake)): camera_shake = clampf(float(shake),0.0,1.0)
+    if data.get("camera_motion",true) is bool: camera_motion = data.get("camera_motion",true)
     difficulty = int(data.difficulty)
     controller_deadzone = clampf(float(data.deadzone), 0.1, 0.4)
     master_volume = clampf(float(data.volume), 0.0, 1.0)
 
-func save_preferences() -> Error:
+func save_preferences(path: String = PATH) -> Error:
     if not writable:
         return ERR_FILE_UNRECOGNIZED
-    var file: FileAccess = FileAccess.open(PATH + ".tmp", FileAccess.WRITE)
+    var file: FileAccess = FileAccess.open(path + ".tmp", FileAccess.WRITE)
     if file == null:
         return FileAccess.get_open_error()
-    file.store_string(JSON.stringify({"version":1,"difficulty":difficulty,"deadzone":controller_deadzone,"volume":master_volume,"touch_layout":touch_layout,"henrique_outfit":henrique_outfit}))
+    file.store_string(JSON.stringify({"version":1,"difficulty":difficulty,"deadzone":controller_deadzone,"volume":master_volume,"touch_layout":touch_layout,"henrique_outfit":henrique_outfit,"camera_fov":camera_fov,"camera_shake":camera_shake,"camera_motion":camera_motion}))
     file.close()
-    return DirAccess.rename_absolute(PATH + ".tmp", PATH)
+    return DirAccess.rename_absolute(path + ".tmp", path)
 
 func apply_audio() -> void:
     AudioServer.set_bus_volume_db(0, linear_to_db(maxf(master_volume, 0.0001)))

@@ -519,3 +519,11 @@ func set_layout_editing(enabled: bool) -> void:
 func _exit_tree() -> void:
     if owns_pause:
         get_tree().paused = false
+
+func reset_interaction() -> void:
+    for touch_id: int in [joystick_touch,camera_touch,charge_touch,guard_touch,layout_touch]:
+        _touch_released(touch_id)
+    for key: String in ["attack_queue","jump_queue","chakra_dash_queue","lock_queue","jutsu_queue","substitution_queue","dodge_queue","ultimate_queue","awakening_queue","special_queue","clone_queue","barrage_queue","tool_select_queue","tool_use_queue","quality_queue"]:
+        set(key,0)
+    camera_delta = Vector2.ZERO
+    move_vector = Vector2.ZERO

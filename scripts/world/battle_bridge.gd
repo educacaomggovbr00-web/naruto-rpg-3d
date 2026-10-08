@@ -9,6 +9,14 @@ var mob_enemies: Array[CharacterBody3D] = []
 var boss_encounter: CanvasLayer = null
 
 func _ready() -> void:
+    var metrics: Node = Node.new()
+    metrics.name = "BattleMetrics"
+    metrics.set_script(preload("res://scripts/battle_metrics.gd"))
+    get_parent().add_child.call_deferred(metrics)
+    var pause_menu: CanvasLayer = CanvasLayer.new()
+    pause_menu.name = "BattlePause"
+    pause_menu.set_script(preload("res://scripts/battle_pause.gd"))
+    get_parent().add_child.call_deferred(pause_menu)
     var audio: Node = Node.new()
     audio.name = "AudioManager"
     audio.set_script(preload("res://scripts/audio_manager.gd"))
@@ -102,7 +110,8 @@ func _apply_rpg_battle_setup() -> void:
         var actor: Node = get_parent().get_node("Player")
         var opponent: Node = get_parent().get_node("EnemyDummy")
         if GameFlow.arcade_mode == "training":
-            opponent.set_physics_process(false)
+            opponent.training_behavior = 0
+            opponent.set_physics_process(true)
             opponent.enable_arsenal = false
             opponent.reactive_substitution = false
             var coach: CanvasLayer = CanvasLayer.new()

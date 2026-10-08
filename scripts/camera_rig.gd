@@ -16,7 +16,7 @@ var fov_kick: float = 0.0
 var base_fov: float = 60.0
 var lock_base_distance: float = 3.85
 var lock_distance_factor: float = 0.20
-var lock_max_distance: float = 9.8
+var lock_max_distance: float = 12.0
 var free_distance: float = 4.35
 var smoothed_focus: Vector3 = Vector3.ZERO
 var cinematic_target: Node3D = null
@@ -54,6 +54,7 @@ func _unhandled_input(event: InputEvent) -> void:
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _process(delta: float) -> void:
+    base_fov = CombatSettings.camera_fov
     var locked_target: Node3D = player.call("get_locked_target") as Node3D
     var combat_profile: Dictionary = (
         player.call("get_camera_state_profile") as Dictionary
@@ -88,15 +89,17 @@ func _process(delta: float) -> void:
             var desired_yaw: float = atan2(-flat.x, -flat.z)
             yaw = lerp_angle(yaw, desired_yaw, 1.0 - exp(-lock_smoothing * delta))
 
-        pitch = lerp(pitch, lock_pitch, 1.0 - exp(-lock_smoothing * delta))
+        var aerial_pitch: float = clampf(lock_pitch+atan2(to_target.y,maxf(flat.length(),1.0))*.35,min_pitch,max_pitch)
+        pitch = lerp(pitch, aerial_pitch, 1.0 - exp(-lock_smoothing * delta))
         follow_position = follow_position.lerp(
             locked_target.global_position + Vector3.UP * 1.0,
-            0.42
+            0.36
         )
 
         var desired_length: float = clampf(
             lock_base_distance
             + flat.length() * lock_distance_factor
+            + maxf(flat.length()-6.0,0.0)*.15
             + absf(to_target.y) * 0.14
             + state_distance_offset,
             4.1,
@@ -119,6 +122,10 @@ func _process(delta: float) -> void:
     var separation: float = player.global_position.distance_to(locked_target.global_position) if is_instance_valid(locked_target) else 0.0
     var dash_active: bool = float(player.call("get_chakra_dash_timer")) > 0.0
     var dash_fov: float = 5.0 if dash_active else 0.0
+    if not CombatSettings.camera_motion:
+        dash_fov = 0.0
+        state_fov_offset = 0.0
+        fov_kick = 0.0
     var desired_fov: float = clampf(
         base_fov + separation * 0.18 + dash_fov + fov_kick + state_fov_offset,
         52.0,
@@ -151,10 +158,11 @@ func _process(delta: float) -> void:
         sin(ticks * 47.0),
         cos(ticks * 61.0),
         0.0
-    ) * shake_strength
+    ) * shake_strength * CombatSettings.camera_shake
 
     smoothed_focus = smoothed_focus.lerp(follow_position, 1.0 - exp(-12.0 * delta))
     var desired_roll: float = (deg_to_rad(-1.15) if dash_active else 0.0) + deg_to_rad(state_roll_degrees)
+    if not CombatSettings.camera_motion: desired_roll = 0.0
     dash_roll = lerpf(dash_roll, desired_roll, 1.0 - exp(-10.0 * delta))
     global_position = smoothed_focus
     global_rotation = Vector3(pitch, yaw, dash_roll)

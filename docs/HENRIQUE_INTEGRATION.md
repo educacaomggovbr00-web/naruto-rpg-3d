@@ -1,5 +1,9 @@
 # Henrique Uchiha: integração
 
+## Combate, treino e câmera — 0.15.0
+
+Pausa funcional com ajustes de câmera e áudio, retomada e reinício. Treino com alvo parado, defesa ou CPU ativa, física e temporizadores funcionando e análise de contatos confirmados. Câmera acompanha diferenças de altura e oferece preferências persistentes. Elenco, jutsus, equipes, campanha e saves preservados. Evidências e limites em [BATTLE_POLISH_0150.md](BATTLE_POLISH_0150.md). APK debug ARM64 versionCode 16; teste físico pendente.
+
 ## Apresentação das técnicas — 0.14.0
 
 35 IDs recebem seleção explícita de padrões visuais: sombras no chão, insetos com silhueta própria, domos, campos de ossos, pétalas, bisturi/palmas de chakra, trilhas e acentos elementais. Corrigidos o clarão na origem da arena e a apresentação genérica de chakra junto à mão. Demon Wind recebe rastro e armadilha usa kunais existentes recentradas. Elenco, modelos, balanceamento e saves preservados. Evidências e limites em [JUTSU_SIGNATURES_0140.md](JUTSU_SIGNATURES_0140.md). APK debug ARM64 versionCode 15; teste físico pendente.

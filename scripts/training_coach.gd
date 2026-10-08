@@ -17,10 +17,16 @@ var title: Label
 var instruction: Label
 var prepare: Button
 var panel: PanelContainer
+var metrics_label: Label
+var dummy_mode: OptionButton
+var opponent: CharacterBody3D
+var metrics: Node
 var toggle: Button
 
 func _ready() -> void:
     layer = 26
+    opponent = fighter.get_parent().get_node("EnemyDummy")
+    metrics = fighter.get_parent().get_node("BattleMetrics")
     origin = fighter.global_position
     panel = PanelContainer.new()
     panel.position = Vector2(14, 225)
@@ -35,8 +41,13 @@ func _ready() -> void:
     style.content_margin_bottom = 8
     panel.add_theme_stylebox_override("panel", style)
     add_child(panel)
+    var scroll: ScrollContainer = ScrollContainer.new()
+    scroll.custom_minimum_size = Vector2(0,190)
+    scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    panel.add_child(scroll)
     var column: VBoxContainer = VBoxContainer.new()
-    panel.add_child(column)
+    column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    scroll.add_child(column)
     title = Label.new()
     title.add_theme_color_override("font_color", Color("ffcf7d"))
     column.add_child(title)
@@ -50,6 +61,20 @@ func _ready() -> void:
     prepare.custom_minimum_size.y = 42
     prepare.pressed.connect(prepare_awakening)
     column.add_child(prepare)
+    dummy_mode = OptionButton.new()
+    for text: String in ["ALVO PARADO","ALVO EM DEFESA","CPU ATIVA"]: dummy_mode.add_item(text)
+    dummy_mode.item_selected.connect(set_dummy_mode)
+    column.add_child(dummy_mode)
+    metrics_label = Label.new()
+    metrics_label.add_theme_font_size_override("font_size",13)
+    metrics_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    metrics_label.custom_minimum_size.x = 286
+    column.add_child(metrics_label)
+    var reset: Button = Button.new()
+    reset.text = "ZERAR ANÁLISE"
+    reset.custom_minimum_size.y = 36
+    reset.pressed.connect(metrics.reset)
+    column.add_child(reset)
     toggle = Button.new()
     toggle.position = Vector2(14, 390)
     toggle.custom_minimum_size = Vector2(160, 38)
@@ -68,6 +93,7 @@ func _ready() -> void:
     _refresh()
 
 func _process(delta: float) -> void:
+    metrics_label.text = "DANO %.1f • ACERTOS %d • SEQUÊNCIA %d\nNA GUARDA %d • RECEBIDO %.1f" % [metrics.damage,metrics.hits,metrics.best_combo,metrics.guarded_hits,metrics.received]
     toggle.position.y = panel.position.y + panel.size.y + 8.0 if panel.visible else panel.position.y
     if not is_instance_valid(fighter) or step >= TASKS.size() or fighter.is_defeated():
         return
@@ -99,3 +125,14 @@ func _refresh() -> void:
     instruction.text = TASKS[step] if step < TASKS.size() else "Treino concluído. Pratique os combos e poderes à vontade; RECOMEÇAR repete o guia."
     if step >= TASKS.size():
         toggle.text = "RECOMEÇAR GUIA"
+
+func set_dummy_mode(index: int) -> void:
+    if index < 0 or index > 2: return
+    opponent.specials.cancel()
+    opponent.ultimate.cancel()
+    opponent.training_behavior = index if index < 2 else -1
+    opponent.guarding = index == 1
+    opponent.enable_arsenal = index == 2
+    opponent.reactive_substitution = index == 2 and CombatSettings.difficulty > 0
+    opponent.react_to_projectiles = index == 2 and CombatSettings.difficulty > 0
+    opponent.set_physics_process(true)
