@@ -158,6 +158,6 @@ func run() -> void:
     check(not cpu.specials.start("rasengan"), "Kakashi cannot borrow Naruto's arsenal")
     arena.queue_free()
     await frames(5)
-    check(root.get_child_count() == 1, "New pools release completely on battle exit")
+    check(root.get_child_count() == 2, "New pools release completely on battle exit")
     print("CHARACTER JUTSUS CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

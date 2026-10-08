@@ -17,6 +17,11 @@ var player_character: CharacterDefinition = CharacterCatalog.HENRIQUE
 var cpu_character: CharacterDefinition = CharacterCatalog.NARUTO
 var arena_id: String = "training"
 var versus_mode: bool = false
+var battle_mode: String = "versus"
+var survival_wave: int = 1
+var survival_health_ratio: float = 1.0
+var survival_first_cpu: String = "naruto"
+var last_battle_won: bool = false
 var world_region: String = "konoha"
 
 var save_path: String = "user://world_save.json"
@@ -105,6 +110,7 @@ func ensure_rpg_progress() -> void:
     progress.xp = maxi(int(progress.get("xp", 0)), 0)
     progress.skill_points = maxi(int(progress.get("skill_points", 0)), 0)
     progress.story_index = clampi(int(progress.get("story_index", 0)), 0, StoryCampaign.count())
+    progress["survival_best"] = clampi(int(progress.get("survival_best", 0)), 0, 9999)
 
 func xp_to_next(level: int = -1) -> int:
     var current_level: int = int(progress.get("level", 1)) if level < 0 else level
@@ -272,6 +278,7 @@ func _transition(path: String) -> Error:
     if busy:
         return ERR_BUSY
     busy = true
+    get_tree().paused = false
     _clear_result()
     var result: Error = get_tree().change_scene_to_file(path)
     if result != OK:
@@ -320,17 +327,21 @@ func enter_selection() -> Error:
     _clear_pending_battle()
     return _transition("res://selection.tscn")
 
-func start_versus(player_id: String, cpu_id: String, stage: String) -> Error:
+func start_versus(player_id: String, cpu_id: String, stage: String, mode: String = "versus") -> Error:
     if busy:
         return ERR_BUSY
     var selected_player: CharacterDefinition = CharacterCatalog.find(player_id)
     var selected_cpu: CharacterDefinition = CharacterCatalog.find(cpu_id)
-    if selected_player == null or selected_cpu == null or stage not in ["training", "courtyard"]:
+    if selected_player == null or selected_cpu == null or stage not in ["training", "courtyard"] or mode not in ["versus", "training", "survival"]:
         return ERR_INVALID_PARAMETER
     player_character = selected_player
     cpu_character = selected_cpu
     arena_id = stage
     versus_mode = true
+    battle_mode = mode
+    survival_wave = 1
+    survival_health_ratio = 1.0
+    survival_first_cpu = cpu_id
     pending_story_id = ""
     pending_battle = ""
     battle_finished = false
@@ -482,6 +493,17 @@ func finish_battle(won: bool) -> bool:
         return false
 
     battle_finished = true
+    last_battle_won = won
+
+    if versus_mode and battle_mode == "survival":
+        ensure_rpg_progress()
+        if won:
+            var arena: Node = get_tree().current_scene
+            var fighter: Node = arena.get_node("Player") if arena != null else null
+            survival_health_ratio = clampf(float(fighter.health) / maxf(float(fighter.max_health), 1.0) + 0.20, 0.05, 1.0) if fighter != null else 1.0
+            if survival_wave > int(progress.survival_best):
+                progress.survival_best = survival_wave
+                save_progress()
 
     if story_mode:
         var mission: Dictionary = current_story_battle_data()
@@ -508,6 +530,8 @@ func finish_battle(won: bool) -> bool:
         return_message = "Treino concluído: +%d ryō" % int(MISSIONS[pending_battle].reward_ryo) if first_win else "Treino concluído; recompensa já recebida." if won else "Derrota no treino. Tente novamente."
         if versus_mode:
             return_message = "%s vs %s" % [player_character.display_name, cpu_character.display_name]
+            if battle_mode == "survival":
+                return_message = "Sobrevivência • %d vitórias • recorde %d\n%s" % [survival_wave if won else survival_wave - 1, int(progress.get("survival_best", 0)), "Próximo duelo: recupera 20% da vida máxima." if won else "Fim da sequência."]
 
     var current: Node = get_tree().current_scene
     if current != null:
@@ -568,7 +592,7 @@ func _show_result(won: bool) -> void:
     var titles: Array[String] = []
     if versus_mode:
         titles.append("SELEÇÃO")
-        titles.append("REVANCHE")
+        titles.append("PRÓXIMO OPONENTE" if battle_mode == "survival" and won else "RECOMEÇAR" if battle_mode == "survival" else "REVANCHE")
     else:
         titles.append("VOLTAR À REGIÃO" if world_region != "konoha" else "VOLTAR À ALDEIA")
         titles.append("REPETIR MISSÃO" if is_story_battle() else "REPETIR TREINO")
@@ -579,6 +603,8 @@ func _show_result(won: bool) -> void:
         button.pressed.connect(
             enter_selection
             if title == "SELEÇÃO"
+            else advance_survival
+            if title == "PRÓXIMO OPONENTE"
             else return_to_exploration
             if title.begins_with("VOLTAR")
             else retry_battle
@@ -589,6 +615,24 @@ func _show_result(won: bool) -> void:
 func retry_battle() -> Error:
     if (pending_battle.is_empty() and not versus_mode) or busy:
         return ERR_BUSY
+    battle_finished = false
+    if versus_mode and battle_mode == "survival":
+        survival_wave = 1
+        survival_health_ratio = 1.0
+        cpu_character = CharacterCatalog.find(survival_first_cpu)
+    return _transition("res://main.tscn")
+
+func advance_survival() -> Error:
+    if busy or not versus_mode or battle_mode != "survival" or not battle_finished:
+        return ERR_BUSY
+    if not last_battle_won:
+        return ERR_UNAVAILABLE
+    var fighter: Node = get_tree().current_scene.get_node_or_null("Player")
+    if fighter == null or bool(fighter.defeated):
+        return ERR_UNAVAILABLE
+    survival_wave += 1
+    var next_index: int = (CharacterCatalog.READY.find(cpu_character) + 1) % CharacterCatalog.READY.size()
+    cpu_character = CharacterCatalog.READY[next_index]
     battle_finished = false
     return _transition("res://main.tscn")
 

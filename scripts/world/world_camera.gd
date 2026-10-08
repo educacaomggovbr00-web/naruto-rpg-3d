@@ -31,8 +31,8 @@ func _unhandled_input(event: InputEvent) -> void:
         return
 
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-        yaw -= event.relative.x * 0.003
-        pitch = clampf(pitch - event.relative.y * 0.003, -0.30, 0.52)
+        yaw -= event.relative.x * 0.003 * GamePreferences.camera_sensitivity
+        pitch = clampf(pitch - event.relative.y * 0.003 * GamePreferences.camera_sensitivity, -0.30, 0.52)
     elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -40,8 +40,9 @@ func _physics_process(delta: float) -> void:
     var touch: Vector2 = controls.consume_camera_delta()
 
     if actor.input_enabled:
-        yaw -= touch.x * 0.0046
-        pitch = clampf(pitch - touch.y * 0.0046, -0.30, 0.52)
+        var pad: Vector2 = GamePreferences.gamepad_camera()
+        yaw -= (touch.x * 0.0046 + pad.x * delta * 2.2) * GamePreferences.camera_sensitivity
+        pitch = clampf(pitch - (touch.y * 0.0046 + pad.y * delta * 1.5) * GamePreferences.camera_sensitivity, -0.30, 0.52)
 
     var desired_focus: Vector3 = actor.global_position + Vector3.UP * _focus_height()
     focus = focus.lerp(desired_focus, 1.0 - exp(-10.0 * delta))

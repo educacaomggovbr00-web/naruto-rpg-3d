@@ -96,6 +96,6 @@ func run() -> void:
     fighter.mobile_controls.jutsu_queue = 0
     arena.queue_free()
     await frames(4)
-    check(root.get_child_count() == 1, "Threat handling must not leak entities")
+    check(root.get_child_count() == 2, "Threat handling must not leak entities")
     print("CPU THREAT CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

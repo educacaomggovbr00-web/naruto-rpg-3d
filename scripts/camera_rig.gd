@@ -46,8 +46,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         if not is_instance_valid(locked_target):
-            yaw -= event.relative.x * mouse_sensitivity
-            pitch = clampf(pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
+            yaw -= event.relative.x * mouse_sensitivity * GamePreferences.camera_sensitivity
+            pitch = clampf(pitch - event.relative.y * mouse_sensitivity * GamePreferences.camera_sensitivity, min_pitch, max_pitch)
     elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     elif event is InputEventMouseButton and event.pressed and not _is_mobile_runtime():
@@ -63,14 +63,18 @@ func _process(delta: float) -> void:
     var state_fov_offset: float = float(combat_profile.get("fov_offset", 0.0))
     var state_distance_offset: float = float(combat_profile.get("distance_offset", 0.0))
     var state_roll_degrees: float = float(combat_profile.get("roll_degrees", 0.0))
+    if not is_instance_valid(locked_target):
+        var pad: Vector2 = GamePreferences.gamepad_camera()
+        yaw -= pad.x * delta * 2.2 * GamePreferences.camera_sensitivity
+        pitch = clampf(pitch - pad.y * delta * 1.5 * GamePreferences.camera_sensitivity, min_pitch, max_pitch)
 
-    if not is_instance_valid(locked_target) and is_instance_valid(mobile_controls):
+    if is_instance_valid(mobile_controls):
         var touch_value: Variant = mobile_controls.call("consume_camera_delta")
         if typeof(touch_value) == TYPE_VECTOR2:
             var touch_delta: Vector2 = touch_value
-            if touch_delta.length_squared() > 0.0:
-                yaw -= touch_delta.x * touch_sensitivity
-                pitch = clampf(pitch - touch_delta.y * touch_sensitivity, min_pitch, max_pitch)
+            if not is_instance_valid(locked_target) and touch_delta.length_squared() > 0.0:
+                yaw -= touch_delta.x * touch_sensitivity * GamePreferences.camera_sensitivity
+                pitch = clampf(pitch - touch_delta.y * touch_sensitivity * GamePreferences.camera_sensitivity, min_pitch, max_pitch)
 
     var follow_position: Vector3 = player.global_position + Vector3.UP * height
 
@@ -141,7 +145,7 @@ func _process(delta: float) -> void:
         sin(ticks * 47.0),
         cos(ticks * 61.0),
         0.0
-    ) * shake_strength
+    ) * (shake_strength if GamePreferences.camera_shake else 0.0)
 
     smoothed_focus = smoothed_focus.lerp(follow_position, 1.0 - exp(-12.0 * delta))
     var desired_roll: float = (deg_to_rad(-1.15) if dash_active else 0.0) + deg_to_rad(state_roll_degrees)

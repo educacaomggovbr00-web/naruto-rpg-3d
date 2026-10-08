@@ -118,14 +118,14 @@ func spawn_impact(world_position: Vector3, impact_kind: String = "normal") -> vo
 
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
-        audio.call("play", "guard" if impact_kind == "guard" else "heavy" if impact_kind in ["slam", "launcher", "bounce"] else "normal")
+        audio.call("play_at", "guard" if impact_kind == "guard" else "heavy" if impact_kind in ["slam", "launcher", "bounce"] else "normal", world_position)
     _spawn_flash(world_position, scale_value, color_value, lifetime)
     _trigger_manga_impact(world_position, manga_strength, color_value)
 
 func spawn_substitution(world_position: Vector3) -> void:
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
-        audio.call("play", "smoke", -21.0)
+        audio.call("play_at", "smoke", world_position, -21.0)
     var offsets: Array[Vector3] = [
         Vector3(-0.42, 0.25, 0.0),
         Vector3(0.38, 0.35, 0.12),
@@ -144,7 +144,7 @@ func spawn_substitution(world_position: Vector3) -> void:
 func spawn_dash_burst(world_position: Vector3) -> void:
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
-        audio.call("play", "dash", -21.0)
+        audio.call("play_at", "dash", world_position, -21.0)
     _spawn_flash(
         world_position + Vector3.UP * 0.55,
         0.62,
@@ -156,7 +156,7 @@ func spawn_dash_burst(world_position: Vector3) -> void:
 func spawn_chakra_impact(world_position: Vector3, energy_color: Color) -> void:
     var audio: Node = get_node_or_null("../AudioManager")
     if audio != null:
-        audio.call("play", "heavy", -19.0)
+        audio.call("play_at", "heavy", world_position, -19.0)
 
     # Spread the same bounded billboard burst beyond the body silhouette so
     # the contact reads clearly on compact phone screens.

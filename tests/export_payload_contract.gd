@@ -11,10 +11,11 @@ func run() -> void:
                 push_error("Development-only fan model leaked into public payload")
                 quit(1)
                 return
-        if ProjectSettings.has_setting("autoload/GameFlow"):
-            push_error("Rejected public container retained a resource-dependent autoload")
-            quit(1)
-            return
+        for property: Dictionary in ProjectSettings.get_property_list():
+            if String(property.name).begins_with("autoload/"):
+                push_error("Rejected public container retained a resource-dependent autoload")
+                quit(1)
+                return
         if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn") or FileAccess.file_exists("res://selection.tscn"):
             push_error("Uncleared public payload leaked")
             quit(1)
@@ -29,7 +30,11 @@ func run() -> void:
         print("PUBLIC PAYLOAD GATE: PASS")
         quit(0)
         return
-    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
+    # The rejected public pack has no character resources. Resolve this only
+    # in the development branch, so its absence cannot prevent the gate test
+    # itself from compiling.
+    var catalog: Script = load("res://scripts/character_catalog.gd") as Script
+    root.get_node("GameFlow").player_character = catalog.get_script_constant_map()["NARUTO"]
     var game: Node = load("res://main.tscn").instantiate()
     root.add_child(game)
     for i: int in range(8):
@@ -83,7 +88,6 @@ func run() -> void:
         quit(1)
         return
     print("SELECTABLE FIGHTERS ANDROID PACK: PASS")
-    var catalog: Script = load("res://scripts/character_catalog.gd")
     catalog.initialize()
     var authored_visuals: int = 0
     var roster_placeholders: int = 0

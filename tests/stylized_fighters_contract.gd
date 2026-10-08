@@ -203,6 +203,6 @@ func run() -> void:
         check(actor.rig_adapter.get_node_or_null("LicensedCombatNinja") == null, "Generic ninja skin must not replace any roster fighter")
     current_scene.queue_free()
     await frames(5)
-    check(root.get_child_count() == 1, "No leaked preview, pool or environment nodes")
+    check(root.get_child_count() == 2, "No leaked preview, pool or environment nodes")
     print("STYLIZED FIGHTERS CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

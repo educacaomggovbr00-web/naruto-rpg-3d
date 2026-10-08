@@ -49,6 +49,8 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
     if player_controlled and input_enabled and event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_SPACE:
         jump_buffer = 0.15
+    elif player_controlled and input_enabled and event.is_action_pressed("pad_jump"):
+        jump_buffer = 0.15
 
 func _physics_process(delta: float) -> void:
     if not player_controlled:
@@ -56,6 +58,8 @@ func _physics_process(delta: float) -> void:
     var stick: Vector2 = Vector2.ZERO
     if input_enabled:
         stick = controls.move_vector
+        if stick.length_squared() < 0.001:
+            stick = GamePreferences.gamepad_move()
         var keys: Vector2 = Vector2(float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)), float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
         if keys.length_squared() > 0.0:
             stick = keys.limit_length(1.0)
@@ -68,7 +72,7 @@ func _physics_process(delta: float) -> void:
         coyote_time = 0.12
         air_jumps = 0
         last_safe_position = global_position
-    var running: bool = input_enabled and (controls.sprint_touch != -1 or stick.length() >= 0.82 or Input.is_physical_key_pressed(KEY_SHIFT))
+    var running: bool = input_enabled and (controls.sprint_touch != -1 or stick.length() >= 0.82 or Input.is_physical_key_pressed(KEY_SHIFT) or Input.is_action_pressed("pad_run"))
     var speed: float = sprint_speed if running else move_speed
     var direction: Vector3 = Basis(Vector3.UP, camera_rig.yaw) * Vector3(stick.x, 0, stick.y)
     velocity.x = move_toward(velocity.x, direction.x * speed, (30.0 if is_on_floor() else 9.0) * delta)

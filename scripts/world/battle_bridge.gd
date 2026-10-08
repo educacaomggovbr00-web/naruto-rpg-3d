@@ -20,6 +20,10 @@ func _ready() -> void:
     button.pressed.connect(GameFlow.enter_world)
     layer.add_child(button)
     add_child(layer)
+    var pause_menu: CanvasLayer = CanvasLayer.new()
+    pause_menu.name = "BattlePause"
+    pause_menu.set_script(preload("res://scripts/ui/battle_pause.gd"))
+    add_child(pause_menu)
     var versus: Button = Button.new()
     versus.text = "VERSUS"
     versus.position = Vector2(680, 12)
@@ -36,6 +40,7 @@ func _ready() -> void:
 
 func _apply_rpg_battle_setup() -> void:
     if GameFlow.versus_mode:
+        _setup_free_battle()
         return
     GameFlow.ensure_rpg_progress()
     var fighter: Node = get_parent().get_node("Player")
@@ -141,8 +146,36 @@ func _physics_process(_delta: float) -> void:
             _trigger_boss_phase(cpu, fighter, mission)
 
     if fighter.defeated or not cpu.targetable:
+        if GameFlow.versus_mode and GameFlow.battle_mode == "training":
+            fighter.call("_respawn")
+            cpu.call("_respawn")
+            fighter.chakra = fighter.max_chakra
+            _show_phase_banner("TREINAMENTO • NOVA TENTATIVA")
+            return
         finished = true
         GameFlow.finish_battle(not cpu.targetable and not fighter.defeated)
+
+    if GameFlow.versus_mode and GameFlow.battle_mode == "training":
+        fighter.chakra = fighter.max_chakra
+        if fighter.combo_display_timer <= 0.0 and cpu.stagger_timer <= 0.0 and cpu.is_on_floor() and not fighter.attack_active and fighter.jutsu_timer <= 0.0:
+            cpu.health = cpu.max_health
+            cpu.guard_meter = minf(cpu.guard_meter + _delta * 30.0, 100.0)
+
+func _setup_free_battle() -> void:
+    var fighter: Node = get_parent().get_node("Player")
+    var cpu: Node = get_parent().get_node("EnemyDummy")
+    var title: String = "VERSUS • " + GamePreferences.DIFFICULTIES[GamePreferences.difficulty]
+    if GameFlow.battle_mode == "training":
+        cpu.reactive_substitution = false
+        title = "TREINAMENTO • CHAKRA INFINITO • NINJA: AGARRÃO"
+    elif GameFlow.battle_mode == "survival":
+        fighter.health = fighter.max_health * GameFlow.survival_health_ratio
+        # Bounded pressure increase; hitboxes, damage and animation timing remain shared.
+        var pressure: float = minf(float(GameFlow.survival_wave - 1) * 0.035, 0.30)
+        cpu.decision_interval_min /= 1.0 + pressure
+        cpu.decision_interval_max /= 1.0 + pressure
+        title = "SOBREVIVÊNCIA • DUELO %d • RECORDE %d" % [GameFlow.survival_wave, int(GameFlow.progress.get("survival_best", 0))]
+    _show_phase_banner(title)
 
 func _trigger_boss_phase(cpu: Node, fighter: Node, mission: Dictionary) -> void:
     boss_phase_triggered = true

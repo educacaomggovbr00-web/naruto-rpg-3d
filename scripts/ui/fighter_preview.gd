@@ -7,14 +7,17 @@ func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     custom_minimum_size = Vector2(0, 255)
     stretch = true
-    stretch_shrink = 2
+    var graphics: ConfigFile = ConfigFile.new()
+    graphics.load("user://graphics.cfg")
+    var quality: int = clampi(int(graphics.get_value("graphics", "quality", 1)), 0, 2)
+    stretch_shrink = 2 if quality == 0 else 1
 
     var viewport: SubViewport = SubViewport.new()
     viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-    viewport.msaa_3d = Viewport.MSAA_DISABLED
-    viewport.scaling_3d_scale = 0.78
+    viewport.msaa_3d = Viewport.MSAA_DISABLED if quality == 0 else Viewport.MSAA_2X
+    viewport.scaling_3d_scale = 0.78 if quality == 0 else 0.85 if quality == 1 else 1.0
     add_child(viewport)
 
     stage = Node3D.new()

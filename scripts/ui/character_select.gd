@@ -9,6 +9,8 @@ var preview: SubViewportContainer
 var player_name: Label
 var cpu_name: Label
 var arena_badge: Label
+var mode_pick: OptionButton
+var difficulty_pick: OptionButton
 
 func _ready() -> void:
     CharacterCatalog.initialize()
@@ -80,6 +82,12 @@ func _ready() -> void:
     player_pick.select(CharacterCatalog.READY.find(CharacterCatalog.HENRIQUE))
     cpu_pick = _fighter_choice(choices, "CPU")
     arena_pick = _arena_choice(choices)
+    mode_pick = _extra_choice(choices, "MODO", ["Versus", "Treinamento", "Sobrevivência"])
+    difficulty_pick = _extra_choice(choices, "DIFICULDADE", ["Fácil", "Normal", "Difícil"])
+    difficulty_pick.select(GamePreferences.difficulty)
+    difficulty_pick.item_selected.connect(func(index: int) -> void:
+        GamePreferences.difficulty = index
+        GamePreferences.save_preferences())
 
     var versus: HBoxContainer = HBoxContainer.new()
     versus.custom_minimum_size.y = 42.0
@@ -159,12 +167,45 @@ func _ready() -> void:
     _style_action(credits, Color("58407a"))
     actions.add_child(credits)
 
+    var preferences: Button = Button.new()
+    preferences.text = "AJUSTES"
+    preferences.custom_minimum_size = Vector2(120, 56)
+    preferences.pressed.connect(_show_preferences)
+    _style_action(preferences, Color("345263"))
+    actions.add_child(preferences)
+
     player_pick.item_selected.connect(_describe)
     cpu_pick.item_selected.connect(_describe)
     arena_pick.item_selected.connect(_arena_changed)
+    mode_pick.item_selected.connect(_mode_changed)
     _describe(0)
     _arena_changed(0)
     queue_redraw()
+
+func _extra_choice(row: HBoxContainer, caption: String, items: Array[String]) -> OptionButton:
+    var group: VBoxContainer = VBoxContainer.new()
+    group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    row.add_child(group)
+    var label: Label = Label.new()
+    label.text = caption
+    _style_caption(label)
+    group.add_child(label)
+    var choice: OptionButton = OptionButton.new()
+    choice.custom_minimum_size = Vector2(0, 40)
+    for item: String in items:
+        choice.add_item(item)
+    _style_option(choice)
+    group.add_child(choice)
+    return choice
+
+func _mode_changed(index: int) -> void:
+    start_button.text = ["LUTAR", "TREINAR", "SOBREVIVER"][index]
+
+func _show_preferences() -> void:
+    var popup: AcceptDialog = AcceptDialog.new()
+    popup.set_script(preload("res://scripts/ui/preferences_dialog.gd"))
+    add_child(popup)
+    popup.popup_centered()
 
 func _show_credits() -> void:
     var popup: AcceptDialog = AcceptDialog.new()
@@ -364,7 +405,8 @@ func _start() -> void:
     var result: Error = GameFlow.start_versus(
         CharacterCatalog.READY[player_pick.selected].character_id,
         CharacterCatalog.READY[cpu_pick.selected].character_id,
-        "training" if arena_pick.selected == 0 else "courtyard"
+        "training" if arena_pick.selected == 0 else "courtyard",
+        ["versus", "training", "survival"][mode_pick.selected]
     )
     if result != OK:
         description.text = "Não foi possível iniciar a batalha: " + error_string(result)

@@ -14,7 +14,8 @@ func _physics_process(delta: float) -> void:
     avatar.visible = active or transforming
     if avatar.visible:
         var striking: bool = fighter.attack_active or fighter.specials.current == "henrique_susanoo_slash"
-        var progress: float = fighter.attack_elapsed / maxf(fighter.attack_duration, 0.01) if fighter.attack_active else fighter.specials.elapsed / maxf(fighter.specials.duration, 0.01)
+        var attack_length: float = float(fighter.attack_timing.get("duration", 0.3)) if fighter.has_method("is_cpu_controlled") else fighter.attack_duration
+        var progress: float = fighter.attack_elapsed / maxf(attack_length, 0.01) if fighter.attack_active else fighter.specials.elapsed / maxf(fighter.specials.duration, 0.01)
         avatar.update_pose(delta, striking, progress)
 
 func stop() -> void:

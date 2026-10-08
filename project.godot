@@ -4,6 +4,7 @@ run/main_scene="res://selection.tscn"
 run/max_fps=60
 
 [autoload]
+GamePreferences="*res://scripts/game_preferences.gd"
 GameFlow="*res://scripts/world/game_flow.gd"
 
 [display]

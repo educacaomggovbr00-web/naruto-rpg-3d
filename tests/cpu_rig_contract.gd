@@ -73,6 +73,6 @@ func run() -> void:
     check(fighter.health < fighter.max_health, "Running CPU must approach and damage through actual bone-area overlap")
     arena.queue_free()
     await frames(4)
-    check(root.get_child_count() == 1, "CPU rig must clean up with arena")
+    check(root.get_child_count() == 2, "CPU rig must clean up with arena")
     print("CPU RIG CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

@@ -98,6 +98,8 @@ var attack_hit_triggered: bool = false
 var ground_bounce_pending: bool = false
 var wall_bounce_pending: bool = false
 var combat_state: Node = null
+var techniques: Node3D = null
+var observed_guard_time: float = 0.0
 
 @onready var rig_adapter: Node3D = $RiggedCharacterAdapter
 @onready var visual: MeshInstance3D = $Visual
@@ -115,6 +117,11 @@ func _ready() -> void:
     ai_profile = character_definition.ai_profile
     if ai_profile == null:
         ai_profile = RosterAIProfileFactory.build(character_definition.character_id)
+    if GameFlow.versus_mode:
+        ai_profile = GamePreferences.cpu_profile(ai_profile)
+    else:
+        ai_profile = ai_profile.duplicate() as AIProfileDefinition
+    techniques = _ability("CombatTechniques", preload("res://scripts/combat_techniques.gd"))
     moveset = character_definition.moveset
     max_chakra = character_definition.max_chakra
     chakra = max_chakra
@@ -201,6 +208,13 @@ func _physics_process(delta: float) -> void:
         _move_and_handle_bounces()
         return
 
+    if GameFlow.versus_mode and GameFlow.battle_mode == "training" and GamePreferences.training_behavior < 2:
+        guarding = GamePreferences.training_behavior == 1 and guard_meter > 0.0
+        is_charging_chakra = false
+        _slow_down(delta)
+        _move_and_handle_bounces()
+        return
+
     if dodge_timer > 0.0:
         velocity.x = dodge_direction.x * 8.5
         velocity.z = dodge_direction.z * 8.5
@@ -270,6 +284,8 @@ func _physics_process(delta: float) -> void:
     _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
+    if is_instance_valid(player):
+        observed_guard_time = clampf(observed_guard_time + delta if player.is_guarding else observed_guard_time - delta * 0.5, 0.0, 2.0)
     arsenal_delay = maxf(arsenal_delay - delta, 0.0)
     jutsu_cooldown = maxf(jutsu_cooldown - delta, 0.0)
     jutsu_timer = maxf(jutsu_timer - delta, 0.0)
@@ -451,6 +467,8 @@ func get_cpu_state() -> String:
 func _choose_close_action() -> void:
     attack_cycle += 1
     var roll: float = decision_rng.randf()
+    if player.is_guarding and roll < 0.10 + observed_guard_time * 0.10 and bool(techniques.call("start_grab")):
+        return
 
     if guard_meter > 25.0 and roll < ai_profile.guard_bias:
         guarding = true
@@ -610,8 +628,9 @@ func receive_combat_hit(
         attack_active = false
         attack_hitbox.call("deactivate")
         stagger_timer = hitstun
-        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and randf() < 0.18:
-            reaction_timer = randf_range(0.10, 0.18)
+        var substitution_chance: float = [0.07, 0.18, 0.30][GamePreferences.difficulty] if GameFlow.versus_mode else 0.18
+        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and decision_rng.randf() < substitution_chance:
+            reaction_timer = decision_rng.randf_range(0.10, 0.18) / maxf(ai_profile.decision_speed, 0.65)
         wall_bounce_pending = applied_knockback >= 4.0
         ground_bounce_pending = launch_velocity < -2.0
 
@@ -647,6 +666,13 @@ func receive_combat_hit(
         _knock_out()
 
     return applied_damage
+
+func receive_grab_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
+    if not targetable or invulnerable_timer > 0.0:
+        return 0.0
+    guarding = false
+    guard_timer = 0.0
+    return receive_combat_hit(damage, direction, knockback, launch, stun)
 
 func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float) -> void:
     var impact_kind: String = "normal"
@@ -795,6 +821,8 @@ func is_cpu_controlled() -> bool:
     return true
 
 func get_special_animation() -> String:
+    if techniques != null and techniques.active:
+        return "attack_3"
     return ultimate.call("animation_clip") if not ultimate.phase.is_empty() else "chakra_charge" if awakening.transforming else specials.call("animation_clip")
 
 func _can_use_movement_action() -> bool:
@@ -805,6 +833,8 @@ func _can_use_movement_action() -> bool:
     return state_allows and targetable and not is_instance_valid(cinematic_owner) and not attack_active and stagger_timer <= 0.0 and dodge_timer <= 0.0 and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0 and not guarding
 
 func _cancel_abilities() -> void:
+    if is_instance_valid(techniques):
+        techniques.call("cancel")
     if specials != null:
         specials.call("cancel")
         ultimate.call("cancel", "interrupted")
@@ -942,7 +972,8 @@ func _react_to_projectile() -> bool:
         return false
     # Decisions are sampled on the existing delayed neutral tick; sometimes miss.
     var reaction: float = decision_rng.randf()
-    if reaction >= 0.70:
+    var awareness: float = [0.40, 0.70, 0.85][GamePreferences.difficulty] if GameFlow.versus_mode else 0.70
+    if reaction >= awareness:
         return false
     is_charging_chakra = false
     if guard_meter > 35.0 and reaction < 0.45:

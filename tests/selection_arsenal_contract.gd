@@ -163,6 +163,6 @@ func run() -> void:
     await frames(6)
     current_scene.queue_free()
     await frames(4)
-    check(root.get_child_count() == 1, "Selection/rematch must not leak pools or voice nodes")
+    check(root.get_child_count() == 2, "Selection/rematch must not leak pools or voice nodes")
     print("SELECTION ARSENAL CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

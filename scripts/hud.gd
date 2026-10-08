@@ -13,12 +13,16 @@ extends CanvasLayer
 
 var enemy_health_bar: ProgressBar
 var enemy_name_label: Label
+var guard_bar: ProgressBar
+var enemy_guard_bar: ProgressBar
+var mode_label: Label
 
 func _ready() -> void:
     health_bar.max_value = float(player.call("get_max_health"))
     chakra_bar.max_value = float(player.call("get_max_chakra"))
     _build_backplates()
     _apply_anime_hud_style()
+    _build_combat_indicators()
 
     var player_definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
     var enemy_definition: CharacterDefinition = enemy.call("get_character_definition") as CharacterDefinition
@@ -28,9 +32,13 @@ func _ready() -> void:
             enemy_definition.display_name.to_upper()
         ]
 
-    if _is_mobile_runtime():
-        rig_label.visible = false
-        fps_label.visible = false
+    rig_label.visible = false
+    fps_label.visible = false
+
+func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F3:
+        rig_label.visible = not rig_label.visible
+        fps_label.visible = rig_label.visible
 
 
 func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxFlat:
@@ -43,6 +51,41 @@ func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxF
     style.corner_radius_bottom_left = radius
     style.corner_radius_bottom_right = radius
     return style
+
+func _build_combat_indicators() -> void:
+    guard_bar = ProgressBar.new()
+    guard_bar.position = Vector2(20, 216)
+    guard_bar.size = Vector2(290, 9)
+    guard_bar.show_percentage = false
+    guard_bar.add_theme_font_size_override("font_size", 1)
+    guard_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _style_bar(guard_bar, Color("51c9b0"))
+    add_child(guard_bar)
+    enemy_guard_bar = ProgressBar.new()
+    enemy_guard_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+    enemy_guard_bar.offset_left = -380
+    enemy_guard_bar.offset_right = -30
+    enemy_guard_bar.offset_top = 212
+    enemy_guard_bar.offset_bottom = 221
+    enemy_guard_bar.show_percentage = false
+    enemy_guard_bar.add_theme_font_size_override("font_size", 1)
+    enemy_guard_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _style_bar(enemy_guard_bar, Color("51c9b0"))
+    add_child(enemy_guard_bar)
+    mode_label = Label.new()
+    mode_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+    mode_label.offset_left = -210
+    mode_label.offset_right = 210
+    mode_label.offset_top = 70
+    mode_label.offset_bottom = 96
+    mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    mode_label.add_theme_font_size_override("font_size", 15)
+    mode_label.add_theme_color_override("font_color", Color("ffd369"))
+    mode_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(mode_label)
+    # Combo feedback has its own lane below the enemy's vitals.
+    combo_label.offset_top = 238
+    combo_label.offset_bottom = 320
 
 func _build_backplates() -> void:
     var vitals: PanelContainer = PanelContainer.new()
@@ -147,29 +190,39 @@ func _process(delta: float) -> void:
     if refresh_timer > 0.0:
         return
     refresh_timer = 0.10
+    health_bar.max_value = float(player.call("get_max_health"))
+    chakra_bar.max_value = float(player.call("get_max_chakra"))
     health_bar.value = float(player.call("get_health"))
     chakra_bar.value = float(player.call("get_chakra"))
+    $HealthText.text = "VIDA  %d / %d" % [int(player.health), int(player.max_health)]
+    $ChakraText.text = "CHAKRA  %d / %d" % [int(player.chakra), int(player.max_chakra)]
+    guard_bar.value = player.guard_meter
+    enemy_guard_bar.value = enemy.guard_meter
+    guard_bar.modulate = Color("ff6757") if player.guard_meter < 25.0 else Color.WHITE
+    enemy_guard_bar.modulate = Color("ff6757") if enemy.guard_meter < 25.0 else Color.WHITE
+    mode_label.text = "SOBREVIVÊNCIA • DUELO %d" % GameFlow.survival_wave if GameFlow.versus_mode and GameFlow.battle_mode == "survival" else "TREINAMENTO • CHAKRA ∞" if GameFlow.versus_mode and GameFlow.battle_mode == "training" else ""
+    if player.techniques.feedback_timer > 0.0:
+        mode_label.text = player.techniques.feedback_text
 
     var locked_target: Node3D = player.call("get_locked_target") as Node3D
     var lock_text: String = "LIVRE"
     if is_instance_valid(locked_target):
         lock_text = locked_target.name
 
-    var animation_state: String = String(player.call("get_animation_state"))
-    status_label.text = "%s  •  COMBO %d  •  %s" % [
+    status_label.text = "ALVO: %s  •  COMBO %d  •  GUARDA %d" % [
         lock_text,
         int(player.call("get_combo_step")),
-        animation_state.to_upper()
+        int(player.guard_meter)
     ]
 
     var sub_cd: float = float(player.call("get_substitution_cooldown"))
     var jutsu_cd: float = float(player.call("get_jutsu_cooldown"))
-    resource_label.text = "SUB %d  •  GUARDA %d  •  %s  •  CD %.1f/%.1f" % [
+    var selected_jutsu: JutsuDefinition = player.character_definition.find_jutsu(String(player.specials.selected))
+    var jutsu_name: String = selected_jutsu.display_name.substr(0, 22) if selected_jutsu != null else String(player.specials.selected).to_upper()
+    resource_label.text = "SUB %d  •  %s %s" % [
         int(player.call("get_substitutions")),
-        int(player.guard_meter),
-        String(player.specials.selected).to_upper(),
-        sub_cd,
-        jutsu_cd
+        jutsu_name,
+        "%.1fs" % jutsu_cd if jutsu_cd > 0.0 else "PRONTO" if selected_jutsu != null and player.chakra >= selected_jutsu.chakra_cost else "CARREGUE CHK"
     ]
     if is_instance_valid(player.cinematic_owner) and player.cinematic_owner.get("phase") == "clash":
         resource_label.text = "ULT DA CPU — TOQUE ATK OU SUB! VOCÊ %d : CPU %d" % [player.cinematic_owner.cpu_presses, player.cinematic_owner.presses]
@@ -177,11 +230,11 @@ func _process(delta: float) -> void:
         resource_label.text = "ULT — TOQUE ATK! VOCÊ %d : CPU %d | %.1fs | mínimo %d" % [player.ultimate.presses, player.ultimate.cpu_presses, maxf(player.ultimate.definition.clash_duration - player.ultimate.elapsed, 0.0), player.ultimate.definition.clash_presses]
     else:
         var awakening_text: String = "%.1f" % player.awakening.remaining if player.awakening.active else "PRONTO" if player.awakening.eligible() else "—"
-        resource_label.text += "  •  ULT %.1f  •  AWK %s" % [player.ultimate.cooldown, awakening_text]
-    var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]
-    resource_label.text += "  •  %s %s" % [tool_name.to_upper(), "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
+        resource_label.text += "  •  ULT %s  •  AWK %s" % ["%.1fs" % player.ultimate.cooldown if player.ultimate.cooldown > 0.0 else "PRONTO" if player.chakra >= 80.0 else "CHK", awakening_text]
     var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]
     var controls: Node = get_node("MobileControls")
+    controls.cooldowns = {"jutsu": player.jutsu_cooldown, "dodge": player.dodge_cooldown, "sub": player.substitution_cooldown, "grab": player.techniques.cooldown}
+    controls.queue_redraw()
     if controls.tool_label != labels[player.ninja_tools.selected]:
         controls.tool_label = labels[player.ninja_tools.selected]
         controls.queue_redraw()

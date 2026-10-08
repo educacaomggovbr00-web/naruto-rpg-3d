@@ -11,6 +11,8 @@ var external_model: bool = false
 var material: StandardMaterial3D
 var imported_avatar: Node3D
 var wings: Array[MeshInstance3D] = []
+var slash_arc: MeshInstance3D
+var appearance: float = 0.0
 
 func _ready() -> void:
     material = StandardMaterial3D.new()
@@ -39,7 +41,41 @@ func _ready() -> void:
             external_model = true
     if not external_model:
         _build_proxy()
+    _build_slash_arc()
+    visibility_changed.connect(func() -> void:
+        if visible:
+            appearance = 0.0)
     set_quality(quality_level)
+
+func _build_slash_arc() -> void:
+    var vertices: PackedVector3Array = PackedVector3Array()
+    var normals: PackedVector3Array = PackedVector3Array()
+    for step: int in range(16):
+        var a: float = -1.1 + float(step) * 2.2 / 16.0
+        var b: float = -1.1 + float(step + 1) * 2.2 / 16.0
+        var outer_a: Vector3 = Vector3(sin(a), 0, cos(a)) * 2.65
+        var outer_b: Vector3 = Vector3(sin(b), 0, cos(b)) * 2.65
+        var inner_a: Vector3 = outer_a * 0.82
+        var inner_b: Vector3 = outer_b * 0.82
+        for vertex: Vector3 in [inner_a, outer_a, outer_b, inner_a, outer_b, inner_b]:
+            vertices.append(vertex)
+            normals.append(Vector3.UP)
+    var arrays: Array = []
+    arrays.resize(Mesh.ARRAY_MAX)
+    arrays[Mesh.ARRAY_VERTEX] = vertices
+    arrays[Mesh.ARRAY_NORMAL] = normals
+    var mesh: ArrayMesh = ArrayMesh.new()
+    mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+    slash_arc = MeshInstance3D.new()
+    slash_arc.mesh = mesh
+    slash_arc.position.y = 1.8
+    var trail: StandardMaterial3D = material.duplicate() as StandardMaterial3D
+    trail.cull_mode = BaseMaterial3D.CULL_DISABLED
+    trail.albedo_color = Color(0.72, 0.40, 1.0, 0.65)
+    slash_arc.material_override = trail
+    slash_arc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    slash_arc.visible = false
+    shell.add_child(slash_arc)
 
 func _style_import(node: Node) -> void:
     if node is MeshInstance3D:
@@ -103,7 +139,12 @@ func _mesh(parent: Node3D, mesh: Mesh) -> MeshInstance3D:
 
 func update_pose(delta: float, striking: bool, progress: float = 0.0) -> void:
     clock += delta
-    shell.scale = Vector3.ONE * (1.0 + sin(clock * 4.0) * 0.018)
+    appearance = minf(appearance + delta * 5.0, 1.0)
+    shell.scale = Vector3.ONE * lerpf(0.55, 1.0 + sin(clock * 4.0) * 0.018, appearance)
+    slash_arc.visible = quality_level > 0 and striking and progress > 0.18 and progress < 0.85
+    if slash_arc.visible:
+        slash_arc.rotation.y = lerpf(-0.70, 1.40, clampf(progress, 0.0, 1.0))
+        slash_arc.scale = Vector3.ONE * (0.90 + progress * 0.16)
     if sword_arm != null:
         sword_arm.rotation.y = lerpf(-0.70, 1.40, clampf(progress, 0.0, 1.0)) if striking else sin(clock * 2.0) * 0.06
 
