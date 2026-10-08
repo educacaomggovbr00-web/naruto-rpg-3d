@@ -77,3 +77,20 @@ static func _jutsu(id: String, title: String, strategy: String, effect: String, 
     data.damage = damage
     data.behavior_evidence = "OUR_APPROXIMATION"
     return data
+
+
+static func combo_clips() -> PackedStringArray:
+    var clips: PackedStringArray = []
+    for family: String in ["jab", "cross", "hook"]:
+        for variant: String in ["left", "right", "low", "high", "aerial_mirror"]:
+            clips.append("combat_" + family + "_" + variant)
+    return clips
+
+static func directional_attack(base: AttackDefinition, step: int, airborne: bool, variant: String) -> AttackDefinition:
+    if base == null or step > 3 or variant.is_empty():
+        return base
+    var family: String = ["jab", "cross", "hook"][clampi(step - 1, 0, 2)]
+    var clip_variant: String = "aerial_mirror" if airborne and variant == "left" else "aerial" if airborne else variant
+    var result: AttackDefinition = base.duplicate() as AttackDefinition
+    result.animation_name = "combat_" + family + "_" + clip_variant
+    return result

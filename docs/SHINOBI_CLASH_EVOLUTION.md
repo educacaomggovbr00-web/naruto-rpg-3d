@@ -5,6 +5,12 @@ Escopo consolidado do pedido completo, sem criar outro jogo. Base: `main` em
 alterações; continuam os 26 personagens, os modelos existentes, o combate
 compartilhado, as regiões, o inventário e o save versão 1.
 
+## Continuação 0.4.1
+
+Combos direcionais, fila de ataque durante startup, pulso elétrico do Nagashi,
+transição de escala e treino guiado. Evidências e roteiro em
+[SHINOBI_041_VALIDATION.md](SHINOBI_041_VALIDATION.md).
+
 ## Atualização visível 0.4.0
 
 - Sete arenas na seleção; cinco novas cenografias originais. Chão e iluminação

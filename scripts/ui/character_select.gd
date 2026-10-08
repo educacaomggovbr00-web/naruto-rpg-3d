@@ -48,7 +48,7 @@ func _ready() -> void:
     title_stack.add_child(title)
 
     var subtitle: Label = Label.new()
-    subtitle.text = "0.4.0 • SETE ARENAS • QUATRO FORMAS DO SUSANOO"
+    subtitle.text = "0.4.1 • COMBOS DIRECIONAIS • SETE ARENAS"
     subtitle.add_theme_font_size_override("font_size", 12)
     subtitle.add_theme_color_override("font_color", Color("8fb8cc"))
     title_stack.add_child(subtitle)

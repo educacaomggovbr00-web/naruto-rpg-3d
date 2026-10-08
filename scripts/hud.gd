@@ -183,6 +183,10 @@ func _process(delta: float) -> void:
     resource_label.text += "  •  %s %s" % [tool_name.to_upper(), "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
     var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]
     var controls: Node = get_node("MobileControls")
+    var form_button: String = "FORMA" if player.awakening.active and player.awakening.has_method("cycle_form") else "AWK"
+    if controls.awakening_label != form_button:
+        controls.awakening_label = form_button
+        controls.queue_redraw()
     if controls.tool_label != labels[player.ninja_tools.selected]:
         controls.tool_label = labels[player.ninja_tools.selected]
         controls.queue_redraw()

@@ -286,6 +286,11 @@ func _physics_process(delta: float) -> void:
             var generic_burst: bool = owner_fighter.character_definition.character_id != "naruto"
             sphere_visual.visible = not generic_burst
             style_visual.visible = generic_burst
+            if move_definition.effect == "lightning":
+                style_visual.visible = false
+                chidori_visual.visible = true
+                var pulse_scale: float = move_definition.hitbox_radius / 0.55
+                chidori_visual.scale = Vector3(pulse_scale, 0.75, pulse_scale)
             if generic_burst:
                 style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius)
             else:

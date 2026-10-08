@@ -89,6 +89,9 @@ var attack_duration: float = 0.28
 var jutsu_elapsed: float = 0.0
 var jutsu_released: bool = false
 var attack_buffer: float = 0.0
+var attack_variant: String = ""
+var buffered_variant: String = ""
+var has_buffered_variant: bool = false
 var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
 var ultimate: Node3D = null
@@ -485,6 +488,9 @@ func _update_attack_timeline(delta: float) -> void:
         attack_hitbox.call("deactivate")
 
 func _cancel_attack() -> void:
+    attack_buffer = 0.0
+    buffered_variant = ""
+    has_buffered_variant = false
     attack_active = false
     grab_target = null
     grab_attack = false
@@ -515,7 +521,7 @@ func _update_jutsu_timeline(delta: float) -> void:
         _release_jutsu()
 
 func _open_attack_hitbox() -> void:
-    selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    selected_attack = _combo_attack()
     if selected_attack == null:
         _cancel_attack()
         return
@@ -825,8 +831,10 @@ func _try_attack() -> void:
         attack_buffer = 0.25
         return
     if attack_active:
-        if attack_elapsed >= attack_startup and combo_step < 4:
+        if not grab_attack and combo_step < 4:
             attack_buffer = maxf(0.22, attack_duration - attack_elapsed + 0.12)
+            buffered_variant = _read_attack_variant()
+            has_buffered_variant = true
             if combo_step + 1 == moveset.branch_step:
                 buffered_branch = _read_combo_branch()
         return
@@ -848,7 +856,10 @@ func _try_attack() -> void:
     elif combo_step == moveset.branch_step and not attack_is_airborne:
         combo_branch = buffered_branch if not buffered_branch.is_empty() else _read_combo_branch()
         buffered_branch = ""
-    selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    attack_variant = buffered_variant if has_buffered_variant else _read_attack_variant()
+    has_buffered_variant = false
+    buffered_variant = ""
+    selected_attack = _combo_attack()
     attack_counter_bonus = 1.4 if counter_window > 0.0 else 1.0
     counter_window = 0.0
     combo_timer = combo_reset_time
@@ -1355,3 +1366,18 @@ func _activate_awakening() -> void:
         awakening.call("cycle_form")
     else:
         awakening.call("start")
+
+
+func _read_attack_variant() -> String:
+    var stick: Vector2 = _get_move_input()
+    if absf(stick.x) > 0.45:
+        return "left" if stick.x < 0.0 else "right"
+    if absf(stick.y) > 0.45:
+        return "high" if stick.y < 0.0 else "low"
+    return ""
+
+func _combo_attack() -> AttackDefinition:
+    var base: AttackDefinition = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    if character_definition.character_id == "henrique":
+        return HenriqueKit.directional_attack(base, combo_step, attack_is_airborne, attack_variant)
+    return base

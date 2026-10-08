@@ -42,6 +42,11 @@ func _apply_rpg_battle_setup() -> void:
             opponent.set_physics_process(false)
             opponent.enable_arsenal = false
             opponent.reactive_substitution = false
+            var coach: CanvasLayer = CanvasLayer.new()
+            coach.name = "TrainingCoach"
+            coach.set_script(preload("res://scripts/training_coach.gd"))
+            coach.fighter = actor
+            add_child(coach)
         elif GameFlow.arcade_mode == "survival" and GameFlow.arcade_health > 0.0:
             actor.health = minf(actor.max_health, GameFlow.arcade_health)
         elif GameFlow.arcade_mode == "boss":

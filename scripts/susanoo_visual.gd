@@ -19,6 +19,7 @@ var form: int = 3
 var partial_shell: Node3D
 var skeletal_shell: Node3D
 var skeletal_arms: Array[Node3D] = []
+var target_avatar_scale: float = 0.006
 const FORM_NAMES: PackedStringArray = ["Parcial", "Esquelético", "Armadura", "Perfeito"]
 
 static func strike_angle(progress: float, impact_phase: float = 0.42) -> float:
@@ -147,6 +148,8 @@ func update_pose(delta: float, striking: bool, progress: float = 0.0, local_velo
     # Hit-stop freezes this clock too. Motion remains independent per avatar.
     var dt: float = maxf(delta, 0.0)
     clock += dt
+    if imported_avatar != null:
+        imported_avatar.scale = imported_avatar.scale.lerp(Vector3.ONE * target_avatar_scale, 1.0 - exp(-dt * 12.0))
     var speed: float = minf(Vector2(local_velocity.x, local_velocity.z).length() / 12.5, 1.0)
     var angle: float = strike_angle(progress, impact_phase) if striking else 0.0
     if striking:
@@ -232,5 +235,5 @@ func set_form(value: int) -> void:
     skeletal_shell.visible = form == 1
     if imported_avatar != null:
         imported_avatar.visible = form >= 2
-        imported_avatar.scale = Vector3.ONE * (0.006 if form == 3 else 0.005)
+        target_avatar_scale = 0.006 if form == 3 else 0.005
     set_quality(quality_level)

@@ -24,6 +24,7 @@ var tool_use_center: Vector2 = Vector2.ZERO
 var tool_label: String = "SHUR"
 var ultimate_enabled: bool = true
 var awakening_enabled: bool = true
+var awakening_label: String = "AWK"
 var clones_enabled: bool = true
 var ultimate_queue: int = 0
 var awakening_queue: int = 0
@@ -392,7 +393,7 @@ func _draw() -> void:
         _draw_button(tool_select_center, advanced_radius, base_fill, "ITEM", 11, text_color)
         _draw_button(tool_use_center, advanced_radius, blue_fill, tool_label, 10, text_color)
         _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
-        _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), "AWK" if awakening_enabled else "—", 12, text_color)
+        _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), awakening_label if awakening_enabled else "—", 12, text_color)
         _draw_button(special_center, advanced_radius, blue_fill, special_label, 11, text_color)
         if clones_enabled:
             _draw_button(clone_center, advanced_radius, blue_fill, "CLONE", 10, text_color)

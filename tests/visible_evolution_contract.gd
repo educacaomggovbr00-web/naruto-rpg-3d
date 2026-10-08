@@ -80,5 +80,5 @@ func run() -> void:
     settings.henrique_outfit = old_outfit
     battle.queue_free()
     await frames(4)
-    print("VISIBLE EVOLUTION: ", "PASS" if failures == 0 else "FAIL")
+    print("VISIBLE EVOLUTION CONTRACT: ", "PASS" if failures == 0 else "FAIL")
     quit(0 if failures == 0 else 1)

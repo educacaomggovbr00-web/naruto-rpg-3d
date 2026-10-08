@@ -3,6 +3,7 @@ extends Node3D
 const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
 const TOON_MATERIAL: ShaderMaterial = preload("res://assets/characters/stylized/toon.tres")
 const ANIME: Script = preload("res://scripts/anime_presentation.gd")
+const COMBAT_HUBS: PackedStringArray = ["idle", "run", "sprint", "hit", "dodge", "guard", "jump", "fall", "chakra_dash", "defeat"]
 # Track paths are immutable after installation; playback stays per fighter.
 static var library_cache: Dictionary = {}
 
@@ -836,6 +837,9 @@ func _setup_animation_tree() -> void:
         if character_definition.ultimate_definition != null:
             runtime_states[character_definition.ultimate_definition.entry_clip] = true
             runtime_states[character_definition.ultimate_definition.finisher_clip] = true
+    if character_definition != null and character_definition.character_id == "henrique":
+        for clip: String in HenriqueKit.combo_clips():
+            runtime_states[clip] = true
     var index: int = 0
     for state_name: String in clips:
         var blend: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
@@ -857,6 +861,13 @@ func _setup_animation_tree() -> void:
             # Gallery-only states travel through idle; active gameplay retains
             # direct fades. Avoid a 127² graph on every mobile/menu fighter.
             if from_state != "idle" and to_state != "idle" and (not runtime_states.has(from_state) or not runtime_states.has(to_state)):
+                continue
+            # Expansion combos fade directly to each other and to interruption/
+            # locomotion hubs; other states retain the idle route. Keep mobile
+            # memory bounded as more gallery clips become playable attacks.
+            var from_expansion: bool = bool(clips[from_state].get("expansion", false))
+            var to_expansion: bool = bool(clips[to_state].get("expansion", false))
+            if from_expansion != to_expansion and from_state not in COMBAT_HUBS and to_state not in COMBAT_HUBS:
                 continue
             var transition: AnimationNodeStateMachineTransition = AnimationNodeStateMachineTransition.new()
             transition.xfade_time = 0.08

@@ -90,3 +90,23 @@ Godot **4.7.2.stable.official.ed1daf0bf**, Linux:
 ![Henrique transformado em Susanoo no Godot](captures/henrique_susanoo.png)
 
 Limitações: rig é um ajuste inicial específico da malha, ainda refinável em ombros/mangas/mãos. Susanoo não tem animação esquelética própria; aura e lâmina são animadas pelo jogo. APK, instalação, toque e desempenho em aparelho Android físico não foram verificados neste ambiente.
+
+## Continuação 0.4.1 — resposta e treino
+
+O comando de próximo golpe passa a ser aceito também durante startup, com uma
+única ação em fila. Direção fica congelada no instante do toque; interrupções
+limpam a fila. Henrique usa variantes esquerda/direita/alta/baixa nos três
+primeiros golpes e espelhada aérea à esquerda. Finalizadores, custos e dano-base
+permanecem. Recursos do moveset são duplicados ao selecionar uma variante,
+e o hitbox lê o mesmo clip/manifesto até o impacto. A biblioteca mantém 127 clips.
+
+O grafo mobile conecta variantes de combate e hubs de movimento/interrupção
+sem voltar a criar uma matriz de 127² transições. Nagashi usa os forks elétricos
+prealocados; armadura/perfeito interpolam escala; touch mostra FORMA durante
+Susanoo ativo. Treinamento ganha sete objetivos não bloqueantes, guia ocultável
+com reinício e preparação explícita de despertar apenas nesse modo. Não há
+persistência de conquistas/tutorial nesta etapa. Face/dublagem permanecem pendentes.
+
+O CI 0.4.0 falhava ao buscar `CONTRACT: PASS` no contrato visual, cuja mensagem
+não continha `CONTRACT`. Os marcadores visual/input foram uniformizados; a
+verificação de erros permanece ativa. Evidências: SHINOBI_041_VALIDATION.md.
