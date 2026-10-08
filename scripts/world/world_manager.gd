@@ -213,6 +213,11 @@ func _refresh_progress() -> void:
         map_panel.queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventJoypadButton and event.pressed:
+        if event.is_action_pressed("pad_jutsu") and not map_open:
+            interact()
+        elif event.is_action_pressed("pad_lock"):
+            toggle_map()
     if event is InputEventKey and event.pressed and not event.echo:
         if event.physical_keycode == KEY_E and not map_open:
             interact()

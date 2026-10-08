@@ -21,7 +21,9 @@ func run() -> void:
         check(actor.awakening.avatar != null and actor.ultimate.avatar != null, "Both teams have Susanoo controllers")
         check(actor.awakening.avatar.external_model and actor.ultimate.avatar.external_model, "Both teams load the licensed ready-made Susanoo")
         actor.awakening.avatar.set_quality(0)
-        check(actor.awakening.avatar.wings.size() == 2 and not actor.awakening.avatar.wings[0].visible, "Mobile quality hides wide wings")
+        check(actor.awakening.avatar.wings.size() == 1 and not actor.awakening.avatar.wings[0].visible, "Mobile quality hides wide wings")
+        var upper_hands: Node3D = actor.awakening.avatar.imported_avatar.find_child("Object_10", true, false) as Node3D
+        check(upper_hands != null and upper_hands.visible, "Upper hands are anatomy, not wings to hide")
     check(player.rig_adapter.skeleton != cpu.rig_adapter.skeleton, "Independent CPU skeleton")
     check(player.moveset.ground[0].attack_id.begins_with("henrique_"), "Independent attack data")
     var adapter: Node3D = player.rig_adapter

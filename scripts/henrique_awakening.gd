@@ -19,7 +19,7 @@ func _physics_process(delta: float) -> void:
         var progress: float = (fighter.attack_elapsed if fighter.attack_active else fighter.specials.elapsed) / duration
         var summon: float = 1.0 - remaining / maxf(definition.transform_duration, 0.01) if transforming else 1.0
         avatar.update_pose(delta, striking, progress, fighter.global_basis.inverse() * fighter.velocity,
-            float(timing.get("impact", 0.24)) / duration, summon)
+            float(timing.get("impact", 0.24)) / duration, summon, fighter.is_guarding)
 
 func stop() -> void:
     super.stop()

@@ -115,6 +115,12 @@ var defeated: bool = false
 var mobile_controls: Node = null
 var combat_state: Node = null
 var rpg_damage_multiplier: float = 1.0
+var timed_guard_window: float = 0.0
+var counter_window: float = 0.0
+var attack_counter_bonus: float = 1.0
+var grab_attack: bool = false
+var grab_target: Node3D
+var grab_cooldown: float = 0.0
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
@@ -188,6 +194,25 @@ func _ready() -> void:
     combat_state.call("configure", self)
 
 func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventJoypadButton and event.pressed:
+        if event.is_action_pressed("pad_attack"):
+            _try_attack()
+        elif event.is_action_pressed("pad_jump"):
+            jump_requested = true
+        elif event.is_action_pressed("pad_jutsu"):
+            _try_jutsu()
+        elif event.is_action_pressed("pad_dash"):
+            _start_chakra_dash()
+        elif event.is_action_pressed("pad_substitution"):
+            _try_substitution()
+        elif event.is_action_pressed("pad_dodge"):
+            _start_dodge()
+        elif event.is_action_pressed("pad_lock"):
+            _toggle_lock_on()
+        elif event.is_action_pressed("pad_ultimate"):
+            ultimate.call("start")
+        elif event.is_action_pressed("pad_awakening"):
+            awakening.call("start")
     if event is InputEventMouseButton and not _is_mobile_runtime():
         if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
             _try_attack()
@@ -218,6 +243,8 @@ func _unhandled_input(event: InputEvent) -> void:
             ninja_tools.call("cycle")
         elif event.physical_keycode == KEY_8:
             ninja_tools.call("use")
+        elif event.physical_keycode == KEY_G:
+            _try_grab()
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
@@ -377,13 +404,21 @@ func _refresh_hold_states() -> void:
         mobile_guard = bool(mobile_controls.call("is_guard_held"))
         mobile_charge = bool(mobile_controls.call("is_charge_held"))
 
-    var keyboard_guard: bool = Input.is_physical_key_pressed(KEY_R)
-    var keyboard_charge: bool = Input.is_physical_key_pressed(KEY_C)
+    var keyboard_guard: bool = (Input.is_physical_key_pressed(KEY_R) or Input.is_action_pressed("pad_guard"))
+    var keyboard_charge: bool = (Input.is_physical_key_pressed(KEY_C) or Input.is_action_pressed("pad_charge"))
 
+    var previous_guard: bool = is_guarding
     is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and guard_meter > 0.0 and not attack_active and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0
+    if is_guarding and not previous_guard:
+        timed_guard_window = 0.12
+    elif not is_guarding:
+        timed_guard_window = 0.0
     is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and not attack_active and attack_cooldown <= 0.0 and jutsu_timer <= 0.0 and stagger_timer <= 0.0 and dodge_timer <= 0.0 and chakra_dash_timer <= 0.0
 
 func _update_timers(delta: float) -> void:
+    timed_guard_window = maxf(timed_guard_window - delta, 0.0)
+    counter_window = maxf(counter_window - delta, 0.0)
+    grab_cooldown = maxf(grab_cooldown - delta, 0.0)
     attack_buffer = maxf(attack_buffer - delta, 0.0)
     guard_stun = maxf(guard_stun - delta, 0.0)
     guard_regen_delay = maxf(guard_regen_delay - delta, 0.0)
@@ -430,7 +465,10 @@ func _update_attack_timeline(delta: float) -> void:
 
     if not attack_hit_triggered and attack_elapsed >= attack_startup:
         attack_hit_triggered = true
-        _open_attack_hitbox()
+        if grab_attack:
+            _resolve_grab()
+        else:
+            _open_attack_hitbox()
 
     # Keep the active hit volume attached to the animated strike instead of
     # freezing it at the first impact frame.
@@ -439,10 +477,15 @@ func _update_attack_timeline(delta: float) -> void:
 
     if attack_elapsed >= attack_duration:
         attack_active = false
+        grab_attack = false
+        grab_target = null
         attack_hitbox.call("deactivate")
 
 func _cancel_attack() -> void:
     attack_active = false
+    grab_target = null
+    grab_attack = false
+    attack_counter_bonus = 1.0
     buffered_branch = ""
     attack_lunge_timer = 0.0
     air_float_timer = 0.0
@@ -475,8 +518,8 @@ func _open_attack_hitbox() -> void:
         return
     rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
     var timing: Dictionary = selected_attack.animation_timing(rig_adapter.manifest)
-    attack_hitbox.call("activate", self, selected_attack.damage,
-        selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun,
+    attack_hitbox.call("activate", self, selected_attack.damage * attack_counter_bonus,
+        selected_attack.knockback * (1.3 if attack_counter_bonus > 1.0 else 1.0), selected_attack.launch_force, selected_attack.hitstun,
         float(timing.get("active", 0.09)))
 
 func _process_defeated(delta: float) -> void:
@@ -534,6 +577,9 @@ func _get_move_input() -> Vector2:
             float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
             float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
         )
+
+    if input_vector.length() <= 0.001:
+        input_vector = CombatSettings.movement()
 
     if input_vector.length() > 1.0:
         input_vector = input_vector.normalized()
@@ -762,6 +808,9 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
+    if is_guarding and counter_window <= 0.0:
+        _try_grab()
+        return
     if is_instance_valid(cinematic_owner):
         if cinematic_owner.has_method("press_defense"):
             cinematic_owner.call("press_defense")
@@ -797,6 +846,8 @@ func _try_attack() -> void:
         combo_branch = buffered_branch if not buffered_branch.is_empty() else _read_combo_branch()
         buffered_branch = ""
     selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    attack_counter_bonus = 1.4 if counter_window > 0.0 else 1.0
+    counter_window = 0.0
     combo_timer = combo_reset_time
     var timing: Dictionary = selected_attack.animation_timing(rig_adapter.manifest)
     attack_startup = float(timing.get("impact", 0.12 if combo_step < 4 else 0.18))
@@ -876,6 +927,16 @@ func receive_combat_hit(
     hitstun: float
 ) -> float:
     if defeated or invulnerable_timer > 0.0:
+        return 0.0
+
+    if is_guarding and timed_guard_window > 0.0 and damage < 40.0:
+        timed_guard_window = 0.0
+        counter_window = 0.55
+        invulnerable_timer = 0.10
+        guard_regen_delay = 0.4
+        if is_instance_valid(combat_feedback):
+            combat_feedback.call("spawn_impact", global_position + Vector3.UP, "guard")
+        camera_rig.call("add_combat_impact", 0.06, 1.0)
         return 0.0
 
     var applied_damage: float = damage
@@ -1055,6 +1116,10 @@ func _defeat() -> void:
     _set_locked_target(null)
 
 func _respawn() -> void:
+    _cancel_attack()
+    timed_guard_window = 0.0
+    counter_window = 0.0
+    grab_cooldown = 0.0
     _cancel_jutsu()
     if is_instance_valid(combat_state):
         combat_state.call("clear_transient")
@@ -1233,3 +1298,46 @@ func end_cinematic_lock(requester: Node) -> void:
 
 func is_targetable() -> bool:
     return not defeated
+
+func _try_grab() -> void:
+    if defeated or is_instance_valid(cinematic_owner) or not ultimate.phase.is_empty() or stagger_timer > 0.0 or attack_active or attack_cooldown > 0.0 or jutsu_timer > 0.0 or dodge_timer > 0.0 or chakra_dash_timer > 0.0 or grab_cooldown > 0.0 or not is_on_floor():
+        return
+    var target: Node3D = _find_attack_target(1.65)
+    if not is_instance_valid(target) or not target.has_method("receive_combat_hit"):
+        return
+    grab_target = target
+    grab_attack = true
+    selected_attack = moveset.attack(1, false, "neutral").duplicate(true) as AttackDefinition
+    selected_attack.damage = 14.0
+    selected_attack.knockback = 10.0
+    selected_attack.launch_force = 5.0
+    selected_attack.hitstun = 0.5
+    combo_step = 1
+    attack_is_airborne = false
+    attack_confirmed = false
+    attack_startup = float(selected_attack.animation_timing(rig_adapter.manifest).get("impact", 0.24))
+    attack_duration = maxf(0.65, float(selected_attack.animation_timing(rig_adapter.manifest).get("duration", 0.65)))
+    attack_cooldown = attack_duration
+    grab_cooldown = 1.5
+    attack_active = true
+    attack_elapsed = 0.0
+    attack_hit_triggered = false
+    animation_action_id += 1
+    is_guarding = false
+    is_charging_chakra = false
+    _face_direction(target.global_position - global_position, 1.0, 100.0)
+
+func _resolve_grab() -> void:
+    var target: Node3D = grab_target
+    grab_target = null
+    if not is_instance_valid(target) or global_position.distance_to(target.global_position) > 1.9 or not bool(target.call("is_targetable")) or float(target.get("invulnerable_timer")) > 0.0:
+        return
+    # A dodge/substitution during startup escapes; walls block the throw.
+    var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position + Vector3.UP, target.global_position + Vector3.UP, 33)
+    ray.exclude = [get_rid()]
+    if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+        return
+    target.set("is_guarding", false)
+    var direction: Vector3 = (target.global_position - global_position).normalized()
+    var actual: float = float(target.call("receive_combat_hit", selected_attack.damage * get_damage_multiplier(), direction, selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun))
+    on_attack_connected(target, actual, selected_attack.launch_force)

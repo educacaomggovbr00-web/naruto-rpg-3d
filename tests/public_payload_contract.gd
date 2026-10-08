@@ -18,7 +18,7 @@ func run() -> void:
         push_error("Uncleared public payload leaked")
         quit(1)
         return
-    for path: String in ["res://assets/characters/base_basic/base_basic_pbr_rigged.glb", "res://assets/characters/sakura_user/sakura_mobile_rigged.glb", "res://assets/characters/definitions/henrique.tres", "res://assets/characters/henrique/henrique_mobile_rigged.glb", "res://assets/susanoo/susanoo_mobile.glb"]:
+    for path: String in ["res://assets/characters/base_basic/base_basic_pbr_rigged.glb", "res://assets/characters/sakura_user/sakura_mobile_rigged.glb", "res://assets/characters/definitions/henrique.tres", "res://assets/characters/henrique/henrique_mobile_rigged.glb", "res://assets/susanoo/susanoo_mobile.glb", "res://assets/susanoo/susanoo_mobile_rigged.glb"]:
         if FileAccess.file_exists(path) or ResourceLoader.exists(path):
             push_error("Uncleared real character/Susanoo leaked into public payload: " + path)
             quit(1)

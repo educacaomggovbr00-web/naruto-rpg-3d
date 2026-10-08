@@ -109,7 +109,7 @@ This work is based on “Perfect susanoo” by wahidinesport, licensed under CC 
 - Bundled license: `assets/susanoo/LICENSE.txt` (also included in Android export).
 - Modifications: glTF to GLB conversion using gltfpack 1.3, reduced from 34,098 to 11,961 triangles; runtime scale, purple chakra material, optional wings and separate project-authored chakra blade.
 
-The original is static, without skin/animations. Geometry and declared uploader license were inspected. The existing release gate retains DEVELOPMENT_ONLY because the model depicts franchise content and upstream ownership/brand authorization is not established.
+The original is static, without skin/animations. The project derivative `susanoo_mobile_rigged.glb` preserves source geometry/textures and adds a fitted 25-bone skin and five original keyframed animations using `tools/rig_susanoo.py`. The source sword is weighted to the left hand; the separate proxy blade is used only by the authored fallback. Runtime armor now receives lighting. Geometry and declared uploader license were inspected. The existing release gate retains DEVELOPMENT_ONLY because the model depicts franchise content and upstream ownership/brand authorization is not established.
 
 ## Henrique — supplied ZIP and project rig
 

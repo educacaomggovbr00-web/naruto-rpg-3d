@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "title": "Henrique Uchiha — A Marca e a Escolha",
+  "authorship": "Original project story, dialogue and choices",
+  "missions": [
+    {
+      "id": "hc_signal",
+      "chapter": 1,
+      "title": "Um nome próprio",
+      "opponent": "naruto",
+      "region": "konoha",
+      "arena": "training",
+      "boss": false,
+      "reward_ryo": 120,
+      "reward_xp": 100,
+      "unlock_jutsu": "clones",
+      "summary": "Um nome próprio",
+      "objective": "Procure o ponto de missão em Konoha.",
+      "intro_dialogue": [
+        {
+          "speaker": "Shizune",
+          "text": "Um selo de chakra apareceu nos pergaminhos desaparecidos. Ele tem a assinatura dos Uchiha."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Meu nome não vai servir de desculpa para ninguém. Vou descobrir quem deixou essa marca."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Antes de sair sozinho, luta comigo. Quero saber se você está pronto para essa missão."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Como vou me preparar para seguir o rastro?",
+          "choices": [
+            {
+              "id": "team",
+              "label": "Treinar com Naruto",
+              "reply": "Vou aceitar ajuda. Uma missão não precisa ser vencida sozinho.",
+              "opponent": "naruto"
+            },
+            {
+              "id": "rival",
+              "label": "Buscar Sasuke para um duelo",
+              "reply": "Vou testar minha leitura de combate com Sasuke antes de partir.",
+              "opponent": "sasuke"
+            }
+          ]
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Encontrei meu ritmo. Não preciso repetir os passos de outro Uchiha."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "Então conta comigo quando precisar. Agora vamos atrás desses pergaminhos."
+        }
+      ]
+    },
+    {
+      "id": "hc_tracks",
+      "chapter": 2,
+      "title": "Rastro entre as árvores",
+      "opponent": "kakashi",
+      "region": "forest",
+      "arena": "training",
+      "boss": false,
+      "reward_ryo": 190,
+      "reward_xp": 150,
+      "unlock_jutsu": "",
+      "summary": "Rastro entre as árvores",
+      "objective": "Procure o ponto de missão em Floresta de Treino.",
+      "intro_dialogue": [
+        {
+          "speaker": "Kakashi",
+          "text": "O rastro termina aqui. Mostre que sabe observar antes de atacar."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Três marcas falsas, uma passagem real. Alguém quer que eu escolha com raiva."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Kakashi",
+          "text": "Você interrompeu a perseguição para proteger a rota de evacuação. Isso é controle."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Vou devolver esses pergaminhos sem deixar ninguém para trás."
+        }
+      ]
+    },
+    {
+      "id": "hc_black_seal",
+      "chapter": 3,
+      "title": "O selo vazio",
+      "opponent": "orochimaru",
+      "region": "river",
+      "arena": "courtyard",
+      "boss": true,
+      "reward_ryo": 260,
+      "reward_xp": 200,
+      "unlock_jutsu": "barrage",
+      "summary": "O selo vazio",
+      "objective": "Procure o ponto de missão em Fronteira do Rio.",
+      "intro_dialogue": [
+        {
+          "speaker": "Orochimaru",
+          "text": "Essa marca foi desenhada para reagir ao seu chakra. Abra o selo e terá a força que procura."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Um poder que cobra a liberdade dos outros não é meu caminho."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "O selo rachou. Há uma segunda assinatura por baixo da minha."
+        },
+        {
+          "speaker": "Kakashi",
+          "text": "Você sustentou o chakra sem perder o foco. Essa defesa tomou forma."
+        }
+      ]
+    },
+    {
+      "id": "hc_mirror",
+      "chapter": 4,
+      "title": "Além do sobrenome",
+      "opponent": "sasuke",
+      "region": "valley",
+      "arena": "courtyard",
+      "boss": false,
+      "reward_ryo": 330,
+      "reward_xp": 250,
+      "unlock_jutsu": "",
+      "summary": "Além do sobrenome",
+      "objective": "Procure o ponto de missão em Vale do Fim.",
+      "intro_dialogue": [
+        {
+          "speaker": "Sasuke",
+          "text": "Não deixei aquela marca. Se quer respostas, pare de seguir só o que os olhos mostram."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Não vim para tomar seu lugar. Vim para impedir que usem o nosso nome."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Sasuke",
+          "text": "O próximo selo está preso ao fluxo do rio. Corte o fluxo de chakra, não a pedra."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Então meu Susanoo vai proteger a passagem enquanto eu desfaço a ligação."
+        }
+      ]
+    },
+    {
+      "id": "hc_anchor",
+      "chapter": 5,
+      "title": "A âncora de chakra",
+      "opponent": "itachi",
+      "region": "valley",
+      "arena": "courtyard",
+      "boss": true,
+      "reward_ryo": 400,
+      "reward_xp": 300,
+      "unlock_jutsu": "",
+      "summary": "A âncora de chakra",
+      "objective": "Procure o ponto de missão em Vale do Fim.",
+      "intro_dialogue": [
+        {
+          "speaker": "Itachi",
+          "text": "Uma âncora mantém o selo ativo. Você precisa suportar a pressão sem alimentar a técnica."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Vou sustentar a defesa. Quando a marca perder força, eu corto a ligação."
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Itachi",
+          "text": "Você escolheu a responsabilidade antes da força. Guarde essa decisão."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "A âncora caiu. Falta encontrar quem recolhe o chakra roubado."
+        }
+      ]
+    },
+    {
+      "id": "hc_return",
+      "chapter": 6,
+      "title": "O retorno da chama",
+      "opponent": "kisame",
+      "region": "river",
+      "arena": "courtyard",
+      "boss": true,
+      "reward_ryo": 470,
+      "reward_xp": 350,
+      "unlock_jutsu": "",
+      "summary": "O retorno da chama",
+      "objective": "Procure o ponto de missão em Fronteira do Rio.",
+      "intro_dialogue": [
+        {
+          "speaker": "Kisame",
+          "text": "Cada selo recolheu o medo de uma aldeia. O seu nome abriu o último caminho."
+        },
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Meu nome não abre essa porta. A minha escolha fecha."
+        },
+        {
+          "speaker": "Naruto",
+          "text": "A rota está livre. Henrique, termina a luta!"
+        }
+      ],
+      "victory_dialogue": [
+        {
+          "speaker": "Henrique Uchiha",
+          "text": "Os pergaminhos voltaram. A marca ficou, mas agora lembra o que escolhi proteger."
+        },
+        {
+          "speaker": "Shizune",
+          "text": "A missão está encerrada. Konoha vai lembrar de Henrique Uchiha por seus próprios atos."
+        }
+      ]
+    }
+  ]
+}

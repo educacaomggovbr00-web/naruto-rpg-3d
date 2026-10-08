@@ -19,6 +19,7 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     village = load("res://world.tscn").instantiate() as Node3D
@@ -98,6 +99,6 @@ func run() -> void:
         print("WORLD DUMP: ", ProjectSettings.globalize_path("res://tests/world_geometry.json"))
     village.queue_free()
     await frames(3)
-    check(root.get_child_count() == 1 and root.get_child(0).name == "GameFlow", "Leaving exploration must clean up rig and world nodes")
+    check(root.get_child_count() == persistent_nodes and root.get_child(0).name == "GameFlow", "Leaving exploration must clean up rig and world nodes")
     print("WORLD CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(1 if failures > 0 else 0)

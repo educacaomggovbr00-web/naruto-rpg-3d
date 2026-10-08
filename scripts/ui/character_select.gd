@@ -2,6 +2,7 @@ extends Control
 
 var player_pick: OptionButton
 var cpu_pick: OptionButton
+var mode_pick: OptionButton
 var arena_pick: OptionButton
 var description: Label
 var start_button: Button
@@ -81,6 +82,19 @@ func _ready() -> void:
     player_pick.select(CharacterCatalog.READY.find(CharacterCatalog.HENRIQUE))
     cpu_pick = _fighter_choice(choices, "CPU")
     arena_pick = _arena_choice(choices)
+    var mode_group: VBoxContainer = VBoxContainer.new()
+    mode_group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    choices.add_child(mode_group)
+    var mode_label: Label = Label.new()
+    mode_label.text = "MODO"
+    _style_caption(mode_label)
+    mode_group.add_child(mode_label)
+    mode_pick = OptionButton.new()
+    for mode_title: String in ["Batalha livre", "Treinamento", "Torneio solo", "Sobrevivência", "Chefes"]:
+        mode_pick.add_item(mode_title)
+    _style_option(mode_pick)
+    mode_pick.custom_minimum_size.y = 40
+    mode_group.add_child(mode_pick)
 
     var versus: HBoxContainer = HBoxContainer.new()
     versus.custom_minimum_size.y = 42.0
@@ -157,6 +171,20 @@ func _ready() -> void:
     world.pressed.connect(_enter_world)
     _style_action(world, Color("1f7184"))
     actions.add_child(world)
+
+    var campaign: Button = Button.new()
+    campaign.text = "HISTÓRIA HENRIQUE"
+    campaign.custom_minimum_size = Vector2(175, 56)
+    campaign.pressed.connect(GameFlow.enter_henrique_campaign)
+    _style_action(campaign, Color("603082"))
+    actions.add_child(campaign)
+
+    var options: Button = Button.new()
+    options.text = "OPÇÕES"
+    options.custom_minimum_size = Vector2(120, 56)
+    options.pressed.connect(_show_options)
+    _style_action(options, Color("285b68"))
+    actions.add_child(options)
 
     var credits: Button = Button.new()
     credits.text = "CRÉDITOS"
@@ -367,11 +395,10 @@ func _arena_changed(_index: int) -> void:
 func _start() -> void:
     if GameFlow.busy:
         return
-    var result: Error = GameFlow.start_versus(
-        CharacterCatalog.READY[player_pick.selected].character_id,
-        CharacterCatalog.READY[cpu_pick.selected].character_id,
-        "training" if arena_pick.selected == 0 else "courtyard"
-    )
+    var player_id: String = CharacterCatalog.READY[player_pick.selected].character_id
+    var cpu_id: String = CharacterCatalog.READY[cpu_pick.selected].character_id
+    var stage: String = "training" if arena_pick.selected == 0 else "courtyard"
+    var result: Error = GameFlow.start_versus(player_id, cpu_id, stage) if mode_pick.selected == 0 else GameFlow.start_arcade(["", "training", "tournament", "survival", "boss"][mode_pick.selected], player_id, cpu_id, stage)
     if result != OK:
         description.text = "Não foi possível iniciar a batalha: " + error_string(result)
 
@@ -380,4 +407,45 @@ func _enter_world() -> void:
     if GameFlow.busy:
         return
     GameFlow.player_character = CharacterCatalog.READY[player_pick.selected]
+    GameFlow.campaign_id = "classic"
     GameFlow.enter_world()
+
+func _show_options() -> void:
+    var dialog: AcceptDialog = AcceptDialog.new()
+    dialog.title = "Dificuldade e controle"
+    dialog.min_size = Vector2i(520, 320)
+    var column: VBoxContainer = VBoxContainer.new()
+    dialog.add_child(column)
+    var label: Label = Label.new()
+    label.text = "Dificuldade da CPU (aplicada na próxima batalha)"
+    column.add_child(label)
+    var difficulty_pick: OptionButton = OptionButton.new()
+    for title: String in CombatSettings.DIFFICULTIES:
+        difficulty_pick.add_item(title)
+    difficulty_pick.select(CombatSettings.difficulty)
+    difficulty_pick.item_selected.connect(func(index: int) -> void:
+        CombatSettings.difficulty = index
+        CombatSettings.save_preferences())
+    column.add_child(difficulty_pick)
+    var help: Label = Label.new()
+    help.text = "Controle: X ataque • A salto • Y jutsu • B dash\nLB defesa • LB + X agarrão • RB chakra • stick direito câmera / clique trava\nDirecional: baixo substituição • esquerda esquiva\ncima ultimate • direita transformação"
+    help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    help.custom_minimum_size.x = 480
+    column.add_child(help)
+    var volume_label: Label = Label.new()
+    volume_label.text = "Volume geral"
+    column.add_child(volume_label)
+    var volume: HSlider = HSlider.new()
+    volume.min_value = 0.0
+    volume.max_value = 1.0
+    volume.step = 0.05
+    volume.value = CombatSettings.master_volume
+    volume.value_changed.connect(func(value: float) -> void:
+        CombatSettings.master_volume = value
+        CombatSettings.apply_audio()
+        CombatSettings.save_preferences())
+    column.add_child(volume)
+    dialog.confirmed.connect(dialog.queue_free)
+    dialog.canceled.connect(dialog.queue_free)
+    add_child(dialog)
+    dialog.popup_centered()

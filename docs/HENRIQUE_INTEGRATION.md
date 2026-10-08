@@ -1,10 +1,16 @@
 # Henrique Uchiha: integração
 
+## Evolução atual — Shinobi Clash 0.3.0
+
+Susanoo agora usa o derivado `susanoo_mobile_rigged.glb`: **25 ossos**, skin e cinco animações próprias. A espada do modelo acompanha a mão; materiais passam a receber iluminação. Esta etapa também acrescenta defesa precisa/contra-ataque, arremesso, dificuldades, controle Bluetooth por InputMap, layout touch editável, quatro modos adicionais e uma campanha Henrique de seis capítulos com escolha salva. O APK continua debug ARM64; validação física permanece pendente. Escopo entregue e plano completo em [SHINOBI_CLASH_EVOLUTION.md](SHINOBI_CLASH_EVOLUTION.md).
+
+As seções abaixo preservam o histórico da integração e da primeira expansão.
+
 ## Continuação a partir de e779639 — combate e Android
 
 O estado abaixo documenta a entrega original. A continuação preserva os 26 personagens, a campanha e os sistemas existentes e acrescenta **100 clips de combate**, mantendo os 27 originais byte a byte. São dez famílias com dez adaptações espaciais das fontes CC0 já registradas; não são 100 novas gravações de mocap. A seleção permite visualizar todos, e Henrique usa novos clips nos combos, branches, Katon, Chidori, corte e Ultimate.
 
-O rig mantém malha, texturas, rest, 65 ossos e cabeça rígida; somente os pesos de 3.206 vértices dos ombros/mangas/punhos foram refinados. Susanoo ganha antecipação, impacto sincronizado ao manifesto, recuperação, inclinação de movimento, entrada gradual e reset. O modelo externo continua sem skeleton próprio.
+O rig mantém malha, texturas, rest, 65 ossos e cabeça rígida; somente os pesos de 3.206 vértices dos ombros/mangas/punhos foram refinados. Susanoo ganha antecipação, impacto sincronizado ao manifesto, recuperação, inclinação de movimento, entrada gradual e reset. Naquela expansão, o modelo externo ainda não tinha skeleton próprio; a etapa 0.3.0 acima resolve isso.
 
 Foi gerado e validado um **APK debug ARM64**, versão `0.2.0-henrique-combat100`, Android 7.0 ou superior. Assinatura v2/v3, alinhamento de 16 KB e conteúdo extraído do APK passaram; teste em aparelho físico continua pendente. Procedimentos, evidências e limitações em [COMBAT100_ANDROID.md](COMBAT100_ANDROID.md).
 

@@ -59,6 +59,10 @@ func _physics_process(delta: float) -> void:
         var keys: Vector2 = Vector2(float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)), float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
         if keys.length_squared() > 0.0:
             stick = keys.limit_length(1.0)
+        if stick.length_squared() <= 0.001:
+            stick = CombatSettings.movement()
+        if Input.is_action_just_pressed("pad_jump"):
+            jump_buffer = 0.15
         if controls.jump_queue > 0:
             controls.jump_queue = 0
             jump_buffer = 0.15

@@ -8,7 +8,7 @@ Projeto Android que busca a maior fidelidade prática possível a **Naruto: Ulti
 
 Henrique é o personagem inicial da seleção e o protagonista da campanha. Os **25 lutadores anteriores continuam disponíveis**, nos mesmos índices. O ZIP enviado foi integrado como um modelo real com **65 ossos**, pesos de skin e proporções chibi. A biblioteca agora contém **127 clips: 27 originais preservados e 100 adaptações de combate CC0**, com galeria na seleção e novos movimentos no kit do Henrique. A malha mobile tem 15.398 triângulos e texturas de até 1024 px; os pesos de ombros, cotovelos e punhos foram refinados.
 
-APK debug ARM64 preparado e verificado, com movimentos do Susanoo sincronizados ao impacto. Reprodução, instalação e validações em [docs/COMBAT100_ANDROID.md](docs/COMBAT100_ANDROID.md). Teste em aparelho físico permanece pendente.
+APK debug ARM64 **0.3.0-shinobi-evolution**: Susanoo com skin de 25 ossos e cinco animações próprias, defesa precisa, arremesso, dificuldades, controle e touch editável. Treinamento, torneio solo, sobrevivência e chefes ficam na seleção; HISTÓRIA HENRIQUE abre seis capítulos autorais com escolha salva. Escopo, validação e trabalho restante em [docs/SHINOBI_CLASH_EVOLUTION.md](docs/SHINOBI_CLASH_EVOLUTION.md). Teste em aparelho físico permanece pendente.
 
 - **Katon**: projétil de fogo; disponível no início da campanha.
 - **Chidori**: ataque de mão e avanço; desbloqueado pelo primeiro duelo da Academia.
@@ -16,7 +16,7 @@ APK debug ARM64 preparado e verificado, com movimentos do Susanoo sincronizados 
 - **Corte Susanoo**: desbloqueado no Teste do Sino; exige transformação ativa. Escolha com ESQ e use JUTSU.
 - **Ultimate Susanoo**: 80 chakra, fora da transformação; o golpe de entrada precisa acertar. Bloqueio, substituição e interrupções seguem os sistemas atuais.
 
-O Susanoo pronto é **“Perfect susanoo” por wahidinesport**, anunciado sob **CC BY 4.0**, com arquivo de licença e créditos acessíveis na seleção. A malha foi reduzida a 11.961 triângulos; asas aparecem na qualidade HIGH. O modelo de origem é estático: o jogo anima a aura e a lâmina de chakra, enquanto a armadura acompanha Henrique. Não há animações esqueléticas próprias do Susanoo nesta entrega. Os gates atuais de publicação permanecem ativos: a licença anunciada pelo uploader não comprova os direitos sobre a franquia nem a origem do modelo enviado.
+O Susanoo pronto é **“Perfect susanoo” por wahidinesport**, anunciado sob **CC BY 4.0**, com arquivo de licença e créditos acessíveis na seleção. A malha foi reduzida a 11.961 triângulos; asas aparecem na qualidade HIGH. O modelo de origem é estático; `tools/rig_susanoo.py` preserva sua geometria e acrescenta um rig de 25 ossos e keyframes próprios. A espada acompanha a mão no impacto e na recuperação. Os gates atuais de publicação permanecem ativos: a licença anunciada pelo uploader não comprova os direitos sobre a franquia nem a origem do modelo enviado.
 
 Saves versão 1 continuam válidos; os marcos da campanha são mapeados para os jutsus de Henrique sem apagar as recompensas de Naruto. A exploração mantém a opção de usar outros personagens selecionados. Detalhes e reprodução em [HENRIQUE_INTEGRATION](docs/HENRIQUE_INTEGRATION.md).
 

@@ -6,6 +6,7 @@ run/max_fps=60
 
 [autoload]
 GameFlow="*res://scripts/world/game_flow.gd"
+CombatSettings="*res://scripts/combat_settings.gd"
 
 [display]
 window/size/viewport_width=1280

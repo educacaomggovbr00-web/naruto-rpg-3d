@@ -69,8 +69,15 @@ var dodge_radius: float = 43.0
 var charge_radius: float = 46.0
 var guard_radius: float = 40.0
 var advanced_radius: float = 34.0
+var layout_editing: bool = false
+var layout_touch: int = -1
+var layout_key: String = ""
+var layout_center: Vector2
+var reset_layout_center: Vector2
+var owns_pause: bool = false
 
 func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     resized.connect(_update_layout)
     _update_layout()
@@ -127,6 +134,14 @@ func _update_layout() -> void:
         clone_center = Vector2(-1000.0, -1000.0)
         barrage_center = Vector2(-1000.0, -1000.0)
 
+    layout_center = Vector2(w - 430.0 * ui_scale, 72.0 * ui_scale)
+    reset_layout_center = Vector2(w - 550.0 * ui_scale, 72.0 * ui_scale)
+    for key: String in CombatSettings.touch_layout:
+        var point: Array = CombatSettings.touch_layout[key]
+        var radius: float = float(get(key + "_radius"))
+        set(key + "_center", Vector2(clampf(float(point[0]) * w, radius, maxf(radius, w - radius)), clampf(float(point[1]) * h, 170.0 * ui_scale, maxf(170.0 * ui_scale, h - radius))))
+    if joystick_touch == -1:
+        joystick_knob = joystick_center
     queue_redraw()
 
 func _input(event: InputEvent) -> void:
@@ -139,6 +154,21 @@ func _input(event: InputEvent) -> void:
         _touch_dragged(event.index, event.position)
 
 func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
+    if _inside_circle(screen_position, layout_center, 43.0 * ui_scale):
+        set_layout_editing(not layout_editing)
+        return
+    if layout_editing:
+        if _inside_circle(screen_position, reset_layout_center, 43.0 * ui_scale):
+            CombatSettings.touch_layout.clear()
+            _update_layout()
+            return
+        if layout_touch == -1:
+            for key: String in CombatSettings.TOUCH_KEYS:
+                if _inside_circle(screen_position, get(key + "_center"), float(get(key + "_radius"))):
+                    layout_touch = touch_id
+                    layout_key = key
+                    return
+        return
     if _inside_circle(screen_position, quality_center, 43.0 * ui_scale):
         quality_queue += 1
         return
@@ -213,6 +243,9 @@ func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
         camera_last_position = screen_position
 
 func _touch_released(touch_id: int) -> void:
+    if touch_id == layout_touch:
+        layout_touch = -1
+        layout_key = ""
     if touch_id == joystick_touch:
         joystick_touch = -1
         move_vector = Vector2.ZERO
@@ -231,6 +264,15 @@ func _touch_released(touch_id: int) -> void:
     queue_redraw()
 
 func _touch_dragged(touch_id: int, screen_position: Vector2) -> void:
+    if layout_editing:
+        if touch_id == layout_touch and not layout_key.is_empty():
+            var radius: float = float(get(layout_key + "_radius"))
+            var point: Vector2 = Vector2(clampf(screen_position.x, radius, maxf(radius, size.x - radius)), clampf(screen_position.y, 170.0 * ui_scale, maxf(170.0 * ui_scale, size.y - radius)))
+            set(layout_key + "_center", point)
+            CombatSettings.touch_layout[layout_key] = [point.x / maxf(size.x, 1.0), point.y / maxf(size.y, 1.0)]
+            joystick_knob = joystick_center
+            queue_redraw()
+        return
     if touch_id == joystick_touch:
         _update_joystick(screen_position)
         return
@@ -340,6 +382,10 @@ func _draw() -> void:
     draw_arc(joystick_center, joystick_radius, 0.0, TAU, 48, base_line, 3.0, true)
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
+    _draw_button(layout_center, advanced_radius, blue_fill, "SALVAR" if layout_editing else "AJUSTAR", 9, text_color)
+    if layout_editing:
+        _draw_button(reset_layout_center, advanced_radius, attack_fill, "RESET", 9, text_color)
+        draw_string(ThemeDB.fallback_font, Vector2(28, 150 * ui_scale), "Arraste os controles. SALVAR retorna à luta.", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, text_color)
     _draw_button(quality_center, advanced_radius, base_fill, quality_label, maxi(10, int(12.0 * ui_scale)), text_color)
     _draw_button(advanced_toggle_center, advanced_radius, blue_fill if advanced_open else base_fill, "NINJA", 9, text_color)
     if advanced_open:
@@ -385,6 +431,8 @@ func _draw_button(center: Vector2, radius: float, fill: Color, label: String, fo
 func _notification(what: int) -> void:
     if what not in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED]:
         return
+    layout_touch = -1
+    layout_key = ""
     joystick_touch = -1
     camera_touch = -1
     charge_touch = -1
@@ -436,3 +484,22 @@ func configure_character(definition: CharacterDefinition) -> void:
         special_label = String(known_labels.get(first_id, fallback_label))
     _update_layout()
     queue_redraw()
+
+func set_layout_editing(enabled: bool) -> void:
+    layout_editing = enabled
+    layout_touch = -1
+    layout_key = ""
+    _notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+    if enabled:
+        owns_pause = not get_tree().paused
+        get_tree().paused = true
+    else:
+        CombatSettings.save_preferences()
+        if owns_pause:
+            get_tree().paused = false
+        owns_pause = false
+    queue_redraw()
+
+func _exit_tree() -> void:
+    if owns_pause:
+        get_tree().paused = false

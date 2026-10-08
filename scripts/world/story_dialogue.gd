@@ -10,6 +10,8 @@ var speaker_label: Label
 var body_label: Label
 var next_button: Button
 var shade: ColorRect
+var choice_box: HBoxContainer
+var choice_pending: bool = false
 var panel: PanelContainer
 
 func _ready() -> void:
@@ -60,6 +62,8 @@ func _build() -> void:
     body_label.add_theme_color_override("font_color", Color("fff4df"))
     box.add_child(body_label)
 
+    choice_box = HBoxContainer.new()
+    box.add_child(choice_box)
     next_button = Button.new()
     next_button.text = "CONTINUAR"
     next_button.custom_minimum_size = Vector2(190, 44)
@@ -79,7 +83,7 @@ func play(dialogue_lines: Array, title: String = "HISTÓRIA") -> bool:
     return true
 
 func advance() -> void:
-    if not active:
+    if not active or choice_pending:
         return
     index += 1
     if index >= lines.size():
@@ -99,6 +103,11 @@ func _show_line() -> void:
     if index < 0 or index >= lines.size():
         close()
         return
+    choice_pending = false
+    next_button.visible = true
+    for child: Node in choice_box.get_children():
+        choice_box.remove_child(child)
+        child.queue_free()
     var entry: Variant = lines[index]
     if not entry is Dictionary:
         speaker_label.text = ""
@@ -107,6 +116,24 @@ func _show_line() -> void:
         var line: Dictionary = entry
         speaker_label.text = String(line.get("speaker", ""))
         body_label.text = String(line.get("text", ""))
+        var selected: String = ""
+        var mission: Dictionary = GameFlow.current_story_mission()
+        if GameFlow.campaign_id == "henrique" and not mission.is_empty():
+            selected = String(GameFlow.progress.henrique_choices.get(String(mission.id), ""))
+        for option: Dictionary in line.get("choices", []):
+            if not selected.is_empty():
+                if selected == String(option.id):
+                    body_label.text = String(option.reply)
+                continue
+            choice_pending = true
+            next_button.visible = false
+            var button: Button = Button.new()
+            button.text = String(option.label)
+            button.custom_minimum_size = Vector2(260, 44)
+            button.pressed.connect(_choose.bind(option))
+            choice_box.add_child(button)
+        if choice_pending:
+            choice_box.get_child(0).grab_focus()
     next_button.text = "FECHAR" if index == lines.size() - 1 else "CONTINUAR"
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -120,3 +147,13 @@ func _unhandled_input(event: InputEvent) -> void:
     ):
         advance()
         get_viewport().set_input_as_handled()
+
+func _choose(option: Dictionary) -> void:
+    if not choice_pending or not GameFlow.record_story_choice(String(option.id)):
+        return
+    choice_pending = false
+    body_label.text = String(option.reply)
+    for child: Node in choice_box.get_children():
+        child.queue_free()
+    next_button.visible = true
+    next_button.grab_focus()

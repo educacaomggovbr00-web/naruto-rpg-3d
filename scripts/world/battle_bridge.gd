@@ -36,6 +36,20 @@ func _ready() -> void:
 
 func _apply_rpg_battle_setup() -> void:
     if GameFlow.versus_mode:
+        var actor: Node = get_parent().get_node("Player")
+        var opponent: Node = get_parent().get_node("EnemyDummy")
+        if GameFlow.arcade_mode == "training":
+            opponent.set_physics_process(false)
+            opponent.enable_arsenal = false
+            opponent.reactive_substitution = false
+        elif GameFlow.arcade_mode == "survival" and GameFlow.arcade_health > 0.0:
+            actor.health = minf(actor.max_health, GameFlow.arcade_health)
+        elif GameFlow.arcade_mode == "boss":
+            opponent.max_health *= 1.35
+            opponent.health = opponent.max_health
+            _show_boss_intro("DESAFIO " + opponent.character_definition.display_name, opponent)
+        if not GameFlow.arcade_mode.is_empty() and GameFlow.arcade_mode != "boss":
+            _show_story_intro(GameFlow.arcade_label())
         return
     GameFlow.ensure_rpg_progress()
     var fighter: Node = get_parent().get_node("Player")
@@ -132,14 +146,20 @@ func _physics_process(_delta: float) -> void:
     var fighter: Node = get_parent().get_node("Player")
     var cpu: Node = get_parent().get_node("EnemyDummy")
 
-    if GameFlow.is_story_battle() and not boss_phase_triggered and cpu.targetable:
-        var mission: Dictionary = GameFlow.current_story_battle_data()
+    if (GameFlow.is_story_battle() or GameFlow.arcade_mode == "boss") and not boss_phase_triggered and cpu.targetable:
+        var mission: Dictionary = GameFlow.current_story_battle_data() if GameFlow.is_story_battle() else {"boss":true,"title":cpu.character_definition.display_name}
         if (
             bool(mission.get("boss", false))
             and cpu.health <= cpu.max_health * boss_phase_threshold
         ):
             _trigger_boss_phase(cpu, fighter, mission)
 
+    if GameFlow.arcade_mode == "training":
+        if fighter.defeated:
+            fighter.call("_respawn")
+        if not cpu.targetable:
+            cpu.call("_respawn")
+        return
     if fighter.defeated or not cpu.targetable:
         finished = true
         GameFlow.finish_battle(not cpu.targetable and not fighter.defeated)

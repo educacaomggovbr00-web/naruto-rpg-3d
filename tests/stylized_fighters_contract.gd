@@ -75,6 +75,7 @@ func skin_bounds(mesh: MeshInstance3D, skeleton: Skeleton3D) -> AABB:
     return AABB(minimum, maximum - minimum)
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     var flow: Node = root.get_node("GameFlow")
@@ -203,6 +204,6 @@ func run() -> void:
         check(actor.rig_adapter.get_node_or_null("LicensedCombatNinja") == null, "Generic ninja skin must not replace any roster fighter")
     current_scene.queue_free()
     await frames(5)
-    check(root.get_child_count() == 1, "No leaked preview, pool or environment nodes")
+    check(root.get_child_count() == persistent_nodes, "No leaked preview, pool or environment nodes")
     print("STYLIZED FIGHTERS CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

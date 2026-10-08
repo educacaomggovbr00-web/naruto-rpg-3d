@@ -40,6 +40,9 @@ func _physics_process(delta: float) -> void:
     var touch: Vector2 = controls.consume_camera_delta()
 
     if actor.input_enabled:
+        var stick: Vector2 = Input.get_vector("pad_camera_left", "pad_camera_right", "pad_camera_up", "pad_camera_down", CombatSettings.controller_deadzone)
+        yaw -= stick.x * delta * 2.2
+        pitch = clampf(pitch - stick.y * delta * 1.6, -0.30, 0.52)
         yaw -= touch.x * 0.0046
         pitch = clampf(pitch - touch.y * 0.0046, -0.30, 0.52)
 

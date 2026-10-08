@@ -152,7 +152,10 @@ func _ready() -> void:
     dash_hitbox.add_child(collision)
     add_child(dash_hitbox)
     decision_rng.randomize()
-    var decision_speed: float = maxf(ai_profile.decision_speed, 0.65)
+    ai_profile = CombatSettings.profile_for(ai_profile)
+    reactive_substitution = reactive_substitution and CombatSettings.difficulty > 0
+    react_to_projectiles = react_to_projectiles and CombatSettings.difficulty > 0
+    var decision_speed: float = maxf(ai_profile.decision_speed, 0.35)
     decision_interval_min = 0.18 / decision_speed
     decision_interval_max = 0.32 / decision_speed
     locked_target = player

@@ -23,6 +23,7 @@ func clear_fighter(fighter: CharacterBody3D) -> void:
     fighter.chakra = fighter.max_chakra
     fighter.velocity = Vector3.ZERO
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     var flow: Node = root.get_node("GameFlow")
     check(flow.start_versus("sakura", "kakashi", "training") == OK, "Mixed fighter battle loads")
     await frames(10)
@@ -158,6 +159,6 @@ func run() -> void:
     check(not cpu.specials.start("rasengan"), "Kakashi cannot borrow Naruto's arsenal")
     arena.queue_free()
     await frames(5)
-    check(root.get_child_count() == 1, "New pools release completely on battle exit")
+    check(root.get_child_count() == persistent_nodes, "New pools release completely on battle exit")
     print("CHARACTER JUTSUS CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

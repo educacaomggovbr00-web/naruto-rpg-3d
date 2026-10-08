@@ -17,6 +17,7 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     flow = root.get_node("GameFlow")
@@ -122,7 +123,7 @@ func run() -> void:
     actor = village.get_node("Player")
     check(actor.global_position.distance_to(return_position) < 0.2, "Return must restore safe world position")
     check(flow.result_layer == null and flow.pending_battle.is_empty(), "Return must clear result overlay and pending encounter")
-    check(root.get_child_count() == 2, "Scene transition must remove old sibling pools")
+    check(root.get_child_count() == persistent_nodes + 1, "Scene transition must remove old sibling pools")
     flow.start_battle("training", actor.last_safe_position, actor.rotation.y)
     await scene_changed
     await frames(8)
@@ -156,6 +157,6 @@ func run() -> void:
     DirAccess.remove_absolute(flow.save_path + ".tmp")
     current_scene.queue_free()
     await frames(4)
-    check(root.get_child_count() == 1 and root.get_child(0) == flow, "World exit must clean up every scene-owned node")
+    check(root.get_child_count() == persistent_nodes and root.get_child(0) == flow, "World exit must clean up every scene-owned node")
     print("WORLD FLOW CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(1 if failures > 0 else 0)

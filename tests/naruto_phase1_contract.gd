@@ -48,6 +48,7 @@ func await_clash() -> void:
             return
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     game = load("res://main.tscn").instantiate() as Node3D
     root.add_child(game)
@@ -345,7 +346,7 @@ func run() -> void:
     var pool_count: int = tools.projectiles.size()
     game.queue_free()
     await frames(4)
-    check(root.get_child_count() == 1 and root.get_child(0).name == "GameFlow", "Scene removal must destroy sibling pools and control locks")
+    check(root.get_child_count() == persistent_nodes and root.get_child(0).name == "GameFlow", "Scene removal must destroy sibling pools and control locks")
     check(pool_count == 6, "Tool pool cannot grow during battle")
     print("NARUTO PHASE 1 CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(1 if failures > 0 else 0)

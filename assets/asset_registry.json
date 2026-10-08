@@ -896,6 +896,55 @@
       "license": "CC0-1.0",
       "modifications": "Original 512 px application icon",
       "sha256": "2dea1720a021e24d5aa32b704464e4c441bf1a86b06aa269163c0d37b9af535f"
+    },
+    {
+      "path": "assets/susanoo/susanoo_mobile_rigged.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "wahidinesport",
+      "source": "https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199",
+      "license": "CC-BY-4.0 declared by uploader; underlying franchise authorization unverified",
+      "modifications": "Original geometry retained; fitted 25-bone skin and 5 original keyframed clips via tools/rig_susanoo.py",
+      "sha256": "e8faee7e685f2e4113a2cb54aace413682eaeb724381a2afeabd2a4665d1c714",
+      "embedded_images": [
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_0.png",
+          "sha256": "9f07e50a728549156a5f9316da3805620f9fcfa32ab355d9ac20790c379f3d1e"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_1.png",
+          "sha256": "612f7d75c8726b6a90c7064f9d4ac88adeac650af8fa71e7300cd7c89d788565"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_2.png",
+          "sha256": "0b20ea86b629370d538771259df1d5673cb8b275fc48da4f5f7dc8c36e982fb7"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_3.png",
+          "sha256": "ea68587ad08edbe658069cb4bdb563a9918f3eec3178b708423e6fa38d9fc862"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_4.png",
+          "sha256": "95aa83eec8220b6de257036b41e001bd1d687d7d04823ea578d4ac3f25001697"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_5.png",
+          "sha256": "693213eb3ac110a40497e6b80e4ae5f39f14ffa681819d9359efbec096f35246"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_6.png",
+          "sha256": "27e2f81846e319707f374da804594c1a76299d7da2d0766336ac8b725cf5670f"
+        }
+      ],
+      "credit": "Perfect susanoo by wahidinesport, CC BY 4.0; https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199; https://creativecommons.org/licenses/by/4.0/; modified by project."
+    },
+    {
+      "path": "assets/world/henrique_campaign.json",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Dados narrativos e de progressão originais deste repositório",
+      "license": "Original project content",
+      "modifications": "Original Henrique campaign: six chapters and a saved rival choice; existing campaign retained",
+      "sha256": "67d7aa5236940416f1acb4efbc898c598b42fa897d89c01c43f26d221c5a3c61"
     }
   ]
 }

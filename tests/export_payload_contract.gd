@@ -134,6 +134,8 @@ func run() -> void:
     if (
         not hero.rig_adapter.rig_loaded
         or hero.rig_adapter.real_animation_count != 127
+        or hero.awakening.avatar.skeleton == null
+        or hero.awakening.avatar.skeleton.get_bone_count() != 25
         or not hero.awakening.avatar.external_model
         or not hero.ultimate.avatar.external_model
         or not FileAccess.file_exists("res://assets/susanoo/LICENSE.txt")
@@ -142,7 +144,12 @@ func run() -> void:
         quit(1)
         return
     hero_battle.queue_free()
+    if HenriqueCampaign.count() != 6 or not InputMap.has_action("pad_attack"):
+        push_error("Android pack lost original campaign or controller bindings")
+        quit(1)
+        return
     print("HENRIQUE SUSANOO ANDROID PACK: PASS")
+    print("SHINOBI EVOLUTION ANDROID PACK: PASS")
     print("ANDROID PHASE 1 PACK: PASS")
     await process_frame
     quit(0)
