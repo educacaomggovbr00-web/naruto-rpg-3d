@@ -17,11 +17,11 @@ Esta versão une a evolução 0.16 (`087a410`) ao novo main (`9e473ab`), ambos d
 
 ## Validação e APK
 
-Godot 4.7.2, Compatibility. Contrato novo: 54 verificações em headless e OpenGL; contrato integrado: 32 em OpenGL. Regressões cobrem os 47 contratos executáveis do projeto; ferramentas Python: 21 testes. Payload extraído do APK é testado sem acesso à pasta do projeto. Gate público de assets permanece independente do contrato de desenvolvimento.
+Godot 4.7.2, Compatibility. Contrato novo: 55 verificações em headless e OpenGL; contrato integrado: 32 em OpenGL. Regressões cobrem os 47 contratos executáveis do projeto; ferramentas Python: 21 testes. Payload extraído do APK é testado sem acesso à pasta do projeto. Gate público de assets permanece independente do contrato de desenvolvimento.
 
 APK de teste: `shinobi-clash-0.17.0-debug.apk`, `versionCode=18`, pacote `org.shinobi.narutorpg3d`.
 
-SHA-256: `eff0d991eed37249be8df4af023fd9bef80892c1b797ead4280db6bf0057fd4a`.
+SHA-256: `9a2b8da301ed0449f82cda945a9e96eb74636e714d58c349e4a8432c93f63b3e`.
 
 Certificado debug preservado: `23b085387ea32bdd7d02de4f2fbaf0fa9830865051f0eceb6a36a21ed914d195`. Assinatura e alinhamento de 16 KB verificados. O APK local pode atualizar o 0.16 local assinado com esse certificado. Builds da CI usam certificado próprio.
 

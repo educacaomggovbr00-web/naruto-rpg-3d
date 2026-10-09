@@ -155,8 +155,11 @@ func run() -> void:
     cpu.techniques.set_physics_process(false)
     health_after = cpu.health
     box.activate(fighter, 5.0, 0.0, 0.0, 0.1, 0.2)
-    box.try_hit(cpu)
+    box.global_position = cpu.global_position
+    await frames(2)
+    box._check_overlaps()
     check(cpu.health == health_after and fighter.stagger_timer >= 0.30, "Timed guard must negate the hit and open a counter opportunity")
+    check(box.remaining_time == 0.0 and not is_instance_valid(box.source_fighter), "Perfect guard may cancel the physical query without leaving a stale scenery source")
     check(cpu.techniques.counter_cooldown > 0.0, "Perfect guard cannot repeat every frame")
     box.deactivate()
     cpu.techniques.guard_age = 1.0

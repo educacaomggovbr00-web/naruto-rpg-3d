@@ -109,4 +109,4 @@ Essa camada não é modelo final. O objetivo deste teste é validar legibilidade
 
 ## Main integrado 0.17.0
 
-Integração de `9e473ab` com a evolução 0.16, sem trocar modelos/rigs. APK local: `shinobi-clash-0.17.0-debug.apk` (versionCode 18). Contrato de gameplay compartilhado executa 54 verificações; exportação, assinatura, alinhamento 16 KB e payload isolado validados. Detalhes e hash em [MAIN_INTEGRATION_0170.md](MAIN_INTEGRATION_0170.md). Teste em aparelho físico continua pendente.
+Integração de `9e473ab` com a evolução 0.16, sem trocar modelos/rigs. APK local: `shinobi-clash-0.17.0-debug.apk` (versionCode 18). Contrato de gameplay compartilhado executa 55 verificações; exportação, assinatura, alinhamento 16 KB e payload isolado validados. Detalhes e hash em [MAIN_INTEGRATION_0170.md](MAIN_INTEGRATION_0170.md). Teste em aparelho físico continua pendente.

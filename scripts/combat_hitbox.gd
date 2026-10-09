@@ -85,6 +85,9 @@ func _check_overlaps() -> void:
                 try_hit(fighter)
     previous_transform = current_transform
     sweep_valid = true
+    # A perfect guard can cancel/deactivate the source during the shape query.
+    if remaining_time <= 0.0 or not is_instance_valid(source_fighter):
+        return
     for body: Node3D in get_overlapping_bodies():
         if body not in already_hit and body.has_method("receive_scenery_hit"):
             already_hit.append(body)
