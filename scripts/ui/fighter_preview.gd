@@ -2,22 +2,30 @@ extends SubViewportContainer
 ## Lightweight character-select stage: larger silhouettes, anime lighting, no gameplay systems.
 var stage: Node3D
 var fighters: Array[CharacterBody3D] = []
+var technique_visual: Node3D
+var technique_timer: float = 0.0
+var preview_clip: String = "idle"
+
+func preview_animation(clip: String) -> void:
+    technique_timer = 0.0
+    if technique_visual != null: technique_visual.visible = false
+    preview_clip = clip
+    if not fighters.is_empty():
+        fighters[0].preview_animation(clip)
 
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
-    custom_minimum_size = Vector2(0, 255)
+    custom_minimum_size = Vector2(0, 220)
     stretch = true
-    var graphics: ConfigFile = ConfigFile.new()
-    graphics.load("user://graphics.cfg")
-    var quality: int = clampi(int(graphics.get_value("graphics", "quality", 1)), 0, 2)
-    stretch_shrink = 2 if quality == 0 else 1
+    stretch_shrink = 1
 
     var viewport: SubViewport = SubViewport.new()
     viewport.size = Vector2i(760, 255)
     viewport.own_world_3d = true
     viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-    viewport.msaa_3d = Viewport.MSAA_DISABLED if quality == 0 else Viewport.MSAA_2X
-    viewport.scaling_3d_scale = 0.78 if quality == 0 else 0.85 if quality == 1 else 1.0
+    var quality: int = GraphicsPreferences.read_quality()
+    viewport.msaa_3d = (Viewport.MSAA_DISABLED if quality == 0 else Viewport.MSAA_2X) if OS.has_feature("android") else Viewport.MSAA_4X
+    viewport.scaling_3d_scale = 1.0
     add_child(viewport)
 
     stage = Node3D.new()
@@ -42,10 +50,11 @@ func _ready() -> void:
     stage.add_child(fill)
 
     var back_mesh: PlaneMesh = PlaneMesh.new()
-    back_mesh.size = Vector2(10.0, 4.5)
+    back_mesh.size = Vector2(18.0, 4.5)
     var back_material: StandardMaterial3D = StandardMaterial3D.new()
     back_material.albedo_color = Color("0a1d2b")
     back_material.roughness = 1.0
+    back_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
     back_mesh.material = back_material
     var backdrop: MeshInstance3D = MeshInstance3D.new()
     backdrop.mesh = back_mesh
@@ -81,27 +90,61 @@ func _ready() -> void:
         stage.add_child(disc)
 
     var camera: Camera3D = Camera3D.new()
-    camera.position = Vector3(0, 1.18, 5.0)
+    camera.position = Vector3(0, .94, 5.0)
     camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-    camera.size = 2.18
+    camera.size = 2.3
     camera.keep_aspect = Camera3D.KEEP_HEIGHT
     stage.add_child(camera)
 
-    show_fighters(CharacterCatalog.HENRIQUE, CharacterCatalog.NARUTO)
+    technique_visual = Node3D.new()
+    technique_visual.set_script(preload("res://scripts/elemental_jutsu_visual.gd"))
+    stage.add_child(technique_visual)
+    show_fighters(GameFlow.player_character, GameFlow.cpu_character)
 
 func show_fighters(player: CharacterDefinition, cpu: CharacterDefinition) -> void:
-    for fighter: CharacterBody3D in fighters:
-        if is_instance_valid(fighter):
-            stage.remove_child(fighter)
-            fighter.queue_free()
-    fighters.clear()
+    if technique_visual != null:
+        technique_visual.visible = false
+    technique_timer = 0.0
 
     for index: int in range(2):
+        var selected: CharacterDefinition = player if index == 0 else cpu
+        if fighters.size() > index and is_instance_valid(fighters[index]):
+            if fighters[index].definition == selected:
+                continue
+            var previous: CharacterBody3D = fighters[index]
+            stage.remove_child(previous)
+            previous.queue_free()
+            fighters[index] = null
         var actor: CharacterBody3D = CharacterBody3D.new()
         actor.set_script(preload("res://scripts/ui/fighter_preview_actor.gd"))
         actor.definition = player if index == 0 else cpu
         actor.position = Vector3(-0.92 if index == 0 else 0.92, 0.95, 0)
         actor.rotation.y = 0.14 if index == 0 else -0.14
-        actor.scale = Vector3.ONE * 1.24
+        actor.scale = Vector3.ONE * 1.08
         stage.add_child(actor)
-        fighters.append(actor)
+        if fighters.size() > index:
+            fighters[index] = actor
+        else:
+            fighters.append(actor)
+        if index == 0:
+            actor.preview_animation(preview_clip)
+
+func preview_technique(id: String) -> void:
+    if fighters.is_empty(): return
+    var data: JutsuDefinition = fighters[0].definition.find_jutsu(id)
+    if data == null: return
+    fighters[0].preview_animation(data.animation_name)
+    var manifest = fighters[0].rig_adapter.manifest
+    technique_timer = clampf(float(manifest.get("clips",{}).get(data.animation_name,{}).get("duration",1.0)),.6,2.0)
+    technique_visual.visible = false
+    if data.strategy not in ["clones","barrage","trap"]:
+        technique_visual.position = Vector3(-.92,1.0,.45)
+        technique_visual.heading = Vector3.RIGHT
+        technique_visual.configure_jutsu(data,.26,data.strategy == "burst")
+
+func _physics_process(delta: float) -> void:
+    if technique_timer <= 0.0: return
+    technique_timer -= delta
+    if technique_timer <= 0.0:
+        technique_visual.visible = false
+        fighters[0].preview_animation("idle")

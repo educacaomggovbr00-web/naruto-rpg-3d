@@ -2,45 +2,35 @@ extends SceneTree
 ## Copy this script outside the checkout, run with --main-pack from that directory.
 ## Otherwise res:// can fall back to checkout files and invalidate the check.
 func _initialize() -> void:
+    for path: String in ["res://scripts/controls_audio_preferences_ui.gd", "res://scripts/damage_tail.gd", "res://scripts/battle_pause.gd","res://scripts/battle_metrics.gd","res://scripts/camera_preferences_ui.gd","res://scripts/jutsu_signature.gd","res://scripts/jutsu_construct.gd","res://scripts/ultimate_presentation.gd","res://scripts/jutsu_impact.gd","res://assets/vfx/jutsu_ribbon.gdshader","res://assets/vfx/jutsu_impact.gdshader","res://assets/vfx/elemental_volume.gdshader","res://assets/vfx/jutsu_smoke.gdshader"]:
+        if not ResourceLoader.exists(path):
+            push_error("Android export lost jutsu presentation: " + path)
+            quit(1)
+            return
     call_deferred("run")
 
 func run() -> void:
-    if "--public" in OS.get_cmdline_user_args():
-        for id: String in ["naruto", "sasuke", "sakura", "kakashi"]:
-            if ResourceLoader.exists("res://assets/characters/stylized/" + id + ".glb"):
-                push_error("Development-only fan model leaked into public payload")
-                quit(1)
-                return
-        for property: Dictionary in ProjectSettings.get_property_list():
-            if String(property.name).begins_with("autoload/"):
-                push_error("Rejected public container retained a resource-dependent autoload")
-                quit(1)
-                return
-        if FileAccess.file_exists("res://main.tscn") or FileAccess.file_exists("res://assets/characters/rigged.glb") or FileAccess.file_exists("res://world.tscn") or FileAccess.file_exists("res://selection.tscn"):
-            push_error("Uncleared public payload leaked")
+    if ProjectSettings.get_setting("application/run/main_scene") != "res://boot.tscn" or not ResourceLoader.exists("res://boot.tscn") or not ResourceLoader.exists("res://scripts/scene_loading_screen.gd"):
+        push_error("Android payload lost lightweight startup/loading resources")
+        quit(1)
+        return
+    for script: String in ["combat_team.gd", "support_actor.gd", "fighter_reconfiguration.gd", "team_hud.gd"]:
+        if not ResourceLoader.exists("res://scripts/team/" + script):
+            push_error("Android payload lost team module: " + script)
             quit(1)
             return
-        var model_import: ConfigFile = ConfigFile.new()
-        if model_import.load("res://assets/characters/rigged.glb.import") == OK:
-            var imported_path: String = model_import.get_value("remap", "path", "")
-            if FileAccess.file_exists(imported_path):
-                push_error("Imported uncleared model leaked")
-                quit(1)
-                return
-        print("PUBLIC PAYLOAD GATE: PASS")
-        quit(0)
-        return
-    # The rejected public pack has no character resources. Resolve this only
-    # in the development branch, so its absence cannot prevent the gate test
-    # itself from compiling.
-    var catalog: Script = load("res://scripts/character_catalog.gd") as Script
-    root.get_node("GameFlow").player_character = catalog.get_script_constant_map()["NARUTO"]
+    for script: String in ["elemental_states.gd", "battle_condition.gd", "breakable_prop.gd", "arena_interactions.gd", "boss_encounter.gd"]:
+        if not ResourceLoader.exists("res://scripts/" + script):
+            push_error("Android payload lost battle interaction module: " + script)
+            quit(1)
+            return
+    root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var game: Node = load("res://main.tscn").instantiate()
     root.add_child(game)
     for i: int in range(8):
         await physics_frame
     var fighter: Node = game.get_node("Player")
-    if not fighter.rig_adapter.rig_loaded or fighter.rig_adapter.real_animation_count != 27 or fighter.ninja_tools.projectiles.size() != 6 or fighter.specials.clones.size() != 3:
+    if not fighter.rig_adapter.rig_loaded or fighter.rig_adapter.real_animation_count != 127 or fighter.ninja_tools.projectiles.size() != 6 or fighter.specials.clones.size() != 3:
         push_error("Development export lost rig/manifest or pools")
         quit(1)
         return
@@ -88,6 +78,7 @@ func run() -> void:
         quit(1)
         return
     print("SELECTABLE FIGHTERS ANDROID PACK: PASS")
+    var catalog: Script = load("res://scripts/character_catalog.gd")
     catalog.initialize()
     var authored_visuals: int = 0
     var roster_placeholders: int = 0
@@ -100,7 +91,7 @@ func run() -> void:
             return
         if definition.visual_status in ["DEVELOPMENT_ONLY_ORIGINAL_FAN_MODEL", "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_SAKURA_RIGGED", "DEVELOPMENT_ONLY_USER_SUPPLIED_HENRIQUE_RIGGED"]:
             authored_visuals += 1
-        elif definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+        elif definition.visual_status == "ORIGINAL_STYLIZED_SKINNED_MODEL":
             roster_placeholders += 1
         else:
             push_error("Unexpected roster visual status: " + definition.character_id)
@@ -161,7 +152,9 @@ func run() -> void:
     var hero: Node = hero_battle.get_node("Player")
     if (
         not hero.rig_adapter.rig_loaded
-        or hero.rig_adapter.real_animation_count != 27
+        or hero.rig_adapter.real_animation_count != 127
+        or hero.awakening.avatar.skeleton == null
+        or hero.awakening.avatar.skeleton.get_bone_count() != 25
         or not hero.awakening.avatar.external_model
         or not hero.ultimate.avatar.external_model
         or not FileAccess.file_exists("res://assets/susanoo/LICENSE.txt")
@@ -170,7 +163,12 @@ func run() -> void:
         quit(1)
         return
     hero_battle.queue_free()
+    if HenriqueCampaign.count() != 6 or not InputMap.has_action("pad_attack"):
+        push_error("Android pack lost original campaign or controller bindings")
+        quit(1)
+        return
     print("HENRIQUE SUSANOO ANDROID PACK: PASS")
+    print("SHINOBI EVOLUTION ANDROID PACK: PASS")
     print("ANDROID PHASE 1 PACK: PASS")
     await process_frame
     quit(0)

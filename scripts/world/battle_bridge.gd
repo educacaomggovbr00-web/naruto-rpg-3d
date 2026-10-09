@@ -5,8 +5,18 @@ var boss_intro_timer: float = 0.0
 var boss_banner: Label = null
 var boss_phase_triggered: bool = false
 var boss_phase_threshold: float = 0.32
+var mob_enemies: Array[CharacterBody3D] = []
+var boss_encounter: CanvasLayer = null
 
 func _ready() -> void:
+    var metrics: Node = Node.new()
+    metrics.name = "BattleMetrics"
+    metrics.set_script(preload("res://scripts/battle_metrics.gd"))
+    get_parent().add_child.call_deferred(metrics)
+    var pause_menu: CanvasLayer = CanvasLayer.new()
+    pause_menu.name = "BattlePause"
+    pause_menu.set_script(preload("res://scripts/battle_pause.gd"))
+    get_parent().add_child.call_deferred(pause_menu)
     var audio: Node = Node.new()
     audio.name = "AudioManager"
     audio.set_script(preload("res://scripts/audio_manager.gd"))
@@ -20,10 +30,6 @@ func _ready() -> void:
     button.pressed.connect(GameFlow.enter_world)
     layer.add_child(button)
     add_child(layer)
-    var pause_menu: CanvasLayer = CanvasLayer.new()
-    pause_menu.name = "BattlePause"
-    pause_menu.set_script(preload("res://scripts/ui/battle_pause.gd"))
-    add_child(pause_menu)
     var versus: Button = Button.new()
     versus.text = "VERSUS"
     versus.position = Vector2(680, 12)
@@ -37,10 +43,96 @@ func _ready() -> void:
         GameFlow.progress.supplies -= 1
         GameFlow.save_progress()
     call_deferred("_apply_rpg_battle_setup")
+    call_deferred("_setup_expansion")
+
+func _setup_expansion() -> void:
+    var fighter: CharacterBody3D = get_parent().get_node("Player")
+    var enemy: CharacterBody3D = get_parent().get_node("EnemyDummy")
+    var arena: Node3D = Node3D.new()
+    arena.name = "ArenaInteractions"
+    arena.set_script(preload("res://scripts/arena_interactions.gd"))
+    get_parent().add_child(arena)
+    if GameFlow.battle_rules_enabled:
+        for actor: CharacterBody3D in [fighter, enemy]:
+            var condition: Node3D = Node3D.new()
+            condition.name = "BattleCondition"
+            condition.set_script(preload("res://scripts/battle_condition.gd"))
+            actor.add_child(condition)
+        if GameFlow.arcade_mode == "boss" or (GameFlow.is_story_battle() and bool(GameFlow.current_story_battle_data().get("boss", false))):
+            boss_encounter = CanvasLayer.new()
+            boss_encounter.name = "BossEncounter"
+            boss_encounter.set_script(preload("res://scripts/boss_encounter.gd"))
+            boss_encounter.fighter = fighter
+            boss_encounter.boss = enemy
+            add_child(boss_encounter)
+    if GameFlow.team_enabled:
+        for actor: CharacterBody3D in [fighter, enemy]:
+            if actor == enemy and GameFlow.arcade_mode == "mob":
+                continue
+            var team: CombatTeam = CombatTeam.new()
+            team.name = "PlayerTeam" if actor == fighter else "EnemyTeam"
+            team.add_to_group("combat_teams")
+            team.configure(actor, enemy if actor == fighter else fighter, GameFlow.player_partners if actor == fighter else GameFlow.cpu_partners)
+            get_parent().add_child(team)
+    if GameFlow.team_enabled or GameFlow.battle_rules_enabled:
+        var team_hud: CanvasLayer = CanvasLayer.new()
+        team_hud.name = "TeamHUD"
+        team_hud.set_script(preload("res://scripts/team/team_hud.gd"))
+        team_hud.fighter = fighter
+        team_hud.enemy = enemy
+        get_parent().add_child(team_hud)
+    if GameFlow.arcade_mode == "mob":
+        _setup_mob(enemy)
+
+func _setup_mob(enemy: CharacterBody3D) -> void:
+    mob_enemies.append(enemy)
+    var definitions: PackedStringArray = ["shino", "kiba"]
+    for index: int in range(2):
+        var template: Node = load("res://main.tscn").instantiate()
+        var actor: CharacterBody3D = template.get_node("EnemyDummy")
+        template.remove_child(actor)
+        template.free()
+        actor.name = "MobNinja%d" % index
+        actor.character_override = CharacterCatalog.find(definitions[index])
+        actor.position = Vector3(-4.0 if index == 0 else 4.0, 1.0, -7.0)
+        actor.enable_arsenal = false
+        actor.reactive_substitution = false
+        get_parent().add_child(actor)
+        actor.max_health = 45.0
+        actor.health = 45.0
+        actor.attack_damage = 6.0
+        actor.decision_interval_min *= 1.4
+        actor.decision_interval_max *= 1.4
+        mob_enemies.append(actor)
 
 func _apply_rpg_battle_setup() -> void:
     if GameFlow.versus_mode:
-        _setup_free_battle()
+        var actor: Node = get_parent().get_node("Player")
+        var opponent: Node = get_parent().get_node("EnemyDummy")
+        if GameFlow.arcade_mode == "training":
+            opponent.training_behavior = GamePreferences.training_behavior if GamePreferences.training_behavior < 2 else -1
+            opponent.set_physics_process(true)
+            opponent.enable_arsenal = false
+            opponent.reactive_substitution = false
+            var coach: CanvasLayer = CanvasLayer.new()
+            coach.name = "TrainingCoach"
+            coach.set_script(preload("res://scripts/training_coach.gd"))
+            coach.fighter = actor
+            add_child(coach)
+        elif GameFlow.arcade_mode == "survival" and GameFlow.arcade_health > 0.0:
+            actor.health = minf(actor.max_health, GameFlow.arcade_health)
+        elif GameFlow.arcade_mode == "boss":
+            opponent.max_health *= 1.35
+            opponent.health = opponent.max_health
+            _show_boss_intro("DESAFIO " + opponent.character_definition.display_name, opponent)
+        if GameFlow.battle_mode == "survival" and GameFlow.arcade_mode.is_empty():
+            _setup_free_battle()
+        elif GameFlow.arcade_mode == "survival":
+            var pressure: float = minf(float(GameFlow.survival_wave-1)*.035,.30)
+            opponent.decision_interval_min /= 1.0+pressure
+            opponent.decision_interval_max /= 1.0+pressure
+        if not GameFlow.arcade_mode.is_empty() and GameFlow.arcade_mode != "boss":
+            _show_story_intro(GameFlow.arcade_label())
         return
     GameFlow.ensure_rpg_progress()
     var fighter: Node = get_parent().get_node("Player")
@@ -137,14 +229,34 @@ func _physics_process(_delta: float) -> void:
     var fighter: Node = get_parent().get_node("Player")
     var cpu: Node = get_parent().get_node("EnemyDummy")
 
-    if GameFlow.is_story_battle() and not boss_phase_triggered and cpu.targetable:
-        var mission: Dictionary = GameFlow.current_story_battle_data()
+    if (GameFlow.is_story_battle() or GameFlow.arcade_mode == "boss") and not boss_phase_triggered and cpu.targetable:
+        var mission: Dictionary = GameFlow.current_story_battle_data() if GameFlow.is_story_battle() else {"boss":true,"title":cpu.character_definition.display_name}
         if (
             bool(mission.get("boss", false))
             and cpu.health <= cpu.max_health * boss_phase_threshold
         ):
             _trigger_boss_phase(cpu, fighter, mission)
 
+    if GameFlow.arcade_mode == "training":
+        fighter.chakra = fighter.max_chakra
+        if fighter.combo_display_timer <= 0.0 and cpu.stagger_timer <= 0.0 and cpu.is_on_floor() and not fighter.attack_active and fighter.jutsu_timer <= 0.0:
+            cpu.health = cpu.max_health
+        if fighter.defeated:
+            fighter.call("_respawn")
+        if not cpu.targetable:
+            cpu.call("_respawn")
+        return
+    if GameFlow.arcade_mode == "mob":
+        var alive: int = 0
+        for actor: CharacterBody3D in mob_enemies:
+            if actor.targetable:
+                alive += 1
+            else:
+                actor.set_physics_process(false)
+        if fighter.defeated or alive == 0:
+            finished = true
+            GameFlow.finish_battle(alive == 0 and not fighter.defeated)
+        return
     if fighter.defeated or not cpu.targetable:
         if GameFlow.versus_mode and GameFlow.battle_mode == "training":
             fighter.call("_respawn")
@@ -196,6 +308,8 @@ func _trigger_boss_phase(cpu: Node, fighter: Node, mission: Dictionary) -> void:
         cpu.awakening.call("start")
 
     _show_phase_banner("FASE 2 • " + String(mission.get("title", "BOSS")).to_upper())
+    if is_instance_valid(boss_encounter):
+        boss_encounter.call_deferred("start_qte")
 
     if is_instance_valid(fighter.camera_rig):
         if fighter.camera_rig.has_method("begin_sequence"):

@@ -13,6 +13,9 @@ func check(ok: bool, message: String) -> void:
         push_error(message)
 
 func frames(count: int) -> void:
+    var pending_flow: Node = root.get_node("GameFlow")
+    while pending_flow.busy:
+        await process_frame
     for _index: int in range(count):
         await physics_frame
 
@@ -73,15 +76,15 @@ func run() -> void:
 
     check(bool(player_adapter.get("rig_loaded")), "Gaara runtime rig loads")
     check(bool(cpu_adapter.get("rig_loaded")), "Temari runtime rig loads")
-    check(bool(player_adapter.get("using_model_fallback")), "Gaara uses shared fallback until final GLB arrives")
-    check(bool(cpu_adapter.get("using_model_fallback")), "Temari uses shared fallback until final GLB arrives")
-    check(String(player_adapter.get("resolved_model_path")) == RosterModelSlotFactory.SHARED_FALLBACK, "Gaara resolves fallback path")
-    check(String(cpu_adapter.get("resolved_model_path")) == RosterModelSlotFactory.SHARED_FALLBACK, "Temari resolves fallback path")
+    check(not bool(player_adapter.get("using_model_fallback")), "Gaara uses dedicated model")
+    check(not bool(cpu_adapter.get("using_model_fallback")), "Temari uses dedicated model")
+    check(String(player_adapter.get("resolved_model_path")) == gaara.model_path, "Gaara resolves dedicated path")
+    check(String(cpu_adapter.get("resolved_model_path")) == temari.model_path, "Temari resolves dedicated path")
 
     var gaara_accessories: Array = player_adapter.get("roster_accessories")
     var temari_accessories: Array = cpu_adapter.get("roster_accessories")
-    check(gaara_accessories.size() >= 2, "Gaara runtime creates procedural accessories")
-    check(temari_accessories.size() >= 2, "Temari runtime creates procedural accessories")
+    check(gaara_accessories.is_empty(), "Gaara does not duplicate baked accessories")
+    check(temari_accessories.is_empty(), "Temari does not duplicate baked accessories")
 
     player_adapter.call("_sync_roster_accessories")
     cpu_adapter.call("_sync_roster_accessories")

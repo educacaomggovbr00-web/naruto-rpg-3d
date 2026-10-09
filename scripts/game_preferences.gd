@@ -15,6 +15,10 @@ var config_path: String = PATH
 func _ready() -> void:
     load_preferences()
     _register_gamepad()
+    if FileAccess.file_exists(PATH) and not FileAccess.file_exists(CombatSettings.PATH):
+        CombatSettings.camera_sensitivity = camera_sensitivity
+        CombatSettings.camera_shake = 1.0 if camera_shake else 0.0
+        CombatSettings.difficulty = difficulty
 
 func load_preferences() -> void:
     var config: ConfigFile = ConfigFile.new()
@@ -41,6 +45,10 @@ func save_preferences() -> Error:
     config.set_value("battle", "difficulty", difficulty)
     config.set_value("battle", "training", training_behavior)
     var result: Error = config.save(config_path)
+    if config_path == PATH:
+        CombatSettings.camera_sensitivity = camera_sensitivity
+        CombatSettings.camera_shake = 1.0 if camera_shake else 0.0
+        CombatSettings.save_preferences()
     changed.emit()
     return result
 
@@ -55,37 +63,16 @@ func cpu_profile(base: AIProfileDefinition) -> AIProfileDefinition:
     return profile
 
 func gamepad_move() -> Vector2:
-    return Input.get_vector("pad_left", "pad_right", "pad_up", "pad_down")
+    return CombatSettings.movement()
 
 func gamepad_camera() -> Vector2:
     return Input.get_vector("pad_camera_left", "pad_camera_right", "pad_camera_up", "pad_camera_down")
 
 func _register_gamepad() -> void:
-    var buttons: Dictionary = {
-        "pad_jump": JOY_BUTTON_A, "pad_dodge": JOY_BUTTON_B,
-        "pad_attack": JOY_BUTTON_X, "pad_jutsu": JOY_BUTTON_Y,
-        "pad_guard": JOY_BUTTON_LEFT_SHOULDER, "pad_dash": JOY_BUTTON_RIGHT_SHOULDER,
-        "pad_sub": JOY_BUTTON_DPAD_DOWN, "pad_lock": JOY_BUTTON_RIGHT_STICK,
-        "pad_special": JOY_BUTTON_DPAD_LEFT, "pad_ultimate": JOY_BUTTON_DPAD_UP,
-        "pad_awaken": JOY_BUTTON_DPAD_RIGHT, "pad_pause": JOY_BUTTON_START
-    }
-    for action: String in buttons:
-        if not InputMap.has_action(action):
-            InputMap.add_action(action)
-            var event: InputEventJoypadButton = InputEventJoypadButton.new()
-            event.button_index = int(buttons[action])
-            InputMap.action_add_event(action, event)
-    var axes: Dictionary = {
-        "pad_left": [JOY_AXIS_LEFT_X, -1.0], "pad_right": [JOY_AXIS_LEFT_X, 1.0],
-        "pad_up": [JOY_AXIS_LEFT_Y, -1.0], "pad_down": [JOY_AXIS_LEFT_Y, 1.0],
-        "pad_camera_left": [JOY_AXIS_RIGHT_X, -1.0], "pad_camera_right": [JOY_AXIS_RIGHT_X, 1.0],
-        "pad_camera_up": [JOY_AXIS_RIGHT_Y, -1.0], "pad_camera_down": [JOY_AXIS_RIGHT_Y, 1.0],
-        "pad_charge": [JOY_AXIS_TRIGGER_LEFT, 1.0], "pad_run": [JOY_AXIS_TRIGGER_RIGHT, 1.0]
-    }
-    for action: String in axes:
-        if not InputMap.has_action(action):
-            InputMap.add_action(action, 0.18)
-            var event: InputEventJoypadMotion = InputEventJoypadMotion.new()
-            event.axis = int(axes[action][0])
-            event.axis_value = float(axes[action][1])
-            InputMap.action_add_event(action, event)
+    # CombatSettings installs the canonical team-compatible button mappings.
+    if not InputMap.has_action("pad_run"):
+        InputMap.add_action("pad_run", .18)
+        var event: InputEventJoypadMotion = InputEventJoypadMotion.new()
+        event.axis = JOY_AXIS_TRIGGER_RIGHT
+        event.axis_value = 1.0
+        InputMap.action_add_event("pad_run", event)

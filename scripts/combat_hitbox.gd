@@ -18,6 +18,8 @@ func _ready() -> void:
     process_physics_priority = 20
     monitoring = true
     monitorable = false
+    if GameFlow.battle_rules_enabled:
+        collision_mask |= 1
 
 func _physics_process(delta: float) -> void:
     if remaining_time <= 0.0:
@@ -83,6 +85,15 @@ func _check_overlaps() -> void:
                 try_hit(fighter)
     previous_transform = current_transform
     sweep_valid = true
+    # A perfect guard can cancel/deactivate the source during the shape query.
+    if remaining_time <= 0.0 or not is_instance_valid(source_fighter):
+        return
+    for body: Node3D in get_overlapping_bodies():
+        if body not in already_hit and body.has_method("receive_scenery_hit"):
+            already_hit.append(body)
+            var scaled: float = damage * (source_fighter.get_damage_multiplier() if source_fighter.has_method("get_damage_multiplier") else 1.0)
+            body.receive_scenery_hit(scaled)
+            preload("res://scripts/arena_interactions.gd").impact(source_fighter, body.global_position, "earth", .8)
 
 func try_hit(fighter: Node) -> void:
     if remaining_time <= 0.0 or not is_instance_valid(source_fighter) or not is_instance_valid(fighter):
@@ -127,7 +138,9 @@ func try_hit(fighter: Node) -> void:
     if source.has_method("on_attack_contact"):
         source.call("on_attack_contact", fighter, actual_damage)
 
-    if actual_damage > 0.001 and source.has_method("on_attack_connected"):
+    if actual_damage > 0.001 and source.has_method("on_attack_resolved"):
+        source.call("on_attack_resolved",fighter,actual_damage,launch_velocity,was_blocked)
+    elif actual_damage > 0.001 and source.has_method("on_attack_connected"):
         source.call(
             "on_attack_connected",
             fighter,

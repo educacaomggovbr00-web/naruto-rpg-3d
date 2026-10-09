@@ -16,7 +16,7 @@ var fov_kick: float = 0.0
 var base_fov: float = 60.0
 var lock_base_distance: float = 3.85
 var lock_distance_factor: float = 0.20
-var lock_max_distance: float = 9.8
+var lock_max_distance: float = 12.0
 var free_distance: float = 4.35
 var smoothed_focus: Vector3 = Vector3.ZERO
 var cinematic_target: Node3D = null
@@ -46,14 +46,15 @@ func _unhandled_input(event: InputEvent) -> void:
 
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         if not is_instance_valid(locked_target):
-            yaw -= event.relative.x * mouse_sensitivity * GamePreferences.camera_sensitivity
-            pitch = clampf(pitch - event.relative.y * mouse_sensitivity * GamePreferences.camera_sensitivity, min_pitch, max_pitch)
+            yaw -= event.relative.x * mouse_sensitivity * CombatSettings.camera_sensitivity
+            pitch = clampf(pitch - event.relative.y * mouse_sensitivity * CombatSettings.camera_sensitivity, min_pitch, max_pitch)
     elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     elif event is InputEventMouseButton and event.pressed and not _is_mobile_runtime():
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _process(delta: float) -> void:
+    base_fov = CombatSettings.camera_fov
     var locked_target: Node3D = player.call("get_locked_target") as Node3D
     var combat_profile: Dictionary = (
         player.call("get_camera_state_profile") as Dictionary
@@ -63,18 +64,18 @@ func _process(delta: float) -> void:
     var state_fov_offset: float = float(combat_profile.get("fov_offset", 0.0))
     var state_distance_offset: float = float(combat_profile.get("distance_offset", 0.0))
     var state_roll_degrees: float = float(combat_profile.get("roll_degrees", 0.0))
-    if not is_instance_valid(locked_target):
-        var pad: Vector2 = GamePreferences.gamepad_camera()
-        yaw -= pad.x * delta * 2.2 * GamePreferences.camera_sensitivity
-        pitch = clampf(pitch - pad.y * delta * 1.5 * GamePreferences.camera_sensitivity, min_pitch, max_pitch)
-
     if is_instance_valid(mobile_controls):
         var touch_value: Variant = mobile_controls.call("consume_camera_delta")
         if typeof(touch_value) == TYPE_VECTOR2:
             var touch_delta: Vector2 = touch_value
             if not is_instance_valid(locked_target) and touch_delta.length_squared() > 0.0:
-                yaw -= touch_delta.x * touch_sensitivity * GamePreferences.camera_sensitivity
-                pitch = clampf(pitch - touch_delta.y * touch_sensitivity * GamePreferences.camera_sensitivity, min_pitch, max_pitch)
+                yaw -= touch_delta.x * touch_sensitivity * CombatSettings.camera_sensitivity
+                pitch = clampf(pitch - touch_delta.y * touch_sensitivity * CombatSettings.camera_sensitivity, min_pitch, max_pitch)
+
+    if not is_instance_valid(locked_target):
+        var stick: Vector2 = Input.get_vector("pad_camera_left", "pad_camera_right", "pad_camera_up", "pad_camera_down", CombatSettings.controller_deadzone)
+        yaw -= stick.x * delta * 2.2 * CombatSettings.camera_sensitivity
+        pitch = clampf(pitch - stick.y * delta * 1.6 * CombatSettings.camera_sensitivity, min_pitch, max_pitch)
 
     var follow_position: Vector3 = player.global_position + Vector3.UP * height
 
@@ -87,15 +88,17 @@ func _process(delta: float) -> void:
             var desired_yaw: float = atan2(-flat.x, -flat.z)
             yaw = lerp_angle(yaw, desired_yaw, 1.0 - exp(-lock_smoothing * delta))
 
-        pitch = lerp(pitch, lock_pitch, 1.0 - exp(-lock_smoothing * delta))
+        var aerial_pitch: float = clampf(lock_pitch+atan2(to_target.y,maxf(flat.length(),1.0))*.35,min_pitch,max_pitch)
+        pitch = lerp(pitch, aerial_pitch, 1.0 - exp(-lock_smoothing * delta))
         follow_position = follow_position.lerp(
             locked_target.global_position + Vector3.UP * 1.0,
-            0.42
+            0.36
         )
 
         var desired_length: float = clampf(
             lock_base_distance
             + flat.length() * lock_distance_factor
+            + maxf(flat.length()-6.0,0.0)*.15
             + absf(to_target.y) * 0.14
             + state_distance_offset,
             4.1,
@@ -118,6 +121,10 @@ func _process(delta: float) -> void:
     var separation: float = player.global_position.distance_to(locked_target.global_position) if is_instance_valid(locked_target) else 0.0
     var dash_active: bool = float(player.call("get_chakra_dash_timer")) > 0.0
     var dash_fov: float = 5.0 if dash_active else 0.0
+    if not CombatSettings.camera_motion:
+        dash_fov = 0.0
+        state_fov_offset = 0.0
+        fov_kick = 0.0
     var desired_fov: float = clampf(
         base_fov + separation * 0.18 + dash_fov + fov_kick + state_fov_offset,
         52.0,
@@ -128,10 +135,15 @@ func _process(delta: float) -> void:
     if cinematic_remaining > 0.0 and is_instance_valid(cinematic_target):
         follow_position = (player.global_position + cinematic_target.global_position) * 0.5 + Vector3.UP
         var shot_distance: float = 8.0 if sequence_shot == "chain" else 5.2 if sequence_shot == "clash" else 5.8 if sequence_shot == "jutsu" else 6.4
+        if sequence_shot == "ultimate_prepare": shot_distance = 5.4
+        elif sequence_shot == "ultimate_sweep": shot_distance = 7.4
+        elif sequence_shot == "ultimate_finish": shot_distance = 5.0
         spring_arm.spring_length = lerpf(spring_arm.spring_length, shot_distance, 1.0 - exp(-6.0 * delta))
         if not sequence_shot.is_empty():
             var axis: Vector3 = cinematic_target.global_position - player.global_position
             var side_angle: float = 0.34 if sequence_shot == "jutsu" else 0.55
+            if sequence_shot == "ultimate_sweep": side_angle = 1.1
+            elif sequence_shot == "ultimate_finish": side_angle = -.35
             var shot_yaw: float = atan2(-axis.x, -axis.z) + side_angle
             yaw = lerp_angle(yaw, shot_yaw, 1.0 - exp(-5.0 * delta))
             var sequence_fov: float = 63.0 if sequence_shot == "jutsu" else 60.0
@@ -145,10 +157,11 @@ func _process(delta: float) -> void:
         sin(ticks * 47.0),
         cos(ticks * 61.0),
         0.0
-    ) * (shake_strength if GamePreferences.camera_shake else 0.0)
+    ) * shake_strength * CombatSettings.camera_shake
 
     smoothed_focus = smoothed_focus.lerp(follow_position, 1.0 - exp(-12.0 * delta))
     var desired_roll: float = (deg_to_rad(-1.15) if dash_active else 0.0) + deg_to_rad(state_roll_degrees)
+    if not CombatSettings.camera_motion: desired_roll = 0.0
     dash_roll = lerpf(dash_roll, desired_roll, 1.0 - exp(-10.0 * delta))
     global_position = smoothed_focus
     global_rotation = Vector3(pitch, yaw, dash_roll)

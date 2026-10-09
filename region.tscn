@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scripts/world/world_actor.gd" id="actor"]
 [ext_resource type="Script" path="res://scripts/world/world_camera.gd" id="camera"]
 [ext_resource type="Script" path="res://scripts/world/world_controls.gd" id="controls"]
-[ext_resource type="Script" path="res://scripts/world/region_manager.gd" id="manager"]
+[ext_resource type="Script" uid="uid://dasccgngvrwbi" path="res://scripts/world/region_manager.gd" id="manager"]
 
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.40

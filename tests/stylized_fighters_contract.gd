@@ -9,6 +9,9 @@ func check(ok: bool, message: String) -> void:
         failures += 1
         push_error(message)
 func frames(count: int) -> void:
+    var pending_flow: Node = root.get_node("GameFlow")
+    while pending_flow.busy:
+        await process_frame
     for index: int in range(count):
         await physics_frame
 
@@ -75,6 +78,7 @@ func skin_bounds(mesh: MeshInstance3D, skeleton: Skeleton3D) -> AABB:
     return AABB(minimum, maximum - minimum)
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     var flow: Node = root.get_node("GameFlow")
@@ -83,9 +87,9 @@ func run() -> void:
     check(CharacterCatalog.READY.size() == 26, "Storm 1 selection must expose all 25 playable fighters")
     var placeholder_count: int = 0
     for definition: CharacterDefinition in CharacterCatalog.READY:
-        if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+        if definition.visual_status == "ORIGINAL_STYLIZED_SKINNED_MODEL":
             placeholder_count += 1
-    check(placeholder_count == 21, "Twenty-one roster slots should use the temporary shared rig until their visuals are authored")
+    check(placeholder_count == 21, "Twenty-one roster slots have dedicated skinned models")
     var model_paths: Dictionary = {}
     var shared_stylized_library: AnimationLibrary
     for definition: CharacterDefinition in CharacterCatalog.AUTHORED_VISUALS:
@@ -101,7 +105,7 @@ func run() -> void:
         cpu.enable_arsenal = false
         for actor: CharacterBody3D in [player, cpu]:
             var adapter: Node3D = actor.rig_adapter
-            check(adapter.rig_loaded and adapter.real_animation_count == 27, "Authored profiles/CPU use 27 real clips")
+            check(adapter.rig_loaded and adapter.real_animation_count == 127, "Authored profiles/CPU use 127 real clips")
             check(adapter.skeleton.get_bone_count() >= 27, "Authored mesh keeps a complete Mixamo body rig")
             check(adapter._has_required_combat_bones(), "Authored mesh keeps every combat-critical hand/foot/body bone")
             var meshes: Array[MeshInstance3D] = []
@@ -203,6 +207,6 @@ func run() -> void:
         check(actor.rig_adapter.get_node_or_null("LicensedCombatNinja") == null, "Generic ninja skin must not replace any roster fighter")
     current_scene.queue_free()
     await frames(5)
-    check(root.get_child_count() == 2, "No leaked preview, pool or environment nodes")
+    check(root.get_child_count() == persistent_nodes, "No leaked preview, pool or environment nodes")
     print("STYLIZED FIGHTERS CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

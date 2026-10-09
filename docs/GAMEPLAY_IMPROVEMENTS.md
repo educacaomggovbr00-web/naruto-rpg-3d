@@ -1,5 +1,7 @@
 # Passe de melhorias — 2026-10-08
 
+Registro da implementação que chegou ao main em `9e473ab`. Na integração 0.17, a evolução posterior dos rigs, equipes, arenas e modos também foi preservada. Estado atual: [MAIN_INTEGRATION_0170.md](MAIN_INTEGRATION_0170.md).
+
 Implementação sobre o combate, elenco de 26 slots, campanha do Henrique e assets existentes. Ajustes de gameplay autorais (`OUR_APPROXIMATION`), sem alegar frame data de Storm. Mantidos Godot 4.7.2, landscape e Compatibility.
 
 ## O que muda ao jogar

@@ -48,6 +48,7 @@ func await_clash() -> void:
             return
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     game = load("res://main.tscn").instantiate() as Node3D
     root.add_child(game)
@@ -268,10 +269,10 @@ func run() -> void:
     var hp_before: float = fighter.health
     quality.call("apply", 0, false)
     check(game.get_node("CombatFeedback").effect_budget == 8 and not game.get_node("Sun").shadow_enabled, "LOW must lower effects and shadows")
-    check(is_equal_approx(root.scaling_3d_scale, 0.62), "LOW must scale 3D while preserving touch viewport")
+    check(is_equal_approx(root.scaling_3d_scale, 0.75), "LOW must scale 3D while preserving touch viewport")
     quality.call("apply", 2, false)
     check(game.get_node("CombatFeedback").effect_budget == 28 and orb.orbits.multimesh.visible_instance_count == 12, "HIGH must restore bounded budgets")
-    check(fighter.health == hp_before and fighter.rig_adapter.real_animation_count == 27, "Quality changes cannot alter combat or clips")
+    check(fighter.health == hp_before and fighter.rig_adapter.real_animation_count == 127, "Quality changes cannot alter combat or clips")
     # Inventory, startup, physical tools, buffs, healing chakra and lifecycle.
     reset(6.0)
     await frames(3)
@@ -345,7 +346,7 @@ func run() -> void:
     var pool_count: int = tools.projectiles.size()
     game.queue_free()
     await frames(4)
-    check(root.get_child_count() == 2 and root.has_node("GameFlow") and root.has_node("GamePreferences"), "Scene removal must destroy sibling pools and control locks")
+    check(root.get_child_count() == persistent_nodes and root.get_child(0).name == "GameFlow", "Scene removal must destroy sibling pools and control locks")
     check(pool_count == 6, "Tool pool cannot grow during battle")
     print("NARUTO PHASE 1 CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(1 if failures > 0 else 0)

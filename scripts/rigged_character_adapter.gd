@@ -3,8 +3,11 @@ extends Node3D
 const COMBAT_LIBRARY: AnimationLibrary = preload("res://assets/animations/combat_mixamo.tres")
 const TOON_MATERIAL: ShaderMaterial = preload("res://assets/characters/stylized/toon.tres")
 const ANIME: Script = preload("res://scripts/anime_presentation.gd")
+const COMBAT_HUBS: PackedStringArray = ["idle", "run", "sprint", "hit", "dodge", "guard", "jump", "fall", "chakra_dash", "defeat"]
 # Track paths are immutable after installation; playback stays per fighter.
+const MAX_CACHED_LIBRARIES: int = 4
 static var library_cache: Dictionary = {}
+static var library_cache_order: Array[String] = []
 
 const MANIFEST_PATH: String = "res://assets/animations/combat_manifest.json"
 const REFERENCE_REST_PATH: String = "res://assets/animations/mixamo_reference_rest.json"
@@ -91,6 +94,24 @@ func _physics_process(delta: float) -> void:
     var state: String = String(player.call("get_animation_state"))
     if follow_hitbox_to_bones and (state == "attack" or state == "air_attack"):
         snap_attack_hitbox(int(player.call("get_combo_step")), state == "air_attack")
+
+func reload_character(definition: CharacterDefinition) -> void:
+    _discard_rig_candidate()
+    character_definition = definition
+    requested_model_path = definition.model_path
+    model_path = definition.model_path
+    auto_scale_model = definition.model_auto_scale
+    ground_to_collision = definition.model_ground_to_collision
+    model_scale = definition.model_scale_multiplier
+    target_character_height = definition.model_target_height
+    model_offset = definition.model_offset
+    model_yaw_degrees = definition.model_yaw_degrees
+    fallback_import_scale = definition.model_fallback_import_scale
+    prefer_native_locomotion = definition.prefer_native_locomotion
+    last_action_id = -1
+    _try_load_rig()
+    if chakra_aura != null:
+        _tint_chakra_aura()
 
 func _try_load_rig() -> void:
     rig_loaded = false
@@ -197,9 +218,11 @@ func _finalize_loaded_rig() -> void:
     # Generic CC0 ninja skins are not injected over Player/CPU anymore.
 
     if is_instance_valid(fallback_visual):
-        chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
+        if chakra_aura == null:
+            chakra_aura = fallback_visual.get_node_or_null("ChakraAura") as MeshInstance3D
         if chakra_aura != null:
-            chakra_aura.reparent(self, true)
+            if chakra_aura.get_parent() != self:
+                chakra_aura.reparent(self, true)
             aura_base_scale = chakra_aura.scale
             _tint_chakra_aura()
         fallback_visual.visible = false
@@ -246,7 +269,11 @@ func _should_use_procedural_identity() -> bool:
 
 
 func _install_roster_visual_identity() -> void:
+    for accessory: Dictionary in roster_accessories:
+        if is_instance_valid(accessory.node):
+            accessory.node.queue_free()
     roster_accessories.clear()
+    _install_henrique_outfit()
     if character_definition == null or character_definition.visual_profile == null or skeleton == null:
         return
     if not _should_use_procedural_identity():
@@ -546,7 +573,14 @@ func _install_combat_library() -> bool:
     combat_retargeted = retarget_required
     var cache_key: String = skeleton_path + "|" + ",".join(bone_names) + "|" + rest_signature.sha256_text()
     var library: AnimationLibrary = library_cache.get(cache_key) as AnimationLibrary
+    if library != null:
+        library_cache_order.erase(cache_key)
+        library_cache_order.append(cache_key)
     if library == null:
+        # Eviction drops only the cache reference: live AnimationPlayers retain
+        # their library, so existing fighters and clones keep animating.
+        while library_cache.size() >= MAX_CACHED_LIBRARIES and not library_cache_order.is_empty():
+            library_cache.erase(library_cache_order.pop_front())
         library = COMBAT_LIBRARY.duplicate(true) as AnimationLibrary
         for clip_name: StringName in library.get_animation_list():
             if not clips.has(String(clip_name)):
@@ -566,6 +600,7 @@ func _install_combat_library() -> bool:
                     _retarget_track(animation, track, source_rest, target_rest)
                 animation.track_set_path(track, NodePath(skeleton_path + ":" + target_bone_name))
         library_cache[cache_key] = library
+        library_cache_order.append(cache_key)
 
     var result: Error = animation_player.add_animation_library(&"combat", library)
     real_animation_count = library.get_animation_list().size()
@@ -817,6 +852,24 @@ func _setup_animation_tree() -> void:
     animation_tree.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
     var state_machine: AnimationNodeStateMachine = AnimationNodeStateMachine.new()
     var clips: Dictionary = manifest["clips"]
+    var runtime_states: Dictionary = {}
+    for state: String in clips:
+        if not bool(clips[state].get("expansion", false)):
+            runtime_states[state] = true
+    if character_definition != null:
+        var moves: MovesetDefinition = character_definition.moveset
+        if moves != null:
+            for attack: AttackDefinition in moves.ground + moves.aerial + [moves.neutral_finisher, moves.up_finisher, moves.down_finisher, moves.side_finisher]:
+                if attack != null:
+                    runtime_states[attack.animation_name] = true
+        for jutsu: JutsuDefinition in character_definition.jutsu_definitions:
+            runtime_states[jutsu.animation_name] = true
+        if character_definition.ultimate_definition != null:
+            runtime_states[character_definition.ultimate_definition.entry_clip] = true
+            runtime_states[character_definition.ultimate_definition.finisher_clip] = true
+    if character_definition != null and character_definition.character_id == "henrique":
+        for clip: String in HenriqueKit.combo_clips():
+            runtime_states[clip] = true
     var index: int = 0
     for state_name: String in clips:
         var blend: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
@@ -835,9 +888,20 @@ func _setup_animation_tree() -> void:
         for to_state: String in clips:
             if from_state == to_state:
                 continue
+            # Gallery-only states travel through idle; active gameplay retains
+            # direct fades. Avoid a 127² graph on every mobile/menu fighter.
+            if from_state != "idle" and to_state != "idle" and (not runtime_states.has(from_state) or not runtime_states.has(to_state)):
+                continue
+            # Expansion combos fade directly to each other and to interruption/
+            # locomotion hubs; other states retain the idle route. Keep mobile
+            # memory bounded as more gallery clips become playable attacks.
+            var from_expansion: bool = bool(clips[from_state].get("expansion", false))
+            var to_expansion: bool = bool(clips[to_state].get("expansion", false))
+            if from_expansion != to_expansion and from_state not in COMBAT_HUBS and to_state not in COMBAT_HUBS:
+                continue
             var transition: AnimationNodeStateMachineTransition = AnimationNodeStateMachineTransition.new()
             transition.xfade_time = 0.08
-            if to_state.begins_with("attack_") or to_state.begins_with("air_attack_"):
+            if to_state.begins_with("attack_") or to_state.begins_with("air_attack_") or bool(clips[to_state].get("expansion", false)):
                 transition.xfade_time = 0.025
             elif to_state == "hit" or to_state == "dodge":
                 transition.xfade_time = 0.035
@@ -861,7 +925,7 @@ func _sync_animation_state(delta: float) -> void:
     var desired_state: String = _runtime_animation_state()
     var action_id: int = int(player.call("get_animation_action_id"))
     if desired_state == current_state:
-        if action_id != last_action_id and desired_state in ["hit", "jutsu", "rasengan", "guard_break", "dodge", "chakra_dash", "attack_1", "attack_2", "attack_3", "attack_4", "air_attack_1", "air_attack_2", "air_attack_3", "air_attack_4"]:
+        if action_id != last_action_id and not bool(manifest.get("clips", {}).get(desired_state, {}).get("loop", false)):
             playback.start(StringName(desired_state), true)
     else:
         current_state = desired_state
@@ -976,3 +1040,19 @@ func get_available_animations_text() -> String:
         names.append(String(animation_value))
 
     return ", ".join(names)
+
+
+func _install_henrique_outfit() -> void:
+    if character_definition == null or character_definition.character_id != "henrique" or skeleton == null:
+        return
+    var settings: Node = get_tree().root.get_node_or_null("CombatSettings")
+    var outfit: int = int(settings.henrique_outfit) if settings != null else 0
+    if outfit == 1:
+        # Original red scarf and two trailing cloth panels, anchored to the actual rig.
+        _add_capsule_accessory("Neck", 0.10, 0.38, Vector3(0, 0.0, 0), Vector3(0, 0, 90), Color("8f273f"), Vector3(1, 1, 1.6))
+        _add_box_accessory("Spine2", Vector3(0.16, 0.65, 0.035), Vector3(-0.12, -0.28, -0.21), Vector3(-15, 0, -12), Color("8f273f"))
+        _add_box_accessory("Spine2", Vector3(0.14, 0.50, 0.035), Vector3(0.1, -0.22, -0.23), Vector3(-20, 0, 12), Color("602139"))
+    elif outfit == 2:
+        _add_box_accessory("Spine2", Vector3(0.48, 0.35, 0.12), Vector3(0, -0.07, 0.17), Vector3.ZERO, Color("243c45"))
+        for side: float in [-1.0, 1.0]:
+            _add_box_accessory("Spine2", Vector3(0.14, 0.10, 0.04), Vector3(side * 0.13, -0.10, 0.25), Vector3.ZERO, Color("91a69b"))

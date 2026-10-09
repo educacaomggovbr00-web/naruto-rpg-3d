@@ -20,7 +20,7 @@ func run() -> void:
     check(scenery.props.size() >= 14, "Arena instantiates town props plus torii, temples and shrine")
     check(scenery.batches.size() <= 32, "Arena vegetation uses bounded sector batches")
     var fighter: Node = arena.get_node("Player")
-    check(fighter.rig_adapter.real_animation_count == 27, "Player's 27 combat clips survive asset integration")
+    check(fighter.rig_adapter.real_animation_count == 127, "Player's 127 combat clips survive asset integration")
     var tool: Node = fighter.ninja_tools.projectiles[0]
     check(tool.shuriken.get_child_count() == 1 and tool.kunai.get_child_count() == 1, "Pooled tools use one imported mesh each")
     check(tool.shuriken.get_child(0).mesh == preload("res://assets/vendor/mehrasaur_weapons/shaken-juji.obj"), "Shuriken uses the licensed pack")
@@ -58,7 +58,7 @@ func run() -> void:
         check(npc_material.next_pass == null, "Scaled FBX ninja avoids fragmented outline hull and extra draw pass")
     village.apply_quality(0, false)
     check(meshes[0].visibility_range_end == 24.0, "NPC render culling preserves interaction")
-    check(village.get_node("Player").rig_adapter.real_animation_count == 27, "Exploration retains player combat rig")
+    check(village.get_node("Player").rig_adapter.real_animation_count == 127, "Exploration retains player combat rig")
     current_scene.queue_free()
     await frames()
     print("LICENSED GAMEPLAY ASSETS: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])

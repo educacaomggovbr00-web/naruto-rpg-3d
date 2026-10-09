@@ -1,4 +1,5 @@
 extends CharacterBody3D
+signal combat_hit_recorded(amount: float, guarded: bool)
 
 @export var move_speed: float = 7.5
 @export var run_speed: float = 12.0
@@ -9,6 +10,8 @@ extends CharacterBody3D
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
 var character_definition: CharacterDefinition = null
+var team: Node = null
+var battle_condition: Node = null
 var cinematic_owner: Node = null
 var cinematic_watchdog: float = 0.0
 var selected_attack: AttackDefinition = null
@@ -89,6 +92,10 @@ var attack_duration: float = 0.28
 var jutsu_elapsed: float = 0.0
 var jutsu_released: bool = false
 var attack_buffer: float = 0.0
+var dash_cancel_buffer: float = 0.0
+var attack_variant: String = ""
+var buffered_variant: String = ""
+var has_buffered_variant: bool = false
 var attack_confirmed: bool = false
 var combo_branch: String = "neutral"
 var ultimate: Node3D = null
@@ -109,14 +116,21 @@ var combo_damage: float = 0.0
 var combo_display_timer: float = 0.0
 
 var jump_requested: bool = false
+var jump_buffer: float = 0.0
+var coyote_timer: float = 0.0
 var is_guarding: bool = false
 var is_charging_chakra: bool = false
 var defeated: bool = false
 var mobile_controls: Node = null
 var combat_state: Node = null
 var rpg_damage_multiplier: float = 1.0
+var timed_guard_window: float = 0.0
+var counter_window: float = 0.0
+var attack_counter_bonus: float = 1.0
+var grab_attack: bool = false
+var grab_target: Node3D
+var grab_cooldown: float = 0.0
 var techniques: Node3D = null
-var jump_buffer: float = 0.0
 
 @onready var camera_rig: Node3D = $CameraRig
 @onready var attack_hitbox: Area3D = $AttackHitbox
@@ -124,7 +138,7 @@ var jump_buffer: float = 0.0
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func get_character_definition() -> CharacterDefinition:
-    return GameFlow.player_character
+    return character_definition if character_definition != null else GameFlow.player_character
 
 func _ready() -> void:
     character_definition = get_character_definition()
@@ -194,6 +208,37 @@ func _ready() -> void:
     combat_state.call("configure", self)
 
 func _unhandled_input(event: InputEvent) -> void:
+    if _handle_expansion_input(event):
+        return
+    if event is InputEventJoypadButton and event.pressed:
+        if event.is_action_pressed("pad_attack"):
+            if Input.is_action_pressed("pad_guard"):
+                techniques.call("start_grab")
+            else:
+                _try_attack()
+        elif event.is_action_pressed("pad_jump"):
+            jump_requested = true
+        elif event.is_action_pressed("pad_jutsu"):
+            if team != null and Input.is_action_pressed("pad_charge"):
+                team.start_ultimate()
+            else:
+                _try_jutsu()
+        elif event.is_action_pressed("pad_dash"):
+            _start_chakra_dash()
+        elif event.is_action_pressed("pad_substitution"):
+            _try_substitution()
+        elif event.is_action_pressed("pad_dodge"):
+            _start_dodge()
+        elif event.is_action_pressed("pad_lock"):
+            _toggle_lock_on()
+        elif event.is_action_pressed("pad_ultimate"):
+            ultimate.call("start")
+        elif event.is_action_pressed("pad_awakening"):
+            if team != null and Input.is_action_pressed("pad_charge"):
+                team.start_linked_awakening()
+            else:
+                _activate_awakening()
+
     if event is InputEventMouseButton and not _is_mobile_runtime():
         if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
             _try_attack()
@@ -219,41 +264,38 @@ func _unhandled_input(event: InputEvent) -> void:
         elif event.physical_keycode == KEY_5:
             ultimate.call("start")
         elif event.physical_keycode == KEY_6:
-            awakening.call("start")
+            _activate_awakening()
         elif event.physical_keycode == KEY_7:
             ninja_tools.call("cycle")
         elif event.physical_keycode == KEY_8:
             ninja_tools.call("use")
+        elif event.physical_keycode == KEY_G:
+            _try_grab()
         elif event.physical_keycode == KEY_F:
             _try_substitution()
         elif event.physical_keycode == KEY_ALT:
             _start_dodge()
-        elif event.physical_keycode == KEY_G:
-            techniques.call("start_grab")
-    elif event is InputEventJoypadButton and event.pressed:
-        if event.is_action_pressed("pad_attack"):
-            if Input.is_action_pressed("pad_guard"):
-                techniques.call("start_grab")
-            else:
-                _try_attack()
-        elif event.is_action_pressed("pad_jump"):
-            jump_requested = true
-        elif event.is_action_pressed("pad_dash"):
-            _start_chakra_dash()
-        elif event.is_action_pressed("pad_jutsu"):
-            _try_jutsu()
-        elif event.is_action_pressed("pad_dodge"):
-            _start_dodge()
-        elif event.is_action_pressed("pad_sub"):
-            _try_substitution()
-        elif event.is_action_pressed("pad_lock"):
-            _toggle_lock_on()
-        elif event.is_action_pressed("pad_special"):
-            specials.call("cycle_selection")
-        elif event.is_action_pressed("pad_ultimate"):
-            ultimate.call("start")
-        elif event.is_action_pressed("pad_awaken"):
-            awakening.call("start")
+
+func _handle_expansion_input(event: InputEvent) -> bool:
+    if not event.is_pressed() or (event is InputEventKey and event.echo):
+        return false
+    var key: int = event.physical_keycode if event is InputEventKey else 0
+    if team != null:
+        if key == KEY_Z or event.is_action_pressed("pad_support_one"):
+            team.call_support(0)
+        elif key == KEY_X or event.is_action_pressed("pad_support_two"):
+            team.call_support(1)
+        elif key == KEY_C or event.is_action_pressed("pad_leader_change"):
+            team.request_change(0)
+        elif key == KEY_V:
+            team.start_ultimate()
+        elif key == KEY_B:
+            team.start_linked_awakening()
+        else:
+            return false
+        get_viewport().set_input_as_handled()
+        return true
+    return false
 
 func _physics_process(delta: float) -> void:
     _consume_mobile_actions()
@@ -270,6 +312,8 @@ func _physics_process(delta: float) -> void:
         cinematic_owner = null
     _update_attack_timeline(delta)
     _update_jutsu_timeline(delta)
+    if dash_cancel_buffer > 0.0 and attack_active and attack_confirmed:
+        _start_chakra_dash(false)
     if attack_buffer > 0.0 and not attack_active and attack_cooldown <= 0.0:
         attack_buffer = 0.0
         _try_attack()
@@ -292,13 +336,7 @@ func _physics_process(delta: float) -> void:
     elif air_float_timer > 0.0 and velocity.y < 0.0:
         velocity.y = move_toward(velocity.y, 0.0, gravity * delta)
 
-    if jump_requested:
-        jump_buffer = 0.14
-    jump_requested = false
-    if jump_buffer > 0.0 and is_on_floor() and _can_use_movement_action():
-        velocity.y = jump_velocity * awakening.call("movement_multiplier")
-        jump_buffer = 0.0
-    jump_buffer = maxf(jump_buffer - delta, 0.0)
+    _update_jump_intent(delta, is_on_floor())
 
     if stagger_timer > 0.0:
         velocity.x = move_toward(velocity.x, 0.0, acceleration * delta)
@@ -356,6 +394,22 @@ func _physics_process(delta: float) -> void:
     move_and_slide()
     _update_animation_state()
 
+func _update_jump_intent(delta: float, grounded: bool) -> void:
+    coyote_timer = .08 if grounded else maxf(coyote_timer-delta,0.0)
+    jump_buffer = .12 if jump_requested else maxf(jump_buffer-delta,0.0)
+    jump_requested = false
+    if defeated or stagger_timer > 0.0 or is_instance_valid(cinematic_owner):
+        clear_jump_intent()
+        return
+    if jump_buffer > 0.0 and coyote_timer > 0.0 and _can_use_movement_action():
+        velocity.y = jump_velocity * awakening.call("movement_multiplier")
+        clear_jump_intent()
+
+func clear_jump_intent() -> void:
+    jump_requested = false
+    jump_buffer = 0.0
+    coyote_timer = 0.0
+
 func _consume_mobile_actions() -> void:
     if not is_instance_valid(mobile_controls):
         return
@@ -374,7 +428,10 @@ func _consume_mobile_actions() -> void:
         ultimate.call("start")
     if mobile_controls.awakening_queue > 0:
         mobile_controls.awakening_queue = 0
-        awakening.call("start")
+        if awakening.active and awakening.has_method("cycle_form"):
+            awakening.call("cycle_form")
+        else:
+            _activate_awakening()
     if mobile_controls.special_queue > 0:
         mobile_controls.special_queue = 0
         specials.call("cycle_selection")
@@ -416,14 +473,23 @@ func _refresh_hold_states() -> void:
         mobile_guard = bool(mobile_controls.call("is_guard_held"))
         mobile_charge = bool(mobile_controls.call("is_charge_held"))
 
-    var keyboard_guard: bool = Input.is_physical_key_pressed(KEY_R) or Input.is_action_pressed("pad_guard")
-    var keyboard_charge: bool = Input.is_physical_key_pressed(KEY_C) or Input.is_action_pressed("pad_charge")
+    var keyboard_guard: bool = (Input.is_physical_key_pressed(KEY_R) or Input.is_action_pressed("pad_guard"))
+    var keyboard_charge: bool = (Input.is_physical_key_pressed(KEY_C) or Input.is_action_pressed("pad_charge"))
 
+    var previous_guard: bool = is_guarding
     is_guarding = (mobile_guard or keyboard_guard) and stagger_timer <= 0.0 and dodge_timer <= 0.0 and guard_meter > 0.0 and not attack_active and jutsu_timer <= 0.0 and chakra_dash_timer <= 0.0
+    if is_guarding and not previous_guard:
+        timed_guard_window = 0.12
+    elif not is_guarding:
+        timed_guard_window = 0.0
     is_charging_chakra = (mobile_charge or keyboard_charge) and not is_guarding and not attack_active and attack_cooldown <= 0.0 and jutsu_timer <= 0.0 and stagger_timer <= 0.0 and dodge_timer <= 0.0 and chakra_dash_timer <= 0.0
 
 func _update_timers(delta: float) -> void:
+    timed_guard_window = maxf(timed_guard_window - delta, 0.0)
+    counter_window = maxf(counter_window - delta, 0.0)
+    grab_cooldown = maxf(grab_cooldown - delta, 0.0)
     attack_buffer = maxf(attack_buffer - delta, 0.0)
+    dash_cancel_buffer = maxf(dash_cancel_buffer-delta,0.0)
     guard_stun = maxf(guard_stun - delta, 0.0)
     guard_regen_delay = maxf(guard_regen_delay - delta, 0.0)
     if guard_regen_delay <= 0.0 and not is_guarding:
@@ -469,7 +535,10 @@ func _update_attack_timeline(delta: float) -> void:
 
     if not attack_hit_triggered and attack_elapsed >= attack_startup:
         attack_hit_triggered = true
-        _open_attack_hitbox()
+        if grab_attack:
+            _resolve_grab()
+        else:
+            _open_attack_hitbox()
 
     # Keep the active hit volume attached to the animated strike instead of
     # freezing it at the first impact frame.
@@ -478,10 +547,19 @@ func _update_attack_timeline(delta: float) -> void:
 
     if attack_elapsed >= attack_duration:
         attack_active = false
+        grab_attack = false
+        grab_target = null
         attack_hitbox.call("deactivate")
 
 func _cancel_attack() -> void:
+    dash_cancel_buffer = 0.0
+    attack_buffer = 0.0
+    buffered_variant = ""
+    has_buffered_variant = false
     attack_active = false
+    grab_target = null
+    grab_attack = false
+    attack_counter_bonus = 1.0
     buffered_branch = ""
     attack_lunge_timer = 0.0
     air_float_timer = 0.0
@@ -510,14 +588,14 @@ func _update_jutsu_timeline(delta: float) -> void:
         _release_jutsu()
 
 func _open_attack_hitbox() -> void:
-    selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    selected_attack = _combo_attack()
     if selected_attack == null:
         _cancel_attack()
         return
     rig_adapter.call("snap_attack_hitbox", combo_step, attack_is_airborne)
     var timing: Dictionary = selected_attack.animation_timing(rig_adapter.manifest)
-    attack_hitbox.call("activate", self, selected_attack.damage,
-        selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun,
+    attack_hitbox.call("activate", self, selected_attack.damage * attack_counter_bonus,
+        selected_attack.knockback * (1.3 if attack_counter_bonus > 1.0 else 1.0), selected_attack.launch_force, selected_attack.hitstun,
         float(timing.get("active", 0.09)))
 
 func _process_defeated(delta: float) -> void:
@@ -577,6 +655,9 @@ func _get_move_input() -> Vector2:
             float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
             float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))
         )
+
+    if input_vector.length() <= 0.001:
+        input_vector = CombatSettings.movement()
 
     if input_vector.length() > 1.0:
         input_vector = input_vector.normalized()
@@ -653,11 +734,14 @@ func _validate_locked_target() -> void:
     if locked_target.has_method("is_targetable") and not bool(locked_target.call("is_targetable")):
         _set_locked_target(null)
 
-func _start_chakra_dash() -> void:
+func _start_chakra_dash(queue_early: bool = true) -> void:
     var cancel_timing: Dictionary = rig_adapter.call("get_attack_timing", maxi(combo_step, 1), attack_is_airborne)
     if selected_attack != null:
         cancel_timing = selected_attack.animation_timing(rig_adapter.manifest)
     var can_cancel: bool = attack_active and attack_confirmed and attack_elapsed >= float(cancel_timing.get("cancel_open", attack_startup + 0.09)) and attack_elapsed <= float(cancel_timing.get("cancel_close", attack_duration)) and combo_step < 4
+    if attack_active and attack_confirmed and combo_step < 4 and not defeated and stagger_timer <= 0.0 and chakra >= chakra_dash_cost and attack_elapsed < float(cancel_timing.get("cancel_open",attack_duration)):
+        if queue_early: dash_cancel_buffer = .16
+        return
     if (not _can_use_movement_action() and not can_cancel) or chakra < chakra_dash_cost:
         return
     if not is_on_floor() and air_dash_count >= 2:
@@ -761,6 +845,8 @@ func _try_substitution() -> void:
     var substitution_origin: Vector3 = global_position
 
     substitutions -= 1
+    if GameFlow.battle_rules_enabled:
+        counter_window = .5
     substitution_cooldown = 0.65
     sub_regen_timer = 0.0
     substitution_hidden = 0.12
@@ -805,6 +891,9 @@ func _try_substitution() -> void:
         camera_rig.call("add_impact_shake", 0.10)
 
 func _try_attack() -> void:
+    if is_guarding and counter_window <= 0.0:
+        _try_grab()
+        return
     if is_instance_valid(cinematic_owner):
         if cinematic_owner.has_method("press_defense"):
             cinematic_owner.call("press_defense")
@@ -816,8 +905,10 @@ func _try_attack() -> void:
         attack_buffer = 0.25
         return
     if attack_active:
-        if attack_elapsed >= attack_startup and combo_step < 4:
+        if not grab_attack and combo_step < 4:
             attack_buffer = maxf(0.22, attack_duration - attack_elapsed + 0.12)
+            buffered_variant = _read_attack_variant()
+            has_buffered_variant = true
             if combo_step + 1 == moveset.branch_step:
                 buffered_branch = _read_combo_branch()
         return
@@ -839,7 +930,12 @@ func _try_attack() -> void:
     elif combo_step == moveset.branch_step and not attack_is_airborne:
         combo_branch = buffered_branch if not buffered_branch.is_empty() else _read_combo_branch()
         buffered_branch = ""
-    selected_attack = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    attack_variant = buffered_variant if has_buffered_variant else _read_attack_variant()
+    has_buffered_variant = false
+    buffered_variant = ""
+    selected_attack = _combo_attack()
+    attack_counter_bonus = 1.4 if counter_window > 0.0 else 1.0
+    counter_window = 0.0
     combo_timer = combo_reset_time
     var timing: Dictionary = selected_attack.animation_timing(rig_adapter.manifest)
     attack_startup = float(timing.get("impact", 0.12 if combo_step < 4 else 0.18))
@@ -921,6 +1017,16 @@ func receive_combat_hit(
     if defeated or invulnerable_timer > 0.0:
         return 0.0
 
+    if is_guarding and timed_guard_window > 0.0 and damage < 40.0:
+        timed_guard_window = 0.0
+        counter_window = 0.55
+        invulnerable_timer = 0.10
+        guard_regen_delay = 0.4
+        if is_instance_valid(combat_feedback):
+            combat_feedback.call("spawn_impact", global_position + Vector3.UP, "guard")
+        camera_rig.call("add_combat_impact", 0.06, 1.0)
+        return 0.0
+
     var applied_damage: float = damage
     var applied_knockback: float = knockback
     var was_guarding: bool = is_guarding
@@ -941,6 +1047,7 @@ func receive_combat_hit(
         applied_knockback *= 0.25
         launch_velocity *= 0.15
     else:
+        clear_jump_intent()
         _cancel_attack()
         _cancel_jutsu()
         chakra_dash_timer = 0.0
@@ -961,6 +1068,11 @@ func receive_combat_hit(
             guard_broken
         )
 
+    if is_instance_valid(battle_condition):
+        applied_damage *= battle_condition.received_multiplier()
+        battle_condition.record_damage(damage, knockback, was_guarding)
+    if is_instance_valid(team):
+        applied_damage = team.incoming_damage(applied_damage, guard_broken)
     health = maxf(health - applied_damage, 0.0)
 
     var push: Vector3 = direction
@@ -992,7 +1104,10 @@ func receive_grab_hit(damage: float, direction: Vector3, knockback: float, launc
     is_guarding = false
     return receive_combat_hit(damage, direction, knockback, launch, stun)
 
-func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float) -> void:
+func on_attack_resolved(target: Node, amount: float, launch: float, blocked: bool) -> void:
+    on_attack_connected(target,amount,launch,blocked)
+
+func on_attack_connected(target: Node, actual_damage: float, launch_velocity: float, blocked: Variant = null) -> void:
     if actual_damage <= 0.001:
         return
     var target_guarding: bool = (
@@ -1000,6 +1115,10 @@ func on_attack_connected(target: Node, actual_damage: float, launch_velocity: fl
         and bool(target.call("get_is_guarding"))
     )
 
+    if blocked is bool: target_guarding = blocked
+    if is_instance_valid(team):
+        team.record_hit(actual_damage,launch_velocity,target_guarding)
+    combat_hit_recorded.emit(actual_damage,target_guarding)
     if not target_guarding:
         combo_hits += 1
         combo_damage += maxf(actual_damage, 0.0)
@@ -1109,6 +1228,15 @@ func _defeat() -> void:
     _set_locked_target(null)
 
 func _respawn() -> void:
+    clear_jump_intent()
+    for effect_name: String in ["BlackFlames", "GenjutsuOverlay", "ElementalStates"]:
+        var effect: Node = get_node_or_null(effect_name)
+        if effect != null:
+            effect.queue_free()
+    _cancel_attack()
+    timed_guard_window = 0.0
+    counter_window = 0.0
+    grab_cooldown = 0.0
     _cancel_jutsu()
     if is_instance_valid(combat_state):
         combat_state.call("clear_transient")
@@ -1136,6 +1264,10 @@ func _respawn() -> void:
     attack_buffer = 0.0
     jump_buffer = 0.0
     defeated = false
+    if is_instance_valid(team):
+        team.reset()
+    if is_instance_valid(battle_condition):
+        battle_condition.reset()
 
 func _can_use_movement_action() -> bool:
     var state_allows: bool = (
@@ -1236,6 +1368,10 @@ func _is_mobile_runtime() -> bool:
     )
 
 func get_special_animation() -> String:
+    if team != null and not team.phase.is_empty():
+        return team.animation_clip()
+    if is_instance_valid(cinematic_owner) and cinematic_owner.get("phase") == "wall_run":
+        return "run"
     if techniques != null and techniques.active:
         return "attack_3"
     if not ultimate.phase.is_empty():
@@ -1249,7 +1385,17 @@ func get_damage_multiplier() -> float:
         float(awakening.call("damage_multiplier"))
         * (float(ninja_tools.call("damage_multiplier")) if ninja_tools != null else 1.0)
         * rpg_damage_multiplier
+        * (battle_condition.damage_multiplier() if is_instance_valid(battle_condition) else 1.0)
     )
+
+func receive_status_damage(damage: float) -> float:
+    if defeated or invulnerable_timer > 0.0:
+        return 0.0
+    var dealt: float = minf(health, maxf(damage, 0.0) * (guard_damage_multiplier if is_guarding else 1.0))
+    health -= dealt
+    if health <= 0.0:
+        _defeat()
+    return dealt
 
 func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launch: float, stun: float) -> float:
     if awakening.active:
@@ -1260,7 +1406,8 @@ func receive_tool_hit(damage: float, direction: Vector3, knockback: float, launc
 func on_hitbox_contact(_box: Area3D, target: Node, dealt: float, blocked: bool) -> void:
     if _box == attack_hitbox and attack_active and not blocked and dealt > 0.0:
         attack_confirmed = true
-    specials.call("contact", target, dealt, blocked)
+    if _box == specials.rasengan_hitbox or _box == specials.barrage_hitbox:
+        specials.call("contact", target, dealt, blocked)
 
 func begin_cinematic_lock(requester: Node) -> bool:
     if defeated or (is_instance_valid(cinematic_owner) and cinematic_owner != requester):
@@ -1290,3 +1437,68 @@ func end_cinematic_lock(requester: Node) -> void:
 
 func is_targetable() -> bool:
     return not defeated
+
+func _try_grab() -> void:
+    if defeated or is_instance_valid(cinematic_owner) or not ultimate.phase.is_empty() or stagger_timer > 0.0 or attack_active or attack_cooldown > 0.0 or jutsu_timer > 0.0 or dodge_timer > 0.0 or chakra_dash_timer > 0.0 or grab_cooldown > 0.0 or not is_on_floor():
+        return
+    var target: Node3D = _find_attack_target(1.65)
+    if not is_instance_valid(target) or not target.has_method("receive_combat_hit"):
+        return
+    grab_target = target
+    grab_attack = true
+    selected_attack = moveset.attack(1, false, "neutral").duplicate(true) as AttackDefinition
+    selected_attack.damage = 14.0
+    selected_attack.knockback = 10.0
+    selected_attack.launch_force = 5.0
+    selected_attack.hitstun = 0.5
+    combo_step = 1
+    attack_is_airborne = false
+    attack_confirmed = false
+    attack_startup = float(selected_attack.animation_timing(rig_adapter.manifest).get("impact", 0.24))
+    attack_duration = maxf(0.65, float(selected_attack.animation_timing(rig_adapter.manifest).get("duration", 0.65)))
+    attack_cooldown = attack_duration
+    grab_cooldown = 1.5
+    attack_active = true
+    attack_elapsed = 0.0
+    attack_hit_triggered = false
+    animation_action_id += 1
+    is_guarding = false
+    is_charging_chakra = false
+    _face_direction(target.global_position - global_position, 1.0, 100.0)
+
+func _resolve_grab() -> void:
+    var target: Node3D = grab_target
+    grab_target = null
+    if not is_instance_valid(target) or global_position.distance_to(target.global_position) > 1.9 or not bool(target.call("is_targetable")) or float(target.get("invulnerable_timer")) > 0.0:
+        return
+    # A dodge/substitution during startup escapes; walls block the throw.
+    var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position + Vector3.UP, target.global_position + Vector3.UP, 33)
+    ray.exclude = [get_rid()]
+    if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+        return
+    target.set("is_guarding", false)
+    var direction: Vector3 = (target.global_position - global_position).normalized()
+    var actual: float = float(target.call("receive_combat_hit", selected_attack.damage * get_damage_multiplier(), direction, selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun))
+    on_attack_connected(target, actual, selected_attack.launch_force)
+
+
+func _activate_awakening() -> void:
+    if awakening.active and awakening.has_method("cycle_form"):
+        awakening.call("cycle_form")
+    else:
+        awakening.call("start")
+
+
+func _read_attack_variant() -> String:
+    var stick: Vector2 = _get_move_input()
+    if absf(stick.x) > 0.45:
+        return "left" if stick.x < 0.0 else "right"
+    if absf(stick.y) > 0.45:
+        return "high" if stick.y < 0.0 else "low"
+    return ""
+
+func _combo_attack() -> AttackDefinition:
+    var base: AttackDefinition = moveset.attack(combo_step, attack_is_airborne, combo_branch)
+    if character_definition.character_id == "henrique":
+        return HenriqueKit.directional_attack(base, combo_step, attack_is_airborne, attack_variant)
+    return base

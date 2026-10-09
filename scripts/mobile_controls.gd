@@ -24,6 +24,7 @@ var tool_use_center: Vector2 = Vector2.ZERO
 var tool_label: String = "SHUR"
 var ultimate_enabled: bool = true
 var awakening_enabled: bool = true
+var awakening_label: String = "AWK"
 var clones_enabled: bool = true
 var ultimate_queue: int = 0
 var awakening_queue: int = 0
@@ -74,9 +75,16 @@ var dodge_radius: float = 43.0
 var charge_radius: float = 46.0
 var guard_radius: float = 40.0
 var advanced_radius: float = 34.0
+var layout_editing: bool = false
+var layout_touch: int = -1
+var layout_key: String = ""
+var layout_center: Vector2
+var reset_layout_center: Vector2
+var owns_pause: bool = false
 var top_radius: float = 32.0
 
 func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     resized.connect(_update_layout)
     GamePreferences.changed.connect(_update_layout)
@@ -138,9 +146,19 @@ func _update_layout() -> void:
         clone_center = Vector2(-1000.0, -1000.0)
         barrage_center = Vector2(-1000.0, -1000.0)
 
+    layout_center = Vector2(w - 430.0 * ui_scale, 72.0 * ui_scale)
+    reset_layout_center = Vector2(w - 550.0 * ui_scale, 72.0 * ui_scale)
+    for key: String in CombatSettings.touch_layout:
+        var point: Array = CombatSettings.touch_layout[key]
+        var radius: float = float(get(key + "_radius"))
+        set(key + "_center", Vector2(clampf(float(point[0]) * w, radius, maxf(radius, w - radius)), clampf(float(point[1]) * h, 170.0 * ui_scale, maxf(170.0 * ui_scale, h - radius))))
+    if joystick_touch == -1:
+        joystick_knob = joystick_center
     queue_redraw()
 
 func _input(event: InputEvent) -> void:
+    if not layout_editing and event is InputEventScreenTouch and event.pressed and _expansion_overlay_contains(event.position):
+        return
     if event is InputEventScreenTouch:
         if event.pressed:
             _touch_pressed(event.index, event.position)
@@ -149,9 +167,37 @@ func _input(event: InputEvent) -> void:
     elif event is InputEventScreenDrag:
         _touch_dragged(event.index, event.position)
 
+func _expansion_overlay_contains(point: Vector2) -> bool:
+    var arena: Node = get_parent().get_parent()
+    var overlay: Node = arena.get_node_or_null("TeamHUD")
+    if overlay != null and overlay.panel.is_visible_in_tree() and overlay.panel.get_global_rect().has_point(point):
+        return true
+    var coach: Node = arena.get_node_or_null("BattleBridge/TrainingCoach")
+    if coach != null:
+        for control: Control in [coach.panel, coach.toggle]:
+            if control.is_visible_in_tree() and control.get_global_rect().has_point(point):
+                return true
+    var encounter: Node = arena.get_node_or_null("BattleBridge/BossEncounter")
+    return encounter != null and encounter.panel.is_visible_in_tree() and encounter.panel.get_global_rect().has_point(point)
+
 func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
+    if _inside_circle(screen_position, layout_center, 43.0 * ui_scale):
+        set_layout_editing(not layout_editing)
+        return
+    if layout_editing:
+        if _inside_circle(screen_position, reset_layout_center, 43.0 * ui_scale):
+            CombatSettings.touch_layout.clear()
+            _update_layout()
+            return
+        if layout_touch == -1:
+            for key: String in CombatSettings.TOUCH_KEYS:
+                if _inside_circle(screen_position, get(key + "_center"), float(get(key + "_radius"))):
+                    layout_touch = touch_id
+                    layout_key = key
+                    return
+        return
     flash_position = screen_position
-    flash_timer = 0.12
+    flash_timer = .12
     queue_redraw()
     if advanced_open and _inside_circle(screen_position, grab_center, advanced_radius):
         grab_queue = 1
@@ -230,6 +276,9 @@ func _touch_pressed(touch_id: int, screen_position: Vector2) -> void:
         camera_last_position = screen_position
 
 func _touch_released(touch_id: int) -> void:
+    if touch_id == layout_touch:
+        layout_touch = -1
+        layout_key = ""
     if touch_id == joystick_touch:
         joystick_touch = -1
         move_vector = Vector2.ZERO
@@ -248,6 +297,15 @@ func _touch_released(touch_id: int) -> void:
     queue_redraw()
 
 func _touch_dragged(touch_id: int, screen_position: Vector2) -> void:
+    if layout_editing:
+        if touch_id == layout_touch and not layout_key.is_empty():
+            var radius: float = float(get(layout_key + "_radius"))
+            var point: Vector2 = Vector2(clampf(screen_position.x, radius, maxf(radius, size.x - radius)), clampf(screen_position.y, 170.0 * ui_scale, maxf(170.0 * ui_scale, size.y - radius)))
+            set(layout_key + "_center", point)
+            CombatSettings.touch_layout[layout_key] = [point.x / maxf(size.x, 1.0), point.y / maxf(size.y, 1.0)]
+            joystick_knob = joystick_center
+            queue_redraw()
+        return
     if touch_id == joystick_touch:
         _update_joystick(screen_position)
         return
@@ -264,11 +322,7 @@ func _update_joystick(screen_position: Vector2) -> void:
     joystick_knob = joystick_center + offset
     move_vector = offset / joystick_radius
 
-    var magnitude: float = move_vector.length()
-    if magnitude < joystick_deadzone:
-        move_vector = Vector2.ZERO
-    else:
-        move_vector = move_vector.normalized() * clampf((magnitude - joystick_deadzone) / (1.0 - joystick_deadzone), 0.0, 1.0)
+    move_vector = CombatSettings.touch_movement(move_vector)
 
     queue_redraw()
 
@@ -360,6 +414,10 @@ func _draw() -> void:
     draw_arc(joystick_center, joystick_radius, 0.0, TAU, 48, base_line, 3.0, true)
     draw_circle(joystick_knob, 38.0, Color(1.0, 1.0, 1.0, 0.34))
 
+    _draw_button(layout_center, advanced_radius, blue_fill, "SALVAR" if layout_editing else "AJUSTAR", 9, text_color)
+    if layout_editing:
+        _draw_button(reset_layout_center, advanced_radius, attack_fill, "RESET", 9, text_color)
+        draw_string(ThemeDB.fallback_font, Vector2(28, 150 * ui_scale), "Arraste os controles. SALVAR retorna à luta.", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, text_color)
     _draw_button(quality_center, top_radius, base_fill, quality_label, maxi(10, int(12.0 * ui_scale)), text_color)
     _draw_button(advanced_toggle_center, top_radius, blue_fill if advanced_open else base_fill, "NINJA", 9, text_color)
     if advanced_open:
@@ -367,7 +425,7 @@ func _draw() -> void:
         _draw_button(tool_select_center, advanced_radius, base_fill, "ITEM", 11, text_color)
         _draw_button(tool_use_center, advanced_radius, blue_fill, tool_label, 10, text_color)
         _draw_button(ultimate_center, advanced_radius, jutsu_fill if ultimate_enabled else Color(0.2, 0.2, 0.2, 0.30), "ULT" if ultimate_enabled else "—", 12, text_color)
-        _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), "AWK" if awakening_enabled else "—", 12, text_color)
+        _draw_button(awakening_center, advanced_radius, attack_fill if awakening_enabled else Color(0.2, 0.2, 0.2, 0.30), awakening_label if awakening_enabled else "—", 12, text_color)
         _draw_button(special_center, advanced_radius, blue_fill, special_label, 11, text_color)
         if clones_enabled:
             _draw_button(clone_center, advanced_radius, blue_fill, "CLONE", 10, text_color)
@@ -412,6 +470,8 @@ func _draw_button(center: Vector2, radius: float, fill: Color, label: String, fo
 func _notification(what: int) -> void:
     if what not in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED]:
         return
+    layout_touch = -1
+    layout_key = ""
     joystick_touch = -1
     camera_touch = -1
     charge_touch = -1
@@ -470,3 +530,30 @@ func configure_character(definition: CharacterDefinition) -> void:
         special_label = String(known_labels.get(first_id, fallback_label))
     _update_layout()
     queue_redraw()
+
+func set_layout_editing(enabled: bool) -> void:
+    layout_editing = enabled
+    layout_touch = -1
+    layout_key = ""
+    _notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+    if enabled:
+        owns_pause = not get_tree().paused
+        get_tree().paused = true
+    else:
+        CombatSettings.save_preferences()
+        if owns_pause:
+            get_tree().paused = false
+        owns_pause = false
+    queue_redraw()
+
+func _exit_tree() -> void:
+    if owns_pause:
+        get_tree().paused = false
+
+func reset_interaction() -> void:
+    for touch_id: int in [joystick_touch,camera_touch,charge_touch,guard_touch,layout_touch]:
+        _touch_released(touch_id)
+    for key: String in ["attack_queue","jump_queue","chakra_dash_queue","lock_queue","jutsu_queue","substitution_queue","dodge_queue","ultimate_queue","awakening_queue","special_queue","clone_queue","barrage_queue","tool_select_queue","tool_use_queue","quality_queue"]:
+        set(key,0)
+    camera_delta = Vector2.ZERO
+    move_vector = Vector2.ZERO

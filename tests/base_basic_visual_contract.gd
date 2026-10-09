@@ -13,6 +13,9 @@ func check(ok: bool, message: String) -> void:
         push_error(message)
 
 func frames(count: int) -> void:
+    var pending_flow: Node = root.get_node("GameFlow")
+    while pending_flow.busy:
+        await process_frame
     for index: int in range(count):
         await physics_frame
         await process_frame
@@ -44,7 +47,7 @@ func samples(mesh: MeshInstance3D, skeleton: Skeleton3D, model_scale: float) -> 
 
 func run() -> void:
     var flow: Node = root.get_node("GameFlow")
-    check(CharacterCatalog.NARUTO.model_path == "res://assets/characters/base_basic/base_basic_pbr_rigged.glb", "Naruto uses the single animated 3D model")
+    check(CharacterCatalog.NARUTO.model_path == "res://assets/characters/repaired/naruto_mobile.glb", "Naruto uses the single animated 3D model")
     check(is_equal_approx(CharacterCatalog.NARUTO.model_target_height, 1.70), "Naruto keeps tuned mobile character height")
     check(CharacterCatalog.NARUTO.idle_animation_override.is_empty(), "Naruto must use the real combat idle instead of chakra-charge as idle")
     check(CharacterCatalog.SAKURA.display_name == "Sakura" and CharacterCatalog.SAKURA.model_yaw_degrees == 0.0, "Sakura profile must expose corrected name and facing")
@@ -59,7 +62,7 @@ func run() -> void:
         var adapter: Node3D = actor.rig_adapter
         check(adapter.rig_loaded and adapter.model_instance.visible, "Each team shows its animated model")
         check(adapter.get_node_or_null("LicensedCombatNinja") == null, "Naruto keeps its configured 3D model instead of the generic ninja skin")
-        check(adapter.skeleton.get_bone_count() == 65 and adapter.real_animation_count == 27, "Complete skeleton and library load")
+        check(adapter.skeleton.get_bone_count() == 65 and adapter.real_animation_count == 127, "Complete skeleton and library load")
         var meshes: Array[MeshInstance3D] = []
         adapter._collect_mesh_instances(adapter.model_instance, meshes)
         check(meshes.size() == 1 and meshes[0].skin != null, "Optimized imported mesh has real skin")

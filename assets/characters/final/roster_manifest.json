@@ -1,0 +1,160 @@
+{
+  "generator": "tools/create_roster_fighters.py",
+  "source_skeleton_sha256": "b5abb8cf927c65e861fb56ea23ce36db2526903d1491f55b53d54a29b4cc0d5c",
+  "characters": {
+    "shikamaru": {
+      "path": "assets/characters/final/shikamaru/shikamaru_mobile.glb",
+      "vertices": 8067,
+      "triangles": 9480,
+      "joints": 65,
+      "sha256": "f8b27064c435d6c02c1a8508214cce4ea869f4aaa207c971e7a8d7269f88c0d6"
+    },
+    "choji": {
+      "path": "assets/characters/final/choji/choji_mobile.glb",
+      "vertices": 11074,
+      "triangles": 11976,
+      "joints": 65,
+      "sha256": "24ab128680e8c070ce6f3aaa3925720e54c5b4f560f7e6c3b5f39500c4d604bb"
+    },
+    "ino": {
+      "path": "assets/characters/final/ino/ino_mobile.glb",
+      "vertices": 8068,
+      "triangles": 9580,
+      "joints": 65,
+      "sha256": "11532017a66cc9c1cba100ddf52221534c5238daa7a0c1349e75cdf69270b183"
+    },
+    "rock_lee": {
+      "path": "assets/characters/final/rock_lee/rock_lee_mobile.glb",
+      "vertices": 9174,
+      "triangles": 10620,
+      "joints": 65,
+      "sha256": "19587d830f373a22b4aded8e3e3207ae3d2f77bae686ff814e276705650b3c1d"
+    },
+    "neji": {
+      "path": "assets/characters/final/neji/neji_mobile.glb",
+      "vertices": 9176,
+      "triangles": 10588,
+      "joints": 65,
+      "sha256": "c72634ad9e0b1269e0f2e39a0843e467effd08393ab7632ef8935f32ba145fa2"
+    },
+    "tenten": {
+      "path": "assets/characters/final/tenten/tenten_mobile.glb",
+      "vertices": 9498,
+      "triangles": 11040,
+      "joints": 65,
+      "sha256": "29518edd702f3908313602b9cd562b0d1488733cea5add0c7aed33a4143f005b"
+    },
+    "shino": {
+      "path": "assets/characters/final/shino/shino_mobile.glb",
+      "vertices": 11626,
+      "triangles": 13020,
+      "joints": 65,
+      "sha256": "d5c5421920d4e0e32ce437e538f72d226789d62f0c5a2064192e0adb82f673b5"
+    },
+    "kiba": {
+      "path": "assets/characters/final/kiba/kiba_mobile.glb",
+      "vertices": 9003,
+      "triangles": 10788,
+      "joints": 65,
+      "sha256": "33bb5360ef209f72997cc33f76a50aec7be575b835ffee1ed156a4d8a3747193"
+    },
+    "hinata": {
+      "path": "assets/characters/final/hinata/hinata_mobile.glb",
+      "vertices": 8026,
+      "triangles": 9588,
+      "joints": 65,
+      "sha256": "b634476872becab5e806628680a26dd99853857b7d11b7ab838341ed09e9559c"
+    },
+    "gaara": {
+      "path": "assets/characters/final/gaara/gaara_mobile.glb",
+      "vertices": 8545,
+      "triangles": 10180,
+      "joints": 65,
+      "sha256": "f235147ea816dd7463227b0062742ba9c2799d82de6537467fedbbb63768fe7f"
+    },
+    "kankuro": {
+      "path": "assets/characters/final/kankuro/kankuro_mobile.glb",
+      "vertices": 8593,
+      "triangles": 10392,
+      "joints": 65,
+      "sha256": "f2fbb9530379d275c7387dfde085193ea4ef43acaf7de1e5372bbb64268eaf7c"
+    },
+    "temari": {
+      "path": "assets/characters/final/temari/temari_mobile.glb",
+      "vertices": 9419,
+      "triangles": 11176,
+      "joints": 65,
+      "sha256": "ce6487e6cb33cc3d6a2b70c5fcd9e015a6344cc5b543d8463e2dfe169875856f"
+    },
+    "might_guy": {
+      "path": "assets/characters/final/might_guy/might_guy_mobile.glb",
+      "vertices": 9405,
+      "triangles": 10784,
+      "joints": 65,
+      "sha256": "3736ae0eae9af390ff061c529f54825b1da23b78c9da2ca547bf9d6d2b54c680"
+    },
+    "jiraiya": {
+      "path": "assets/characters/final/jiraiya/jiraiya_mobile.glb",
+      "vertices": 8561,
+      "triangles": 9926,
+      "joints": 65,
+      "sha256": "0f5e954e0afdecdb734268f41f572c1107776095d4208844ca2bc83e88c41bc5"
+    },
+    "tsunade": {
+      "path": "assets/characters/final/tsunade/tsunade_mobile.glb",
+      "vertices": 8629,
+      "triangles": 10344,
+      "joints": 65,
+      "sha256": "0b6ca7dfa04463912108ab29d7deba319299e82c36a5e9fc5c2e8a76d09aa82f"
+    },
+    "hiruzen": {
+      "path": "assets/characters/final/hiruzen/hiruzen_mobile.glb",
+      "vertices": 8307,
+      "triangles": 9560,
+      "joints": 65,
+      "sha256": "5ed135eb999218ed4e3e2860e7e6cb79811f09d7795aea5e7046f24b317e00f2"
+    },
+    "orochimaru": {
+      "path": "assets/characters/final/orochimaru/orochimaru_mobile.glb",
+      "vertices": 8189,
+      "triangles": 9840,
+      "joints": 65,
+      "sha256": "35c89eeae3e0cb11b2e877df3495698cf4e4e2dd4945b68cf15143181afa55a1"
+    },
+    "kabuto": {
+      "path": "assets/characters/final/kabuto/kabuto_mobile.glb",
+      "vertices": 11052,
+      "triangles": 11956,
+      "joints": 65,
+      "sha256": "bfe21fe5add1bef8587c30a8111dde492345b9889c16b9c74a7b1a5d203c387e"
+    },
+    "kimimaro": {
+      "path": "assets/characters/final/kimimaro/kimimaro_mobile.glb",
+      "vertices": 9525,
+      "triangles": 11000,
+      "joints": 65,
+      "sha256": "866038c7032f3471e26521226c5ccdbd35d5fa300a4591107fa7e45c45307344"
+    },
+    "itachi": {
+      "path": "assets/characters/final/itachi/itachi_mobile.glb",
+      "vertices": 8733,
+      "triangles": 10476,
+      "joints": 65,
+      "sha256": "11ccafda4ce650ca07aef81e81084ec8e9491a344756f08f13b4195d4f771285"
+    },
+    "kisame": {
+      "path": "assets/characters/final/kisame/kisame_mobile.glb",
+      "vertices": 8876,
+      "triangles": 10266,
+      "joints": 65,
+      "sha256": "0edbd366e29a661c68d8dfda1b3ff616aa1876b4ca4ef73566ff23e01fd7132e"
+    }
+  },
+  "preserved_ready_models": {
+    "assets/characters/base_basic/base_basic_pbr_rigged.glb": "e5ec8399e3531870f6f8fcf14b8d4d2d687a538c05be513c4b80a8a785fd4522",
+    "assets/characters/stylized/sasuke.glb": "20e0faa6976bd1dc91fd2e7617e198f6df55f4b8679ad2a8974cc7a41128fd29",
+    "assets/characters/stylized/kakashi.glb": "634d3628f31b722dffab5a9146e10879ea1d52fc67a861d3fc778dec019443ed",
+    "assets/characters/sakura_user/sakura_mobile_rigged.glb": "fc02718a9e9409603cae00087cb1f8525f628c7f0f3c6f45f19c1e3f013cc997",
+    "assets/characters/henrique/henrique_mobile_rigged.glb": "b2dfe22cc43fb3a8ece06bbe8d1a8fbec23b1212cf73c71b8fcb09965688168c"
+  }
+}

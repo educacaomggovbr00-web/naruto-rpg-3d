@@ -11,7 +11,7 @@
 script = ExtResource("1")
 character_id = "naruto"
 display_name = "Naruto"
-model_path = "res://assets/characters/base_basic/base_basic_pbr_rigged.glb"
+model_path = "res://assets/characters/repaired/naruto_mobile.glb"
 visual_status = "DEVELOPMENT_ONLY_USER_SUPPLIED_BASE_BASIC_RIGGED"
 stylized_material = false
 model_auto_scale = true

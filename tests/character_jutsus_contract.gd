@@ -9,6 +9,9 @@ func check(ok: bool, message: String) -> void:
         failures += 1
         push_error(message)
 func frames(count: int) -> void:
+    var pending_flow: Node = root.get_node("GameFlow")
+    while pending_flow.busy:
+        await process_frame
     for index: int in range(count):
         await physics_frame
 func clear_fighter(fighter: CharacterBody3D) -> void:
@@ -23,6 +26,7 @@ func clear_fighter(fighter: CharacterBody3D) -> void:
     fighter.chakra = fighter.max_chakra
     fighter.velocity = Vector3.ZERO
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     var flow: Node = root.get_node("GameFlow")
     check(flow.start_versus("sakura", "kakashi", "training") == OK, "Mixed fighter battle loads")
     await frames(10)
@@ -65,6 +69,12 @@ func run() -> void:
     player.specials._physics_process(0.25)
     var trap: Node3D = player.specials.traps[0]
     trap.set_physics_process(false)
+    var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
+    for index: int in [1,2]:
+        var kunai: MeshInstance3D = trap.wire.get_child(index)
+        check(kunai.mesh == tools.KUNAI,"Trap uses actual shared kunai geometry")
+        var center: Vector3 = kunai.transform * kunai.mesh.get_aabb().get_center()
+        check(center.distance_to(Vector3(-1.2 if index == 1 else 1.2,.13,0)) < .0001,"Rotated trap kunai remains centered on anchor")
     check(trap.active and trap.phase == "armed", "Clip release arms reusable world entity")
     player.specials._physics_process(0.50)
     check(trap.active and player.specials.current.is_empty(), "Released trap survives owner's normal recovery")
@@ -158,6 +168,6 @@ func run() -> void:
     check(not cpu.specials.start("rasengan"), "Kakashi cannot borrow Naruto's arsenal")
     arena.queue_free()
     await frames(5)
-    check(root.get_child_count() == 2, "New pools release completely on battle exit")
+    check(root.get_child_count() == persistent_nodes, "New pools release completely on battle exit")
     print("CHARACTER JUTSUS CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

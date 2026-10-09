@@ -1,7 +1,12 @@
 extends CharacterBody3D
+signal combat_hit_recorded(amount: float, guarded: bool)
 
 @export var moveset: MovesetDefinition = preload("res://assets/combat/naruto_moveset.tres")
 var character_definition: CharacterDefinition = null
+var team: Node = null
+var training_behavior: int = -1
+var battle_condition: Node = null
+var character_override: CharacterDefinition = null
 var ai_profile: AIProfileDefinition = null
 var selected_attack: AttackDefinition = null
 var combo_branch: String = "neutral"
@@ -82,6 +87,10 @@ var juggle_timer: float = 0.0
 @export var decision_interval_max: float = 0.32
 var decision_timer: float = 0.20
 var neutral_motion: String = "approach"
+var observed_melee_action: int = -1
+var melee_wait: float = -1.0
+var melee_defense_cooldown: float = 0.0
+var pressure_memory: float = 0.0
 var orbit_side: float = 1.0
 var decision_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -91,6 +100,8 @@ var animation_action_id: int = 0
 var attack_confirmed: bool = false
 var attack_airborne: bool = false
 var attack_timing: Dictionary = {}
+var counter_window: float = 0.0
+var strike_counter_bonus: float = 1.0
 
 var attack_active: bool = false
 var attack_elapsed: float = 0.0
@@ -110,7 +121,7 @@ var observed_guard_time: float = 0.0
 @onready var combat_feedback: Node = get_node_or_null("../CombatFeedback")
 
 func get_character_definition() -> CharacterDefinition:
-    return GameFlow.cpu_character
+    return character_definition if character_definition != null else character_override if character_override != null else GameFlow.cpu_character
 
 func _ready() -> void:
     character_definition = get_character_definition()
@@ -118,7 +129,7 @@ func _ready() -> void:
     if ai_profile == null:
         ai_profile = RosterAIProfileFactory.build(character_definition.character_id)
     if GameFlow.versus_mode:
-        ai_profile = GamePreferences.cpu_profile(ai_profile)
+        ai_profile = CombatSettings.profile_for(ai_profile)
     else:
         ai_profile = ai_profile.duplicate() as AIProfileDefinition
     techniques = _ability("CombatTechniques", preload("res://scripts/combat_techniques.gd"))
@@ -159,7 +170,10 @@ func _ready() -> void:
     dash_hitbox.add_child(collision)
     add_child(dash_hitbox)
     decision_rng.randomize()
-    var decision_speed: float = maxf(ai_profile.decision_speed, 0.65)
+    ai_profile = CombatSettings.profile_for(ai_profile)
+    reactive_substitution = reactive_substitution and CombatSettings.difficulty > 0
+    react_to_projectiles = react_to_projectiles and CombatSettings.difficulty > 0
+    var decision_speed: float = maxf(ai_profile.decision_speed, 0.35)
     decision_interval_min = 0.18 / decision_speed
     decision_interval_max = 0.32 / decision_speed
     locked_target = player
@@ -208,13 +222,6 @@ func _physics_process(delta: float) -> void:
         _move_and_handle_bounces()
         return
 
-    if GameFlow.versus_mode and GameFlow.battle_mode == "training" and GamePreferences.training_behavior < 2:
-        guarding = GamePreferences.training_behavior == 1 and guard_meter > 0.0
-        is_charging_chakra = false
-        _slow_down(delta)
-        _move_and_handle_bounces()
-        return
-
     if dodge_timer > 0.0:
         velocity.x = dodge_direction.x * 8.5
         velocity.z = dodge_direction.z * 8.5
@@ -248,6 +255,16 @@ func _physics_process(delta: float) -> void:
         _move_and_handle_bounces()
         return
 
+    if training_behavior >= 0:
+        guarding = training_behavior == 1 and guard_meter >= 20.0
+        _slow_down(delta)
+        _move_and_handle_bounces()
+        return
+
+    if _react_to_melee(delta, distance):
+        _slow_down(delta)
+        _move_and_handle_bounces()
+        return
     decision_timer = maxf(decision_timer - delta, 0.0)
     if not attack_active and decision_timer <= 0.0:
         _decide_neutral(distance)
@@ -284,6 +301,7 @@ func _physics_process(delta: float) -> void:
     _move_and_handle_bounces()
 
 func _update_timers(delta: float) -> void:
+    counter_window = maxf(0.0, counter_window - delta)
     if is_instance_valid(player):
         observed_guard_time = clampf(observed_guard_time + delta if player.is_guarding else observed_guard_time - delta * 0.5, 0.0, 2.0)
     arsenal_delay = maxf(arsenal_delay - delta, 0.0)
@@ -337,7 +355,7 @@ func _update_attack_timeline(delta: float) -> void:
     if not attack_hit_triggered and attack_elapsed >= startup:
         attack_hit_triggered = true
         rig_adapter.call("snap_attack_hitbox", combo_step, attack_airborne)
-        attack_hitbox.call("activate", self, selected_attack.damage * attack_damage / 10.0,
+        attack_hitbox.call("activate", self, selected_attack.damage * attack_damage / 10.0 * strike_counter_bonus,
             selected_attack.knockback, selected_attack.launch_force, selected_attack.hitstun,
             float(attack_timing.get("active", 0.09)))
 
@@ -363,7 +381,8 @@ func on_hitbox_contact(_hitbox: Area3D, _victim: Node, damage: float, blocked: b
             _start_attack()
         if is_instance_valid(combat_state):
             combat_state.call("mark_dash_confirm", blocked)
-    specials.call("contact", _victim, damage, blocked)
+    if _hitbox == specials.rasengan_hitbox or _hitbox == specials.barrage_hitbox:
+        specials.call("contact", _victim, damage, blocked)
     if attack_active and not blocked and damage > 0.0:
         attack_confirmed = true
 
@@ -412,6 +431,35 @@ func _chase_player(to_player: Vector3, delta: float) -> void:
     var direction: Vector3 = to_player.normalized()
     velocity.x = move_toward(velocity.x, direction.x * move_speed * float(awakening.call("movement_multiplier")), acceleration * delta)
     velocity.z = move_toward(velocity.z, direction.z * move_speed * float(awakening.call("movement_multiplier")), acceleration * delta)
+
+func _react_to_melee(delta: float, distance: float) -> bool:
+    melee_defense_cooldown = maxf(melee_defense_cooldown-delta,0.0)
+    pressure_memory = maxf(pressure_memory-delta*.12,0.0)
+    if CombatSettings.difficulty == 0 or training_behavior >= 0 or attack_active or not player.attack_active or distance > attack_range+1.2:
+        melee_wait = -1.0
+        return false
+    if player.animation_action_id != observed_melee_action:
+        observed_melee_action = player.animation_action_id
+        melee_wait = ai_profile.reaction_delay
+        pressure_memory = minf(pressure_memory+1.0,3.0)
+        return false
+    if melee_wait < 0.0 or melee_defense_cooldown > 0.0: return false
+    melee_wait -= delta
+    if melee_wait > 0.0: return false
+    melee_wait = -1.0
+    var roll: float = decision_rng.randf()
+    var guard_chance: float = minf(ai_profile.guard_bias+pressure_memory*.04,.65)
+    if guard_meter > 25.0 and roll < guard_chance:
+        guarding = true
+        guard_timer = .26
+    elif is_on_floor() and roll < guard_chance+ai_profile.dodge_bias*.6:
+        _start_reaction_dodge(player.global_position-global_position)
+        invulnerable_timer = maxf(invulnerable_timer,dodge_timer+.03)
+        animation_action_id += 1
+    else:
+        return false
+    melee_defense_cooldown = .65
+    return true
 
 func _decide_neutral(distance: float) -> void:
     decision_timer = decision_rng.randf_range(decision_interval_min, decision_interval_max)
@@ -470,6 +518,17 @@ func _choose_close_action() -> void:
     if player.is_guarding and roll < 0.10 + observed_guard_time * 0.10 and bool(techniques.call("start_grab")):
         return
 
+    # A visible held guard can be pressured on higher difficulties, only at
+    # the normal decision tick and with the regular heavy attack startup.
+    if CombatSettings.difficulty >= 2 and player.get_is_guarding() and is_on_floor() and roll < ai_profile.aggression:
+        attack_cooldown = attack_cooldown_time
+        attack_active = true
+        combo_step = 4
+        combo_branch = "down"
+        attack_airborne = false
+        _begin_strike()
+        return
+
     if guard_meter > 25.0 and roll < ai_profile.guard_bias:
         guarding = true
         guard_timer = guard_duration
@@ -505,6 +564,8 @@ func _begin_strike() -> void:
     attack_confirmed = false
     animation_action_id += 1
     selected_attack = moveset.attack(combo_step, attack_airborne, combo_branch)
+    strike_counter_bonus = 1.25 if counter_window > 0.0 else 1.0
+    counter_window = 0.0
     attack_timing = selected_attack.animation_timing(rig_adapter.manifest)
 
 func _face_direction(direction: Vector3, delta: float, speed: float = 10.0) -> void:
@@ -577,7 +638,17 @@ func is_defeated() -> bool:
     return not targetable
 
 func get_damage_multiplier() -> float:
-    return float(awakening.call("damage_multiplier")) * float(ninja_tools.call("damage_multiplier"))
+    return float(awakening.call("damage_multiplier")) * float(ninja_tools.call("damage_multiplier")) * (battle_condition.damage_multiplier() if is_instance_valid(battle_condition) else 1.0)
+
+func receive_status_damage(damage: float) -> float:
+    if not targetable or invulnerable_timer > 0.0:
+        return 0.0
+    var dealt: float = minf(health, maxf(damage, 0.0) * (.22 if guarding else 1.0))
+    health -= dealt
+    _update_labels()
+    if health <= 0.0:
+        _knock_out()
+    return dealt
 
 func is_targetable() -> bool:
     return targetable
@@ -628,9 +699,8 @@ func receive_combat_hit(
         attack_active = false
         attack_hitbox.call("deactivate")
         stagger_timer = hitstun
-        var substitution_chance: float = [0.07, 0.18, 0.30][GamePreferences.difficulty] if GameFlow.versus_mode else 0.18
-        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and decision_rng.randf() < substitution_chance:
-            reaction_timer = decision_rng.randf_range(0.10, 0.18) / maxf(ai_profile.decision_speed, 0.65)
+        if reactive_substitution and reaction_timer <= 0.0 and substitutions > 0 and substitution_cooldown <= 0.0 and decision_rng.randf() < ai_profile.substitution_chance:
+            reaction_timer = decision_rng.randf_range(ai_profile.reaction_delay*.75, ai_profile.reaction_delay*1.3)
         wall_bounce_pending = applied_knockback >= 4.0
         ground_bounce_pending = launch_velocity < -2.0
 
@@ -644,6 +714,11 @@ func receive_combat_hit(
             guard_broken
         )
 
+    if is_instance_valid(battle_condition):
+        applied_damage *= battle_condition.received_multiplier()
+        battle_condition.record_damage(damage, knockback, was_guarding)
+    if is_instance_valid(team):
+        applied_damage = team.incoming_damage(applied_damage, guard_broken)
     health = maxf(health - applied_damage, 0.0)
 
     var push: Vector3 = direction
@@ -674,9 +749,17 @@ func receive_grab_hit(damage: float, direction: Vector3, knockback: float, launc
     guard_timer = 0.0
     return receive_combat_hit(damage, direction, knockback, launch, stun)
 
-func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float) -> void:
+func on_attack_resolved(target: Node, amount: float, launch: float, blocked: bool) -> void:
+    on_attack_connected(target,amount,launch,blocked)
+
+func on_attack_connected(target: Node, _actual_damage: float, _launch_velocity: float, blocked: Variant = null) -> void:
+    var target_guarded: bool = bool(blocked) if blocked is bool else target.has_method("get_is_guarding") and target.get_is_guarding()
+    if _actual_damage > 0.001:
+        combat_hit_recorded.emit(_actual_damage,target_guarded)
+    if is_instance_valid(team):
+        team.record_hit(_actual_damage, _launch_velocity, target_guarded)
     var impact_kind: String = "normal"
-    if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
+    if target_guarded:
         impact_kind = "guard"
 
     if is_instance_valid(combat_feedback):
@@ -730,6 +813,14 @@ func _knock_out() -> void:
     respawn_timer = recovery_delay
 
 func _respawn() -> void:
+    observed_melee_action = -1
+    melee_wait = -1.0
+    melee_defense_cooldown = 0.0
+    pressure_memory = 0.0
+    for effect_name: String in ["BlackFlames", "GenjutsuOverlay", "ElementalStates"]:
+        var effect: Node = get_node_or_null(effect_name)
+        if effect != null:
+            effect.queue_free()
     _cancel_abilities()
     if is_instance_valid(combat_state):
         combat_state.call("clear_transient")
@@ -747,6 +838,10 @@ func _respawn() -> void:
     invulnerable_timer = 0.0
     reaction_timer = 0.0
     targetable = true
+    if is_instance_valid(team):
+        team.reset()
+    if is_instance_valid(battle_condition):
+        battle_condition.reset()
     guarding = false
     ground_bounce_pending = false
     wall_bounce_pending = false
@@ -774,6 +869,8 @@ func _substitute() -> void:
     if is_instance_valid(combat_state):
         combat_state.call("mark_substitution")
     substitutions -= 1
+    if GameFlow.battle_rules_enabled:
+        counter_window = .5
     substitution_cooldown = 0.65
     substitution_regen = 0.0
     invulnerable_timer = 0.4
@@ -821,6 +918,8 @@ func is_cpu_controlled() -> bool:
     return true
 
 func get_special_animation() -> String:
+    if team != null and not team.phase.is_empty():
+        return team.animation_clip()
     if techniques != null and techniques.active:
         return "attack_3"
     return ultimate.call("animation_clip") if not ultimate.phase.is_empty() else "chakra_charge" if awakening.transforming else specials.call("animation_clip")
@@ -972,11 +1071,10 @@ func _react_to_projectile() -> bool:
         return false
     # Decisions are sampled on the existing delayed neutral tick; sometimes miss.
     var reaction: float = decision_rng.randf()
-    var awareness: float = [0.40, 0.70, 0.85][GamePreferences.difficulty] if GameFlow.versus_mode else 0.70
-    if reaction >= awareness:
+    if reaction >= ai_profile.projectile_reaction:
         return false
     is_charging_chakra = false
-    if guard_meter > 35.0 and reaction < 0.45:
+    if guard_meter > 35.0 and reaction < ai_profile.projectile_reaction * .64:
         guarding = true
         guard_timer = minf(guard_duration, 0.45)
         return true

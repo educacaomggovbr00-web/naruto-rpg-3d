@@ -131,7 +131,7 @@
   },
   "output": {
     "path": "assets/characters/henrique/henrique_mobile_rigged.glb",
-    "sha256": "a139e993df1d29a61d28558d9ddb5c7b6c6754d385c1e42eb93ab292bc8e0777",
+    "sha256": "b2dfe22cc43fb3a8ece06bbe8d1a8fbec23b1212cf73c71b8fcb09965688168c",
     "size_bytes": 3228368,
     "vertices": 21707,
     "triangles": 15398,
@@ -139,7 +139,16 @@
     "texture_max_size": 1024
   },
   "combat_library": "res://assets/animations/combat_mixamo.tres",
-  "combat_clips": 27,
+  "combat_clips": 127,
   "license": "User-supplied; provenance unverified",
-  "weighting": "Four normalized influences; rigid chibi head; offline T-pose fitting"
+  "weighting": "Four normalized influences; rigid chibi head; smooth shoulder/elbow/wrist zones and rigid fists",
+  "refinement": {
+    "left_vertices": 1457,
+    "left_rigid_fist_vertices": 120,
+    "right_vertices": 1749,
+    "right_rigid_fist_vertices": 275,
+    "input_sha256": "a139e993df1d29a61d28558d9ddb5c7b6c6754d385c1e42eb93ab292bc8e0777",
+    "output_sha256": "b2dfe22cc43fb3a8ece06bbe8d1a8fbec23b1212cf73c71b8fcb09965688168c",
+    "method": "T-pose smoothstep shoulder/elbow/wrist zones; rigid closed fists; geometry/rest/head unchanged"
+  }
 }

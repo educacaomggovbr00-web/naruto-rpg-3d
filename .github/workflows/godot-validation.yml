@@ -179,6 +179,41 @@ jobs:
           xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/licensed_gameplay_assets_contract.gd 2>&1 | tee /tmp/licensed-opengl.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/licensed-opengl.log
           grep -F 'LICENSED GAMEPLAY ASSETS: PASS' /tmp/licensed-opengl.log
+      - name: Compile elemental jutsus in OpenGL Compatibility
+        shell: bash
+        run: |
+          set -o pipefail
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/jutsu_presentation_contract.gd 2>&1 | tee /tmp/jutsu-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/jutsu-opengl.log
+          grep -F 'JUTSU PRESENTATION CONTRACT: PASS' /tmp/jutsu-opengl.log
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/presentation_quality_contract.gd 2>&1 | tee /tmp/presentation-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/presentation-opengl.log
+          grep -F 'PRESENTATION QUALITY CONTRACT: PASS' /tmp/presentation-opengl.log
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/fighter_polish_contract.gd 2>&1 | tee /tmp/fighter-polish-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/fighter-polish-opengl.log
+          grep -F 'FIGHTER POLISH CONTRACT: PASS' /tmp/fighter-polish-opengl.log
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/android_stability_contract.gd 2>&1 | tee /tmp/stability-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/stability-opengl.log
+          grep -F 'ANDROID STABILITY CONTRACT: PASS' /tmp/stability-opengl.log
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/scene_loading_contract.gd 2>&1 | tee /tmp/loading-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/loading-opengl.log
+          grep -F 'SCENE LOADING CONTRACT: PASS' /tmp/loading-opengl.log
+      - name: Validate team battle and arena interactions in OpenGL
+        shell: bash
+        run: |
+          set -o pipefail
+          for contract in team_battle battle_interactions boss_mob jutsu_finish jutsu_construct jutsu_signature battle_polish integrated_polish; do
+            xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/${contract}_contract.gd 2>&1 | tee /tmp/${contract}-opengl.log
+            ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/${contract}-opengl.log
+            grep -F 'CONTRACT: PASS' /tmp/${contract}-opengl.log
+          done
+      - name: Validate merged gameplay systems in OpenGL
+        shell: bash
+        run: |
+          set -o pipefail
+          xvfb-run -a /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --path . --rendering-method gl_compatibility --audio-driver Dummy --script res://tests/gameplay_improvements_contract.gd 2>&1 | tee /tmp/gameplay-merged-opengl.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/gameplay-merged-opengl.log
+          grep -F 'GAMEPLAY IMPROVEMENTS: PASS' /tmp/gameplay-merged-opengl.log
       - name: Upload gameplay presentation captures
         uses: actions/upload-artifact@v4
         with:
@@ -188,6 +223,15 @@ jobs:
       - name: Validate Storm research bridges
         run: |
           python -m unittest discover -s tests -p 'test_storm1_research_tools.py'
+      - name: Validate 100 new clips, gallery and Susanoo impact timing
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pip install numpy scipy Pillow
+          python -m unittest discover -s tests -p 'test_combat_expansion.py'
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script res://tests/combat_expansion_contract.gd 2>&1 | tee /tmp/combat-expansion.log
+          ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/combat-expansion.log
+          grep -F 'COMBAT EXPANSION CONTRACT: PASS' /tmp/combat-expansion.log
       - name: Validate release provenance gate
         run: |
           python tools/validate_release_assets.py
@@ -203,12 +247,23 @@ jobs:
           grep -F 'Export público bloqueado; payload excluído.' /tmp/public-export.log
           ! grep -F 'SCRIPT ERROR:' /tmp/public-export.log
           cp tests/export_payload_contract.gd /tmp/export_payload_contract.gd
+          cp tests/public_payload_contract.gd /tmp/public_payload_contract.gd
           cd /tmp
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/android-phase1.pck --script /tmp/export_payload_contract.gd 2>&1 | tee /tmp/pack-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/pack-contract.log
           grep -F 'ANDROID PHASE 1 PACK: PASS' /tmp/pack-contract.log
           grep -F 'CHARACTER JUTSU DATA ANDROID PACK: PASS' /tmp/pack-contract.log
           grep -F 'WORLD ANDROID PACK: PASS' /tmp/pack-contract.log
-          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/blocked-public.pck --script /tmp/export_payload_contract.gd -- --public 2>&1 | tee /tmp/public-pack-contract.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --main-pack /tmp/blocked-public.pck --script /tmp/public_payload_contract.gd 2>&1 | tee /tmp/public-pack-contract.log
           ! grep -E '^(SCRIPT ERROR:|ERROR:)' /tmp/public-pack-contract.log
           grep -F 'PUBLIC PAYLOAD GATE: PASS' /tmp/public-pack-contract.log
+      - name: Validate skeletal Susanoo, controls, modes and Henrique campaign
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest discover -s tests -p 'test_susanoo_rig.py'
+          for contract in evolution arcade_modes henrique_campaign visible_evolution combat_input roster_authored_models jutsu_presentation presentation_quality fighter_polish android_stability scene_loading team_battle battle_interactions boss_mob jutsu_finish jutsu_construct jutsu_signature battle_polish integrated_polish; do
+            /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script "res://tests/${contract}_contract.gd" 2>&1 | tee "/tmp/${contract}.log"
+            ! grep -E '^(SCRIPT ERROR:|ERROR:)' "/tmp/${contract}.log"
+            grep -F 'CONTRACT: PASS' "/tmp/${contract}.log"
+          done

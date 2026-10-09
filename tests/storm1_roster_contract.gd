@@ -36,7 +36,7 @@ func run() -> void:
         check(definition.moveset != null, "Every selectable fighter needs a combat moveset: " + expected_id)
         check(not definition.model_path.is_empty(), "Every selectable fighter needs a preview/runtime model path: " + expected_id)
 
-        if definition.visual_status == "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG":
+        if definition.visual_status == "ORIGINAL_STYLIZED_SKINNED_MODEL":
             check(definition.jutsus.size() >= 2, "Every roster slot must expose two character-owned specials: " + expected_id)
             for jutsu_id: String in definition.jutsus:
                 var jutsu: JutsuDefinition = definition.find_jutsu(jutsu_id)

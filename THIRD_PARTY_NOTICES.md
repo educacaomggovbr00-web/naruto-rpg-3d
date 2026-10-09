@@ -109,10 +109,17 @@ This work is based on “Perfect susanoo” by wahidinesport, licensed under CC 
 - Bundled license: `assets/susanoo/LICENSE.txt` (also included in Android export).
 - Modifications: glTF to GLB conversion using gltfpack 1.3, reduced from 34,098 to 11,961 triangles; runtime scale, purple chakra material, optional wings and separate project-authored chakra blade.
 
-The original is static, without skin/animations. Geometry and declared uploader license were inspected. The existing release gate retains DEVELOPMENT_ONLY because the model depicts franchise content and upstream ownership/brand authorization is not established.
+The original is static, without skin/animations. The project derivative `susanoo_mobile_rigged.glb` preserves source geometry/textures and adds a fitted 25-bone skin and five original keyframed animations using `tools/rig_susanoo.py`. The source sword is weighted to the left hand; the separate proxy blade is used only by the authored fallback. Runtime armor now receives lighting. Geometry and declared uploader license were inspected. The existing release gate retains DEVELOPMENT_ONLY because the model depicts franchise content and upstream ownership/brand authorization is not established.
 
 ## Henrique — supplied ZIP and project rig
 
 Source: `3970037e-fd4c-4114-b9f6-75905e547ff4.zip`, `base_basic_pbr.glb` supplied by the player. Source SHA-256: `701a61f74ba02666bd672df53ea88000ccdb71d994e38dfd16dd942ac8505852`.
 
 Provider/generation rights were not supplied; registered as DEVELOPMENT_ONLY. The project fitted the 65-bone combat reference skeleton, normalized weights, retained the chibi head and reposed the mesh offline. Existing CC0 Quaternius combat animations are registered separately; rig reference provenance remains unchanged.
+
+## Original instrumental loops (0.4.0)
+
+`assets/audio/original/{exploration,battle,boss}.wav` are original procedural
+compositions produced by `tools/compose_shinobi_music.py`. They synthesize notes
+and percussion without external samples or recordings. These are instrumental
+prototype loops; they do not include Henrique dialogue or professional vocals.

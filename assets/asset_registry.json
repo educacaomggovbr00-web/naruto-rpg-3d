@@ -75,12 +75,12 @@
       "author": "Quaternius / Gonzalo Furnier",
       "source": "https://quaternius.itch.io/universal-animation-library-2",
       "license": "CC0-1.0",
-      "modifications": "Retarget UAL1/2 para Mixamo, 27 clips; ver manifesto",
-      "sha256": "d4d8013715182f30367ef872a3caa06cf919aabee972e5743504763bda95f05f"
+      "modifications": "27 preserved clips + 100 directional/mirrored/aerial CC0 adaptations, 65 bones, 30 FPS; see combat_manifest.json",
+      "sha256": "4d5300f89e8b0ed923d4166fbc1dd9845242be20d4652d4e8cea927099dd9aa6"
     },
     {
       "path": "assets/vfx/chakra_shell.gdshader",
-      "sha256": "c2b9b2f78f68d7f3b1d81be28ec07e135a9cda591ac44446fb1b6366b5bc5af2",
+      "sha256": "a92efbb1c8be470a6d91574f52b4121d6f7bf3b32c417b67c5da8b9ebcee83db",
       "status": "SAFE_FOR_RELEASE",
       "author": "Projeto naruto-rpg-3d",
       "source": "Código original neste repositório",
@@ -89,7 +89,7 @@
     },
     {
       "path": "assets/vfx/chakra_core.gdshader",
-      "sha256": "71ffdee82a001b8d48a8786601189c978e29f88ea587668da99acedc50818d37",
+      "sha256": "a4f27389d4baa6637b5f8f88a5e1a49722f303f3356d2f734b6ce4354ff61c52",
       "status": "SAFE_FOR_RELEASE",
       "author": "Projeto naruto-rpg-3d",
       "source": "Código original neste repositório",
@@ -165,8 +165,8 @@
       "author": "Projeto naruto-rpg-3d",
       "source": "Criado no projeto; comportamento aproximado de referência pública",
       "license": "Original project content; no third-party game asset copied",
-      "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado.",
-      "sha256": "0de1c30047d457e44d686a1a24771e8768cf3dc1d99697674f23bdb8d5ba030f"
+      "modifications": "Resource de gameplay original configurado para o modelo base_basic PBR rigado.; selects corrected source-pose skin derivative",
+      "sha256": "0bf98df49d8592d66c88d11d12167fc17791df93053225b777af7866bf8ba75b"
     },
     {
       "path": "assets/characters/definitions/sasuke.tres",
@@ -327,7 +327,7 @@
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
       "modifications": "Original authored presentation/profile data",
-      "sha256": "4cda45f347da6d98058836684f196651d2143e3bc7503b5ef83a848a763ee0d7"
+      "sha256": "d6e3f247a9ad79d921f4ef08c142c6c51cf96f0fa1cae038d0975d8f5f2cb8bb"
     },
     {
       "path": "assets/characters/stylized/toon.tres",
@@ -335,8 +335,8 @@
       "author": "Projeto / Codex",
       "source": "Original geometry and code authored in this repository",
       "license": "Original project content",
-      "modifications": "Original toon material retuned to use the new distance-aware mobile outline.",
-      "sha256": "295e81b82a4bd511e7b038c04d27317488ca4e460e04985c371520b0d6946fe3"
+      "modifications": "Original toon material retuned to use the new distance-aware mobile outline.; fragmented skinned outline pass removed, toon surface retained",
+      "sha256": "f170e15ff6987c99be57a6a6b4e0fa783eda2b7b9337950700123da793b6f368"
     },
     {
       "path": "assets/characters/stylized/sasuke.glb",
@@ -822,8 +822,8 @@
       "author": "Projeto",
       "source": "Henrique Uchiha original do jogador",
       "license": "Protagonista de fan game; autorização de apresentação da franquia não comprovada",
-      "modifications": "Novo protagonista, kit próprio e caminho do modelo enviado",
-      "sha256": "a2f42bf55a6955d415fccfb733412b65449ee5625bbaae345e936e51a648985f"
+      "modifications": "Novo protagonista, kit próprio e caminho do modelo enviado; selects corrected source-pose skin derivative",
+      "sha256": "2ab7a36a6072db3bb31afc3f251f4625b5d2e16231a81d6ade304222f4dd1c54"
     },
     {
       "path": "assets/characters/henrique/henrique_mobile_rigged.glb",
@@ -831,8 +831,8 @@
       "author": "Modelo enviado pelo usuário; rig e preparação pelo projeto",
       "source": "3970037e-fd4c-4114-b9f6-75905e547ff4.zip / base_basic_pbr.glb",
       "license": "User-supplied model; generation/provider rights unverified; shared reference rig provenance unchanged",
-      "modifications": "65 ossos, pesos normalizados, proporções chibi, T-pose, 15398 triângulos e texturas de até 1024 px; animações CC0 existentes registradas separadamente",
-      "sha256": "a139e993df1d29a61d28558d9ddb5c7b6c6754d385c1e42eb93ab292bc8e0777",
+      "modifications": "65 ossos, pesos normalizados, proporções chibi, T-pose, 15398 triângulos e texturas de até 1024 px; animações CC0 existentes registradas separadamente; smooth shoulder/elbow/wrist skin zones and rigid fists, unchanged geometry/rest/head",
+      "sha256": "b2dfe22cc43fb3a8ece06bbe8d1a8fbec23b1212cf73c71b8fcb09965688168c",
       "embedded_images": [
         {
           "path": "assets/characters/henrique/henrique_mobile_rigged_texture_normal.png",
@@ -887,6 +887,641 @@
         }
       ],
       "credit": "Perfect susanoo by wahidinesport, CC BY 4.0; https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199; https://creativecommons.org/licenses/by/4.0/; modified by project."
+    },
+    {
+      "path": "assets/ui/shinobi_icon.svg",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto",
+      "source": "Original authored SVG chakra/lightning/blade emblem",
+      "license": "CC0-1.0",
+      "modifications": "Original 512 px application icon",
+      "sha256": "2dea1720a021e24d5aa32b704464e4c441bf1a86b06aa269163c0d37b9af535f"
+    },
+    {
+      "path": "assets/susanoo/susanoo_mobile_rigged.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "wahidinesport",
+      "source": "https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199",
+      "license": "CC-BY-4.0 declared by uploader; underlying franchise authorization unverified",
+      "modifications": "Original geometry retained; fitted 25-bone skin and 5 original keyframed clips via tools/rig_susanoo.py",
+      "sha256": "e8faee7e685f2e4113a2cb54aace413682eaeb724381a2afeabd2a4665d1c714",
+      "embedded_images": [
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_0.png",
+          "sha256": "9f07e50a728549156a5f9316da3805620f9fcfa32ab355d9ac20790c379f3d1e"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_1.png",
+          "sha256": "612f7d75c8726b6a90c7064f9d4ac88adeac650af8fa71e7300cd7c89d788565"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_2.png",
+          "sha256": "0b20ea86b629370d538771259df1d5673cb8b275fc48da4f5f7dc8c36e982fb7"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_3.png",
+          "sha256": "ea68587ad08edbe658069cb4bdb563a9918f3eec3178b708423e6fa38d9fc862"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_4.png",
+          "sha256": "95aa83eec8220b6de257036b41e001bd1d687d7d04823ea578d4ac3f25001697"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_5.png",
+          "sha256": "693213eb3ac110a40497e6b80e4ae5f39f14ffa681819d9359efbec096f35246"
+        },
+        {
+          "path": "assets/susanoo/susanoo_mobile_rigged_6.png",
+          "sha256": "27e2f81846e319707f374da804594c1a76299d7da2d0766336ac8b725cf5670f"
+        }
+      ],
+      "credit": "Perfect susanoo by wahidinesport, CC BY 4.0; https://sketchfab.com/3d-models/perfect-susanoo-c1ef38744eb64891b26a6f41aac1b199; https://creativecommons.org/licenses/by/4.0/; modified by project."
+    },
+    {
+      "path": "assets/world/henrique_campaign.json",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Projeto naruto-rpg-3d",
+      "source": "Dados narrativos e de progressão originais deste repositório",
+      "license": "Original project content",
+      "modifications": "Original Henrique campaign: six chapters and a saved rival choice; existing campaign retained",
+      "sha256": "67d7aa5236940416f1acb4efbc898c598b42fa897d89c01c43f26d221c5a3c61"
+    },
+    {
+      "path": "assets/audio/original/boss.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original procedural composition: tools/compose_shinobi_music.py",
+      "license": "Project original composition",
+      "modifications": "Synthesized instrumental loop; no recordings or external samples",
+      "sha256": "33cef6feff645bd3952877bfe0d3b3e5341ac1847a53cd08d82a84156f22ec74"
+    },
+    {
+      "path": "assets/audio/original/exploration.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original procedural composition: tools/compose_shinobi_music.py",
+      "license": "Project original composition",
+      "modifications": "Synthesized instrumental loop; no recordings or external samples",
+      "sha256": "33b100f1968c29caf497de26b6afbeeba37554d0ed0cce8704bbcb8d04d4df54"
+    },
+    {
+      "path": "assets/audio/original/battle.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original procedural composition: tools/compose_shinobi_music.py",
+      "license": "Project original composition",
+      "modifications": "Synthesized instrumental loop; no recordings or external samples",
+      "sha256": "afad626adec5afbb105bd47835d8e9016978602f459b95312f9a39d2682631fc"
+    },
+    {
+      "path": "assets/characters/final/shikamaru/shikamaru_mobile.glb",
+      "sha256": "f8b27064c435d6c02c1a8508214cce4ea869f4aaa207c971e7a8d7269f88c0d6",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/choji/choji_mobile.glb",
+      "sha256": "24ab128680e8c070ce6f3aaa3925720e54c5b4f560f7e6c3b5f39500c4d604bb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/ino/ino_mobile.glb",
+      "sha256": "11532017a66cc9c1cba100ddf52221534c5238daa7a0c1349e75cdf69270b183",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/rock_lee/rock_lee_mobile.glb",
+      "sha256": "19587d830f373a22b4aded8e3e3207ae3d2f77bae686ff814e276705650b3c1d",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/neji/neji_mobile.glb",
+      "sha256": "c72634ad9e0b1269e0f2e39a0843e467effd08393ab7632ef8935f32ba145fa2",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/tenten/tenten_mobile.glb",
+      "sha256": "29518edd702f3908313602b9cd562b0d1488733cea5add0c7aed33a4143f005b",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/shino/shino_mobile.glb",
+      "sha256": "d5c5421920d4e0e32ce437e538f72d226789d62f0c5a2064192e0adb82f673b5",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/kiba/kiba_mobile.glb",
+      "sha256": "33bb5360ef209f72997cc33f76a50aec7be575b835ffee1ed156a4d8a3747193",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/hinata/hinata_mobile.glb",
+      "sha256": "b634476872becab5e806628680a26dd99853857b7d11b7ab838341ed09e9559c",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/gaara/gaara_mobile.glb",
+      "sha256": "f235147ea816dd7463227b0062742ba9c2799d82de6537467fedbbb63768fe7f",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/kankuro/kankuro_mobile.glb",
+      "sha256": "f2fbb9530379d275c7387dfde085193ea4ef43acaf7de1e5372bbb64268eaf7c",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/temari/temari_mobile.glb",
+      "sha256": "ce6487e6cb33cc3d6a2b70c5fcd9e015a6344cc5b543d8463e2dfe169875856f",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/might_guy/might_guy_mobile.glb",
+      "sha256": "3736ae0eae9af390ff061c529f54825b1da23b78c9da2ca547bf9d6d2b54c680",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/jiraiya/jiraiya_mobile.glb",
+      "sha256": "0f5e954e0afdecdb734268f41f572c1107776095d4208844ca2bc83e88c41bc5",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/tsunade/tsunade_mobile.glb",
+      "sha256": "0b6ca7dfa04463912108ab29d7deba319299e82c36a5e9fc5c2e8a76d09aa82f",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/hiruzen/hiruzen_mobile.glb",
+      "sha256": "5ed135eb999218ed4e3e2860e7e6cb79811f09d7795aea5e7046f24b317e00f2",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/orochimaru/orochimaru_mobile.glb",
+      "sha256": "35c89eeae3e0cb11b2e877df3495698cf4e4e2dd4945b68cf15143181afa55a1",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/kabuto/kabuto_mobile.glb",
+      "sha256": "bfe21fe5add1bef8587c30a8111dde492345b9889c16b9c74a7b1a5d203c387e",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/kimimaro/kimimaro_mobile.glb",
+      "sha256": "866038c7032f3471e26521226c5ccdbd35d5fa300a4591107fa7e45c45307344",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/itachi/itachi_mobile.glb",
+      "sha256": "11ccafda4ce650ca07aef81e81084ec8e9491a344756f08f13b4195d4f771285",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/characters/final/kisame/kisame_mobile.glb",
+      "sha256": "0edbd366e29a661c68d8dfda1b3ff616aa1876b4ca4ef73566ff23e01fd7132e",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/create_roster_fighters.py; skeleton inherited from assets/characters/rigged.glb",
+      "license": "Original modeled geometry; inherited skeleton provenance unresolved",
+      "modifications": "Character-specific original stylized skinned geometry, clothing, hair, accessories and articulated fingers; no protected ready model modified"
+    },
+    {
+      "path": "assets/vfx/elemental_core.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Procedural opaque elemental surface; no external assets; granular and solid variants",
+      "sha256": "12b139e3a3a805bed000e61e4f4d6129de568eb4165d5abc482248950c74a273"
+    },
+    {
+      "path": "assets/audio/original/jutsu_fire.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "tools/compose_jutsu_sfx.py",
+      "license": "Original project composition",
+      "modifications": "Deterministic synthesized elemental sound; no sampled recordings",
+      "sha256": "68eb58dcb01b5976daa16d52f87a72117c2cae0c38c8a615991512f428ca6b3e"
+    },
+    {
+      "path": "assets/audio/original/jutsu_lightning.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "tools/compose_jutsu_sfx.py",
+      "license": "Original project composition",
+      "modifications": "Deterministic synthesized elemental sound; no sampled recordings",
+      "sha256": "8a0dec02a4703004c7cad71f998eeb387bbf755931957a32821d5023174dd691"
+    },
+    {
+      "path": "assets/audio/original/jutsu_water.wav",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "tools/compose_jutsu_sfx.py",
+      "license": "Original project composition",
+      "modifications": "Deterministic synthesized elemental sound; no sampled recordings",
+      "sha256": "ccf6017477453801dd4872eb3f627ce9e97a518ca2d4ebc2c930df9214258de1"
+    },
+    {
+      "path": "assets/ui/shinobi_theme.tres",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original project UI theme",
+      "license": "Original project content",
+      "modifications": "Shared accessible menu palette and focus styles",
+      "sha256": "4f1fef58b04a25df2557d51de1122c9983e2babb7b99a10e257fde8670e603d6"
+    },
+    {
+      "path": "assets/ui/portraits/choji.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "bb2d154ad2117fc6f7aa8304bb7a0e3f49e6a326293c0a5187ad6e7471ecb35a"
+    },
+    {
+      "path": "assets/ui/portraits/gaara.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "3eec03901651891c01f22fb9659cf1f12afdd4fc73ee8908c5cd9fdaa64793d2"
+    },
+    {
+      "path": "assets/ui/portraits/henrique.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled; portrait uses corrected source-pose rig",
+      "sha256": "c728fb2dd0f83450e65a036b2c108438d52f62fd77e4958e608d173c9c09598e"
+    },
+    {
+      "path": "assets/ui/portraits/hinata.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "af1fbabcf898da7cde916226ce3ee76f2809e05210cad65ad5e7365513994a72"
+    },
+    {
+      "path": "assets/ui/portraits/hiruzen.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "b89891c564dd27b972553a855131b3c886ede614f9ba84a80201277f747e6f7e"
+    },
+    {
+      "path": "assets/ui/portraits/ino.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "440ece766e6cc2af860df1837c0b4993f12dcec89c9e99905e13962c8ea1089e"
+    },
+    {
+      "path": "assets/ui/portraits/itachi.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "7432024987ed45e27d82196d359be9a9e28948111681462589f509f9eb7c54e6"
+    },
+    {
+      "path": "assets/ui/portraits/jiraiya.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "4f102c06db28b4655c644bcc63d745e172740bcf046a577190d779f8fd4df4ce"
+    },
+    {
+      "path": "assets/ui/portraits/kabuto.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "29a29a5bff32d3977c9005ebf74b5dda5abf5d0856828df1813027e98c6113fa"
+    },
+    {
+      "path": "assets/ui/portraits/kakashi.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "6f87fb2f7deebdeffe0b5a5f41bd74f63c5a2595faf43b9a86ef4446546e71ca"
+    },
+    {
+      "path": "assets/ui/portraits/kankuro.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "deed0bb09b8ef11205baea0284012ee0b3bc28410187e409088a75e53de6e529"
+    },
+    {
+      "path": "assets/ui/portraits/kiba.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "82198474944bcb77d3ab2b538472ff2365df19e91138312977751475c8ff3d96"
+    },
+    {
+      "path": "assets/ui/portraits/kimimaro.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "80be144dd33f043715b7fdc8102dc5c26c5b58cb6a9aa4b6488b2e8cead9cb35"
+    },
+    {
+      "path": "assets/ui/portraits/kisame.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "a6daf47b0573fc4185f5d4482edaaab21c59d32f4a62c06bca80d1b521ba2e55"
+    },
+    {
+      "path": "assets/ui/portraits/might_guy.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "80a8a1fe0b57ffb65990754df155a18e24ba45a66d4fbd68b94e2383a223080e"
+    },
+    {
+      "path": "assets/ui/portraits/naruto.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled; portrait uses corrected source-pose rig",
+      "sha256": "cc511d0fe6ae387668abedbdae4d4b873089ec24e6d47e0f7e8a92f6842cf8d9"
+    },
+    {
+      "path": "assets/ui/portraits/neji.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "b4c1ea912fba6bb5335a7c90ec55fc3ef55cf6e3d6985d98a2be86c1ce2bbf1b"
+    },
+    {
+      "path": "assets/ui/portraits/orochimaru.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "05547021998d9168ce6511edb5f443c76081fb09af7a6e8baed5e15e4942e29b"
+    },
+    {
+      "path": "assets/ui/portraits/rock_lee.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "e202cfee420adfbe1dca8af116da16a8bde0214dee6d45bb3261dfbf34b3883c"
+    },
+    {
+      "path": "assets/ui/portraits/sakura.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "b1319804e34af1ee05a626578c8aaf1e81ddc7ebaba7bf9a3c24996da5a80066"
+    },
+    {
+      "path": "assets/ui/portraits/sasuke.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "fbd65f71bb4af5afd0cb372405a86fd3b75aa14d1d62150070635e2eebd7b38e"
+    },
+    {
+      "path": "assets/ui/portraits/shikamaru.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "bebd8b1588bb3c2518f33fdd80e7a5a84bd431415cfce1ea203bd2cafc30493e"
+    },
+    {
+      "path": "assets/ui/portraits/shino.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "3daaf4dc6859a98ab058ba6fe0d3fd28ad1d05a5c338b6f53120dda18ef9477f"
+    },
+    {
+      "path": "assets/ui/portraits/temari.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "b07ea1b5c1c496bf8568279ef47731ca4a6a353f180692229df6feb38ce9e509"
+    },
+    {
+      "path": "assets/ui/portraits/tenten.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "441787af684774492860372cc1e494472bcf67ba669ae76d03a40dc547a3341f"
+    },
+    {
+      "path": "assets/ui/portraits/tsunade.png",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "Shinobi Clash project",
+      "source": "tools/bake_roster_portraits.gd; existing character models",
+      "license": "Rendered derivative of existing development character assets",
+      "modifications": "Original in-engine portrait; no downloaded reference image bundled",
+      "sha256": "d50a725133de9e4ace925796da3e1d50716e77044b0cc02b682adcdd426a747d"
+    },
+    {
+      "path": "assets/characters/repaired/naruto_mobile.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "User supplied model; project skin correction",
+      "source": "tools/repair_fighter_skin.py; existing supplied mesh",
+      "license": "Original model provenance unchanged",
+      "modifications": "Source-pose geometry recovered; fitted bind pose and anatomical skin weights; original file preserved",
+      "sha256": "dcdcbf08dacdbc1c8ec7207de56af59bf8e86f6c4f8ae0f3e64281f4cb368c84",
+      "embedded_images": [
+        {
+          "path": "assets/characters/repaired/naruto_mobile_texture_metallic-texture_roughness.png",
+          "sha256": "a2431bcdc59b743c332e2185880d48c962734a49bd8bacde435b1f0c694ef21e"
+        },
+        {
+          "path": "assets/characters/repaired/naruto_mobile_texture_diffuse.png",
+          "sha256": "e2f1b75cab9ab61af611a3b6d412cc4d99ad4450c7943b66ea10d01d20282bab"
+        },
+        {
+          "path": "assets/characters/repaired/naruto_mobile_texture_normal.png",
+          "sha256": "88ac7b3d5d1fedd97fe7eab695170f79f5a725a3e5c4cf27ed303929b196490f"
+        }
+      ]
+    },
+    {
+      "path": "assets/characters/repaired/henrique_mobile.glb",
+      "status": "DEVELOPMENT_ONLY",
+      "author": "User supplied model; project skin correction",
+      "source": "tools/repair_fighter_skin.py; existing supplied mesh",
+      "license": "Original model provenance unchanged",
+      "modifications": "Source-pose geometry recovered; fitted bind pose and anatomical skin weights; original file preserved",
+      "sha256": "efbb455d3ce4e384fbb51251e170e68ab2b7d76277d85f1666832a5d34ca858e",
+      "embedded_images": [
+        {
+          "path": "assets/characters/repaired/henrique_mobile_texture_metallic-texture_roughness.png",
+          "sha256": "38124d1764112e04742a447ba10aed69668e89d556f03051de08feb66b7101c4"
+        },
+        {
+          "path": "assets/characters/repaired/henrique_mobile_texture_diffuse.png",
+          "sha256": "8da6b4ea8171ce5d4d0eaff97cdb6b60577206a876a63e3465b81bc5149cf848"
+        },
+        {
+          "path": "assets/characters/repaired/henrique_mobile_texture_normal.png",
+          "sha256": "d89b90e38079c4f9ce6376850d9c7675d3a73f95168ffec5a2843b5c8561edaa"
+        }
+      ]
+    },
+    {
+      "path": "assets/vfx/jutsu_ribbon.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original deforming translucent trail strips; bounded quality layers; Compatibility renderer",
+      "sha256": "aae060ca8dd7b09da526a23fc455c6f6eb1c9cd3d1eb5757dde6cd97c4f9c386"
+    },
+    {
+      "path": "assets/vfx/jutsu_impact.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original translucent expanding elemental impact shell; pooled and time bounded; Compatibility renderer",
+      "sha256": "8246d61bbd00c787eaa5e0170360996fdec6ed083e0721ad030d7e2cddd4c0c7"
+    },
+    {
+      "path": "assets/vfx/elemental_volume.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original translucent fire/black flame/water surface with soft silhouette; Compatibility renderer",
+      "sha256": "187d6c0240dc9df5ae7463dbf1ebcd99d15ecbbab116cb783d25dcf3ea157a7f"
+    },
+    {
+      "path": "assets/vfx/jutsu_smoke.gdshader",
+      "status": "SAFE_FOR_RELEASE",
+      "author": "Shinobi Clash project",
+      "source": "Original authored shader",
+      "license": "Original project content",
+      "modifications": "Original low-cost soft smoke surface; fixed multimesh impact puffs",
+      "sha256": "cb0c15b78f2e36ec9e84df2a7eca592f444df69e98eb9834db57fb3c1c2af735"
     }
   ]
 }

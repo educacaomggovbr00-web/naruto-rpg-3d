@@ -4,7 +4,7 @@
 script = ExtResource("1")
 character_id = "henrique"
 display_name = "Henrique Uchiha"
-model_path = "res://assets/characters/henrique/henrique_mobile_rigged.glb"
+model_path = "res://assets/characters/repaired/henrique_mobile.glb"
 visual_status = "DEVELOPMENT_ONLY_USER_SUPPLIED_HENRIQUE_RIGGED"
 model_ground_to_collision = true
 model_target_height = 1.70
@@ -12,4 +12,4 @@ movement_speed = 8.0
 sprint_speed = 12.5
 max_health = 105.0
 energy_color = Color(0.64, 0.20, 1.0, 1)
-summary = "Protagonista • Katon, Chidori e corte Susanoo. Mangekyou com 50% de vida e chakra cheio. Modelo enviado com rig e 27 animações."
+summary = "Protagonista • Katon, Chidori e corte Susanoo. Mangekyou com 50% de vida e chakra cheio. Combos terrestres, aéreos e finalizações direcionais."

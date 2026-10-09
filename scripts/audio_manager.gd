@@ -1,6 +1,9 @@
 extends Node
 ## Bounded SFX voices, preloaded offline; no runtime downloads or node churn.
 const BANK: Dictionary = {
+    "jutsu_fire": preload("res://assets/audio/original/jutsu_fire.wav"),
+    "jutsu_lightning": preload("res://assets/audio/original/jutsu_lightning.wav"),
+    "jutsu_water": preload("res://assets/audio/original/jutsu_water.wav"),
     "normal": preload("res://assets/audio/kenney/impactPunch_medium_000.ogg"),
     "heavy": preload("res://assets/audio/kenney/impactPunch_heavy_000.ogg"),
     "guard": preload("res://assets/audio/kenney/impactMetal_light_000.ogg"),
@@ -10,6 +13,7 @@ const BANK: Dictionary = {
     "dash": preload("res://assets/audio/kenney/thrusterFire_000.ogg"),
     "smoke": preload("res://assets/audio/kenney/explosionCrunch_000.ogg")
 }
+var music: AudioStreamPlayer
 var voices: Array[AudioStreamPlayer3D] = []
 var charge_voice: AudioStreamPlayer
 var cursor: int = 0
@@ -20,14 +24,24 @@ var settings: ConfigFile = ConfigFile.new()
 var muted_button: Button = null
 
 func _ready() -> void:
+    music = AudioStreamPlayer.new()
+    add_child(music)
+    var theme: String = "exploration" if get_parent().scene_file_path.ends_with("world.tscn") else "boss" if GameFlow.arcade_mode == "boss" else "battle"
+    var track: AudioStreamWAV = load("res://assets/audio/original/" + theme + ".wav").duplicate() as AudioStreamWAV
+    track.loop_mode = AudioStreamWAV.LOOP_FORWARD
+    track.loop_end = roundi(track.get_length() * track.mix_rate)
+    music.stream = track
+    music.volume_db = -19.0
     settings.load("user://audio.cfg")
     muted = bool(settings.get_value("audio", "muted", false))
+    if not muted and DisplayServer.get_name() != "headless":
+        music.play()
     for index: int in range(8):
         var voice: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
         voice.max_polyphony = 1
-        voice.unit_size = 6.0
-        voice.max_distance = 45.0
-        voice.panning_strength = 0.65
+        voice.unit_size = 10.0
+        voice.max_distance = 40.0
+        voice.panning_strength = .6
         add_child(voice)
         voices.append(voice)
     charge_voice = AudioStreamPlayer.new()
@@ -50,8 +64,18 @@ func play(kind: String, volume: float = -13.0) -> void:
     var actor: Node3D = get_parent().get_node_or_null("Player") as Node3D
     play_at(kind, actor.global_position if actor != null else Vector3.ZERO, volume)
 
+static func element_sound(kind: String) -> String:
+    if kind in ["fire", "black_fire", "oil"]: return "jutsu_fire"
+    if kind == "lightning": return "jutsu_lightning"
+    if kind in ["water", "wind"]: return "jutsu_water"
+    if kind in ["steel", "iron", "puppet"]: return "guard"
+    return "heavy"
+
+func play_element(kind: String, origin: Vector3) -> void:
+    play_at(element_sound(kind), origin, -20.0)
+
 func play_at(kind: String, origin: Vector3, volume: float = -13.0) -> void:
-    if DisplayServer.get_name() == "headless" or muted or not BANK.has(kind) or voices.is_empty():
+    if DisplayServer.get_name() == "headless" or muted or CombatSettings.sfx_volume <= 0.0 or not BANK.has(kind) or voices.is_empty():
         return
     var now: int = Time.get_ticks_msec()
     var minimum: int = 500 if kind == "dash" else 80 if kind == "smoke" else 45
@@ -63,11 +87,13 @@ func play_at(kind: String, origin: Vector3, volume: float = -13.0) -> void:
     voice.stop()
     voice.stream = BANK[kind]
     voice.global_position = origin
-    voice.volume_db = clampf(volume, -35.0, -6.0)
-    voice.pitch_scale = 1.0
+    voice.volume_db = clampf(volume, -35.0, -6.0) + linear_to_db(maxf(CombatSettings.sfx_volume,.0001))
+    voice.pitch_scale = 1.0 + float(cursor%5-2)*.025
     voice.play()
 
 func _physics_process(delta: float) -> void:
+    music.volume_db = -80.0 if muted else -19.0 + linear_to_db(maxf(CombatSettings.music_volume,.0001))
+    charge_voice.volume_db = -22.0 + linear_to_db(maxf(CombatSettings.sfx_volume,.0001))
     var charge: bool = false
     for title: String in ["Player", "EnemyDummy"]:
         var actor: CharacterBody3D = get_parent().get_node_or_null(title) as CharacterBody3D
@@ -84,7 +110,7 @@ func _physics_process(delta: float) -> void:
         else:
             clock = 0.0
         step_clock[title] = clock
-    if charge and not muted and DisplayServer.get_name() != "headless":
+    if charge and not muted and CombatSettings.sfx_volume > 0.0 and DisplayServer.get_name() != "headless":
         if not charge_voice.playing:
             charge_voice.play()
     else:
@@ -101,6 +127,10 @@ func toggle_mute() -> void:
     _refresh_button()
 
 func _refresh_button() -> void:
+    if music != null:
+        music.volume_db = -80.0 if muted else -19.0 + linear_to_db(maxf(CombatSettings.music_volume,.0001))
+        if not muted and not music.playing and DisplayServer.get_name() != "headless":
+            music.play()
     muted_button.text = "SOM: OFF" if muted else "SOM: ON"
 
 func stop_all() -> void:

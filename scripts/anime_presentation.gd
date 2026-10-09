@@ -2,7 +2,9 @@ extends RefCounted
 ## Shared mobile anime direction. Visual-only; gameplay is untouched.
 const SURFACE: Shader = preload("res://assets/vfx/anime_surface.gdshader")
 const OUTLINE: Shader = preload("res://assets/vfx/anime_outline.gdshader")
+const MAX_CACHED_MATERIALS: int = 32
 static var textured_cache: Dictionary = {}
+static var textured_cache_order: Array[RID] = []
 static var outline_material: ShaderMaterial = null
 
 static func _outline() -> ShaderMaterial:
@@ -20,6 +22,8 @@ static func textured(source: StandardMaterial3D) -> Material:
 
     var key: RID = source.get_rid()
     if textured_cache.has(key):
+        textured_cache_order.erase(key)
+        textured_cache_order.append(key)
         return textured_cache[key] as Material
 
     var result: StandardMaterial3D = source.duplicate(true) as StandardMaterial3D
@@ -32,10 +36,16 @@ static func textured(source: StandardMaterial3D) -> Material:
     result.rim_enabled = true
     result.rim = 0.13
     result.rim_tint = 0.42
-    if result.next_pass == null:
-        result.next_pass = _outline()
+    # Imported skinned surfaces keep their texture detail without fragmented
+    # inverted-hull passes at joints. MSAA handles silhouette antialiasing.
+    result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 
+    # Live meshes retain their material; cache eviction only releases unused
+    # actor textures instead of keeping every visited GLB alive indefinitely.
+    while textured_cache.size() >= MAX_CACHED_MATERIALS and not textured_cache_order.is_empty():
+        textured_cache.erase(textured_cache_order.pop_front())
     textured_cache[key] = result
+    textured_cache_order.append(key)
     return result
 
 static func environment(dusk: bool = false, existing: Environment = null) -> Environment:
@@ -63,9 +73,9 @@ static func environment(dusk: bool = false, existing: Environment = null) -> Env
     result.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 
     result.adjustment_enabled = true
-    result.adjustment_brightness = 1.03
-    result.adjustment_contrast = 1.10
-    result.adjustment_saturation = 1.14
+    result.adjustment_brightness = 0.98
+    result.adjustment_contrast = 1.08
+    result.adjustment_saturation = 1.10
 
     result.fog_enabled = true
     result.fog_light_color = sky_material.sky_horizon_color
@@ -73,7 +83,7 @@ static func environment(dusk: bool = false, existing: Environment = null) -> Env
     return result
 
 static func sun(light: DirectionalLight3D, dusk: bool = false) -> void:
-    light.light_color = Color("ffb76e") if dusk else Color("ffd49c")
-    light.light_energy = 1.12
+    light.light_color = Color("ffc795") if dusk else Color("fff1d8")
+    light.light_energy = 1.0
     light.shadow_bias = 0.075
     light.shadow_normal_bias = 0.92

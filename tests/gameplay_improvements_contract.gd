@@ -15,6 +15,11 @@ func check(value: bool, message: String) -> void:
 func frames(count: int) -> void:
     for _index: int in range(count):
         await physics_frame
+        await process_frame
+    var flow: Node = root.get_node("GameFlow")
+    var deadline: int = Time.get_ticks_msec()+20000
+    while flow.busy and Time.get_ticks_msec() < deadline:
+        await process_frame
 
 func run() -> void:
     root.size = Vector2i(1280, 720)
@@ -150,8 +155,11 @@ func run() -> void:
     cpu.techniques.set_physics_process(false)
     health_after = cpu.health
     box.activate(fighter, 5.0, 0.0, 0.0, 0.1, 0.2)
-    box.try_hit(cpu)
+    box.global_position = cpu.global_position
+    await frames(2)
+    box._check_overlaps()
     check(cpu.health == health_after and fighter.stagger_timer >= 0.30, "Timed guard must negate the hit and open a counter opportunity")
+    check(box.remaining_time == 0.0 and not is_instance_valid(box.source_fighter), "Perfect guard may cancel the physical query without leaving a stale scenery source")
     check(cpu.techniques.counter_cooldown > 0.0, "Perfect guard cannot repeat every frame")
     box.deactivate()
     cpu.techniques.guard_age = 1.0
@@ -171,6 +179,20 @@ func run() -> void:
     check(cpu.health < health_after and not cpu.guarding, "Grab must pierce defense after startup")
     fighter._cancel_jutsu()
     check(not fighter.techniques.active and fighter.techniques.grab_box.remaining_time == 0.0, "Interruption must release grab volume")
+
+    # CPU shares the explicit grab rules; do not read player-only guard properties.
+    cpu.guarding = true
+    cpu.guard_timer = .5
+    cpu.velocity = Vector3.DOWN * 60.0
+    cpu.move_and_slide()
+    cpu.velocity = Vector3.ZERO
+    cpu.invulnerable_timer = 0.0
+    cpu.jutsu_timer = 0.0
+    cpu.attack_active = false
+    cpu.stagger_timer = 0.0
+    check(cpu.techniques.start_grab() and not cpu.guarding, "CPU can pressure a held guard through the shared grab action")
+    cpu._cancel_abilities()
+    check(not cpu.techniques.active and cpu.techniques.grab_box.remaining_time == 0.0, "CPU interruption clears the shared grab volume")
 
     fighter.stagger_timer = 0.0
     fighter.combat_state.clear_transient()
@@ -203,12 +225,14 @@ func run() -> void:
     controls.grab_queue = 1
     controls._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
     check(not controls.is_guard_held() and not controls.is_charge_held() and controls.grab_queue == 0, "Focus loss must release holds and pending actions")
-    var pause: CanvasLayer = bridge.get_node("BattlePause")
-    pause.pause_battle()
+    var pause: CanvasLayer = arena.get_node("BattlePause")
+    pause.toggle()
     check(paused and pause.overlay != null, "Pause must freeze the actual simulation")
-    pause.resume_battle()
-    check(not paused and pause.overlay == null, "Resume must restore the simulation")
+    pause.resume()
+    check(not paused and not pause.overlay.visible, "Resume must restore the simulation")
 
+    # The consolidated mapping must not dispatch one physical press twice.
+    check(InputMap.action_get_events("pad_attack").size() == 1, "One gamepad button maps to one attack dispatch")
     # Regression: CPU Henrique has attack_timing, not the player's attack_duration.
     check(flow.start_versus("naruto", "henrique", "courtyard", "survival") == OK, "Survival must start with chosen fighters")
     await frames(12)
@@ -241,7 +265,9 @@ func run() -> void:
     flow.enter_selection()
     await frames(8)
     var menu: Control = current_scene
-    check(menu.mode_pick.item_count == 3 and menu.difficulty_pick.item_count == 3, "Modes and difficulty must be selectable in the real menu")
+    check(menu.mode_pick.item_count == 6 and menu.difficulty_pick.item_count == 4, "Modes and difficulty must be selectable in the real menu")
+    menu._mode_changed(5)
+    check(menu.start_button.text == "ENFRENTAR ESQUADRÃO", "All six modes update the start action without an index overflow")
     check(menu.start_button.get_global_rect().end.y <= 720, "Selection actions must remain in landscape bounds")
     if "--capture" in OS.get_cmdline_user_args():
         var capture_dir: String = "user://improvements-captures"
@@ -263,6 +289,6 @@ func run() -> void:
     DirAccess.remove_absolute(preferences.config_path)
     current_scene.queue_free()
     await frames(4)
-    check(root.get_child_count() == 2 and root.has_node("GameFlow") and root.has_node("GamePreferences"), "Repeated modes must release all scene-owned nodes")
+    check(root.get_child_count() == 4 and root.has_node("GameFlow") and root.has_node("GamePreferences"), "Repeated modes must release all scene-owned nodes")
     print("GAMEPLAY IMPROVEMENTS: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(1 if failures > 0 else 0)

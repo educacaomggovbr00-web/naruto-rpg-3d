@@ -54,7 +54,11 @@ func start_grab() -> bool:
     released = false
     elapsed = 0.0
     cooldown = 1.1
-    fighter.is_guarding = false
+    if fighter.has_method("is_cpu_controlled"):
+        fighter.guarding = false
+        fighter.guard_timer = 0.0
+    else:
+        fighter.is_guarding = false
     fighter.jutsu_timer = 0.58
     fighter.animation_action_id += 1
     return true

@@ -8,6 +8,7 @@ var target: Node3D = null
 var direction: Vector3 = Vector3.BACK
 var hit_mask: int = 16
 var remaining: float = 0.0
+var signature: Node3D
 var spin: Node3D
 var shape: SphereShape3D
 
@@ -17,19 +18,11 @@ func _ready() -> void:
     shape.radius = definition.radius
     spin = Node3D.new()
     add_child(spin)
-    var material: StandardMaterial3D = StandardMaterial3D.new()
-    material.albedo_color = Color(0.15, 0.30, 0.55)
-    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    for i: int in range(4):
-        var blade: MeshInstance3D = MeshInstance3D.new()
-        var mesh: PrismMesh = PrismMesh.new()
-        mesh.size = Vector3(0.3, 0.08, 1.0)
-        mesh.material = material
-        blade.mesh = mesh
-        blade.rotation.y = float(i) * PI * 0.5
-        blade.position = Vector3(sin(blade.rotation.y), 0, cos(blade.rotation.y)) * 0.35
-        blade.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-        spin.add_child(blade)
+    var tools: Script = preload("res://scripts/licensed_ninja_tools.gd")
+    spin.add_child(tools.create(tools.SHURIKEN,1.55))
+    signature = Node3D.new()
+    signature.set_script(preload("res://scripts/jutsu_signature.gd"))
+    add_child(signature)
     visible = false
 
 func launch(source: Node3D, destination: Node3D, origin: Vector3, heading: Vector3) -> void:
@@ -40,6 +33,10 @@ func launch(source: Node3D, destination: Node3D, origin: Vector3, heading: Vecto
     direction = heading.normalized()
     remaining = definition.lifetime
     shape.radius = definition.radius
+    signature.configure("demon","steel",definition.radius,false)
+    var mobile: Node = source.get_parent().get_node_or_null("MobileQuality")
+    if mobile != null: signature.set_quality(mobile.level)
+    spin.rotation = Vector3.ZERO
     active = true
     visible = true
 
@@ -88,10 +85,12 @@ func _physics_process(delta: float) -> void:
             return
     if fraction < 1.0:
         recycle()
+    signature.update_visual(delta,direction)
     spin.rotation.y += delta * definition.spin_speed
 
 func recycle() -> void:
     var previous_owner: Node3D = owner_fighter
+    signature.visible = false
     active = false
     visible = false
     owner_fighter = null

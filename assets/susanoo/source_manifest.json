@@ -14,5 +14,20 @@
   "skin": false,
   "native_animations": 0,
   "conversion": "gltfpack 1.3 -si 0.30 -se 0.004 -sp -sv -noq -kn -ke",
-  "release_status": "DEVELOPMENT_ONLY: underlying franchise authorization is not established"
+  "release_status": "DEVELOPMENT_ONLY: underlying franchise authorization is not established",
+  "rigged_runtime": {
+    "path": "assets/susanoo/susanoo_mobile_rigged.glb",
+    "sha256": "e8faee7e685f2e4113a2cb54aace413682eaeb724381a2afeabd2a4665d1c714",
+    "bytes": 1030044,
+    "bones": 25,
+    "animations": [
+      "idle",
+      "walk",
+      "slash",
+      "guard",
+      "summon"
+    ],
+    "source_geometry_preserved": true,
+    "animation_authorship": "Original fitted keyframes, not source artist animations"
+  }
 }

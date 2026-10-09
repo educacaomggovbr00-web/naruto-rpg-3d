@@ -19,6 +19,7 @@ func frames(count: int) -> void:
         await physics_frame
 
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     village = load("res://world.tscn").instantiate() as Node3D
@@ -30,7 +31,7 @@ func run() -> void:
     check(geometry.sectors.size() <= 65 and geometry.sectors.size() > 20, "Village must merge meshes in bounded sectors")
     check(geometry.triangles < 16000 and geometry.triangles > 1000, "Original environment geometry must remain mobile-sized")
     check(geometry.collision_count > 50, "Buildings, stairs and roof terraces need real collision")
-    check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 27, "Exploration must preserve the existing real clips and rig")
+    check(actor.rig_adapter.rig_loaded and actor.rig_adapter.real_animation_count == 127, "Exploration must preserve the existing real clips and rig")
     check(actor.is_on_floor(), "Village spawn must be on a physical street")
     check(actor.get_node("AttackHitbox").collision_mask == 0, "Exploration cannot enable combat hitboxes")
     check(actor.get_node("WorldCamera/SpringArm3D").shape is SphereShape3D, "World camera must use volume collision")
@@ -98,6 +99,6 @@ func run() -> void:
         print("WORLD DUMP: ", ProjectSettings.globalize_path("res://tests/world_geometry.json"))
     village.queue_free()
     await frames(3)
-    check(root.get_child_count() == 2 and root.has_node("GameFlow") and root.has_node("GamePreferences"), "Leaving exploration must clean up rig and world nodes")
+    check(root.get_child_count() == persistent_nodes and root.get_child(0).name == "GameFlow", "Leaving exploration must clean up rig and world nodes")
     print("WORLD CONTRACT: %s (%d checks, %d failures)" % ["PASS" if failures == 0 else "FAIL", checks, failures])
     quit(1 if failures > 0 else 0)

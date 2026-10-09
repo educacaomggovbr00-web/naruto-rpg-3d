@@ -5,11 +5,17 @@ signal finished
 var lines: Array = []
 var index: int = 0
 var active: bool = false
+var reveal_clock: float = 0.0
+var reveal_speed: float = 42.0
+var progress_label: Label
+var portrait: TextureRect
 var title_label: Label
 var speaker_label: Label
 var body_label: Label
 var next_button: Button
 var shade: ColorRect
+var choice_box: HBoxContainer
+var choice_pending: bool = false
 var panel: PanelContainer
 
 func _ready() -> void:
@@ -29,13 +35,17 @@ func _build() -> void:
     panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
     panel.offset_left = 54
     panel.offset_right = -54
-    panel.offset_top = -218
+    panel.offset_top = -260
     panel.offset_bottom = -24
     var style: StyleBoxFlat = StyleBoxFlat.new()
     style.bg_color = Color(0.015, 0.045, 0.065, 0.96)
     style.border_color = Color(0.82, 0.48, 0.18, 0.82)
     style.set_border_width_all(2)
     style.set_corner_radius_all(16)
+    style.content_margin_left = 18
+    style.content_margin_right = 18
+    style.content_margin_top = 12
+    style.content_margin_bottom = 12
     panel.add_theme_stylebox_override("panel", style)
     add_child(panel)
 
@@ -51,7 +61,18 @@ func _build() -> void:
     speaker_label = Label.new()
     speaker_label.add_theme_font_size_override("font_size", 24)
     speaker_label.add_theme_color_override("font_color", Color("ffd089"))
-    box.add_child(speaker_label)
+    var speaker_row = HBoxContainer.new()
+    box.add_child(speaker_row)
+    portrait = TextureRect.new()
+    portrait.custom_minimum_size = Vector2(42,42)
+    portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    speaker_row.add_child(portrait)
+    speaker_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    speaker_row.add_child(speaker_label)
+    progress_label = Label.new()
+    progress_label.add_theme_font_size_override("font_size",14)
+    speaker_row.add_child(progress_label)
 
     body_label = Label.new()
     body_label.custom_minimum_size = Vector2(0, 66)
@@ -60,6 +81,8 @@ func _build() -> void:
     body_label.add_theme_color_override("font_color", Color("fff4df"))
     box.add_child(body_label)
 
+    choice_box = HBoxContainer.new()
+    box.add_child(choice_box)
     next_button = Button.new()
     next_button.text = "CONTINUAR"
     next_button.custom_minimum_size = Vector2(190, 44)
@@ -79,7 +102,11 @@ func play(dialogue_lines: Array, title: String = "HISTÓRIA") -> bool:
     return true
 
 func advance() -> void:
-    if not active:
+    if not active or choice_pending:
+        return
+    if body_label.visible_characters >= 0 and body_label.visible_characters < body_label.get_total_character_count():
+        body_label.visible_characters = -1
+        next_button.text = "FECHAR" if index == lines.size()-1 else "CONTINUAR"
         return
     index += 1
     if index >= lines.size():
@@ -99,6 +126,11 @@ func _show_line() -> void:
     if index < 0 or index >= lines.size():
         close()
         return
+    choice_pending = false
+    next_button.visible = true
+    for child: Node in choice_box.get_children():
+        choice_box.remove_child(child)
+        child.queue_free()
     var entry: Variant = lines[index]
     if not entry is Dictionary:
         speaker_label.text = ""
@@ -107,7 +139,41 @@ func _show_line() -> void:
         var line: Dictionary = entry
         speaker_label.text = String(line.get("speaker", ""))
         body_label.text = String(line.get("text", ""))
+        var selected: String = ""
+        var mission: Dictionary = GameFlow.current_story_mission()
+        if GameFlow.campaign_id == "henrique" and not mission.is_empty():
+            selected = String(GameFlow.progress.henrique_choices.get(String(mission.id), ""))
+        for option: Dictionary in line.get("choices", []):
+            if not selected.is_empty():
+                if selected == String(option.id):
+                    body_label.text = String(option.reply)
+                continue
+            choice_pending = true
+            next_button.visible = false
+            var button: Button = Button.new()
+            button.text = String(option.label)
+            button.custom_minimum_size = Vector2(260, 44)
+            button.pressed.connect(_choose.bind(option))
+            choice_box.add_child(button)
+        if choice_pending:
+            choice_box.get_child(0).grab_focus()
+    reveal_clock = 0.0
+    body_label.visible_characters = -1 if choice_pending else 0
+    if not choice_pending: next_button.grab_focus()
+    portrait.visible = false
+    for definition in CharacterCatalog.READY:
+        if speaker_label.text in [definition.display_name,definition.display_name.split(" ")[0]]:
+            portrait.texture = load("res://assets/ui/portraits/"+definition.character_id+".png")
+            portrait.visible = true
+            break
+    progress_label.text = "%d / %d" % [index+1,lines.size()]
     next_button.text = "FECHAR" if index == lines.size() - 1 else "CONTINUAR"
+
+func _process(delta: float) -> void:
+    if not active or choice_pending or body_label.visible_characters < 0: return
+    reveal_clock += delta*reveal_speed
+    body_label.visible_characters = mini(int(reveal_clock),body_label.get_total_character_count())
+    next_button.text = "MOSTRAR TEXTO" if body_label.visible_characters < body_label.get_total_character_count() else "FECHAR" if index == lines.size()-1 else "CONTINUAR"
 
 func _unhandled_input(event: InputEvent) -> void:
     if not active:
@@ -120,3 +186,17 @@ func _unhandled_input(event: InputEvent) -> void:
     ):
         advance()
         get_viewport().set_input_as_handled()
+
+func _choose(option: Dictionary) -> void:
+    if not choice_pending or not GameFlow.record_story_choice(String(option.id)):
+        return
+    choice_pending = false
+    body_label.text = String(option.reply)
+    body_label.visible_characters = -1
+    for child: Node in choice_box.get_children():
+        child.queue_free()
+    next_button.visible = true
+    next_button.grab_focus()
+
+func _exit_tree() -> void:
+    if active: get_tree().paused = false

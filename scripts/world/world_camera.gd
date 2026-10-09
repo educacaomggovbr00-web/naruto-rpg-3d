@@ -21,7 +21,7 @@ func _ready() -> void:
     arm.margin = 0.18
     arm.spring_length = 5.25
     arm.add_excluded_object(actor.get_rid())
-    camera.fov = 60.0
+    camera.fov = CombatSettings.camera_fov
 
     if not OS.has_feature("mobile"):
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -31,8 +31,8 @@ func _unhandled_input(event: InputEvent) -> void:
         return
 
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-        yaw -= event.relative.x * 0.003 * GamePreferences.camera_sensitivity
-        pitch = clampf(pitch - event.relative.y * 0.003 * GamePreferences.camera_sensitivity, -0.30, 0.52)
+        yaw -= event.relative.x * 0.003 * CombatSettings.camera_sensitivity
+        pitch = clampf(pitch - event.relative.y * 0.003 * CombatSettings.camera_sensitivity, -0.30, 0.52)
     elif event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -40,9 +40,11 @@ func _physics_process(delta: float) -> void:
     var touch: Vector2 = controls.consume_camera_delta()
 
     if actor.input_enabled:
-        var pad: Vector2 = GamePreferences.gamepad_camera()
-        yaw -= (touch.x * 0.0046 + pad.x * delta * 2.2) * GamePreferences.camera_sensitivity
-        pitch = clampf(pitch - (touch.y * 0.0046 + pad.y * delta * 1.5) * GamePreferences.camera_sensitivity, -0.30, 0.52)
+        var stick: Vector2 = Input.get_vector("pad_camera_left", "pad_camera_right", "pad_camera_up", "pad_camera_down", CombatSettings.controller_deadzone)
+        yaw -= stick.x * delta * 2.2 * CombatSettings.camera_sensitivity
+        pitch = clampf(pitch - stick.y * delta * 1.6 * CombatSettings.camera_sensitivity, -0.30, 0.52)
+        yaw -= touch.x * 0.0046 * CombatSettings.camera_sensitivity
+        pitch = clampf(pitch - touch.y * 0.0046 * CombatSettings.camera_sensitivity, -0.30, 0.52)
 
     var desired_focus: Vector3 = actor.global_position + Vector3.UP * _focus_height()
     focus = focus.lerp(desired_focus, 1.0 - exp(-10.0 * delta))
@@ -52,7 +54,7 @@ func _physics_process(delta: float) -> void:
     var speed: float = Vector2(actor.velocity.x, actor.velocity.z).length()
     var speed_ratio: float = clampf(speed / 13.0, 0.0, 1.0)
     arm.spring_length = lerpf(arm.spring_length, 5.25 + speed_ratio * 0.45, 1.0 - exp(-4.5 * delta))
-    camera.fov = lerpf(camera.fov, 60.0 + speed_ratio * 3.0, 1.0 - exp(-4.5 * delta))
+    camera.fov = lerpf(camera.fov, CombatSettings.camera_fov + (speed_ratio * 3.0 if CombatSettings.camera_motion else 0.0), 1.0 - exp(-4.5 * delta))
 
 
 func _focus_height() -> float:

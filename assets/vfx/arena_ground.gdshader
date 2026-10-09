@@ -15,7 +15,7 @@ void fragment() {
     float mortar = smoothstep(0.48 - aa, 0.48 + aa, max(cell.x, cell.y));
     base = mix(base, base * 0.77, courtyard ? mortar : 0.0);
     ALBEDO = base + grain + center * 0.025 + ring * 0.075;
-    EMISSION = ALBEDO * vec3(0.25, 0.27, 0.33);
+    EMISSION = ALBEDO * vec3(0.08, 0.09, 0.12);
     ROUGHNESS = 1.0;
     SPECULAR = 0.0;
 }

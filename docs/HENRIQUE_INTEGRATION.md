@@ -1,5 +1,106 @@
 # Henrique Uchiha: integração
 
+## Atualização integrada — 0.16.0
+
+Salto com buffer/tempo de tolerância, cancelamento de dash em fila após confirmação, defesa próxima da CPU com atraso e memória curta de pressão, indicação de dano/quebra de guarda, áudio posicional com mixagem separada, impactos elementais diferenciados, passada do Susanoo ligada à velocidade, controles configuráveis, destaque de NPC e diálogos graduais. Corrigidos relógios visuais durante a pausa e classificação de contatos que quebram guarda. Modelos, conteúdo, balanceamento de dano e progresso preservados. Escopo dos 20 pontos, evidências e pendências em [INTEGRATED_POLISH_0160.md](INTEGRATED_POLISH_0160.md). APK debug ARM64 versionCode 17; validação física pendente.
+
+## Combate, treino e câmera — 0.15.0
+
+Pausa funcional com ajustes de câmera e áudio, retomada e reinício. Treino com alvo parado, defesa ou CPU ativa, física e temporizadores funcionando e análise de contatos confirmados. Câmera acompanha diferenças de altura e oferece preferências persistentes. Elenco, jutsus, equipes, campanha e saves preservados. Evidências e limites em [BATTLE_POLISH_0150.md](BATTLE_POLISH_0150.md). APK debug ARM64 versionCode 16; teste físico pendente.
+
+## Apresentação das técnicas — 0.14.0
+
+35 IDs recebem seleção explícita de padrões visuais: sombras no chão, insetos com silhueta própria, domos, campos de ossos, pétalas, bisturi/palmas de chakra, trilhas e acentos elementais. Corrigidos o clarão na origem da arena e a apresentação genérica de chakra junto à mão. Demon Wind recebe rastro e armadilha usa kunais existentes recentradas. Elenco, modelos, balanceamento e saves preservados. Evidências e limites em [JUTSU_SIGNATURES_0140.md](JUTSU_SIGNATURES_0140.md). APK debug ARM64 versionCode 15; teste físico pendente.
+
+## Técnicas articuladas e supremos — 0.13.0
+
+Dragões, serpentes, marionetes, mão de areia e tubarão agora possuem corpos articulados e animações próprias. Supremos do controlador do elenco recebem três enquadramentos e apresentação elemental após entrada confirmada; Henrique conserva Susanoo e Naruto seu QTE. Modelos dos 26 lutadores, balanceamento e saves preservados. Evidências e limites em [JUTSU_CONSTRUCTS_0130.md](JUTSU_CONSTRUCTS_0130.md). APK debug ARM64 versionCode 14; teste físico pendente.
+
+## Jutsus e apresentação — 0.12.0
+
+Superfícies de fogo/água, rastros, arcos de vento, armas, impactos elementais com fumaça, câmera de preparação e HUD refinados. Corrigida a perda de escala ao orientar os efeitos. Iluminação mais neutra; personagens, kits, parâmetros de combate e progresso preservados. Evidências e limites em [JUTSU_FINISH_0120.md](JUTSU_FINISH_0120.md). APK debug ARM64 versionCode 13; teste físico pendente.
+
+## Equipes e interações — 0.11.0
+
+Equipes com até três membros, suporte, troca de líder nos 26 lutadores, combo em equipe, vida compartilhada, Storm, supremo conjunto e despertar vinculado. Estados elementais, equipamento, cenário destrutível, QTE de chefes e modo com três inimigos simultâneos integram o combate existente. Modelos, clips, saves e campanhas preservados. Regras próprias, validação e limites em [TEAM_COMBAT_0110.md](TEAM_COMBAT_0110.md). APK debug ARM64 versionCode 12; teste físico pendente.
+
+## Inicialização e menus — 0.10.0
+
+Boot leve, carregamento em etapas com liberação prévia da cena anterior, perfis gráficos compartilhados entre combate/aldeia/regiões, opções com rolagem e seleção lembrada na sessão. Personagens, modelos, combate e saves preservados. APK debug ARM64 versionCode 11; teste no aparelho ainda pendente. Evidências e limites em [LOADING_ANDROID_0100.md](LOADING_ANDROID_0100.md).
+
+## Estabilidade Android — 0.9.0
+
+Cache de animações limitado, rigs do menu reutilizados, inicialização leve no Android, proteção do botão Voltar e recuperação após interrupção. Personagens e sistemas preservados. APK debug ARM64 versionCode 10; causa do fechamento no aparelho ainda depende de reprodução/logcat. Evidências e limites em [ANDROID_STABILITY_090.md](ANDROID_STABILITY_090.md).
+
+## Correção das malhas — 0.8.0
+
+Henrique e Naruto agora usam derivados ligados à pose original recuperada, corrigindo as roupas esticadas já presentes no repouso da versão 0.7.0. Originais, UVs, topologia, texturas e os demais personagens foram preservados. Seleção de dificuldade, dados dos jutsus, pressão de guarda da CPU e diálogos/NPCs também foram refinados. Evidências e reprodução em [SKIN_REPAIR_080.md](SKIN_REPAIR_080.md). APK debug ARM64 versionCode 9; validação física pendente.
+
+## Menus, nitidez e técnicas — 0.7.0
+
+Seleção com 26 retratos, prévia das técnicas, galeria recolhível e tema comum para menus/diálogos. Resolução e antisserrilhado ajustados no combate e exploração; contornos extras que fragmentavam as malhas removidos. Apresentação procedural das 19 famílias de jutsus, sem alterar balanceamento. Modelos preservados byte a byte. Referências oficiais consultadas, mudanças, capturas e limites em [ANIME_PRESENTATION_REFERENCES.md](ANIME_PRESENTATION_REFERENCES.md). APK debug ARM64 versionCode 8; teste físico pendente.
+
+## Jutsus elementais — 0.6.0
+
+Chidori/Raikiri agora usam segmentos com escala no eixo local correto: raios curtos ao redor da mão, com núcleo elétrico. A escala e o relógio são reiniciados entre jutsus. Nagashi usa um pulso circular junto ao chão, com vida visual de 0,38 s independente da janela de dano; interrupções limpam imediatamente o efeito.
+
+Projéteis de fogo, água, vento, chakra, chamas negras, mente, areia, eletricidade e Susanoo passam a usar superfície procedural animada e rastro orientado pelo movimento. A onda Katon tem silhueta larga; Amaterasu tem chamas negras animadas também no alvo. Preparação cresce na mão e desaparece ao lançar. Colisões com lutador/parede geram impacto elemental pelo pool existente. Três SFX originais foram sintetizados, mantendo oito vozes de áudio. Com alvo travado, o lançamento já aponta para ele; sem trava, mantém a direção manual. Custos, dano, cooldowns, defesa, substituição, status e personagens continuam pelos contratos existentes.
+
+Efeitos novos usam meshes reutilizados: 6/10/16 motes por instância em LOW/MED/HIGH, sem criar nós por quadro, sem novas luzes dinâmicas. São efeitos procedurais estilizados; não há cinematográficas ou dublagem nova nesta etapa.
+
+![Katon](captures/henrique_katon_060.png)
+![Chidori](captures/henrique_chidori_060.png)
+![Nagashi](captures/henrique_nagashi_060.png)
+
+Capturas de apresentação feitas no Godot 4.7.2/OpenGL Compatibility/Mesa, com câmera fixa de inspeção e timeline pausada; não são benchmark de Android. APK debug ARM64 0.6.0, versionCode 7, Android 7+. Assinatura v2/v3, alinhamento de 16 KB e conteúdo extraído do APK foram verificados fora do checkout, inclusive renderização do contrato dos jutsus. Teste em aparelho físico pendente.
+
+
+## Modelos do elenco — 0.5.0
+
+Os 21 personagens que usavam o rig genérico agora têm GLBs próprios com proporções humanas estilizadas, roupa, cabelo, rosto, acessórios skinados e dedos articulados. Cada modelo possui 65 ossos e usa a biblioteca de 127 clips existente. São aproximações originais estilizadas, sem rig facial; acabamento de produção ainda pendente. Naruto, Sasuke, Sakura, Kakashi e Henrique foram preservados byte a byte; fingerprints registrados em `assets/characters/final/roster_manifest.json`. Kits, índices do elenco e sistemas existentes preservados. O fallback permanece disponível se um modelo estiver ausente ou incompatível.
+
+![Elenco com os 21 novos modelos](captures/roster_050.png)
+
+APK debug ARM64 `0.5.0-roster-models`, Android 7+, validação física pendente.
+
+
+## Evolução visual — Shinobi Clash 0.4.0
+
+Continuação preservando o modelo, os 65 ossos, os pesos refinados e o elenco.
+Sete arenas selecionáveis agora têm cenografia distinta: treino, pátio, distrito
+Uchiha, vale, floresta, esconderijo e ruínas. As novas são interpretações
+procedurais originais, com a área/colisões compartilhadas preservadas.
+Susanoo tem formas parcial e esquelética procedurais e armadura/perfeito usando
+o modelo articulado existente; as formas iniciais não têm skin independente.
+Invocação percorre as formas; depois AWK/tecla 6/direcional direito alterna.
+Há multiplicadores próprios de dano/movimento, mantendo duração e cooldown.
+OPÇÕES oferece roupa original, lenço vermelho ou colete, presos aos ossos;
+não são roupas inteiramente remodeladas e skinadas. Rig facial continua pendente.
+
+Henrique possui sete jutsus: os três anteriores, Nagashi de área, Amaterasu com
+status limitado de chamas/dano periódico, Genjutsu com hitstun e distorção da
+visão do jogador atingido, e onda Katon ampla sem perseguição. Custos/cooldowns,
+defesa, substituição, interrupções e desbloqueios usam os contratos existentes.
+Três loops instrumentais originais foram sintetizados para exploração/luta/chefes.
+Não há dublagem nova. Detalhes e critérios restantes em
+[SHINOBI_CLASH_EVOLUTION.md](SHINOBI_CLASH_EVOLUTION.md).
+
+## Histórico — Shinobi Clash 0.3.0
+
+Susanoo agora usa o derivado `susanoo_mobile_rigged.glb`: **25 ossos**, skin e cinco animações próprias. A espada do modelo acompanha a mão; materiais passam a receber iluminação. Esta etapa também acrescenta defesa precisa/contra-ataque, arremesso, dificuldades, controle Bluetooth por InputMap, layout touch editável, quatro modos adicionais e uma campanha Henrique de seis capítulos com escolha salva. O APK continua debug ARM64; validação física permanece pendente. Escopo entregue e plano completo em [SHINOBI_CLASH_EVOLUTION.md](SHINOBI_CLASH_EVOLUTION.md).
+
+As seções abaixo preservam o histórico da integração e da primeira expansão.
+
+## Continuação a partir de e779639 — combate e Android
+
+O estado abaixo documenta a entrega original. A continuação preserva os 26 personagens, a campanha e os sistemas existentes e acrescenta **100 clips de combate**, mantendo os 27 originais byte a byte. São dez famílias com dez adaptações espaciais das fontes CC0 já registradas; não são 100 novas gravações de mocap. A seleção permite visualizar todos, e Henrique usa novos clips nos combos, branches, Katon, Chidori, corte e Ultimate.
+
+O rig mantém malha, texturas, rest, 65 ossos e cabeça rígida; somente os pesos de 3.206 vértices dos ombros/mangas/punhos foram refinados. Susanoo ganha antecipação, impacto sincronizado ao manifesto, recuperação, inclinação de movimento, entrada gradual e reset. Naquela expansão, o modelo externo ainda não tinha skeleton próprio; a etapa 0.3.0 acima resolve isso.
+
+Foi gerado e validado um **APK debug ARM64**, versão `0.2.0-henrique-combat100`, Android 7.0 ou superior. Assinatura v2/v3, alinhamento de 16 KB e conteúdo extraído do APK passaram; teste em aparelho físico continua pendente. Procedimentos, evidências e limitações em [COMBAT100_ANDROID.md](COMBAT100_ANDROID.md).
+
+![Henrique e Susanoo na continuação](captures/henrique_combat100.png)
+
 ## Estado entregue
 
 - Protagonista inicial e da campanha: Henrique Uchiha. Seleção tem 26 personagens; os 25 anteriores continuam nos mesmos índices e com os mesmos modelos/kits.
@@ -53,3 +154,23 @@ Godot **4.7.2.stable.official.ed1daf0bf**, Linux:
 ![Henrique transformado em Susanoo no Godot](captures/henrique_susanoo.png)
 
 Limitações: rig é um ajuste inicial específico da malha, ainda refinável em ombros/mangas/mãos. Susanoo não tem animação esquelética própria; aura e lâmina são animadas pelo jogo. APK, instalação, toque e desempenho em aparelho Android físico não foram verificados neste ambiente.
+
+## Continuação 0.4.1 — resposta e treino
+
+O comando de próximo golpe passa a ser aceito também durante startup, com uma
+única ação em fila. Direção fica congelada no instante do toque; interrupções
+limpam a fila. Henrique usa variantes esquerda/direita/alta/baixa nos três
+primeiros golpes e espelhada aérea à esquerda. Finalizadores, custos e dano-base
+permanecem. Recursos do moveset são duplicados ao selecionar uma variante,
+e o hitbox lê o mesmo clip/manifesto até o impacto. A biblioteca mantém 127 clips.
+
+O grafo mobile conecta variantes de combate e hubs de movimento/interrupção
+sem voltar a criar uma matriz de 127² transições. Nagashi usa os forks elétricos
+prealocados; armadura/perfeito interpolam escala; touch mostra FORMA durante
+Susanoo ativo. Treinamento ganha sete objetivos não bloqueantes, guia ocultável
+com reinício e preparação explícita de despertar apenas nesse modo. Não há
+persistência de conquistas/tutorial nesta etapa. Face/dublagem permanecem pendentes.
+
+O CI 0.4.0 falhava ao buscar `CONTRACT: PASS` no contrato visual, cuja mensagem
+não continha `CONTRACT`. Os marcadores visual/input foram uniformizados; a
+verificação de erros permanece ativa. Evidências: SHINOBI_041_VALIDATION.md.

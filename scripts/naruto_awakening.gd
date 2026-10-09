@@ -63,6 +63,8 @@ func _ready() -> void:
     tail.visible = false
 
 func eligible() -> bool:
+    if fighter.team != null and fighter.team.linked_authorization:
+        return not fighter.defeated and not active and not transforming
     return fighter.character_definition.has_awakening and not fighter.defeated and not active and not transforming and cooldown <= 0.0 and fighter.health <= fighter.max_health * health_threshold and fighter.chakra >= fighter.max_chakra - 0.01
 
 func start() -> bool:

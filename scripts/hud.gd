@@ -13,6 +13,10 @@ extends CanvasLayer
 
 var enemy_health_bar: ProgressBar
 var enemy_name_label: Label
+var event_label: Label
+var event_remaining: float = 0.0
+var last_enemy_state: String = ""
+var last_player_state: String = ""
 var guard_bar: ProgressBar
 var enemy_guard_bar: ProgressBar
 var mode_label: Label
@@ -22,6 +26,11 @@ func _ready() -> void:
     chakra_bar.max_value = float(player.call("get_max_chakra"))
     _build_backplates()
     _apply_anime_hud_style()
+    for bar: ProgressBar in [health_bar,enemy_health_bar]:
+        var tail: Control = Control.new()
+        tail.name = "DamageTail"
+        tail.set_script(preload("res://scripts/damage_tail.gd"))
+        bar.add_child(tail)
     _build_combat_indicators()
 
     var player_definition: CharacterDefinition = player.call("get_character_definition") as CharacterDefinition
@@ -32,13 +41,21 @@ func _ready() -> void:
             enemy_definition.display_name.to_upper()
         ]
 
-    rig_label.visible = false
-    fps_label.visible = false
-
-func _unhandled_input(event: InputEvent) -> void:
-    if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F3:
-        rig_label.visible = not rig_label.visible
-        fps_label.visible = rig_label.visible
+    rig_label.visible = "--debug-hud" in OS.get_cmdline_user_args()
+    fps_label.visible = rig_label.visible
+    event_label = Label.new()
+    event_label.position = Vector2(480,225)
+    event_label.size = Vector2(340,40)
+    event_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    event_label.add_theme_font_size_override("font_size",22)
+    event_label.add_theme_color_override("font_color",Color("ffd07a"))
+    event_label.add_theme_color_override("font_shadow_color",Color("091b29"))
+    event_label.add_theme_constant_override("shadow_offset_x",2)
+    event_label.add_theme_constant_override("shadow_offset_y",2)
+    event_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(event_label)
+    event_label.visible = false
+    player.combat_hit_recorded.connect(_confirmed_hit)
 
 
 func _hud_panel(background: Color, border: Color, radius: int = 12) -> StyleBoxFlat:
@@ -98,7 +115,7 @@ func _build_backplates() -> void:
 
     var info: PanelContainer = PanelContainer.new()
     info.position = Vector2(10, 152)
-    info.size = Vector2(555, 64)
+    info.size = Vector2(480, 64)
     info.mouse_filter = Control.MOUSE_FILTER_IGNORE
     info.add_theme_stylebox_override("panel", _hud_panel(Color(0.012, 0.030, 0.048, 0.66), Color(0.24, 0.45, 0.55, 0.30), 12))
     add_child(info)
@@ -135,6 +152,10 @@ func _build_backplates() -> void:
     $Title.add_theme_font_size_override("font_size", 16)
     status_label.add_theme_font_size_override("font_size", 13)
     resource_label.add_theme_font_size_override("font_size", 12)
+    status_label.size.x = 455
+    resource_label.size.x = 455
+    status_label.clip_text = true
+    resource_label.clip_text = true
     rig_label.add_theme_font_size_override("font_size", 11)
     fps_label.add_theme_font_size_override("font_size", 12)
 
@@ -185,13 +206,38 @@ func _style_bar(bar: ProgressBar, fill_color: Color) -> void:
     bar.add_theme_stylebox_override("fill", fill)
 
 var refresh_timer: float = 0.0
+func show_combat_event(text: String) -> void:
+    event_label.text = text
+    event_remaining = 1.1
+    event_label.modulate.a = 1.0
+    event_label.visible = true
+
+func _confirmed_hit(_amount: float, guarded: bool) -> void:
+    if guarded: return
+    if player.grab_attack: show_combat_event("ARREMESSO")
+    elif player.attack_counter_bonus > 1.0 and player.attack_active: show_combat_event("CONTRA-ATAQUE")
+
+func _update_combat_events(delta: float) -> void:
+    event_remaining = maxf(event_remaining-delta,0.0)
+    event_label.visible = event_remaining > 0.0
+    event_label.modulate.a = minf(event_remaining*4.0,1.0)
+    var cpu_state: String = enemy.get_combat_state()
+    var hero_state: String = player.get_combat_state()
+    if cpu_state != last_enemy_state and cpu_state == "guard_break": show_combat_event("GUARDA ROMPIDA")
+    elif hero_state != last_player_state and hero_state == "guard_break": show_combat_event("SUA GUARDA ROMPEU")
+    last_enemy_state = cpu_state
+    last_player_state = hero_state
+
 func _process(delta: float) -> void:
+    _update_combat_events(delta)
     refresh_timer -= delta
     if refresh_timer > 0.0:
         return
     refresh_timer = 0.10
-    health_bar.max_value = float(player.call("get_max_health"))
-    chakra_bar.max_value = float(player.call("get_max_chakra"))
+    var definition: CharacterDefinition = player.get_character_definition()
+    $Title.text = "%s  VS  %s" % [definition.display_name.to_upper(), enemy.get_character_definition().display_name.to_upper()]
+    health_bar.max_value = player.max_health
+    chakra_bar.max_value = player.max_chakra
     health_bar.value = float(player.call("get_health"))
     chakra_bar.value = float(player.call("get_chakra"))
     $HealthText.text = "VIDA  %d / %d" % [int(player.health), int(player.max_health)]
@@ -207,7 +253,7 @@ func _process(delta: float) -> void:
     var locked_target: Node3D = player.call("get_locked_target") as Node3D
     var lock_text: String = "LIVRE"
     if is_instance_valid(locked_target):
-        lock_text = locked_target.name
+        lock_text = locked_target.get_character_definition().display_name if locked_target.has_method("get_character_definition") else "ALVO"
 
     status_label.text = "ALVO: %s  •  COMBO %d  •  GUARDA %d" % [
         lock_text,
@@ -217,12 +263,15 @@ func _process(delta: float) -> void:
 
     var sub_cd: float = float(player.call("get_substitution_cooldown"))
     var jutsu_cd: float = float(player.call("get_jutsu_cooldown"))
-    var selected_jutsu: JutsuDefinition = player.character_definition.find_jutsu(String(player.specials.selected))
-    var jutsu_name: String = selected_jutsu.display_name.substr(0, 22) if selected_jutsu != null else String(player.specials.selected).to_upper()
-    resource_label.text = "SUB %d  •  %s %s" % [
+    var technique: JutsuDefinition = player.character_definition.find_jutsu(String(player.specials.selected))
+    if not rig_label.visible:
+        status_label.text = "%s  •  %s" % [technique.display_name if technique != null else "TÉCNICA NINJA", "RECARGA %.1fs" % jutsu_cd if jutsu_cd > 0.0 else "PRONTO"]
+    resource_label.text = "SUB %d  •  GUARDA %d  •  %s  •  CD %.1f/%.1f" % [
         int(player.call("get_substitutions")),
-        jutsu_name,
-        "%.1fs" % jutsu_cd if jutsu_cd > 0.0 else "PRONTO" if selected_jutsu != null and player.chakra >= selected_jutsu.chakra_cost else "CARREGUE CHK"
+        int(player.guard_meter),
+        (player.character_definition.find_jutsu(String(player.specials.selected)).display_name if player.character_definition.find_jutsu(String(player.specials.selected)) != null else String(player.specials.selected).to_upper()),
+        sub_cd,
+        jutsu_cd
     ]
     if is_instance_valid(player.cinematic_owner) and player.cinematic_owner.get("phase") == "clash":
         resource_label.text = "ULT DA CPU — TOQUE ATK OU SUB! VOCÊ %d : CPU %d" % [player.cinematic_owner.cpu_presses, player.cinematic_owner.presses]
@@ -230,11 +279,24 @@ func _process(delta: float) -> void:
         resource_label.text = "ULT — TOQUE ATK! VOCÊ %d : CPU %d | %.1fs | mínimo %d" % [player.ultimate.presses, player.ultimate.cpu_presses, maxf(player.ultimate.definition.clash_duration - player.ultimate.elapsed, 0.0), player.ultimate.definition.clash_presses]
     else:
         var awakening_text: String = "%.1f" % player.awakening.remaining if player.awakening.active else "PRONTO" if player.awakening.eligible() else "—"
-        resource_label.text += "  •  ULT %s  •  AWK %s" % ["%.1fs" % player.ultimate.cooldown if player.ultimate.cooldown > 0.0 else "PRONTO" if player.chakra >= 80.0 else "CHK", awakening_text]
+        resource_label.text += "  •  ULT %.1f  •  AWK %s" % [player.ultimate.cooldown, awakening_text]
+    if player.awakening.active and player.awakening.has_method("cycle_form"):
+        resource_label.text += " • " + SusanooVisual.FORM_NAMES[player.awakening.selected_form]
+    var tool_name: String = player.ninja_tools.SLOTS[player.ninja_tools.selected]
+    resource_label.text += "  •  %s %s" % [tool_name.to_upper(), "∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name])]
+    var cinematic_clash: bool = (is_instance_valid(player.cinematic_owner) and player.cinematic_owner.get("phase") == "clash") or player.ultimate.phase == "clash"
+    if not rig_label.visible and not cinematic_clash:
+        resource_label.text = "SUB %d%s  •  GUARDA %d  •  %s %s  •  ULT %s" % [player.substitutions," (%.1fs)" % sub_cd if sub_cd > 0 else "",int(player.guard_meter),tool_name.to_upper(),"∞" if tool_name == "shuriken" else str(player.ninja_tools.stock[tool_name]),"%.1fs" % player.ultimate.cooldown if player.ultimate.cooldown > 0 else "PRONTO"]
+        if player.awakening.active:
+            status_label.text = "%s  •  %.1fs" % [SusanooVisual.FORM_NAMES[player.awakening.selected_form] if player.awakening.has_method("cycle_form") else "DESPERTAR",player.awakening.remaining]
     var labels: Array[String] = ["SHUR", "RAMEN", "PILL", "KUNAI", "BOMB"]
     var controls: Node = get_node("MobileControls")
-    controls.cooldowns = {"jutsu": player.jutsu_cooldown, "dodge": player.dodge_cooldown, "sub": player.substitution_cooldown, "grab": player.techniques.cooldown}
+    controls.cooldowns = {"jutsu":player.jutsu_cooldown,"dodge":player.dodge_cooldown,"sub":player.substitution_cooldown,"grab":player.techniques.cooldown}
     controls.queue_redraw()
+    var form_button: String = "FORMA" if player.awakening.active and player.awakening.has_method("cycle_form") else "AWK"
+    if controls.awakening_label != form_button:
+        controls.awakening_label = form_button
+        controls.queue_redraw()
     if controls.tool_label != labels[player.ninja_tools.selected]:
         controls.tool_label = labels[player.ninja_tools.selected]
         controls.queue_redraw()
@@ -253,6 +315,18 @@ func _process(delta: float) -> void:
         int(cpu.max_health),
         enemy_state
     ]
+    if GameFlow.arcade_mode == "mob":
+        var bridge: Node = get_parent().get_node("BattleBridge")
+        var total: float = 0.0
+        var remaining: float = 0.0
+        var alive: int = 0
+        for actor: CharacterBody3D in bridge.mob_enemies:
+            total += actor.max_health
+            remaining += actor.health
+            alive += int(actor.targetable)
+        enemy_health_bar.max_value = maxf(total, 1.0)
+        enemy_health_bar.value = remaining
+        enemy_name_label.text = "ESQUADRÃO • %d NINJAS • %d/%d" % [alive, int(remaining), int(total)]
 
     var combo_hits: int = int(player.call("get_combo_hits"))
     var combo_damage: float = float(player.call("get_combo_damage"))

@@ -137,6 +137,35 @@ SPECS = {
     'defeat': spec(1, 'Death01', 1.25),
 }
 
+# Ten combat trajectories, each with ten spatial adaptations. These are
+# explicitly variants of the pinned CC0 sources, not 100 new mocap recordings.
+COMBAT_FORMS = {
+    'jab': spec(1, 'Punch_Jab', .34, start=.06, end=.80, impact=.14, bone='LeftHand'),
+    'cross': spec(1, 'Punch_Cross', .38, start=.06, end=.96, impact=.18, bone='RightHand'),
+    'hook': spec(2, 'Melee_Hook', .42, recovery='Melee_Hook_Rec', impact=.14, bone='RightHand'),
+    'uppercut': spec(2, 'Melee_Hook', .46, recovery='Melee_Hook_Rec', uppercut=True, impact=.18, bone='RightHand'),
+    'slash': spec(2, 'Sword_Heavy_Combo', .58, start=.15, end=1.35, impact=.24, bone='RightHand'),
+    'overhead': spec(2, 'Sword_Heavy_Combo', .62, start=2.10, end=3.65, impact=.28, bone='RightHand'),
+    'thrust': spec(2, 'Sword_Dash', .52, start=.10, end=1.10, impact=.22, bone='RightHand'),
+    'cast': spec(1, 'Spell_Simple_Shoot', .56, impact=.28, bone='RightHand'),
+    'evade': spec(1, 'Roll', .48, start=.05, end=1.40),
+    'recoil': spec(2, 'Hit_Knockback', .50, start=.02, end=.80),
+}
+VARIANTS = {
+    'center': {}, 'left': {'aim_yaw': -25}, 'right': {'aim_yaw': 25},
+    'low': {'aim_pitch': -24}, 'high': {'aim_pitch': 24},
+    'mirror': {'mirror': True},
+    'mirror_left': {'mirror': True, 'aim_yaw': -25},
+    'mirror_right': {'mirror': True, 'aim_yaw': 25},
+    'aerial': {'aerial': True}, 'aerial_mirror': {'aerial': True, 'mirror': True},
+}
+for form, config in COMBAT_FORMS.items():
+    for variant, changes in VARIANTS.items():
+        cfg = {**config, **changes, 'expansion': True, 'category': form, 'variant': variant}
+        if cfg.get('mirror') and 'bone' in cfg:
+            cfg['bone'] = cfg['bone'].replace('Right', 'Left') if cfg['bone'].startswith('Right') else cfg['bone'].replace('Left', 'Right')
+        SPECS[f'combat_{form}_{variant}'] = cfg
+
 
 def fmt(values):
     return ', '.join(f'{float(v):.8g}' for v in np.asarray(values).flatten())
@@ -163,7 +192,7 @@ def bake():
     output = []
     manifest = {'schema': 1, 'fps': FPS, 'target_sha256': hashlib.sha256(target.path.read_bytes()).hexdigest(),
                 'source_sha256': {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                                  for p in SOURCE.iterdir() if p.suffix in ['.glb', '.gltf', '.bin']}, 'clips': {}}
+                                  for p in sorted(SOURCE.iterdir()) if p.suffix in ['.glb', '.gltf', '.bin']}, 'clips': {}}
     for name, cfg in SPECS.items():
         s = sources[cfg['pack']]
         start = cfg.get('start', 0)
@@ -212,6 +241,25 @@ def bake():
                     short = target.nodes[i]["name"].split(":")[-1]
                     if any(x in short for x in ["UpLeg", "Leg", "Foot", "Toe"]):
                         desired[i] = leg_rotation * desired[i]
+            if cfg.get('mirror'):
+                # Reflect animation deltas, then apply each target bone's own
+                # bind frame; reflecting bind rotations breaks asymmetric rigs.
+                reflection = np.diag([-1.0, 1.0, 1.0])
+                original = desired.copy()
+                for i, (tr, _) in bind.items():
+                    name_i = target.nodes[i]['name']
+                    opposite = name_i.replace('Left', 'Right') if 'Left' in name_i else name_i.replace('Right', 'Left')
+                    other = target.names.get(opposite, i)
+                    delta = original[other] * bind[other][0].inv()
+                    desired[i] = Rotation.from_matrix(reflection @ delta.as_matrix() @ reflection) * tr
+            if cfg.get('aim_yaw') or cfg.get('aim_pitch'):
+                envelope = np.sin(np.pi * phase)
+                aim = Rotation.from_euler('yx', [cfg.get('aim_yaw', 0) * envelope,
+                                                cfg.get('aim_pitch', 0) * envelope], degrees=True)
+                for i in bind:
+                    short = target.nodes[i]['name'].split(':')[-1]
+                    if not any(x in short for x in ['Hips', 'UpLeg', 'Leg', 'Foot', 'Toe']):
+                        desired[i] = aim * desired[i]
             for i in bind:
                 parent = target.parents.get(i)
                 pr = desired.get(parent, Rotation.identity())
@@ -220,6 +268,8 @@ def bake():
             displacement = alignment.apply(pose[hi][1] - ref[hi][1])
             scale = bind[target.names['mixamorig:Hips']][1][1] / ref[hi][1][1]
             displacement *= scale
+            if cfg.get('mirror'):
+                displacement[0] *= -1
             # In-place controller owns travel/jump. Keep authored pelvis bob/collapse.
             displacement[[0, 2]] = np.clip(displacement[[0, 2]], -15, 15)
             if name in ['jump', 'fall', 'land'] or cfg.get('aerial'):
@@ -259,7 +309,7 @@ def bake():
                                    'adaptation': 'uppercut' if cfg.get('uppercut') else
                                                  'aerial legs' if cfg.get('aerial') else 'retarget/in-place'}
     for name, config in manifest['clips'].items():
-        if 'attack_' in name or name == 'rasengan':
+        if 'attack_' in name or name == 'rasengan' or (config.get('expansion') and 'impact' in config):
             config['startup'] = config['impact']
             config['active'] = .09 if name != 'rasengan' else .3
             config['recovery'] = round(config['duration'] - config['startup'] - config['active'], 3)
@@ -273,7 +323,7 @@ def bake():
     text += '\n}\n'
     (ROOT / 'assets/animations/combat_mixamo.tres').write_text(text)
     (ROOT / 'assets/animations/combat_manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-    print(f'Baked {len(SPECS)} real clips, {len(bind)} bones each, {len(text):,} bytes')
+    print(f'Baked {len(SPECS)} clips (27 preserved + 100 CC0 adaptations), {len(bind)} bones each, {len(text):,} bytes')
 
 
 if __name__ == '__main__':

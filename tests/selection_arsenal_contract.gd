@@ -9,9 +9,13 @@ func check(ok: bool, message: String) -> void:
         failures += 1
         push_error(message)
 func frames(count: int) -> void:
+    var pending_flow: Node = root.get_node("GameFlow")
+    while pending_flow.busy:
+        await process_frame
     for index: int in range(count):
         await physics_frame
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.size = Vector2i(1280, 720)
     root.content_scale_size = Vector2i(1280, 720)
     var flow: Node = root.get_node("GameFlow")
@@ -40,7 +44,7 @@ func run() -> void:
     check(fighter.character_definition.character_id == "sasuke" and cpu.character_definition.character_id == "naruto", "Selected profiles must reach both controllers")
     check(fighter.moveset != cpu.moveset and fighter.move_speed == 8.0, "Selection must change actual moveset and movement stats")
     check(fighter.moveset.attack(3, false).animation_name == "air_attack_2", "Sasuke kick must consume the real selected clip")
-    check(fighter.rig_adapter.real_animation_count == 27 and cpu.rig_adapter.real_animation_count == 27, "Both profiles retain all baked clips")
+    check(fighter.rig_adapter.real_animation_count == 127 and cpu.rig_adapter.real_animation_count == 127, "Both profiles retain all baked clips")
     check(fighter.rig_adapter.animation_player.get_animation_library(&"combat") != cpu.rig_adapter.animation_player.get_animation_library(&"combat"), "Different Naruto/Sasuke rest rigs must keep independently prepared clip libraries")
     check(fighter.rig_adapter.animation_tree != cpu.rig_adapter.animation_tree, "Playback state must remain independent")
     var controls: Control = arena.get_node("HUD/MobileControls")
@@ -84,7 +88,7 @@ func run() -> void:
     cpu._respawn()
     cpu.set_physics_process(false)
     check(cpu.specials.start("rasengan") and cpu.chakra == 68.0, "CPU runs the same Rasengan module/cost")
-    check(cpu.specials.rasengan_hitbox.collision_mask == 8, "CPU jutsu volume must target player, not CPU")
+    check((cpu.specials.rasengan_hitbox.collision_mask & 8) != 0 and (cpu.specials.rasengan_hitbox.collision_mask & 16) == 0, "CPU jutsu volume must target player, not CPU; scenery collision is independent")
     cpu.receive_combat_hit(1.0, Vector3.BACK, 0, 0, 0.3)
     check(cpu.specials.current.is_empty() and cpu.specials.rasengan_hitbox.remaining_time == 0.0, "Incoming hit interrupts CPU jutsu")
     cpu._respawn()
@@ -132,7 +136,7 @@ func run() -> void:
     cpu._knock_out()
     check(not cpu.awakening.active and cpu.specials.current.is_empty(), "KO cleans CPU modes and abilities")
     var audio: Node = arena.get_node("AudioManager")
-    check(audio.voices.size() == 8 and audio.BANK.size() == 8, "Audio must use a bounded preloaded pool")
+    check(audio.voices.size() == 8 and audio.BANK.size() == 11, "Audio must use a bounded preloaded pool")
     var node_count: int = audio.get_child_count()
     for index: int in range(100):
         audio.play("normal")
@@ -163,6 +167,6 @@ func run() -> void:
     await frames(6)
     current_scene.queue_free()
     await frames(4)
-    check(root.get_child_count() == 2, "Selection/rematch must not leak pools or voice nodes")
+    check(root.get_child_count() == persistent_nodes, "Selection/rematch must not leak pools or voice nodes")
     print("SELECTION ARSENAL CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

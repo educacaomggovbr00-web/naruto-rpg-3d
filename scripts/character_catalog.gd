@@ -42,28 +42,28 @@ static func initialize() -> void:
         NARUTO,
         SASUKE,
         SAKURA,
-        _placeholder("shikamaru", "Shikamaru Nara"),
-        _placeholder("choji", "Choji Akimichi"),
-        _placeholder("ino", "Ino Yamanaka"),
-        _placeholder("rock_lee", "Rock Lee"),
-        _placeholder("neji", "Neji Hyuga"),
-        _placeholder("tenten", "Tenten"),
-        _placeholder("shino", "Shino Aburame"),
-        _placeholder("kiba", "Kiba Inuzuka"),
-        _placeholder("hinata", "Hinata Hyuga"),
-        _placeholder("gaara", "Gaara"),
-        _placeholder("kankuro", "Kankuro"),
-        _placeholder("temari", "Temari"),
+        _roster_fighter("shikamaru", "Shikamaru Nara"),
+        _roster_fighter("choji", "Choji Akimichi"),
+        _roster_fighter("ino", "Ino Yamanaka"),
+        _roster_fighter("rock_lee", "Rock Lee"),
+        _roster_fighter("neji", "Neji Hyuga"),
+        _roster_fighter("tenten", "Tenten"),
+        _roster_fighter("shino", "Shino Aburame"),
+        _roster_fighter("kiba", "Kiba Inuzuka"),
+        _roster_fighter("hinata", "Hinata Hyuga"),
+        _roster_fighter("gaara", "Gaara"),
+        _roster_fighter("kankuro", "Kankuro"),
+        _roster_fighter("temari", "Temari"),
         KAKASHI,
-        _placeholder("might_guy", "Might Guy"),
-        _placeholder("jiraiya", "Jiraiya"),
-        _placeholder("tsunade", "Tsunade"),
-        _placeholder("hiruzen", "Hiruzen Sarutobi"),
-        _placeholder("orochimaru", "Orochimaru"),
-        _placeholder("kabuto", "Kabuto Yakushi"),
-        _placeholder("kimimaro", "Kimimaro"),
-        _placeholder("itachi", "Itachi Uchiha"),
-        _placeholder("kisame", "Kisame Hoshigaki")
+        _roster_fighter("might_guy", "Might Guy"),
+        _roster_fighter("jiraiya", "Jiraiya"),
+        _roster_fighter("tsunade", "Tsunade"),
+        _roster_fighter("hiruzen", "Hiruzen Sarutobi"),
+        _roster_fighter("orochimaru", "Orochimaru"),
+        _roster_fighter("kabuto", "Kabuto Yakushi"),
+        _roster_fighter("kimimaro", "Kimimaro"),
+        _roster_fighter("itachi", "Itachi Uchiha"),
+        _roster_fighter("kisame", "Kisame Hoshigaki")
     ]
     for fighter: CharacterDefinition in ordered:
         _complete_power_kit(fighter)
@@ -72,7 +72,7 @@ static func initialize() -> void:
     ordered.append(HENRIQUE)
     READY = ordered
 
-static func _placeholder(id: String, name: String) -> CharacterDefinition:
+static func _roster_fighter(id: String, name: String) -> CharacterDefinition:
     var definition: CharacterDefinition = CharacterDefinition.new()
     definition.character_id = id
     definition.display_name = name
@@ -81,9 +81,10 @@ static func _placeholder(id: String, name: String) -> CharacterDefinition:
     definition.model_fallback_path = definition.model_slot.fallback_path
     definition.model_target_height = definition.model_slot.target_height
     definition.model_yaw_degrees = definition.model_slot.yaw_degrees
-    definition.visual_status = "STORM1_ROSTER_SLOT_SHARED_PLACEHOLDER_RIG"
-    definition.summary = "%s — slot com caminho reservado para modelo mobile próprio e fallback automático para o rig compartilhado. Enquanto o GLB final não existe ou falha na validação, usa paleta/acessórios procedurais e kit completo funcional OUR_APPROXIMATION." % name
-    definition.stylized_material = false
+    definition.visual_status = "ORIGINAL_STYLIZED_SKINNED_MODEL"
+    definition.summary = "%s — modelo estilizado próprio, roupa e acessórios skinados, 65 ossos e mãos articuladas. Interpretação original OUR_APPROXIMATION; fallback preservado." % name
+    definition.stylized_material = true
+    definition.model_ground_to_collision = true
 
     var profile: Dictionary = RosterMovesetFactory.profile(id)
     definition.moveset = RosterMovesetFactory.build_moveset(id)

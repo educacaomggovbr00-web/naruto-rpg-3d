@@ -15,8 +15,35 @@ const MISSIONS: Dictionary = {
 
 var player_character: CharacterDefinition = CharacterCatalog.HENRIQUE
 var cpu_character: CharacterDefinition = CharacterCatalog.NARUTO
+var team_enabled: bool = false
+var team_preferences_set: bool = false
+var battle_rules_enabled: bool = false
+var player_partners: PackedStringArray = ["sasuke", "sakura"]
+var cpu_partners: PackedStringArray = ["kakashi", "hinata"]
+
+func configure_teams(enabled: bool, friendly: PackedStringArray, hostile: PackedStringArray) -> Error:
+    for ids: PackedStringArray in [friendly, hostile]:
+        if ids.size() > 2:
+            return ERR_INVALID_PARAMETER
+        var seen: PackedStringArray = []
+        for id: String in ids:
+            if CharacterCatalog.find(id) == null or id in seen:
+                return ERR_INVALID_PARAMETER
+            seen.append(id)
+    team_enabled = enabled
+    player_partners = friendly.duplicate()
+    cpu_partners = hostile.duplicate()
+    team_preferences_set = true
+    return OK
 var arena_id: String = "training"
 var versus_mode: bool = false
+var campaign_id: String = "classic"
+var arcade_mode: String = ""
+var arcade_round: int = 0
+var arcade_wins: int = 0
+var arcade_opponents: PackedStringArray = []
+var arcade_next_available: bool = false
+var arcade_health: float = -1.0
 var battle_mode: String = "versus"
 var survival_wave: int = 1
 var survival_health_ratio: float = 1.0
@@ -46,6 +73,7 @@ var progress: Dictionary = {
     "dialogue_seen": []
 }
 
+var loading_screen: CanvasLayer
 var busy: bool = false
 var pending_battle: String = ""
 var pending_story_id: String = ""
@@ -59,11 +87,23 @@ var story_dialogue_seen: Dictionary = {}
 func _ready() -> void:
     CharacterCatalog.initialize()
     get_tree().scene_changed.connect(_scene_ready)
+    loading_screen = CanvasLayer.new()
+    loading_screen.name = "SceneLoadingScreen"
+    loading_screen.set_script(preload("res://scripts/scene_loading_screen.gd"))
+    add_child(loading_screen)
+    loading_screen.failed.connect(_loading_failed)
+    loading_screen.retry_requested.connect(_transition)
+    loading_screen.menu_requested.connect(enter_selection)
     load_progress()
     ensure_rpg_progress()
 
 func _scene_ready() -> void:
+    if loading_screen != null and loading_screen.active and get_tree().current_scene != null:
+        if get_tree().current_scene.scene_file_path != loading_screen.pending_path:
+            return
     busy = false
+    if loading_screen != null and loading_screen.active:
+        loading_screen.finish()
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F10:
@@ -81,7 +121,10 @@ func ensure_rpg_progress() -> void:
         "unlocked_jutsus": ["demon"],
         "inventory": {"ramen": 0, "food_pill": 0, "bomb": 0, "kunai_pack": 0},
         "skills": {"vitality": 0, "chakra": 0, "power": 0, "agility": 0},
-        "dialogue_seen": []
+        "dialogue_seen": [],
+        "henrique_story_index": 0,
+        "henrique_story_completed": [],
+        "henrique_choices": {}
     }
     for key: String in defaults:
         if not progress.has(key):
@@ -110,6 +153,11 @@ func ensure_rpg_progress() -> void:
     progress.xp = maxi(int(progress.get("xp", 0)), 0)
     progress.skill_points = maxi(int(progress.get("skill_points", 0)), 0)
     progress.story_index = clampi(int(progress.get("story_index", 0)), 0, StoryCampaign.count())
+    progress.henrique_story_index = clampi(int(progress.get("henrique_story_index", 0)), 0, HenriqueCampaign.count())
+    if not progress.henrique_story_completed is Array:
+        progress.henrique_story_completed = []
+    if not progress.henrique_choices is Dictionary:
+        progress.henrique_choices = {}
     progress["survival_best"] = clampi(int(progress.get("survival_best", 0)), 0, 9999)
 
 func xp_to_next(level: int = -1) -> int:
@@ -219,11 +267,20 @@ func inventory_count(item_id: String) -> int:
 
 func current_story_mission() -> Dictionary:
     ensure_rpg_progress()
+    if campaign_id == "henrique":
+        var mission: Dictionary = HenriqueCampaign.mission_at(int(progress.henrique_story_index)).duplicate(true)
+        if not mission.is_empty():
+            var choice: String = String(progress.henrique_choices.get(String(mission.id), ""))
+            for line: Dictionary in mission.get("intro_dialogue", []):
+                for option: Dictionary in line.get("choices", []):
+                    if option.id == choice and option.has("opponent"):
+                        mission.opponent = option.opponent
+        return mission
     return StoryCampaign.mission_at(int(progress.story_index))
 
 func story_complete() -> bool:
     ensure_rpg_progress()
-    return int(progress.story_index) >= StoryCampaign.count()
+    return int(progress.henrique_story_index) >= HenriqueCampaign.count() if campaign_id == "henrique" else int(progress.story_index) >= StoryCampaign.count()
 
 func story_objective_text() -> String:
     var mission: Dictionary = current_story_mission()
@@ -242,7 +299,7 @@ func story_objective_detail() -> String:
     return String(mission.get("objective", mission.get("summary", "Siga o objetivo da missão.")))
 
 func story_dialogue(phase: String, mission_id: String = "") -> Array:
-    var mission: Dictionary = current_story_mission() if mission_id.is_empty() else StoryCampaign.find(mission_id)
+    var mission: Dictionary = current_story_mission() if mission_id.is_empty() else _campaign_find(mission_id)
     if mission.is_empty():
         return []
     var key: String = phase + "_dialogue"
@@ -251,16 +308,22 @@ func story_dialogue(phase: String, mission_id: String = "") -> Array:
         return []
     var lines: Array = (value as Array).duplicate(true)
     for line: Dictionary in lines:
-        if line.get("speaker", "") == "Naruto":
+        if campaign_id == "classic" and line.get("speaker", "") == "Naruto":
             line.speaker = "Henrique Uchiha"
     return lines
 
 func story_dialogue_key(phase: String, mission_id: String = "") -> String:
-    var mission: Dictionary = current_story_mission() if mission_id.is_empty() else StoryCampaign.find(mission_id)
+    var mission: Dictionary = current_story_mission() if mission_id.is_empty() else _campaign_find(mission_id)
     return "" if mission.is_empty() else String(mission.get("id", "")) + ":" + phase
 
 func story_dialogue_was_seen(phase: String, mission_id: String = "") -> bool:
     ensure_rpg_progress()
+    if campaign_id == "henrique" and phase == "intro":
+        var mission: Dictionary = current_story_mission() if mission_id.is_empty() else _campaign_find(mission_id)
+        if not mission.is_empty() and not progress.henrique_choices.has(String(mission.id)):
+            for line: Dictionary in mission.get("intro_dialogue", []):
+                if not (line.get("choices", []) as Array).is_empty():
+                    return false
     var key: String = story_dialogue_key(phase, mission_id)
     return not key.is_empty() and bool(story_dialogue_seen.get(key, false))
 
@@ -277,13 +340,32 @@ func mark_story_dialogue_seen(phase: String, mission_id: String = "") -> void:
 func _transition(path: String) -> Error:
     if busy:
         return ERR_BUSY
+    if not ResourceLoader.exists(path, "PackedScene"):
+        return ERR_FILE_NOT_FOUND
     busy = true
+    var previous: Node = get_tree().current_scene
+    if previous != null: previous.process_mode = Node.PROCESS_MODE_DISABLED
     get_tree().paused = false
     _clear_result()
-    var result: Error = get_tree().change_scene_to_file(path)
-    if result != OK:
-        busy = false
-    return result
+    get_tree().paused = false
+    Engine.time_scale = 1.0
+    # The overlay is 2D; don't retain a high-MSAA 3D framebuffer while swapping.
+    get_viewport().msaa_3d = Viewport.MSAA_DISABLED
+    get_viewport().scaling_3d_scale = 0.75
+    var title: String = {
+        "res://selection.tscn": "Escolha seu caminho ninja",
+        "res://main.tscn": "%s × %s" % [player_character.display_name, cpu_character.display_name],
+        "res://world.tscn": "Bem-vindo à Vila da Folha",
+        "res://region.tscn": "Explorando além da aldeia"
+    }.get(path, "Preparando sua jornada")
+    var stability: Node = get_tree().root.get_node_or_null("RuntimeStability")
+    if stability != null: stability.record_loading(path)
+    loading_screen.begin(path, title)
+    return OK
+
+func _loading_failed(path: String, error: Error) -> void:
+    busy = false
+    push_warning("Scene loading failed: %s (%s)" % [path, error_string(error)])
 
 func _clear_pending_battle() -> void:
     pending_battle = ""
@@ -294,6 +376,7 @@ func enter_world() -> Error:
     if busy:
         return ERR_BUSY
     versus_mode = false
+    _reset_arcade()
     world_region = "konoha"
     _clear_pending_battle()
     ensure_rpg_progress()
@@ -308,6 +391,7 @@ func enter_region(region_id: String) -> Error:
     if region_id not in VALID_REGIONS or region_id == "konoha":
         return enter_world() if region_id == "konoha" else ERR_INVALID_PARAMETER
     versus_mode = false
+    _reset_arcade()
     world_region = region_id
     _clear_pending_battle()
     ensure_rpg_progress()
@@ -317,6 +401,7 @@ func return_to_exploration() -> Error:
     if busy:
         return ERR_BUSY
     versus_mode = false
+    _reset_arcade()
     _clear_pending_battle()
     return _transition("res://world.tscn" if world_region == "konoha" else "res://region.tscn")
 
@@ -324,6 +409,7 @@ func enter_selection() -> Error:
     if busy:
         return ERR_BUSY
     versus_mode = false
+    _reset_arcade()
     _clear_pending_battle()
     return _transition("res://selection.tscn")
 
@@ -332,13 +418,16 @@ func start_versus(player_id: String, cpu_id: String, stage: String, mode: String
         return ERR_BUSY
     var selected_player: CharacterDefinition = CharacterCatalog.find(player_id)
     var selected_cpu: CharacterDefinition = CharacterCatalog.find(cpu_id)
-    if selected_player == null or selected_cpu == null or stage not in ["training", "courtyard"] or mode not in ["versus", "training", "survival"]:
+    if selected_player == null or selected_cpu == null or not ArenaCatalog.valid(stage) or mode not in ["versus", "training", "survival"]:
         return ERR_INVALID_PARAMETER
+    _reset_arcade()
     player_character = selected_player
     cpu_character = selected_cpu
     arena_id = stage
     versus_mode = true
     battle_mode = mode
+    if mode == "training":
+        arcade_mode = "training"
     survival_wave = 1
     survival_health_ratio = 1.0
     survival_first_cpu = cpu_id
@@ -414,6 +503,7 @@ func start_battle(id: String, position: Vector3, yaw: float) -> Error:
     if not MISSIONS.has(id) or MISSIONS[id].kind != "battle":
         return ERR_INVALID_PARAMETER
     versus_mode = false
+    _reset_arcade()
     pending_story_id = ""
     if player_character == null:
         player_character = CharacterCatalog.HENRIQUE
@@ -438,9 +528,10 @@ func start_story_battle(position: Vector3 = Vector3.ZERO, yaw: float = 0.0) -> E
         return ERR_DOES_NOT_EXIST
     var opponent: CharacterDefinition = CharacterCatalog.find(String(mission.get("opponent", "")))
     var stage: String = String(mission.get("arena", "training"))
-    if opponent == null or stage not in ["training", "courtyard"]:
+    if opponent == null or not ArenaCatalog.valid(stage):
         return ERR_INVALID_DATA
     versus_mode = false
+    _reset_arcade()
     player_character = CharacterCatalog.HENRIQUE
     cpu_character = opponent
     arena_id = stage
@@ -460,14 +551,17 @@ func is_story_battle() -> bool:
     return not pending_story_id.is_empty()
 
 func current_story_battle_data() -> Dictionary:
-    return StoryCampaign.find(pending_story_id) if is_story_battle() else {}
+    return _campaign_find(pending_story_id) if is_story_battle() else {}
 
 func _complete_story_mission(id: String) -> Dictionary:
     ensure_rpg_progress()
     var mission: Dictionary = current_story_mission()
-    if mission.is_empty() or String(mission.get("id", "")) != id or progress.story_completed.has(id):
+    if mission.is_empty() or String(mission.get("id", "")) != id or (progress.henrique_story_completed if campaign_id == "henrique" else progress.story_completed).has(id):
         return {}
-    progress.story_completed.append(id)
+    if campaign_id == "henrique":
+        progress.henrique_story_completed.append(id)
+    else:
+        progress.story_completed.append(id)
     progress.ryo += int(mission.get("reward_ryo", 0))
     var levels_gained: int = add_xp(int(mission.get("reward_xp", 0)), false)
     var unlock: String = String(mission.get("unlock_jutsu", ""))
@@ -475,7 +569,10 @@ func _complete_story_mission(id: String) -> Dictionary:
         progress.unlocked_jutsus.append(unlock)
     if bool(mission.get("boss", false)) and not progress.bosses.has(id):
         progress.bosses.append(id)
-    progress.story_index = mini(int(progress.story_index) + 1, StoryCampaign.count())
+    if campaign_id == "henrique":
+        progress.henrique_story_index = mini(int(progress.henrique_story_index) + 1, HenriqueCampaign.count())
+    else:
+        progress.story_index = mini(int(progress.story_index) + 1, StoryCampaign.count())
     save_progress()
     progress_changed.emit()
     return {
@@ -534,6 +631,14 @@ func finish_battle(won: bool) -> bool:
                 return_message = "Sobrevivência • %d vitórias • recorde %d\n%s" % [survival_wave if won else survival_wave - 1, int(progress.get("survival_best", 0)), "Próximo duelo: recupera 20% da vida máxima." if won else "Fim da sequência."]
 
     var current: Node = get_tree().current_scene
+    if not arcade_mode.is_empty():
+        arcade_next_available = won and (arcade_mode == "survival" or arcade_round < arcade_opponents.size() - 1)
+        if won:
+            arcade_wins += 1
+        if current != null and arcade_mode == "survival":
+            var survivor: Node = current.get_node("Player")
+            arcade_health = minf(float(survivor.max_health), float(survivor.health) + float(survivor.max_health) * 0.20)
+        return_message = "%s • %d vitória(s)%s" % [arcade_label(), arcade_wins, " • Série concluída!" if won and not arcade_next_available else ""]
     if current != null:
         var feedback: Node = current.get_node_or_null("CombatFeedback")
         if feedback != null:
@@ -542,6 +647,12 @@ func finish_battle(won: bool) -> bool:
         if player != null and player.has_method("_cancel_jutsu"):
             player.call("_cancel_jutsu")
             player.call("_cancel_attack")
+        for team: Node in get_tree().get_nodes_in_group("combat_teams"):
+            team.cancel("result")
+            team._clear_supports()
+        var encounter: Node = current.get_node_or_null("BattleBridge/BossEncounter")
+        if encounter != null:
+            encounter.cancel("result")
         var audio: Node = current.get_node_or_null("AudioManager")
         if audio != null:
             audio.call("stop_all")
@@ -592,10 +703,16 @@ func _show_result(won: bool) -> void:
     var titles: Array[String] = []
     if versus_mode:
         titles.append("SELEÇÃO")
-        titles.append("PRÓXIMO OPONENTE" if battle_mode == "survival" and won else "RECOMEÇAR" if battle_mode == "survival" else "REVANCHE")
+        titles.append("PRÓXIMO OPONENTE" if battle_mode == "survival" and arcade_mode.is_empty() and won else "RECOMEÇAR" if battle_mode == "survival" else "REVANCHE")
     else:
         titles.append("VOLTAR À REGIÃO" if world_region != "konoha" else "VOLTAR À ALDEIA")
         titles.append("REPETIR MISSÃO" if is_story_battle() else "REPETIR TREINO")
+    if arcade_next_available:
+        var next_round: Button = Button.new()
+        next_round.text = "PRÓXIMO ADVERSÁRIO"
+        next_round.custom_minimum_size = Vector2(480, 62)
+        next_round.pressed.connect(advance_arcade)
+        panel.add_child(next_round)
     for title: String in titles:
         var button: Button = Button.new()
         button.text = title
@@ -615,6 +732,12 @@ func _show_result(won: bool) -> void:
 func retry_battle() -> Error:
     if (pending_battle.is_empty() and not versus_mode) or busy:
         return ERR_BUSY
+    if arcade_mode == "survival":
+        arcade_round = 0
+        arcade_wins = 0
+        arcade_health = -1.0
+        arcade_next_available = false
+        cpu_character = CharacterCatalog.find(arcade_opponents[0])
     battle_finished = false
     if versus_mode and battle_mode == "survival":
         survival_wave = 1
@@ -627,6 +750,8 @@ func advance_survival() -> Error:
         return ERR_BUSY
     if not last_battle_won:
         return ERR_UNAVAILABLE
+    if arcade_mode == "survival":
+        return advance_arcade()
     var fighter: Node = get_tree().current_scene.get_node_or_null("Player")
     if fighter == null or bool(fighter.defeated):
         return ERR_UNAVAILABLE
@@ -698,8 +823,32 @@ func load_progress() -> bool:
         save_writable = false
         return false
 
-    for optional_array: String in ["story_completed", "bosses", "unlocked_jutsus", "dialogue_seen"]:
+    for optional_array: String in ["story_completed", "bosses", "unlocked_jutsus", "dialogue_seen", "henrique_story_completed"]:
         if parsed.has(optional_array) and not parsed[optional_array] is Array:
+            save_writable = false
+            return false
+    if parsed.has("henrique_choices") and not parsed.henrique_choices is Dictionary:
+        save_writable = false
+        return false
+    if parsed.has("henrique_story_index") and not (parsed.henrique_story_index is int or parsed.henrique_story_index is float):
+        save_writable = false
+        return false
+    if parsed.has("henrique_story_index") and not is_finite(float(parsed.henrique_story_index)):
+        save_writable = false
+        return false
+    for completed_id: Variant in parsed.get("henrique_story_completed", []):
+        if not completed_id is String or HenriqueCampaign.find(completed_id).is_empty():
+            save_writable = false
+            return false
+    for mission_id: Variant in parsed.get("henrique_choices", {}):
+        if not mission_id is String or not parsed.henrique_choices[mission_id] is String:
+            save_writable = false
+            return false
+        var choice_valid: bool = false
+        for line: Dictionary in HenriqueCampaign.find(mission_id).get("intro_dialogue", []):
+            for option: Dictionary in line.get("choices", []):
+                choice_valid = choice_valid or String(option.id) == String(parsed.henrique_choices[mission_id])
+        if not choice_valid:
             save_writable = false
             return false
     if parsed.has("inventory") and not parsed.inventory is Dictionary:
@@ -727,3 +876,77 @@ func _notification(what: int) -> void:
         var player: CharacterBody3D = current.get_node("Player")
         checkpoint(player.last_safe_position, player.rotation.y)
         save_progress()
+
+func _reset_arcade() -> void:
+    battle_mode = "versus"
+    arcade_mode = ""
+    arcade_round = 0
+    arcade_wins = 0
+    arcade_opponents = []
+    arcade_next_available = false
+    arcade_health = -1.0
+
+func arcade_label() -> String:
+    return {"training":"Treinamento livre", "tournament":"Torneio solo", "survival":"Sobrevivência", "boss":"Desafio de chefes", "mob":"Batalha contra esquadrão"}.get(arcade_mode, "Batalha livre")
+
+func start_arcade(mode: String, player_id: String, cpu_id: String, stage: String) -> Error:
+    if mode not in ["training", "tournament", "survival", "boss", "mob"]:
+        return ERR_INVALID_PARAMETER
+    var result: Error = start_versus(player_id, cpu_id, stage)
+    if result != OK:
+        return result
+    arcade_mode = mode
+    battle_mode = mode if mode in ["training", "survival"] else "versus"
+    arcade_opponents = [cpu_id]
+    if mode == "boss":
+        arcade_opponents = ["orochimaru", "itachi", "kisame"]
+        cpu_character = CharacterCatalog.find(arcade_opponents[0])
+    elif mode in ["tournament", "survival"]:
+        for fighter: CharacterDefinition in CharacterCatalog.READY:
+            if fighter.character_id != player_id and fighter.character_id != cpu_id:
+                arcade_opponents.append(fighter.character_id)
+                if mode == "tournament" and arcade_opponents.size() == 3:
+                    break
+    return OK
+
+func advance_arcade() -> Error:
+    if busy or not battle_finished or not arcade_next_available or arcade_opponents.is_empty():
+        return ERR_BUSY
+    var old_round: int = arcade_round
+    arcade_round += 1
+    survival_wave = arcade_round + 1
+    cpu_character = CharacterCatalog.find(arcade_opponents[arcade_round % arcade_opponents.size()])
+    arcade_next_available = false
+    battle_finished = false
+    var result: Error = _transition("res://main.tscn")
+    if result != OK:
+        arcade_round = old_round
+        arcade_next_available = true
+        battle_finished = true
+    return result
+
+func _campaign_find(id: String) -> Dictionary:
+    return HenriqueCampaign.find(id) if campaign_id == "henrique" else StoryCampaign.find(id)
+
+func enter_henrique_campaign() -> Error:
+    if busy:
+        return ERR_BUSY
+    campaign_id = "henrique"
+    player_character = CharacterCatalog.HENRIQUE
+    return enter_world()
+
+func record_story_choice(option_id: String) -> bool:
+    if campaign_id != "henrique" or busy:
+        return false
+    ensure_rpg_progress()
+    var mission: Dictionary = current_story_mission()
+    if mission.is_empty() or progress.henrique_choices.has(String(mission.id)):
+        return false
+    for line: Dictionary in mission.get("intro_dialogue", []):
+        for option: Dictionary in line.get("choices", []):
+            if String(option.get("id", "")) == option_id:
+                progress.henrique_choices[String(mission.id)] = option_id
+                save_progress()
+                progress_changed.emit()
+                return true
+    return false

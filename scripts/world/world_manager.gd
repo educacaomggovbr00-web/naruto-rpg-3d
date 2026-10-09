@@ -1,7 +1,7 @@
 extends Node3D
 const POINTS_PATH: String = "res://assets/world/village_points.json"
-const TARGET_SCALE: Array[float] = [0.62, 0.76, 0.92]
-const MIN_ADAPTIVE_SCALE: Array[float] = [0.50, 0.58, 0.70]
+const TARGET_SCALE: Array[float] = [0.75, 0.90, 1.0]
+const MIN_ADAPTIVE_SCALE: Array[float] = [0.70, 0.80, 0.90]
 var points: Array[Area3D] = []
 var nearest: Area3D = null
 var scan_timer: float = 0.0
@@ -72,7 +72,7 @@ func _ready() -> void:
     GameFlow.progress_changed.connect(_refresh_progress)
     _refresh_progress()
     settings.load("user://graphics.cfg")
-    apply_quality(clampi(int(settings.get_value("graphics", "quality", 1)), 0, 2), false)
+    apply_quality(GraphicsPreferences.read_quality(settings), false)
     if not GameFlow.return_message.is_empty():
         toast(GameFlow.return_message)
         GameFlow.return_message = ""
@@ -175,6 +175,7 @@ func apply_quality(level: int, save: bool = true) -> void:
     recovery_streak = 0
     emergency_mode = false
     get_viewport().scaling_3d_scale = render_scale
+    get_viewport().msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][quality]
     quality_button.text = ["LOW", "MED", "HIGH"][quality]
     for point: Area3D in points:
         if point.actor == null or not is_instance_valid(point.actor.rig_adapter.model_instance):
@@ -213,6 +214,11 @@ func _refresh_progress() -> void:
         map_panel.queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventJoypadButton and event.pressed:
+        if event.is_action_pressed("pad_jutsu") and not map_open:
+            interact()
+        elif event.is_action_pressed("pad_lock"):
+            toggle_map()
     if event is InputEventKey and event.pressed and not event.echo:
         if event.physical_keycode == KEY_E and not map_open:
             interact()
@@ -426,6 +432,20 @@ func interact() -> void:
             toast(String(data.text) + " Saldo: %d ryō." % int(GameFlow.progress.ryo))
     elif data.kind == "shop":
         toast("Suprimento comprado para o próximo treino." if GameFlow.buy_supplies(int(data.price)) else String(data.text) + " Limite: 3. Saldo: %d ryō." % int(GameFlow.progress.ryo))
+    elif data.kind == "talk":
+        controls.release_all()
+        if nearest.actor != null:
+            var facing = actor.global_position - nearest.actor.global_position
+            facing.y = 0
+            if facing.length_squared() > .01:
+                nearest.actor.rotation.y = atan2(facing.x,facing.z)
+        var dialogue: Array = [{"speaker":String(data.label),"text":String(data.text)}]
+        var mission = GameFlow.current_story_mission()
+        if not mission.is_empty():
+            dialogue.append({"speaker":String(data.label),"text":"Sua próxima missão é %s. Treine, prepare seus itens e siga o objetivo indicado no mapa." % String(mission.title)})
+        else:
+            dialogue.append({"speaker":String(data.label),"text":"A aldeia continua aberta para você. Há treino, lojas e desafios esperando."})
+        story_dialogue.call("play",dialogue,"CONVERSA NA ALDEIA")
     else:
         toast(String(data.text))
     if not GameFlow.save_message.is_empty():

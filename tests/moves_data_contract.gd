@@ -12,6 +12,7 @@ func frames(count: int) -> void:
     for index: int in range(count):
         await physics_frame
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var arena: Node3D = load("res://main.tscn").instantiate()
     root.add_child(arena)
@@ -86,6 +87,6 @@ func run() -> void:
     controls.move_vector = Vector2.ZERO
     arena.queue_free()
     await frames(4)
-    check(root.get_child_count() == 2, "Data-driven fighters/projectiles must clean up")
+    check(root.get_child_count() == persistent_nodes, "Data-driven fighters/projectiles must clean up")
     print("MOVES DATA CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

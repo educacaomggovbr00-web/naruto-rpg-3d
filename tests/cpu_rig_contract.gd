@@ -12,6 +12,7 @@ func frames(count: int) -> void:
     for index: int in range(count):
         await physics_frame
 func run() -> void:
+    var persistent_nodes: int = root.get_child_count()
     root.get_node("GameFlow").player_character = CharacterCatalog.NARUTO
     var arena: Node3D = load("res://main.tscn").instantiate()
     root.add_child(arena)
@@ -22,7 +23,7 @@ func run() -> void:
     cpu.set_physics_process(false)
     fighter.set_physics_process(false)
     arena.get_node("CombatFeedback").hit_stop_enabled = false
-    check(rig.rig_loaded and rig.real_animation_count == 27, "CPU needs the real shared 27-clip rig")
+    check(rig.rig_loaded and rig.real_animation_count == 127, "CPU needs the real shared 127-clip rig")
     check(not cpu.visual.visible, "Capsule must be hidden after rig loading")
     check(rig.animation_tree != fighter.rig_adapter.animation_tree, "Fighters need independent AnimationTree playback")
     check(cpu.attack_hitbox.collision_mask == 8, "CPU strike must target player hurtboxes")
@@ -73,6 +74,6 @@ func run() -> void:
     check(fighter.health < fighter.max_health, "Running CPU must approach and damage through actual bone-area overlap")
     arena.queue_free()
     await frames(4)
-    check(root.get_child_count() == 2, "CPU rig must clean up with arena")
+    check(root.get_child_count() == persistent_nodes, "CPU rig must clean up with arena")
     print("CPU RIG CONTRACT: %s (%d checks)" % ["PASS" if failures == 0 else "FAIL", checks])
     quit(0 if failures == 0 else 1)

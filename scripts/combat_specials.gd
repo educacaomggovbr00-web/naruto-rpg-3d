@@ -19,6 +19,7 @@ var sequence_elapsed: float = 0.0
 var sequence_stage: int = 0
 var barrage_hitbox: Area3D
 var chidori_visual: MultiMeshInstance3D
+var cast_visual: Node3D
 var owns_camera: bool = false
 var move_definition: JutsuDefinition
 var traps: Array[Node3D] = []
@@ -59,6 +60,10 @@ func _ready() -> void:
     chidori_visual = MultiMeshInstance3D.new()
     chidori_visual.set_script(preload("res://scripts/chidori_effect.gd"))
     rasengan_hitbox.add_child(chidori_visual)
+    cast_visual = Node3D.new()
+    cast_visual.set_script(preload("res://scripts/elemental_jutsu_visual.gd"))
+    add_child(cast_visual)
+    cast_visual.top_level = true
     barrage_hitbox = Area3D.new()
     barrage_hitbox.set_script(preload("res://scripts/combat_hitbox.gd"))
     barrage_hitbox.collision_layer = 0
@@ -130,7 +135,7 @@ func _available_choices() -> PackedStringArray:
         # skills follow the same existing chapter milestones.
         var milestone: String = jutsu_id
         if owner_fighter.character_definition.character_id == "henrique":
-            milestone = {"henrique_katon": "demon", "henrique_chidori": "clones", "henrique_susanoo_slash": "barrage"}.get(jutsu_id, jutsu_id)
+            milestone = {"henrique_katon": "demon", "henrique_chidori": "clones", "henrique_susanoo_slash": "barrage", "henrique_nagashi": "chidori", "henrique_amaterasu": "barrage", "henrique_genjutsu": "barrage", "henrique_katon_wave": "clones"}.get(jutsu_id, jutsu_id)
         if GameFlow.is_story_jutsu_unlocked(milestone):
             unlocked.append(jutsu_id)
     if unlocked.is_empty() and not choices.is_empty():
@@ -189,12 +194,21 @@ func start(kind: String = "") -> bool:
         visual_color = _effect_color(move_definition.effect, visual_color)
     if owner_fighter.awakening.active:
         visual_color = visual_color.lightened(0.12)
+    if audio != null and move_definition != null and move_definition.effect in ["fire","black_fire","lightning","water"]:
+        audio.play("jutsu_" + ("fire" if move_definition.effect == "black_fire" else move_definition.effect),-17.0)
     sphere_visual.call("set_energy_color", visual_color)
+    style_visual.rotation = Vector3.ZERO
     style_material.albedo_color = visual_color
     style_material.emission = visual_color
     if move_definition != null:
         style_visual.mesh = RosterVisualStyle.projectile_mesh(move_definition.effect)
         style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius) * 0.72
+    chidori_visual.scale = Vector3.ONE
+    chidori_visual.clock = 0.0
+    cast_visual.visible = false
+    if move_definition != null and (move_definition.strategy == "projectile" or move_definition.strategy == "hand"):
+        cast_visual.configure_jutsu(move_definition,.16)
+        cast_visual.visible = false
     elapsed = 0.0
     duration = 0.95 if move in ["rasengan", "chidori", "raikiri"] else 0.45 if move == "barrage" else 1.85 if move == "demon" else 0.65
     if move_definition != null:
@@ -224,9 +238,10 @@ func start(kind: String = "") -> bool:
 
     # Brief, readable camera emphasis for Naruto's close-range Rasengan.
     # It uses the existing combat camera instead of a separate cinematic camera.
-    if move == "rasengan" and not owner_fighter.has_method("is_cpu_controlled") and is_instance_valid(owner_fighter.locked_target):
+    var close_cue: bool = move_definition != null and move_definition.strategy in ["hand","projectile"] and owner_fighter.global_position.distance_to(owner_fighter.locked_target.global_position) <= 12.0 if is_instance_valid(owner_fighter.locked_target) else false
+    if (move == "rasengan" or close_cue) and not owner_fighter.has_method("is_cpu_controlled") and is_instance_valid(owner_fighter.locked_target):
         owns_camera = true
-        owner_fighter.camera_rig.call("begin_sequence", owner_fighter.locked_target, minf(duration, 0.62))
+        owner_fighter.camera_rig.call("begin_sequence", owner_fighter.locked_target, minf(duration, 0.62 if move == "rasengan" else .42))
         owner_fighter.camera_rig.call("set_sequence_shot", "jutsu")
 
     if move == "demon":
@@ -247,6 +262,11 @@ func _physics_process(delta: float) -> void:
         cancel(false)
         return
     elapsed += delta
+    if move_definition != null and move_definition.strategy == "projectile":
+        cast_visual.visible = not released
+        cast_visual.global_position = owner_fighter.rig_adapter.get_hand_world_position()
+        cast_visual.heading = owner_fighter.global_basis.z
+        cast_visual.scale = Vector3.ONE * clampf(elapsed / maxf(release_time(),.1),.1,1.0)
     if current == "barrage":
         _barrage_timeline(delta)
     elif move_definition != null and move_definition.strategy == "hand":
@@ -254,10 +274,19 @@ func _physics_process(delta: float) -> void:
         rasengan_hitbox.global_position = hand + owner_fighter.global_basis.z * 0.12
         var lightning: bool = move_definition.effect == "lightning"
         var styled_hand: bool = move_definition.effect not in ["chakra", "lightning"] and owner_fighter.character_definition.character_id != "naruto"
-        sphere_visual.visible = not lightning and not styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
-        style_visual.visible = styled_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        var orb_hand: bool = move_definition.effect == "chakra" and move_definition.jutsu_id.contains("rasengan")
+        sphere_visual.visible = orb_hand and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        style_visual.visible = false
         chidori_visual.visible = lightning and elapsed > 0.12 and elapsed < maxf(0.24, duration - 0.10)
+        if lightning or styled_hand or move_definition.effect == "chakra":
+            cast_visual.global_position = rasengan_hitbox.global_position
+            cast_visual.heading = owner_fighter.global_basis.z
+            cast_visual.visible = elapsed > .12 and elapsed < maxf(.24,duration-.10)
         var orb_grow: float = minf(1.0, elapsed * 5.4)
+        if cast_visual.visible:
+            cast_visual.radius = .12 + .10 * orb_grow
+            if sphere_visual.visible:
+                cast_visual.core.visible = false
         var orb_pulse: float = 1.0 + (sin(elapsed * 42.0) * 0.045 if current == "rasengan" else 0.0)
         sphere_visual.scale = Vector3.ONE * orb_grow * orb_pulse
         var timing: Dictionary = move_definition.animation_timing(owner_fighter.rig_adapter.manifest)
@@ -281,16 +310,29 @@ func _physics_process(delta: float) -> void:
             rasengan_hitbox.call("deactivate")
     elif not released and elapsed >= release_time():
         released = true
+        cast_visual.visible = false
         if move_definition != null and move_definition.strategy == "burst":
             rasengan_hitbox.global_position = owner_fighter.global_position + Vector3.UP * 0.65 + owner_fighter.global_basis.z * 0.45
             var generic_burst: bool = owner_fighter.character_definition.character_id != "naruto"
             sphere_visual.visible = not generic_burst
-            style_visual.visible = generic_burst
+            style_visual.visible = false
+            cast_visual.scale = Vector3.ONE
+            cast_visual.global_position = rasengan_hitbox.global_position
+            cast_visual.configure_jutsu(move_definition,move_definition.hitbox_radius,true)
+            if move_definition.effect in ["lightning","shadow","sand","earth","insect","snake","oil","taijutsu"]:
+                cast_visual.global_position = owner_fighter.global_position + Vector3.DOWN * .6
+            if move_definition.effect == "lightning":
+                style_visual.visible = false
+                chidori_visual.visible = false
             if generic_burst:
                 style_visual.scale = RosterVisualStyle.projectile_scale(move_definition.effect, move_definition.hitbox_radius)
             else:
                 sphere_visual.scale = Vector3.ONE * clampf(move_definition.hitbox_radius * 0.85, 0.9, 2.4)
             rasengan_hitbox.call("activate", owner_fighter, move_definition.damage, move_definition.knockback, move_definition.launch_force, move_definition.hitstun, 0.18)
+            preload("res://scripts/arena_interactions.gd").impact(owner_fighter, rasengan_hitbox.global_position, move_definition.effect, move_definition.hitbox_radius, move_definition.damage)
+            var burst_feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+            if burst_feedback != null:
+                burst_feedback.spawn_elemental_impact(rasengan_hitbox.global_position,move_definition.effect,minf(move_definition.hitbox_radius*.55,1.4),owner_fighter.global_basis.z)
             return
         if move_definition != null and move_definition.strategy == "trap":
             for trap: Node3D in traps:
@@ -309,12 +351,21 @@ func _physics_process(delta: float) -> void:
             if projectile.is_inside_tree() and not projectile.active:
                 demon_projectile = projectile
                 transformed = current == "demon"
-                var origin: Vector3 = owner_fighter.global_position + Vector3.UP * 0.25 + owner_fighter.global_basis.z * 0.8
+                var heading: Vector3 = owner_fighter.global_basis.z
+                if is_instance_valid(owner_fighter.locked_target):
+                    var aim: Vector3 = owner_fighter.locked_target.global_position + Vector3.UP * .25 - (owner_fighter.global_position + Vector3.UP * .25)
+                    if aim.length_squared() > .01:
+                        heading = aim.normalized()
+                var origin: Vector3 = owner_fighter.global_position + Vector3.UP * 0.25 + heading * 0.8
                 if projectile.has_method("launch_jutsu") and move_definition != null:
-                    projectile.call("launch_jutsu", owner_fighter, owner_fighter.locked_target, origin, owner_fighter.global_basis.z, move_definition)
+                    projectile.call("launch_jutsu", owner_fighter, owner_fighter.locked_target, origin, heading, move_definition)
                 else:
-                    projectile.call("launch", owner_fighter, owner_fighter.locked_target, origin, owner_fighter.global_basis.z)
+                    projectile.call("launch", owner_fighter, owner_fighter.locked_target, origin, heading)
                 break
+    if released and move_definition != null and move_definition.strategy == "burst":
+        style_visual.visible = style_visual.visible and elapsed - release_time() < .25
+        if move_definition.effect == "susanoo":
+            style_visual.rotation.y = (elapsed - release_time()) * 9.0
     if elapsed >= duration:
         # Successful release lets delayed clone attacks finish autonomously.
         cancel(false)
@@ -337,6 +388,8 @@ func cancel(stop_clones: bool = true) -> void:
     sphere_visual.visible = false
     style_visual.visible = false
     chidori_visual.visible = false
+    if stop_clones or not cast_visual.burst:
+        cast_visual.visible = false
     rasengan_hitbox.call("deactivate")
     barrage_hitbox.call("deactivate")
     confirmed_target = null
@@ -391,22 +444,29 @@ func movement_velocity(delta: float) -> Vector3:
     return forward * (move_definition.movement_speed if move_definition != null else 13.0) * drive
 
 func contact(target: Node, dealt: float, blocked: bool = false) -> void:
+    if not current.is_empty() and move_definition != null and dealt > 0.0:
+        ElementalStates.apply_hit(target, owner_fighter, move_definition.effect, blocked)
+        preload("res://scripts/arena_interactions.gd").impact(owner_fighter, target.global_position, move_definition.effect, move_definition.hitbox_radius, dealt)
     if current == "rasengan" and dealt > 0.0:
         var state_machine: Node = _combat_state_machine()
         if state_machine != null:
             state_machine.call("mark_special_phase", "rasengan_impact", 0.18)
         var rasengan_target: Node3D = target as Node3D
         var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
-        if rasengan_target != null and feedback != null and feedback.has_method("spawn_chakra_impact"):
-            feedback.call(
-                "spawn_chakra_impact",
-                rasengan_target.global_position + Vector3.UP * 0.72,
-                owner_fighter.character_definition.energy_color
-            )
+        if rasengan_target != null and feedback != null:
+            feedback.spawn_elemental_impact(rasengan_target.global_position + Vector3.UP*.4,"chakra",.7,owner_fighter.global_basis.z)
         if is_instance_valid(owner_fighter.camera_rig) and owner_fighter.camera_rig.has_method("add_combat_impact"):
             owner_fighter.camera_rig.call("add_combat_impact", 0.11 if blocked else 0.17, 1.8 if blocked else 3.4)
         return
 
+    if move_definition != null and move_definition.effect == "lightning" and dealt > 0.0:
+        var feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+        if feedback != null:
+            feedback.spawn_elemental_impact(rasengan_hitbox.global_position,"lightning",.65,owner_fighter.global_basis.z)
+    elif not current.is_empty() and move_definition != null and dealt > 0.0:
+        var elemental_feedback: Node = owner_fighter.get_parent().get_node_or_null("CombatFeedback")
+        if elemental_feedback != null:
+            elemental_feedback.spawn_elemental_impact(target.global_position+Vector3.UP*.3,move_definition.effect,minf(move_definition.hitbox_radius,1.0),owner_fighter.global_basis.z)
     if current != "barrage" or is_instance_valid(confirmed_target) or dealt <= 0.0 or blocked:
         return
     if target.has_method("get_is_guarding") and bool(target.call("get_is_guarding")):
